@@ -1,0 +1,6 @@
+@Tokki.WebAPI_HostAddress = http://localhost:5031
+
+GET {{Tokki.WebAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
