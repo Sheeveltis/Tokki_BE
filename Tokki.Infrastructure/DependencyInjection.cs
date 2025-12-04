@@ -20,10 +20,10 @@ namespace Tokki.Infrastructure
             // 2. Đăng ký Repositories
             services.AddScoped<IBlogRepository, BlogRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
-            services.AddSingleton<IPaymentRepository, PaymentRepository>();
             // 3. Đăng ký các Services khác (IdGenerator, Email, Storage...)
             services.AddSingleton<IIdGeneratorService, IdGeneratorService>();
             services.AddScoped<ISePayService, SePayService>();
+            services.AddScoped<IPaymentRepository, PaymentRepository>();
             return services;
         }
     }
