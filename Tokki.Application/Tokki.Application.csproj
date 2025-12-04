@@ -21,7 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="UseCases\Payments\Commands\" />
     <Folder Include="UseCases\Payments\DTOs\" />
     <Folder Include="UseCases\Payments\Queries\" />
   </ItemGroup>
