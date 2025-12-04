@@ -11,6 +11,6 @@ namespace Tokki.Domain.Entities
         public string Description { get; set; } = string.Empty; 
         public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
-        public string? PaymentUrl { get; set; }
+        //public string? PaymentUrl { get; set; }
     }
 }
