@@ -22,7 +22,6 @@
 
   <ItemGroup>
     <Folder Include="UseCases\Payments\DTOs\" />
-    <Folder Include="UseCases\Payments\Queries\" />
   </ItemGroup>
 
 </Project>
