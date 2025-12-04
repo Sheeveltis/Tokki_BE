@@ -4,7 +4,7 @@ using Tokki.Application.UseCases.Payments.Commands.ProcessWebhook;
 
 namespace Tokki.WebAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/webhooks")]
     [ApiController]
     public class WebhookController : ControllerBase
     {
@@ -15,7 +15,7 @@ namespace Tokki.WebAPI.Controllers
             _sender = sender;
         }
 
-        [HttpPost("sepay")]
+        [HttpPost("payment")]
         public async Task<IActionResult> ReceiveSePayWebhook([FromBody] SePayWebhookData data)
         {
             var command = new ProcessWebhookCommand { Data = data };

@@ -42,7 +42,6 @@ namespace Tokki.Application.UseCases.Payments.Commands.CreatePayment
                 Description = request.Description,
                 Status = PaymentStatus.Pending,
                 CreatedAt = DateTimeOffset.UtcNow,
-                PaymentUrl = qrUrl
             };
 
             await _paymentRepository.AddAsync(payment);
