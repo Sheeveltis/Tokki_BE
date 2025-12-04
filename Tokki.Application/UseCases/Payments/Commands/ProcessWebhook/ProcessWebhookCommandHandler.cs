@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.Extensions.Logging;
+using System.Text.RegularExpressions; 
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Domain.Entities;
@@ -21,7 +22,9 @@ namespace Tokki.Application.UseCases.Payments.Commands.ProcessWebhook
         public async Task<OperationResult<string>> Handle(ProcessWebhookCommand request, CancellationToken cancellationToken)
         {
             var data = request.Data;
-            _logger.LogInformation("Nhận Webhook SePay: {Content} - {Amount}", data.Content, data.TransferAmount);
+            _logger.LogInformation("--- NHẬN WEBHOOK SEPAY ---");
+            _logger.LogInformation("Nội dung CK: {Content}", data.Content);
+            _logger.LogInformation("Số tiền: {Amount}", data.TransferAmount);
 
             try
             {
@@ -36,31 +39,49 @@ namespace Tokki.Application.UseCases.Payments.Commands.ProcessWebhook
                     TransactionContent = data.Content,
                     ReferenceNumber = data.ReferenceCode,
                     Body = data.Description,
-                    CreatedAt = DateTimeOffset.UtcNow
+                    CreatedAt = DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(7)) // Giờ VN
                 };
 
                 await _paymentRepository.AddTransactionAsync(transaction);
-            
+                _logger.LogInformation("Đã lưu Transaction ID: {Id}", transaction.Id);
+
                 string detectedPaymentId = ExtractPaymentId(data.Content);
+                _logger.LogInformation("Payment ID tìm thấy: {Id}", detectedPaymentId);
 
                 if (string.IsNullOrEmpty(detectedPaymentId))
                 {
-                    return OperationResult<string>.Success("Lưu Transaction thành công, nhưng không tìm thấy Payment ID khớp.");
+                    return OperationResult<string>.Success("Đã lưu Transaction nhưng không tìm thấy mã đơn hàng trong nội dung.");
                 }
 
                 var payment = await _paymentRepository.GetByIdAsync(detectedPaymentId);
 
-                if (payment != null && payment.Status == PaymentStatus.Pending)
+                if (payment == null)
+                {
+                    _logger.LogWarning("Không tìm thấy Payment có ID {Id} trong database.", detectedPaymentId);
+                    return OperationResult<string>.Success("Payment ID không tồn tại.");
+                }
+
+                if (payment.Status == PaymentStatus.Pending)
                 {
                     if (data.TransferAmount >= payment.Amount)
                     {
                         payment.Status = PaymentStatus.Paid;
-                        payment.PaidAt = DateTimeOffset.UtcNow;
+                        payment.PaidAt = DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(7)); 
                         payment.TransactionId = transaction.Id; 
 
                         await _paymentRepository.UpdateAsync(payment);
+                        _logger.LogInformation("UPDATE THÀNH CÔNG: Payment {Id} -> PAID", payment.Id);
+
                         return OperationResult<string>.Success("Thanh toán thành công.");
                     }
+                    else
+                    {
+                        _logger.LogWarning("Số tiền không đủ. Yêu cầu: {Required}, Nhận: {Received}", payment.Amount, data.TransferAmount);
+                    }
+                }
+                else
+                {
+                    _logger.LogInformation("Payment {Id} đã được xử lý trước đó (Status: {Status}).", payment.Id, payment.Status);
                 }
 
                 return OperationResult<string>.Success("Đã xử lý webhook.");
@@ -68,13 +89,22 @@ namespace Tokki.Application.UseCases.Payments.Commands.ProcessWebhook
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi xử lý Webhook");
-                return OperationResult<string>.Failure("Lỗi Server");
+                return OperationResult<string>.Failure($"Lỗi Server: {ex.Message}");
             }
         }
 
         private string ExtractPaymentId(string content)
         {
-            return content; 
+            if (string.IsNullOrEmpty(content)) return string.Empty;
+            var regex = new Regex(@"\b[a-zA-Z0-9_-]{10}\b");
+
+            var match = regex.Match(content);
+            if (match.Success)
+            {
+                return match.Value;
+            }
+
+            return string.Empty;
         }
     }
 }
