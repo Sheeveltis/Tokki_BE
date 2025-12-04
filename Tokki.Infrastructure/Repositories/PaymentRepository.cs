@@ -1,22 +1,43 @@
-﻿using Tokki.Application.IRepositories;
+﻿using Microsoft.EntityFrameworkCore;
+using Tokki.Application.IRepositories;
 using Tokki.Domain.Entities;
+using Tokki.Domain.Enums;
+using Tokki.Infrastructure.Data;
 
 namespace Tokki.Infrastructure.Repositories
 {
     public class PaymentRepository : IPaymentRepository
     {
-        private static readonly List<Payment> _mockDb = new();
+        private readonly TokkiDbContext _context;
 
-        public Task AddAsync(Payment payment)
+        public PaymentRepository(TokkiDbContext context)
         {
-            _mockDb.Add(payment);
-            return Task.CompletedTask; 
+            _context = context;
         }
 
-        public Task<Payment?> GetByIdAsync(string id)
+        public async Task AddAsync(Payment payment)
         {
-            var payment = _mockDb.FirstOrDefault(p => p.Id == id);
-            return Task.FromResult(payment);
+            await _context.Payments.AddAsync(payment);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<Payment?> GetByIdAsync(string id)
+        {
+            return await _context.Payments
+                .Include(p => p.Transaction) 
+                .FirstOrDefaultAsync(p => p.Id == id);
+        }
+
+        public async Task UpdateAsync(Payment payment)
+        {
+            _context.Payments.Update(payment);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task AddTransactionAsync(Transaction transaction)
+        {
+            await _context.Transactions.AddAsync(transaction);
+            await _context.SaveChangesAsync();
         }
     }
 }
