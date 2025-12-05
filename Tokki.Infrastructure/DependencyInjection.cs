@@ -22,7 +22,8 @@ namespace Tokki.Infrastructure
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             // 3. Đăng ký các Services khác (IdGenerator, Email, Storage...)
             services.AddSingleton<IIdGeneratorService, IdGeneratorService>();
-
+            services.AddScoped<ISePayService, SePayService>();
+            services.AddScoped<IPaymentRepository, PaymentRepository>();
             return services;
         }
     }

@@ -20,4 +20,8 @@
     <ProjectReference Include="..\Tokki.Domain\Tokki.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="UseCases\Payments\DTOs\" />
+  </ItemGroup>
+
 </Project>
