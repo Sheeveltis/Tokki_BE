@@ -13,6 +13,6 @@ namespace Tokki.Application.IRepositories
         Task AddAsync(Otp otp);
         Task<Otp?> GetLatestValidOtpAsync(string email, OtpType type);
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
-
+        Task UpdateAsync(Otp otp);
     }
 }

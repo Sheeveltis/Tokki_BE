@@ -114,20 +114,25 @@ namespace Tokki.Infrastructure.Data
                 // Khóa ngoại
                 entity.HasOne(o => o.Account)
                       .WithMany()
-                      .HasForeignKey(o => o.UserId) // Nhớ trỏ đúng UserId
+                      .HasForeignKey(o => o.UserId)
                       .OnDelete(DeleteBehavior.Cascade);
 
-                // CẤU HÌNH ENUM -> STRING
+                entity.Property(o => o.Status)
+                      .HasConversion<string>()
+                      .HasMaxLength(20);
+
+                // Cấu hình ENUM Type -> string
                 entity.Property(o => o.Type)
-                      .HasConversion<string>() // Quan trọng: Lưu "VerifyEmail" thay vì số 0
-                      .HasMaxLength(30);       // Khớp với VARCHAR(30) trong SQL
+                      .HasConversion<string>()
+                      .HasMaxLength(30);
             });
+
             // =========================================================
             // 6. CONFIG SYSTEM CONFIG
             // =========================================================
             modelBuilder.Entity<SystemConfig>(entity =>
             {
-                entity.ToTable("SystemConfig"); // Đặt tên bảng
+                entity.ToTable("SystemConfigs"); // Đặt tên bảng
 
                 // Khóa chính
                 entity.HasKey(e => e.SystemConfigID);

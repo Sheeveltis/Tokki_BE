@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Tokki.Application.UseCases.Accounts.Commands.SendEmailVerificationOtp;
+using Tokki.Application.UseCases.Accounts.Commands.VerifyEmailOtp;
 using Tokki.Application.UseCases.Otps.Commands.SendOtpForEmailVerification;
 
 namespace Tokki.API.Controllers
@@ -35,6 +36,18 @@ namespace Tokki.API.Controllers
             }
 
             // Trả về lỗi (400, 403, 404, 500...) tùy theo StatusCode trong Result
+            return StatusCode(result.StatusCode, result);
+        }
+        [HttpPost("verify-login-otp")]
+        public async Task<IActionResult> VerifyLoginOtp([FromBody] VerifyEmailOtpCommand command)
+        {
+            var result = await _mediator.Send(command);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+
             return StatusCode(result.StatusCode, result);
         }
     }

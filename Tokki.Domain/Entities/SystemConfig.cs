@@ -19,7 +19,7 @@ namespace Tokki.Domain.Entities
         [MaxLength(50)]
         public string? DataType { get; set; }
         public bool IsActive { get; set; } = true;
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow.AddHours(7);
         public DateTime? UpdatedAt { get; set; }
     }
 }

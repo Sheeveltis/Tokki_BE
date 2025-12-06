@@ -38,5 +38,14 @@ namespace Tokki.Infrastructure.Repositories
         {
             throw new NotImplementedException();
         }
+        public async Task<string?> GetValueByKeyAsync(string key)
+        {
+            var value = await _context.SystemConfig
+                                      .AsNoTracking()
+                                      .Where(x => x.Key == key && x.IsActive) // Nên check thêm IsActive
+                                      .Select(x => x.Value)
+                                      .FirstOrDefaultAsync();
+            return value;
+        }
     }
 }

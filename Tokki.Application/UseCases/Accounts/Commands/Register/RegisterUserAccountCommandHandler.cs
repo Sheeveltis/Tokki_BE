@@ -62,7 +62,7 @@ namespace Tokki.Application.UseCases.Accounts.Commands.Register
                     EmailVerified = false,
                     PhoneNumber = request.PhoneNumber,
                     DateOfBirth = request.DateOfBirth.ToDateTime(TimeOnly.MinValue),
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.UtcNow.AddHours(7),
                     Status = AccountStatus.Active,
                     Role = AccountRole.User
                 };

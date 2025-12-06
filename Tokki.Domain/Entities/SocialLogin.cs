@@ -34,7 +34,7 @@ namespace Tokki.Domain.Entities
         public string? NameFromProvider { get; set; }
 
         [Required]
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow.AddHours(7);
 
         [ForeignKey(nameof(UserId))]
         public virtual Account? Account { get; set; }

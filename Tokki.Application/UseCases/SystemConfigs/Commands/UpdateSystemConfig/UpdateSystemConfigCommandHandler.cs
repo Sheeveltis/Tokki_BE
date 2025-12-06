@@ -26,7 +26,7 @@ namespace Tokki.Application.UseCases.SystemConfigs.Commands.Update
             config.Value = request.Value;
             config.Description = request.Description;
             config.IsActive = request.IsActive;
-            config.UpdatedAt = DateTime.UtcNow;
+            config.UpdatedAt = DateTime.UtcNow.AddHours(7);
 
             // 3. Lưu (EF Core tự tracking sự thay đổi, chỉ cần SaveChanges)
             await _repository.SaveChangesAsync(cancellationToken);

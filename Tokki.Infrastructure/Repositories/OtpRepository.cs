@@ -23,32 +23,31 @@ namespace Tokki.Infrastructure.Repositories
             await _context.OtpCodes.AddAsync(otp);
         }
 
-        // 2. Lấy mã OTP HỢP LỆ mới nhất
         public async Task<Otp?> GetLatestValidOtpAsync(string email, OtpType type)
         {
-            // Tìm mã OTP thỏa mãn các điều kiện:
-            // 1. Đúng Email
-            // 2. Đúng Type (Login, Register...)
-            // 3. Chưa sử dụng (IsUsed == false)
-            // 4. Chưa hết hạn (ExpiresAt > DateTime.UtcNow)
-            // 5. Lấy bản ghi mới nhất (OrderByDescending(o => o.CreatedAt))
-
             var latestOtp = await _context.OtpCodes
                 .Where(o =>
                     o.Email == email &&
                     o.Type == type &&
-                    o.IsUsed == false &&
-                    o.ExpiredAt > DateTime.UtcNow)
+                    o.Status == OtpStatus.Active) // 1. Chỉ lấy mã đang Active (thay cho IsUsed)
+                                                  // 2. Không check ngày hết hạn ở đây, để Handler check và update Status
                 .OrderByDescending(o => o.CreatedAt)
                 .FirstOrDefaultAsync();
 
             return latestOtp;
         }
-
-        // 3. Lưu tất cả thay đổi trong DbContext xuống Database
+        // Lưu tất cả thay đổi trong DbContext xuống Database
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             return await _context.SaveChangesAsync(cancellationToken);
+        }
+        public Task UpdateAsync(Otp otp)
+        {
+            // Hàm Update của EF Core không có Async, nên ta gọi thường
+            _context.OtpCodes.Update(otp);
+
+            // Trả về Task hoàn thành để khớp với keyword 'await' bên Handler
+            return Task.CompletedTask;
         }
     }
 }

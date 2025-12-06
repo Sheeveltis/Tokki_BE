@@ -11,6 +11,7 @@ namespace Tokki.Application.IRepositories
         Task SaveChangesAsync(CancellationToken cancellationToken);
         Task<Account?> GetByEmailAsync(string email);
         Task AddSessionAsync(Session session);
-       // Task UpdateEmailVerifiedAsync(string userId, bool isVerified);
+        Task UpdateUserAsync(Account user);
+        // Task UpdateEmailVerifiedAsync(string userId, bool isVerified);
     }
 }

@@ -14,5 +14,6 @@ namespace Tokki.Application.IRepositories
         Task AddAsync(SystemConfig config);
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
         Task<(List<SystemConfig> Items, int TotalCount)> GetPagedAsync(int pageNumber, int pageSize);
+        Task<string?> GetValueByKeyAsync(string key);
     }
 }

@@ -44,7 +44,15 @@ namespace Tokki.Infrastructure.Repositories
         {
             await _context.Session.AddAsync(session);
         }
+        public Task UpdateUserAsync(Account user)
+        {
+            // Đánh dấu Entity là đã chỉnh sửa
+            _context.Accounts.Update(user);
 
-       
+            // Vì EF Core Update không có Async, ta trả về Task hoàn thành 
+            // để khớp với Interface trả về Task
+            return Task.CompletedTask;
+        }
+
     }
 }

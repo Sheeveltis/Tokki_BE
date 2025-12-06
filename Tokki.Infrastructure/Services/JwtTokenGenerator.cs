@@ -38,7 +38,7 @@ namespace Tokki.Infrastructure.Services // Đặt chung namespace với Services
                 issuer: _jwtSettings.Issuer,
                 audience: _jwtSettings.Audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(_jwtSettings.ExpiryMinutes),
+                expires: DateTime.UtcNow.AddHours(7).AddMinutes(_jwtSettings.ExpiryMinutes),
                 signingCredentials: creds
             );
 

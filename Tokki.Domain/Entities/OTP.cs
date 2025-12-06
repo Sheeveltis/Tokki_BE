@@ -34,13 +34,13 @@ namespace Tokki.Domain.Entities
         public OtpType Type { get; set; } = OtpType.VerifyEmail;
         // ---------------------
 
-        [Required]
-        public bool IsUsed { get; set; } = false;
+        [Column(TypeName = "nvarchar(50)")]
+        public OtpStatus Status { get; set; } = OtpStatus.Active;
 
         public DateTime? UsedAt { get; set; }
 
         [Required]
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow.AddHours(7);
 
         [ForeignKey(nameof(UserId))]
         public virtual Account? Account { get; set; }

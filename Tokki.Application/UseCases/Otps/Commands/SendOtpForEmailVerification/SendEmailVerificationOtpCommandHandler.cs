@@ -15,17 +15,21 @@ namespace Tokki.Application.UseCases.Accounts.Commands.SendEmailVerificationOtp
         private readonly IOtpRepository _otpRepository;
         private readonly IEmailService _emailService;
         private readonly IValidator<SendEmailVerificationOtpCommand> _validator;
+        private readonly ISystemConfigRepository _systemConfigRepository;
+
 
         public SendEmailVerificationOtpCommandHandler(
             IAccountRepository accountRepository,
             IOtpRepository otpRepository,
             IEmailService emailService,
-            IValidator<SendEmailVerificationOtpCommand> validator)
+            IValidator<SendEmailVerificationOtpCommand> validator,
+            ISystemConfigRepository systemConfigRepository)
         {
             _accountRepository = accountRepository;
             _otpRepository = otpRepository;
             _emailService = emailService;
             _validator = validator;
+            _systemConfigRepository = systemConfigRepository;
         }
 
         public async Task<OperationResult<string>> Handle(SendEmailVerificationOtpCommand request, CancellationToken cancellationToken)
@@ -62,19 +66,33 @@ namespace Tokki.Application.UseCases.Accounts.Commands.SendEmailVerificationOtp
             // 5. Tạo OTP Code mới
             var otpCode = new Random().Next(100000, 999999).ToString();
 
+            string? configValue = await _systemConfigRepository.GetValueByKeyAsync("OTP_EXPIRATION_SECONDS");
+
+            int otpLifeTimeSeconds = 300;
+
+            // 3. Ép kiểu từ string sang int (Cần kiểm tra null và format hợp lệ)
+            if (!string.IsNullOrEmpty(configValue) && int.TryParse(configValue, out int result))
+            {
+                otpLifeTimeSeconds = result;
+            }
             // 6. Tạo Entity Otp
             var newOtp = new Otp
             {
                 Email = user.Email,
                 OtpCode = otpCode,
-                Type = OtpType.VerifyEmail, 
+                Type = OtpType.VerifyEmail,
 
-                CreatedAt = DateTime.UtcNow,
-                ExpiredAt = DateTime.UtcNow.AddMinutes(5), // Khớp với property trong Repo của bạn
+                // Giữ nguyên logic +7 của bạn
+                CreatedAt = DateTime.UtcNow.AddHours(7),
+                ExpiredAt = DateTime.UtcNow.AddHours(7).AddSeconds(otpLifeTimeSeconds),
 
-                IsUsed = false
+                // SỬA LỖI: Thay IsUsed = false bằng Status
+                Status = OtpStatus.Active,
+
+                // Khởi tạo các giá trị mặc định khác (nếu cần thiết để rõ ràng)
+                AttemptCount = 0,
+                UsedAt = null
             };
-
             // 7. Lưu vào DB thông qua Repository
             await _otpRepository.AddAsync(newOtp);
             await _otpRepository.SaveChangesAsync(cancellationToken);

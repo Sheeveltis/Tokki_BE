@@ -37,7 +37,7 @@ namespace Tokki.Application.UseCases.SystemConfigs.Commands.Create
                 Description = request.Description,
                 DataType = request.DataType,
                 IsActive = true,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow.AddHours(7)
             };
 
             // 4. Save
