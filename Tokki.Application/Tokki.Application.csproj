@@ -23,4 +23,9 @@
 		<ProjectReference Include="..\Tokki.Domain\Tokki.Domain.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="UseCases\Otps\DTOs\" />
+	  <Folder Include="UseCases\Otps\Queries\" />
+	</ItemGroup>
+
 </Project>

@@ -78,6 +78,7 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+
 // Đăng ký các layer khác (Giữ nguyên)
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddApplication();
