@@ -6,6 +6,7 @@ using Tokki.Infrastructure.Data;
 using Tokki.Infrastructure.Repositories;
 using Tokki.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
+using Tokki.Application.Common.Helpers;
 namespace Tokki.Infrastructure
 {
     public static class DependencyInjection
@@ -20,9 +21,12 @@ namespace Tokki.Infrastructure
             // 2. Đăng ký Repositories
             services.AddScoped<IBlogRepository, BlogRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
+            services.AddScoped<IAccountRepository, AccountRepository>();
+
             // 3. Đăng ký các Services khác (IdGenerator, Email, Storage...)
             services.AddSingleton<IIdGeneratorService, IdGeneratorService>();
-
+            services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
+            services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
             return services;
         }
     }

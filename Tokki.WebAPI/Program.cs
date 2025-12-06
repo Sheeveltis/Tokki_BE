@@ -1,16 +1,84 @@
-﻿using Tokki.Infrastructure; // Để dùng AddInfrastructureServices
-using Tokki.Application;    // Để dùng AddApplicationServices
+﻿using Tokki.Infrastructure;
+using Tokki.Application;
 using Microsoft.EntityFrameworkCore;
+// 🔥 1. THÊM CÁC NAMESPACE NÀY
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models; // Dùng cho Swagger
+using System.Text;
+using Tokki.Application.Common.Helpers; // Nơi chứa class JwtSettings
+
 var builder = WebApplication.CreateBuilder(args);
 
 // ==========================================
-// 1. ĐĂNG KÝ SERVICES (GỌN GÀNG)
+// 1. ĐĂNG KÝ SERVICES
 // ==========================================
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
+// 2. SỬA CẤU HÌNH SWAGGER (Để hiện nút ổ khóa)
+builder.Services.AddSwaggerGen(option =>
+{
+    option.SwaggerDoc("v1", new OpenApiInfo { Title = "Tokki API", Version = "v1" });
+
+    // Định nghĩa nút "Authorize"
+    option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Nhập token theo định dạng: Bearer {token}",
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        BearerFormat = "JWT",
+        Scheme = "Bearer"
+    });
+
+    // Yêu cầu bảo mật (Khi gọi API phải kèm token)
+    option.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type=ReferenceType.SecurityScheme,
+                    Id="Bearer"
+                }
+            },
+            new string[]{}
+        }
+    });
+});
+
+// 3. CẤU HÌNH XÁC THỰC (AUTHENTICATION)
+// Lấy cấu hình từ appsettings.json
+var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();
+var key = Encoding.UTF8.GetBytes(jwtSettings!.Secret);
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+
+        ValidIssuer = jwtSettings.Issuer,
+        ValidAudience = jwtSettings.Audience,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+
+        // Quan trọng: Set ClockSkew về 0 để token hết hạn đúng chính xác từng giây
+        ClockSkew = TimeSpan.Zero
+    };
+});
+
+// Đăng ký các layer khác (Giữ nguyên)
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddApplication();
 
@@ -25,6 +93,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// 4. THÊM MIDDLEWARE XÁC THỰC (Bắt buộc phải đặt TRƯỚC UseAuthorization)
+app.UseAuthentication();
 
 app.UseAuthorization();
 

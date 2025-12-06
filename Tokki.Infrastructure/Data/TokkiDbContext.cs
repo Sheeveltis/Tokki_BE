@@ -1,10 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Tokki.Domain.Entities;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Infrastructure.Data
 {
@@ -12,32 +10,116 @@ namespace Tokki.Infrastructure.Data
     {
         public TokkiDbContext(DbContextOptions<TokkiDbContext> options) : base(options) { }
 
+        // --- DbSets ---
         public DbSet<Blog> Blogs { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Tag> Tags { get; set; }
+
+        public DbSet<Account> Accounts { get; set; }
+        public DbSet<Session> Session { get; set; }
+        public DbSet<Otp> OtpCodes { get; set; }
+        public DbSet<SocialLogin> SocialLogins { get; set; } // Đổi tên cho khớp với Entity (ExternalLogins cũng đc nhưng SocialLogins chuẩn hơn)
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
+            // =========================================================
+            // 1. CONFIG BLOG & CATEGORY & TAG
+            // =========================================================
+
+            // Blog - Tag (Many-to-Many)
             modelBuilder.Entity<Blog>()
                 .HasMany(b => b.Tags)
                 .WithMany(t => t.Blogs)
                 .UsingEntity<Dictionary<string, object>>(
-                    "BlogTags", 
+                    "BlogTags",
                     j => j.HasOne<Tag>().WithMany().HasForeignKey("TagsId"),
                     j => j.HasOne<Blog>().WithMany().HasForeignKey("BlogsId"),
                     j => j.HasKey("BlogsId", "TagsId")
                 );
 
+            // Blog - Category (One-to-Many)
             modelBuilder.Entity<Blog>()
                 .HasOne(b => b.Category)
                 .WithMany(c => c.Blogs)
                 .HasForeignKey(b => b.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // Unique Slugs
             modelBuilder.Entity<Blog>().HasIndex(b => b.Slug).IsUnique();
             modelBuilder.Entity<Category>().HasIndex(c => c.Slug).IsUnique();
+
+            // Convert Enum BlogStatus (nếu có)
+            modelBuilder.Entity<Blog>()
+                .Property(b => b.Status)
+                .HasConversion<string>();
+
+            // =========================================================
+            // 2. CONFIG ACCOUNT
+            // =========================================================
+
+            modelBuilder.Entity<Account>(entity =>
+            {
+                // Khóa chính
+                entity.HasKey(e => e.UserId);
+
+                entity.HasIndex(e => e.Email).IsUnique();
+
+                entity.Property(e => e.Role)
+                      .HasConversion<string>()
+                      .HasMaxLength(20);
+
+                entity.Property(e => e.Status)
+                      .HasConversion<string>()
+                      .HasMaxLength(20);
+
+                entity.Property(e => e.DateOfBirth)
+                      .HasColumnType("date");
+            });
+
+            // =========================================================
+            // 3. CONFIG SOCIAL LOGIN
+            // =========================================================
+
+            // SỬA LỖI: Đổi ProviderKey -> ProviderUserId
+            // Ràng buộc 1: (Provider + ProviderUserId) phải duy nhất toàn hệ thống
+            modelBuilder.Entity<SocialLogin>()
+                .HasIndex(e => new { e.Provider, e.ProviderUserId })
+                .IsUnique();
+
+            // Ràng buộc 2: (UserId + Provider) phải duy nhất (1 user chỉ link 1 GG, 1 FB)
+            modelBuilder.Entity<SocialLogin>()
+                .HasIndex(e => new { e.UserId, e.Provider })
+                .IsUnique();
+
+            // =========================================================
+            // 4. CONFIG SESSION
+            // =========================================================
+
+            modelBuilder.Entity<Session>()
+                .HasOne(us => us.Account)
+                .WithMany(a => a.Sessions)
+                .HasForeignKey(us => us.UserId)
+                .OnDelete(DeleteBehavior.Cascade); // Xóa user -> Xóa hết session
+
+            // =========================================================
+            // 5. CONFIG OTP
+            // =========================================================
+
+            modelBuilder.Entity<Otp>(entity =>
+            {
+                // Khóa ngoại
+                entity.HasOne(o => o.Account)
+                      .WithMany()
+                      .HasForeignKey(o => o.UserId) // Nhớ trỏ đúng UserId
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                // CẤU HÌNH ENUM -> STRING
+                entity.Property(o => o.Type)
+                      .HasConversion<string>() // Quan trọng: Lưu "VerifyEmail" thay vì số 0
+                      .HasMaxLength(30);       // Khớp với VARCHAR(30) trong SQL
+            });
         }
     }
 }

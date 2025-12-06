@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tokki.Application.UseCases.Categories.Commands.CreateCategory;
 using Tokki.Application.UseCases.Categories.Commands.DeleteCategory;
@@ -17,7 +18,7 @@ namespace Tokki.WebAPI.Controllers
         {
             _sender = sender;
         }
-
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
