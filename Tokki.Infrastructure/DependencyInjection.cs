@@ -22,11 +22,14 @@ namespace Tokki.Infrastructure
             services.AddScoped<IBlogRepository, BlogRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<IAccountRepository, AccountRepository>();
+            services.AddScoped<ISystemConfigRepository, SystemConfigRepository>();
+
 
             // 3. Đăng ký các Services khác (IdGenerator, Email, Storage...)
             services.AddSingleton<IIdGeneratorService, IdGeneratorService>();
             services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
             services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+
             return services;
         }
     }

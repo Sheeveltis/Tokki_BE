@@ -15,7 +15,7 @@ namespace Tokki.Application.UseCases.Blogs.Commands.CreateBlog
         public string? PhoneNumber { get; set; }
         public string Password { get; set; } = string.Empty;
         public string FullName { get; set; } = string.Empty;
-        public DateTime DateOfBirth { get; set; }
+        public DateOnly DateOfBirth { get; set; }
 
     }
 }

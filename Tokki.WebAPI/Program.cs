@@ -1,7 +1,7 @@
 ﻿using Tokki.Infrastructure;
 using Tokki.Application;
 using Microsoft.EntityFrameworkCore;
-// 🔥 1. THÊM CÁC NAMESPACE NÀY
+// 1. THÊM CÁC NAMESPACE NÀY
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models; // Dùng cho Swagger

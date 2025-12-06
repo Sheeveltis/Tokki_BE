@@ -18,6 +18,8 @@ namespace Tokki.Infrastructure.Data
         public DbSet<Account> Accounts { get; set; }
         public DbSet<Session> Session { get; set; }
         public DbSet<Otp> OtpCodes { get; set; }
+        public DbSet<SystemConfig> SystemConfig { get; set; }
+
         public DbSet<SocialLogin> SocialLogins { get; set; } // Đổi tên cho khớp với Entity (ExternalLogins cũng đc nhưng SocialLogins chuẩn hơn)
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -119,6 +121,34 @@ namespace Tokki.Infrastructure.Data
                 entity.Property(o => o.Type)
                       .HasConversion<string>() // Quan trọng: Lưu "VerifyEmail" thay vì số 0
                       .HasMaxLength(30);       // Khớp với VARCHAR(30) trong SQL
+            });
+            // =========================================================
+            // 6. CONFIG SYSTEM CONFIG
+            // =========================================================
+            modelBuilder.Entity<SystemConfig>(entity =>
+            {
+                entity.ToTable("SystemConfig"); // Đặt tên bảng
+
+                // Khóa chính
+                entity.HasKey(e => e.SystemConfigID);
+
+                // QUAN TRỌNG: Cột Key phải là duy nhất (không được trùng tên cấu hình)
+                entity.HasIndex(e => e.Key).IsUnique();
+
+                // Cấu hình độ dài và bắt buộc (khớp với Data Annotation bên Entity)
+                entity.Property(e => e.Key)
+                      .IsRequired()
+                      .HasMaxLength(100);
+
+                entity.Property(e => e.Description)
+                      .HasMaxLength(255);
+
+                entity.Property(e => e.DataType)
+                      .HasMaxLength(50);
+
+                // Giá trị mặc định cho IsActive
+                entity.Property(e => e.IsActive)
+                      .HasDefaultValue(true);
             });
         }
     }

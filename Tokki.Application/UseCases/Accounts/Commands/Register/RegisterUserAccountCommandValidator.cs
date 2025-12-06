@@ -40,10 +40,9 @@ namespace Tokki.Application.UseCases.Accounts.Commands.Register
 
             // 5. Validate DateOfBirth (Ngày sinh)
             RuleFor(x => x.DateOfBirth)
-                .NotEmpty()
-                .LessThan(DateTime.Now).WithMessage("Ngày sinh phải nhỏ hơn ngày hiện tại.")
-                // Tùy chọn: Giới hạn độ tuổi (ví dụ > 13 tuổi)
-                // .LessThan(DateTime.Now.AddYears(-13)).WithMessage("Người dùng phải trên 13 tuổi.")
+                .NotEmpty().WithMessage("Vui lòng nhập Ngày sinh.")
+                .LessThan(DateOnly.FromDateTime(DateTime.Today)) // 👈 Sửa thành DateTime.Today để so sánh chuẩn
+                .WithMessage("Ngày sinh không thể là ngày hiện tại hoặc tương lai.")
                 .WithName("Ngày sinh");
         }
     }
