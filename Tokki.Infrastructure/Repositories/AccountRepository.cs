@@ -53,6 +53,9 @@ namespace Tokki.Infrastructure.Repositories
             // để khớp với Interface trả về Task
             return Task.CompletedTask;
         }
-
+        public async Task<Account?> GetByIdAsync(string userId)
+        {
+            return await _context.Accounts.FirstOrDefaultAsync(u => u.UserId == userId);
+        }
     }
 }

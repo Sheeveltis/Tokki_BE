@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tokki.Application.UseCases.Accounts.Commands.Login;
 using Tokki.Application.UseCases.Accounts.Commands.ResetPassword;
+using Tokki.Application.UseCases.Accounts.Commands.UpdateProfile;
 using Tokki.Application.UseCases.Blogs.Commands.CreateBlog;
 using Tokki.Application.UseCases.Blogs.Commands.DeleteBlog;
 using Tokki.Application.UseCases.Blogs.Commands.UpdateBlog;
@@ -70,6 +71,30 @@ namespace Tokki.WebAPI.Controllers
             }
 
             var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpPut("profile")]
+        [Authorize] // Bắt buộc phải đăng nhập
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileCommand command)
+        {
+            // 1. Lấy UserId từ Token
+            // ClaimTypes.NameIdentifier thường được map với "sub" hoặc "uid" trong Token
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                         ?? User.FindFirst("sub")?.Value
+                         ?? User.FindFirst("UserId")?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(new { message = "Không tìm thấy thông tin người dùng trong Token." });
+            }
+
+            // 2. Gán UserId vào Command (để Handler biết đang sửa ai)
+            command.UserId = userId;
+
+            // 3. Gọi Handler
+            var result = await _sender.Send(command);
+
             return StatusCode(result.StatusCode, result);
         }
     }
