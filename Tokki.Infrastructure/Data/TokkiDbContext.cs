@@ -14,6 +14,8 @@ namespace Tokki.Infrastructure.Data
         public DbSet<Blog> Blogs { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Tag> Tags { get; set; }
+        public DbSet<Payment> Payments { get; set; }
+        public DbSet<Transaction> Transactions { get; set; }
 
         public DbSet<Account> Accounts { get; set; }
         public DbSet<Session> Session { get; set; }

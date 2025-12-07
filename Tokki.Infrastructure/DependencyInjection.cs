@@ -31,6 +31,9 @@ namespace Tokki.Infrastructure
             services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
             services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 
+            services.AddScoped<ISePayService, SePayService>();
+            services.AddScoped<IPaymentRepository, PaymentRepository>();
+
             return services;
         }
     }
