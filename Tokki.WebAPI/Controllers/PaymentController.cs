@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Tokki.Application.UseCases.Payments.Commands.CreatePayment;
 using Tokki.Application.UseCases.Payments.Queries.GetPaymentById;
+using Tokki.Application.UseCases.Payments.Queries.GetPaymentQr;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -28,6 +29,15 @@ namespace Tokki.WebAPI.Controllers
         {
             var query = new GetPaymentByIdQuery { Id = id };
             var result = await _sender.Send(query);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpGet("{id}/qr")]
+        public async Task<IActionResult> GetQrCode(string id)
+        {
+            var query = new GetPaymentQrQuery(id);
+            var result = await _sender.Send(query);
+
             return StatusCode(result.StatusCode, result);
         }
     }
