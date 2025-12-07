@@ -10,5 +10,6 @@ namespace Tokki.Application.IServices
     public interface IJwtTokenGenerator
     {
         string GenerateToken(Account user);
+        string GenerateForgotPasswordToken(string email);
     }
 }

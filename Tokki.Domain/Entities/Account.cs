@@ -65,5 +65,6 @@ namespace Tokki.Domain.Entities
         // Navigation Properties
         public virtual ICollection<Session> Sessions { get; set; } = new List<Session>();
         public virtual ICollection<SocialLogin> SocialLogins { get; set; } = new List<SocialLogin>();
+
     }
 }

@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Tokki.Application.UseCases.Accounts.Commands.SendEmailVerificationOtp;
 using Tokki.Application.UseCases.Accounts.Commands.VerifyEmailOtp;
+using Tokki.Application.UseCases.Otps.Commands.ForgotPassword;
 using Tokki.Application.UseCases.Otps.Commands.SendOtpForEmailVerification;
+using Tokki.Application.UseCases.Otps.Commands.VerifyForgotPasswordOtp;
 
 namespace Tokki.API.Controllers
 {
@@ -48,6 +50,22 @@ namespace Tokki.API.Controllers
                 return Ok(result);
             }
 
+            return StatusCode(result.StatusCode, result);
+        }
+        // 1. Gửi OTP
+        [HttpPost("forgot-password/send-otp")]
+        public async Task<IActionResult> SendForgotOtp([FromBody] SendForgotPasswordOtpCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        // 2. Verify OTP -> Nhận về Token reset
+        [HttpPost("forgot-password/verify")]
+        public async Task<IActionResult> VerifyForgotOtp([FromBody] VerifyForgotPasswordOtpCommand command)
+        {
+            var result = await _mediator.Send(command);
+            // Result.Data ở đây chính là cái ResetToken (string)
             return StatusCode(result.StatusCode, result);
         }
     }

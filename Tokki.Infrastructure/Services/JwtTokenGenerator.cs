@@ -45,5 +45,28 @@ namespace Tokki.Infrastructure.Services // Đặt chung namespace với Services
             // 4. Trả về chuỗi Token
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+        public string GenerateForgotPasswordToken(string email)
+        {
+            var claims = new List<Claim>
+    {
+        // ✅ Chỉ cần 3 claims này thôi
+        new Claim(ClaimTypes.Email, email),           // Claim email chuẩn
+        new Claim(JwtRegisteredClaimNames.Sub, email), // Sub = email (để backup)
+        new Claim("token_type", "reset_password")      // Đánh dấu loại token
+    };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Secret));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: _jwtSettings.Issuer,
+                audience: _jwtSettings.Audience,
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(15), // Token ngắn hạn 15 phút
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
     }
 }
