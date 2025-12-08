@@ -26,7 +26,6 @@
 	<ItemGroup>
 	  <Folder Include="UseCases\Otps\DTOs\" />
 	  <Folder Include="UseCases\Otps\Queries\" />
-	  <Folder Include="UseCases\Reports\Commands\CreateReport\" />
 	</ItemGroup>
 
   <ItemGroup>
