@@ -1,6 +1,9 @@
 ﻿using MediatR;
 using Microsoft.Extensions.Logging;
-using System.Text.RegularExpressions; 
+using System;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Domain.Entities;
@@ -11,11 +14,16 @@ namespace Tokki.Application.UseCases.Payments.Commands.ProcessWebhook
     public class ProcessWebhookCommandHandler : IRequestHandler<ProcessWebhookCommand, OperationResult<string>>
     {
         private readonly IPaymentRepository _paymentRepository;
+        private readonly IAccountRepository _accountRepository; 
         private readonly ILogger<ProcessWebhookCommandHandler> _logger;
 
-        public ProcessWebhookCommandHandler(IPaymentRepository paymentRepository, ILogger<ProcessWebhookCommandHandler> logger)
+        public ProcessWebhookCommandHandler(
+            IPaymentRepository paymentRepository,
+            IAccountRepository accountRepository,
+            ILogger<ProcessWebhookCommandHandler> logger)
         {
             _paymentRepository = paymentRepository;
+            _accountRepository = accountRepository;
             _logger = logger;
         }
 
@@ -36,10 +44,10 @@ namespace Tokki.Application.UseCases.Payments.Commands.ProcessWebhook
                     SubAccount = data.SubAccount,
                     AmountIn = data.TransferType == "in" ? data.TransferAmount : 0,
                     AmountOut = data.TransferType == "out" ? data.TransferAmount : 0,
-                    TransactionContent = data.Content,
+                    TransactionContent = data.Content, 
                     ReferenceNumber = data.ReferenceCode,
                     Body = data.Description,
-                    CreatedAt = DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(7)) // Giờ VN
+                    CreatedAt = DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(7)) 
                 };
 
                 await _paymentRepository.AddTransactionAsync(transaction);
@@ -57,7 +65,7 @@ namespace Tokki.Application.UseCases.Payments.Commands.ProcessWebhook
 
                 if (payment == null)
                 {
-                    _logger.LogWarning("Không tìm thấy Payment có ID {Id} trong database.", detectedPaymentId);
+                    _logger.LogWarning("Không tìm thấy Payment ID {Id} trong database.", detectedPaymentId);
                     return OperationResult<string>.Success("Payment ID không tồn tại.");
                 }
 
@@ -66,17 +74,38 @@ namespace Tokki.Application.UseCases.Payments.Commands.ProcessWebhook
                     if (data.TransferAmount >= payment.Amount)
                     {
                         payment.Status = PaymentStatus.Paid;
-                        payment.PaidAt = DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(7)); 
+                        payment.PaidAt = DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(7));
                         payment.TransactionId = transaction.Id; 
 
                         await _paymentRepository.UpdateAsync(payment);
-                        _logger.LogInformation("UPDATE THÀNH CÔNG: Payment {Id} -> PAID", payment.Id);
 
-                        return OperationResult<string>.Success("Thanh toán thành công.");
+                        var user = await _accountRepository.GetByIdAsync(payment.UserId);
+                        if (user != null)
+                        {
+                            var currentTime = DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(7));
+                         
+                            var startDate = (user.Role == AccountRole.Vip && user.VipExpirationDate > currentTime)
+                                            ? user.VipExpirationDate.Value
+                                            : currentTime;
+
+                            int monthsToAdd = (int)payment.PlanType;
+
+                            user.VipExpirationDate = startDate.AddMonths(monthsToAdd);
+                            user.Role = AccountRole.Vip; 
+
+                            await _accountRepository.UpdateUserAsync(user);
+                            await _accountRepository.SaveChangesAsync(cancellationToken);
+
+                            _logger.LogInformation("User {UserId} đã lên VIP đến {Date}", user.UserId, user.VipExpirationDate);
+                        }
+
+                        _logger.LogInformation("THANH TOÁN THÀNH CÔNG: Payment {Id}", payment.Id);
+                        return OperationResult<string>.Success("Thanh toán thành công. Đã nâng cấp VIP.");
                     }
                     else
                     {
                         _logger.LogWarning("Số tiền không đủ. Yêu cầu: {Required}, Nhận: {Received}", payment.Amount, data.TransferAmount);
+                        return OperationResult<string>.Success("Số tiền chuyển khoản không đủ.");
                     }
                 }
                 else
@@ -96,6 +125,7 @@ namespace Tokki.Application.UseCases.Payments.Commands.ProcessWebhook
         private string ExtractPaymentId(string content)
         {
             if (string.IsNullOrEmpty(content)) return string.Empty;
+
             var regex = new Regex(@"\b[a-zA-Z0-9_-]{10}\b");
 
             var match = regex.Match(content);
