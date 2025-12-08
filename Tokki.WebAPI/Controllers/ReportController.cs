@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Tokki.Application.UseCases.Reports.Commands.CreateReport;
+using Tokki.Application.UseCases.Reports.Commands.DeleteReport;
 using Tokki.Application.UseCases.Reports.Commands.MarkReportRead;
 using Tokki.Application.UseCases.Reports.Commands.UpdateReportStatus;
 using Tokki.Application.UseCases.Reports.Queries.GetReportNotifications;
@@ -60,6 +61,22 @@ namespace Tokki.WebAPI.Controllers
             }
 
             return Ok(result);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(string id, [FromQuery] string userId)
+        {
+            if (string.IsNullOrEmpty(userId)) return BadRequest("Vui lòng nhập userId");
+
+            var command = new DeleteReportCommand
+            {
+                ReportId = id,
+                UserId = userId,
+                IsAdmin = false 
+            };
+
+            var result = await _mediator.Send(command);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
     }
 }

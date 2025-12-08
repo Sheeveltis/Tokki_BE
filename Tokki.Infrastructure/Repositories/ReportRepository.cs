@@ -24,7 +24,7 @@ namespace Tokki.Infrastructure.Repositories
 
         public async Task<Report?> GetByIdAsync(string id)
         {
-            return await _context.Reports.FirstOrDefaultAsync(r => r.Id == id);
+            return await _context.Reports.FirstOrDefaultAsync(r => r.Id == id && !r.IsDeleted);
         }
 
         public async Task<List<Report>> GetByUserIdAsync(string userId)
@@ -38,7 +38,8 @@ namespace Tokki.Infrastructure.Repositories
         public async Task<List<Report>> GetUnreadResolvedReportsAsync(string userId)
         {
             return await _context.Reports
-                .Where(r => r.UserId == userId
+                .Where(r => !r.IsDeleted && 
+                            r.UserId == userId
                             && r.UserHasRead == false
                             && (r.Status == ReportStatus.Fixed || r.Status == ReportStatus.Rejected)) 
                 .OrderByDescending(r => r.ResolvedAt)
@@ -48,6 +49,14 @@ namespace Tokki.Infrastructure.Repositories
         public async Task UpdateAsync(Report report)
         {
             _context.Reports.Update(report);
+            await _context.SaveChangesAsync();
+        }
+        public async Task DeleteAsync(Report report)
+        {
+            report.IsDeleted = true;
+            report.DeletedAt = DateTime.UtcNow;
+
+            _context.Reports.Update(report); 
             await _context.SaveChangesAsync();
         }
     }
