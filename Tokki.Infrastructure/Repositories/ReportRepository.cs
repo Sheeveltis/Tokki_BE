@@ -1,0 +1,44 @@
+﻿using Microsoft.EntityFrameworkCore;
+using Tokki.Application.IRepositories;
+using Tokki.Domain.Entities;
+using Tokki.Infrastructure.Data;
+
+namespace Tokki.Infrastructure.Repositories
+{
+    public class ReportRepository : IReportRepository
+    {
+        private readonly TokkiDbContext _context;
+
+        public ReportRepository(TokkiDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task AddAsync(Report report)
+        {
+            await _context.Reports.AddAsync(report);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<Report?> GetByIdAsync(string id)
+        {
+            return await _context.Reports.FirstOrDefaultAsync(r => r.Id == id);
+        }
+
+        public async Task<List<Report>> GetUnreadResolvedReportsAsync(string userId)
+        {
+            return await _context.Reports
+                .Where(r => r.UserId == userId
+                            && r.UserHasRead == false
+                            && (r.Status == ReportStatus.Fixed || r.Status == ReportStatus.Rejected))
+                .OrderByDescending(r => r.ResolvedAt) 
+                .ToListAsync();
+        }
+
+        public async Task UpdateAsync(Report report)
+        {
+            _context.Reports.Update(report);
+            await _context.SaveChangesAsync();
+        }
+    }
+}
