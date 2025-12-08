@@ -25,7 +25,7 @@ namespace Tokki.Infrastructure
             services.AddScoped<ISystemConfigRepository, SystemConfigRepository>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IOtpRepository, OtpRepository>();
-
+            services.AddScoped<IReportRepository, ReportRepository>();
             // 3. Đăng ký các Services khác (IdGenerator, Email, Storage...)
             services.AddSingleton<IIdGeneratorService, IdGeneratorService>();
             services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
