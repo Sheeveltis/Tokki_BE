@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Tokki.Application.IRepositories;
 using Tokki.Domain.Entities;
+using Tokki.Domain.Enums; 
 using Tokki.Infrastructure.Data;
 
 namespace Tokki.Infrastructure.Repositories
@@ -14,10 +15,11 @@ namespace Tokki.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task AddAsync(Report report)
+        public async Task<Report> AddAsync(Report report)
         {
             await _context.Reports.AddAsync(report);
             await _context.SaveChangesAsync();
+            return report; 
         }
 
         public async Task<Report?> GetByIdAsync(string id)
@@ -25,13 +27,21 @@ namespace Tokki.Infrastructure.Repositories
             return await _context.Reports.FirstOrDefaultAsync(r => r.Id == id);
         }
 
+        public async Task<List<Report>> GetByUserIdAsync(string userId)
+        {
+            return await _context.Reports
+                .Where(r => r.UserId == userId)
+                .OrderByDescending(r => r.CreatedAt) 
+                .ToListAsync();
+        }
+
         public async Task<List<Report>> GetUnreadResolvedReportsAsync(string userId)
         {
             return await _context.Reports
                 .Where(r => r.UserId == userId
                             && r.UserHasRead == false
-                            && (r.Status == ReportStatus.Fixed || r.Status == ReportStatus.Rejected))
-                .OrderByDescending(r => r.ResolvedAt) 
+                            && (r.Status == ReportStatus.Fixed || r.Status == ReportStatus.Rejected)) 
+                .OrderByDescending(r => r.ResolvedAt)
                 .ToListAsync();
         }
 

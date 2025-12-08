@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tokki.Application.UseCases.Reports.Commands.CreateReport;
 using Tokki.Application.UseCases.Reports.Commands.MarkReportRead;
@@ -9,7 +8,6 @@ namespace Tokki.WebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize] 
     public class ReportController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -22,37 +20,30 @@ namespace Tokki.WebAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateReportCommand command)
         {
-            var userId = User.FindFirst("UserId")?.Value ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
-
-            command.UserId = userId;
             var result = await _mediator.Send(command);
-
-            return result.IsSuccess ? Ok(result) : BadRequest(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpGet("notifications")]
-        public async Task<IActionResult> GetNotifications()
+        public async Task<IActionResult> GetNotifications([FromQuery] string userId)
         {
-            var userId = User.FindFirst("UserId")?.Value ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+            if (string.IsNullOrEmpty(userId)) return BadRequest("Vui lòng nhập userId để test");
 
             var query = new GetReportNotificationsQuery { UserId = userId };
             var result = await _mediator.Send(query);
 
-            return result.IsSuccess ? Ok(result) : BadRequest(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpPut("{id}/mark-read")]
-        public async Task<IActionResult> MarkRead(string id)
+        public async Task<IActionResult> MarkRead(string id, [FromQuery] string userId)
         {
-            var userId = User.FindFirst("UserId")?.Value ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId)) return BadRequest("Vui lòng nhập userId để test");
 
             var command = new MarkReportReadCommand { ReportId = id, UserId = userId };
             var result = await _mediator.Send(command);
 
-            return result.IsSuccess ? Ok(result) : BadRequest(result);
+            return StatusCode(result.StatusCode, result);
         }
     }
 }
