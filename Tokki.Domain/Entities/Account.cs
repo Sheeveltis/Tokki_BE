@@ -42,8 +42,6 @@ namespace Tokki.Domain.Entities
         [Required]
         public AccountStatus Status { get; set; } = AccountStatus.Active;
 
-        [Required]
-        public bool EmailVerified { get; set; } = false;
 
         // --- MỚI THÊM LẠI (Bảo mật & Tracking) ---
 
@@ -66,5 +64,5 @@ namespace Tokki.Domain.Entities
         public virtual ICollection<Session> Sessions { get; set; } = new List<Session>();
         public virtual ICollection<SocialLogin> SocialLogins { get; set; } = new List<SocialLogin>();
 
-    }
+           }
 }

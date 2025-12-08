@@ -23,6 +23,10 @@ namespace Tokki.Infrastructure.Data
         public DbSet<SystemConfig> SystemConfig { get; set; }
 
         public DbSet<SocialLogin> SocialLogins { get; set; } // Đổi tên cho khớp với Entity (ExternalLogins cũng đc nhưng SocialLogins chuẩn hơn)
+        public DbSet<EmailJob> EmailJobs { get; set; }
+        public DbSet<Subscription> Subscriptions { get; set; }
+        public DbSet<EmailTemplate> EmailTemplates { get; set; }
+        public DbSet<EmailHistory> EmailHistories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -156,6 +160,33 @@ namespace Tokki.Infrastructure.Data
                 // Giá trị mặc định cho IsActive
                 entity.Property(e => e.IsActive)
                       .HasDefaultValue(true);
+            });
+
+
+            modelBuilder.Entity<EmailJob>()
+                .Property(j => j.Status)
+                .HasConversion<string>();
+
+            modelBuilder.Entity<EmailJob>()
+                .Property(j => j.TargetGroup)
+                .HasConversion<string>();
+
+            modelBuilder.Entity<EmailJob>().Property(j => j.Status).HasConversion<string>();
+
+            // =========================================================
+            // CONFIG EMAIL HISTORY
+            // =========================================================
+            modelBuilder.Entity<EmailHistory>(entity =>
+            {
+                // Unique constraint: 1 user chỉ nhận 1 email cho mỗi template
+                entity.HasIndex(e => new { e.UserId, e.TemplateKey })
+                      .IsUnique();
+
+                // Foreign key
+                entity.HasOne(e => e.Account)
+                      .WithMany()
+                      .HasForeignKey(e => e.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
         }
     }

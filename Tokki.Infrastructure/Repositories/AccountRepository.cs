@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Tokki.Application.IRepositories;
 using Tokki.Domain.Entities;
+using Tokki.Domain.Enums;
 using Tokki.Infrastructure.Data;
 
 namespace Tokki.Infrastructure.Repositories
@@ -56,6 +57,45 @@ namespace Tokki.Infrastructure.Repositories
         public async Task<Account?> GetByIdAsync(string userId)
         {
             return await _context.Accounts.FirstOrDefaultAsync(u => u.UserId == userId);
+        }
+        // Tokki.Infrastructure/Repositories/AccountRepository.cs
+
+        public async Task<List<string>> GetEmailsByTargetGroupAsync(UserTargetGroup targetGroup)
+        {
+            var now = DateTime.UtcNow.AddHours(7);
+
+            // Bắt đầu query từ bảng Account
+            var query = _context.Accounts.AsNoTracking()
+                .Where(u => u.Status == AccountStatus.Active); // Chỉ lấy user đang hoạt động
+
+            switch (targetGroup)
+            {
+                case UserTargetGroup.VipUsers:
+                    // Logic: Có ít nhất 1 gói Active và còn hạn
+                    query = query.Where(u => _context.Subscriptions.Any(s =>
+                        s.UserId == u.UserId &&
+                        s.Status == "Active" &&
+                        s.EndDate > now
+                    ));
+                    break;
+
+                case UserTargetGroup.FreeUsers:
+                    // Logic: KHÔNG CÓ gói nào Active và còn hạn
+                    query = query.Where(u => !_context.Subscriptions.Any(s =>
+                        s.UserId == u.UserId &&
+                        s.Status == "Active" &&
+                        s.EndDate > now
+                    ));
+                    break;
+
+                case UserTargetGroup.All:
+                default:
+                    // Không lọc gì thêm
+                    break;
+            }
+
+            // Chỉ select cột Email để tối ưu hiệu suất
+            return await query.Select(u => u.Email).ToListAsync();
         }
     }
 }

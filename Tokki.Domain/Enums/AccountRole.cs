@@ -12,5 +12,6 @@ namespace Tokki.Domain.Enums
 
         [Description("Nhân viên")]
         Staff = 2
+
     }
 }

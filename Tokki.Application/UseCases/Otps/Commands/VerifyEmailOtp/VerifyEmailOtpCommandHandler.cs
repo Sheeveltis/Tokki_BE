@@ -111,10 +111,7 @@ namespace Tokki.Application.UseCases.Accounts.Commands.VerifyEmailOtp
             validOtp.Status = OtpStatus.Used;      // Thay IsUsed = true bằng Enum Used
             validOtp.UsedAt = currentTime;         // Lưu thời gian UTC+7
 
-            // 6.2. Cập nhật User
-            user.EmailVerified = true;
-
-            // 6.3. Lưu DB
+            // 6.2 . Lưu DB
             await _otpRepository.UpdateAsync(validOtp);
             await _accountRepository.SaveChangesAsync(cancellationToken);
 

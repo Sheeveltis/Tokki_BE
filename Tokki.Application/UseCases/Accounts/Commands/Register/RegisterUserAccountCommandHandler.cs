@@ -59,7 +59,6 @@ namespace Tokki.Application.UseCases.Accounts.Commands.Register
                     PasswordHash = passwordHash,
                     FullName = request.FullName,
                     AvatarUrl = "null",
-                    EmailVerified = false,
                     PhoneNumber = request.PhoneNumber,
                     DateOfBirth = request.DateOfBirth.ToDateTime(TimeOnly.MinValue),
                     CreatedAt = DateTime.UtcNow.AddHours(7),

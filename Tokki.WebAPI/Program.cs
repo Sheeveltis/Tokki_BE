@@ -6,7 +6,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models; // Dùng cho Swagger
 using System.Text;
-using Tokki.Application.Common.Helpers; // Nơi chứa class JwtSettings
+using Tokki.Application.Common.Helpers;
+using Tokki.Infrastructure.BackgroundJobs; // Nơi chứa class JwtSettings
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -82,6 +83,13 @@ builder.Services.AddAuthentication(options =>
 // Đăng ký các layer khác (Giữ nguyên)
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddApplication();
+builder.Services.AddSingleton<Tokki.Infrastructure.BackgroundJobs.AutomationWorker>();
+builder.Services.AddHostedService(provider =>
+    provider.GetRequiredService<Tokki.Infrastructure.BackgroundJobs.AutomationWorker>());
+
+// CampaignWorker (chỉ chạy background, không cần inject)
+builder.Services.AddHostedService<Tokki.Infrastructure.BackgroundJobs.CampaignWorker>();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>

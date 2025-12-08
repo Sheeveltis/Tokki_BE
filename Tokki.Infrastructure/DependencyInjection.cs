@@ -25,6 +25,8 @@ namespace Tokki.Infrastructure
             services.AddScoped<ISystemConfigRepository, SystemConfigRepository>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IOtpRepository, OtpRepository>();
+            services.AddScoped<IEmailJobRepository, EmailJobRepository>();
+            services.AddScoped<IEmailTemplateRepository, EmailTemplateRepository>();
 
             // 3. Đăng ký các Services khác (IdGenerator, Email, Storage...)
             services.AddSingleton<IIdGeneratorService, IdGeneratorService>();
