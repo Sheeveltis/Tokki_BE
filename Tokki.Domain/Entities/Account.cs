@@ -19,7 +19,6 @@ namespace Tokki.Domain.Entities
         [EmailAddress]
         public string Email { get; set; } = string.Empty;
 
-        // --- MỚI THÊM LẠI ---
         [MaxLength(20)]
         public string? PhoneNumber { get; set; } // Optional: Không bắt buộc
 
@@ -42,6 +41,7 @@ namespace Tokki.Domain.Entities
         [Required]
         public AccountStatus Status { get; set; } = AccountStatus.Active;
 
+        public DateTimeOffset? VipExpirationDate { get; set; }
 
         // --- MỚI THÊM LẠI (Bảo mật & Tracking) ---
 

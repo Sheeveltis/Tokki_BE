@@ -16,7 +16,7 @@ namespace Tokki.Infrastructure.Data
         public DbSet<Tag> Tags { get; set; }
         public DbSet<Payment> Payments { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
-
+        public DbSet<Report> Reports { get; set; }
         public DbSet<Account> Accounts { get; set; }
         public DbSet<Session> Session { get; set; }
         public DbSet<Otp> OtpCodes { get; set; }
@@ -62,6 +62,10 @@ namespace Tokki.Infrastructure.Data
             modelBuilder.Entity<Blog>()
                 .Property(b => b.Status)
                 .HasConversion<string>();
+
+            modelBuilder.Entity<Report>()
+            .Property(r => r.Status)
+            .HasConversion<int>();
 
             // =========================================================
             // 2. CONFIG ACCOUNT

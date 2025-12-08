@@ -16,6 +16,7 @@ namespace Tokki.Domain.Entities
         public int? TransactionId { get; set; }
         [ForeignKey("TransactionId")]
         public virtual Transaction? Transaction { get; set; }
+        public VipPlanType PlanType { get; set; } = VipPlanType.OneMonth; 
         //public string? PaymentUrl { get; set; }
     }
 }

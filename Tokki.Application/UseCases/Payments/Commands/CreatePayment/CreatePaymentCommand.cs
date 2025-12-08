@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Tokki.Application.Common.Models;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Payments.Commands.CreatePayment
 {
@@ -10,5 +11,6 @@ namespace Tokki.Application.UseCases.Payments.Commands.CreatePayment
         public decimal Amount { get; set; }
         public string Description { get; set; } = string.Empty;
         public string UserId { get; set; } = string.Empty;
+        public VipPlanType PlanType { get; set; }
     }
 }
