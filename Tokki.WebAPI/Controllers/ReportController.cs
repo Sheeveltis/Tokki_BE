@@ -4,7 +4,9 @@ using Tokki.Application.UseCases.Reports.Commands.CreateReport;
 using Tokki.Application.UseCases.Reports.Commands.DeleteReport;
 using Tokki.Application.UseCases.Reports.Commands.MarkReportRead;
 using Tokki.Application.UseCases.Reports.Commands.UpdateReportStatus;
+using Tokki.Application.UseCases.Reports.Queries.GetAllReports;
 using Tokki.Application.UseCases.Reports.Queries.GetReportNotifications;
+using Tokki.Domain.Entities;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -77,6 +79,14 @@ namespace Tokki.WebAPI.Controllers
 
             var result = await _mediator.Send(command);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll([FromQuery] ReportStatus? status)
+        {
+            var query = new GetAllReportsQuery { Status = status };
+            var result = await _mediator.Send(query);
+            return Ok(result);
         }
     }
 }

@@ -59,5 +59,20 @@ namespace Tokki.Infrastructure.Repositories
             _context.Reports.Update(report); 
             await _context.SaveChangesAsync();
         }
+        public async Task<List<Report>> GetAllAsync(ReportStatus? status)
+        {
+            var query = _context.Reports.AsQueryable();
+
+            query = query.Where(r => !r.IsDeleted);
+
+            if (status.HasValue)
+            {
+                query = query.Where(r => r.Status == status.Value);
+            }
+
+            query = query.OrderByDescending(r => r.CreatedAt);
+
+            return await query.ToListAsync();
+        }
     }
 }

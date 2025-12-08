@@ -11,6 +11,7 @@ namespace Tokki.Application.IRepositories
         Task<List<Report>> GetByUserIdAsync(string userId);
         Task<List<Report>> GetUnreadResolvedReportsAsync(string userId); 
         Task UpdateAsync(Report report);
-        Task DeleteAsync(Report report); 
+        Task DeleteAsync(Report report);
+        Task<List<Report>> GetAllAsync(ReportStatus? status);
     }
 }
