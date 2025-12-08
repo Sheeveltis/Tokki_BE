@@ -40,6 +40,7 @@ namespace Tokki.Application.UseCases.Payments.Commands.CreatePayment
                 UserId = request.UserId,
                 Amount = request.Amount,
                 Description = request.Description,
+                PlanType = request.PlanType, 
                 Status = PaymentStatus.Pending,
                 CreatedAt = DateTimeOffset.UtcNow,
             };
