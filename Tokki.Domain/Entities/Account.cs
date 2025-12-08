@@ -41,6 +41,7 @@ namespace Tokki.Domain.Entities
         [Required]
         public AccountStatus Status { get; set; } = AccountStatus.Active;
 
+        public DateTimeOffset? VipExpirationDate { get; set; }
 
         // --- MỚI THÊM LẠI (Bảo mật & Tracking) ---
 
