@@ -9,14 +9,14 @@ using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Accounts.Commands.SendEmailVerificationOtp
 {
-    public class SendEmailVerificationOtpCommandHandler : IRequestHandler<SendEmailVerificationOtpCommand, OperationResult<string>>
+    public class SendGeneralOtpCommandHandler : IRequestHandler<SendEmailVerificationOtpCommand, OperationResult<string>>
     {
         private readonly IOtpRepository _otpRepository;
         private readonly IEmailService _emailService;
         private readonly IValidator<SendEmailVerificationOtpCommand> _validator;
         private readonly ISystemConfigRepository _systemConfigRepository;
 
-        public SendEmailVerificationOtpCommandHandler(
+        public SendGeneralOtpCommandHandler(
             IOtpRepository otpRepository,
             IEmailService emailService,
             IValidator<SendEmailVerificationOtpCommand> validator,

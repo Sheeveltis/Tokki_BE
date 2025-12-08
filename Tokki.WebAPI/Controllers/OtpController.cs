@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Tokki.Application.UseCases.Accounts.Commands.SendEmailVerificationOtp;
 using Tokki.Application.UseCases.Accounts.Commands.VerifyEmailOtp;
 using Tokki.Application.UseCases.Otps.Commands.ForgotPassword;
+using Tokki.Application.UseCases.Otps.Commands.SendGeneralOtp;
 using Tokki.Application.UseCases.Otps.Commands.SendOtpForEmailVerification;
 using Tokki.Application.UseCases.Otps.Commands.VerifyForgotPasswordOtp;
 
@@ -39,6 +40,19 @@ namespace Tokki.API.Controllers
 
             // Trả về lỗi (400, 403, 404, 500...) tùy theo StatusCode trong Result
             return StatusCode(result.StatusCode, result);
+        }
+        // POST: api/otp/send-general
+        [HttpPost("send-general")]
+        public async Task<IActionResult> SendGeneralOtp([FromBody] SendGeneralOtpCommand command)
+        {
+            var result = await _mediator.Send(command);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+
+            return BadRequest(result);
         }
         [HttpPost("verify-login-otp")]
         public async Task<IActionResult> VerifyLoginOtp([FromBody] VerifyEmailOtpCommand command)

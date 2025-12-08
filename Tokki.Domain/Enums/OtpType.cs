@@ -14,6 +14,9 @@ namespace Tokki.Domain.Enums
 
         // Dùng khi đăng nhập ở thiết bị lạ hoặc login bảo mật cao
         [Description("Đăng nhập 2 lớp")]
-        Login2FA = 2
+        Login2FA = 2,
+
+        [Description("OTP có template chung dùng để xác thực")]
+        General  = 3
     }
 }
