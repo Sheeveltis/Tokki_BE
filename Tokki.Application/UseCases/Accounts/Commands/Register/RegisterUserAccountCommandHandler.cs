@@ -72,7 +72,7 @@ namespace Tokki.Application.UseCases.Accounts.Commands.Register
                 return OperationResult<string>.Success(
                     accountEntity.UserId,
                     201,
-                    OperationMessages.CreateSuccess("Tài khoản")
+                    "Đăng ký tài khoảng thành công"
                 );
             }
             catch (Exception ex)
