@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Tokki.Application.UseCases.Reports.Commands.CreateReport;
 using Tokki.Application.UseCases.Reports.Commands.MarkReportRead;
+using Tokki.Application.UseCases.Reports.Commands.UpdateReportStatus;
 using Tokki.Application.UseCases.Reports.Queries.GetReportNotifications;
 
 namespace Tokki.WebAPI.Controllers
@@ -44,6 +45,21 @@ namespace Tokki.WebAPI.Controllers
             var result = await _mediator.Send(command);
 
             return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpPut("{id}/status")]
+        public async Task<IActionResult> UpdateStatus(string id, [FromBody] UpdateReportStatusCommand command)
+        {
+            command.ReportId = id;
+
+            var result = await _mediator.Send(command);
+
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result);
+            }
+
+            return Ok(result);
         }
     }
 }
