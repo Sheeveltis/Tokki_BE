@@ -1,5 +1,7 @@
-﻿namespace Tokki.Domain.Entities
+﻿using System.Text.Json.Serialization; 
+namespace Tokki.Domain.Entities
 {
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum ReportStatus
     {
         Pending = 0,
