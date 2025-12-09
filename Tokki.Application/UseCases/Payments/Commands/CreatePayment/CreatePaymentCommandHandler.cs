@@ -10,37 +10,51 @@ namespace Tokki.Application.UseCases.Payments.Commands.CreatePayment
     public class CreatePaymentCommandHandler : IRequestHandler<CreatePaymentCommand, OperationResult<CreatePaymentResult>>
     {
         private readonly IPaymentRepository _paymentRepository;
+        private readonly IVipPackageRepository _vipPackageRepository; 
         private readonly ISePayService _sePayService;
-        private readonly IIdGeneratorService _idGeneratorService; 
+        private readonly IIdGeneratorService _idGeneratorService;
 
         public CreatePaymentCommandHandler(
             IPaymentRepository paymentRepository,
+            IVipPackageRepository vipPackageRepository, 
             ISePayService sePayService,
             IIdGeneratorService idGeneratorService)
         {
             _paymentRepository = paymentRepository;
+            _vipPackageRepository = vipPackageRepository;
             _sePayService = sePayService;
             _idGeneratorService = idGeneratorService;
         }
 
         public async Task<OperationResult<CreatePaymentResult>> Handle(CreatePaymentCommand request, CancellationToken cancellationToken)
         {
-            if (request.Amount < 1000) 
+            var vipPackage = await _vipPackageRepository.GetByIdAsync(request.VipPackageId);
+
+            if (vipPackage == null)
             {
-                return OperationResult<CreatePaymentResult>.Failure("Số tiền thanh toán phải lớn hơn 1,000 VNĐ.");
+                return OperationResult<CreatePaymentResult>.Failure("Gói dịch vụ không tồn tại.");
+            }
+            if (!vipPackage.IsActive)
+            {
+                return OperationResult<CreatePaymentResult>.Failure("Gói dịch vụ này đang tạm ngừng kinh doanh.");
             }
 
-            var paymentId = _idGeneratorService.GenerateCustom(10); 
+            var paymentId = _idGeneratorService.GenerateCustom(10);
 
-            var qrUrl = _sePayService.GenerateQrUrl(paymentId, request.Amount, request.Description);
+           
+            var description = $"Thanh toan {paymentId}";
+
+            var qrUrl = _sePayService.GenerateQrUrl(paymentId, vipPackage.Price, description);
 
             var payment = new Payment
             {
                 Id = paymentId,
                 UserId = request.UserId,
-                Amount = request.Amount,
-                Description = request.Description,
-                PlanType = request.PlanType, 
+
+                Amount = vipPackage.Price,
+
+                Description = description,
+                VipPackageId = vipPackage.Id,
                 Status = PaymentStatus.Pending,
                 CreatedAt = DateTimeOffset.UtcNow,
             };

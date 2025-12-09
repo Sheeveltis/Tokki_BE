@@ -11,9 +11,6 @@ namespace Tokki.Application.UseCases.Payments.Commands.CreatePayment
     {
         public CreatePaymentCommandValidator()
         {
-            RuleFor(x => x.Amount)
-                .GreaterThan(1000)
-                .WithMessage("Số tiền thanh toán phải lớn hơn 1000 VNĐ.");
             RuleFor(x => x.UserId)
                 .NotEmpty()
                 .WithName("ID người dùng");
