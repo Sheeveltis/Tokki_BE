@@ -119,7 +119,6 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowReactApp");
 app.UseHttpsRedirection();
 
-// 4. THÊM MIDDLEWARE XÁC THỰC (Bắt buộc phải đặt TRƯỚC UseAuthorization)
 app.UseAuthentication();
 
 app.UseAuthorization();
