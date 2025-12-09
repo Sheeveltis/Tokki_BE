@@ -13,16 +13,16 @@ namespace Tokki.Application.UseCases.Payments.Commands.ProcessWebhook
     {
         private readonly IPaymentRepository _paymentRepository;
         private readonly IAccountRepository _accountRepository;
-        private readonly IVipPackageRepository _vipPackageRepository; 
-        private readonly ISubscriptionRepository _subscriptionRepository; 
-        private readonly IIdGeneratorService _idGenerator; 
+        private readonly IVipPackageRepository _vipPackageRepository;
+        private readonly ISubscriptionRepository _subscriptionRepository;
+        private readonly IIdGeneratorService _idGenerator;
         private readonly ILogger<ProcessWebhookCommandHandler> _logger;
 
         public ProcessWebhookCommandHandler(
             IPaymentRepository paymentRepository,
             IAccountRepository accountRepository,
             IVipPackageRepository vipPackageRepository,
-            ISubscriptionRepository subscriptionRepository, 
+            ISubscriptionRepository subscriptionRepository,
             IIdGeneratorService idGenerator,
             ILogger<ProcessWebhookCommandHandler> logger)
         {
@@ -37,7 +37,7 @@ namespace Tokki.Application.UseCases.Payments.Commands.ProcessWebhook
         public async Task<OperationResult<string>> Handle(ProcessWebhookCommand request, CancellationToken cancellationToken)
         {
             var data = request.Data;
-            _logger.LogInformation("--- NHẬN WEBHOOK SEPAY --- Content: {Content} | Amount: {Amount}", data.Content, data.TransferAmount);
+            _logger.LogInformation("--- WEBHOOK SEPAY --- Content: {Content} | Amount: {Amount}", data.Content, data.TransferAmount);
 
             try
             {
@@ -57,10 +57,16 @@ namespace Tokki.Application.UseCases.Payments.Commands.ProcessWebhook
                 await _paymentRepository.AddTransactionAsync(transaction);
 
                 string detectedPaymentId = ExtractPaymentId(data.Content);
-                if (string.IsNullOrEmpty(detectedPaymentId)) return OperationResult<string>.Success("Không tìm thấy mã đơn hàng.");
+                if (string.IsNullOrEmpty(detectedPaymentId))
+                {
+                    return OperationResult<string>.Success(AppErrors.PaymentInvalidContent.Description);
+                }
 
                 var payment = await _paymentRepository.GetByIdAsync(detectedPaymentId);
-                if (payment == null) return OperationResult<string>.Success("Payment ID không tồn tại.");
+                if (payment == null)
+                {
+                    return OperationResult<string>.Success(AppErrors.PaymentNotFound.Description);
+                }
 
                 if (payment.Status == PaymentStatus.Pending)
                 {
@@ -73,58 +79,56 @@ namespace Tokki.Application.UseCases.Payments.Commands.ProcessWebhook
                         var vipPackage = await _vipPackageRepository.GetByIdAsync(payment.VipPackageId);
                         if (vipPackage == null)
                         {
-                            _logger.LogError("Lỗi: Không tìm thấy gói VIP {PkgId} cho Payment {PayId}", payment.VipPackageId, payment.Id);
-                            return OperationResult<string>.Failure("Lỗi dữ liệu gói VIP.");
+                            _logger.LogError("Critical: VipPackage {PkgId} not found for Payment {PayId}", payment.VipPackageId, payment.Id);
+                            return OperationResult<string>.Failure(AppErrors.VipPackageNotFound);
                         }
 
                         var user = await _accountRepository.GetByIdAsync(payment.UserId);
                         if (user != null)
                         {
                             var currentTime = DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(7));
-
                             var startDate = (user.Role == AccountRole.Vip && user.VipExpirationDate > currentTime)
                                             ? user.VipExpirationDate.Value
                                             : currentTime;
-
                             var endDate = startDate.AddDays(vipPackage.DurationDays);
 
                             user.VipExpirationDate = endDate;
                             user.Role = AccountRole.Vip;
-
-                            await _accountRepository.UpdateUserAsync(user); 
+                            await _accountRepository.UpdateUserAsync(user);
 
                             var subscription = new Subscription
                             {
-                                Id = _idGenerator.GenerateCustom(21), 
+                                Id = _idGenerator.GenerateCustom(21),
                                 UserId = user.UserId,
-                                VipPackageId = vipPackage.Id,   
-                                PaymentId = payment.Id,         
-                                StartDate = startDate.DateTime, 
-                                EndDate = endDate.DateTime,     
+                                VipPackageId = vipPackage.Id,
+                                PaymentId = payment.Id,
+                                StartDate = startDate.DateTime,
+                                EndDate = endDate.DateTime,
                                 Status = SubscriptionStatus.Active,
                                 CreatedAt = DateTime.UtcNow
                             };
-
                             await _subscriptionRepository.AddAsync(subscription);
 
-                            _logger.LogInformation("Đã tạo Subscription {SubId} cho User {UserId}", subscription.Id, user.UserId);
+                            _logger.LogInformation("Activated VIP for User {UserId}. SubId: {SubId}", user.UserId, subscription.Id);
                         }
 
                         await _paymentRepository.UpdateAsync(payment);
-                        return OperationResult<string>.Success("Thanh toán thành công. Đã kích hoạt VIP và lưu lịch sử.");
+                        return OperationResult<string>.Success(OperationMessages.PaymentSuccess());
                     }
                     else
                     {
-                        return OperationResult<string>.Success("Số tiền chuyển khoản không đủ.");
+                        return OperationResult<string>.Success(
+                            OperationMessages.InsufficientAmount(data.TransferAmount, payment.Amount)
+                        );
                     }
                 }
 
-                return OperationResult<string>.Success("Webhook đã được xử lý trước đó.");
+                return OperationResult<string>.Success(AppErrors.PaymentAlreadyProcessed.Description);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Lỗi xử lý Webhook");
-                return OperationResult<string>.Failure($"Lỗi Server: {ex.Message}");
+                _logger.LogError(ex, "Webhook Processing Error");
+                return OperationResult<string>.Failure(AppErrors.ServerError, 500);
             }
         }
 

@@ -21,5 +21,15 @@ namespace Tokki.Application.Common.Models
         public static readonly Error CannotDeleteOthersBlog = new("Blog.UnauthorizedDelete", "Bạn không được xóa bài của người khác.");
         // --- NHÓM 4: CATEGORY ---
         public static readonly Error CategoryNotFound = new("Category.NotFound", OperationMessages.NotFound("Category"));
+
+        //Paymets & VIP
+        public static readonly Error VipPackageNotFound = new("VipPackage.NotFound", "Gói dịch vụ VIP không tồn tại.");
+        public static readonly Error VipPackageInactive = new("VipPackage.Inactive", "Gói dịch vụ này hiện đang tạm ngừng kinh doanh.");
+        public static readonly Error PaymentNotFound = new("Payment.NotFound", OperationMessages.NotFound("Giao dịch thanh toán"));
+        public static readonly Error PaymentFailed = new("Payment.Failed", "Khởi tạo giao dịch thất bại.");
+        public static readonly Error PaymentInvalidContent = new("Payment.InvalidContent", "Nội dung chuyển khoản không chứa mã đơn hàng hợp lệ.");
+        public static readonly Error PaymentInsufficientAmount = new("Payment.InsufficientAmount", "Số tiền chuyển khoản không đủ để kích hoạt gói.");
+        public static readonly Error PaymentAlreadyProcessed = new("Payment.AlreadyProcessed", "Giao dịch này đã được xử lý trước đó.");
     }
 }
+

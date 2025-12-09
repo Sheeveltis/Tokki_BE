@@ -20,10 +20,10 @@ namespace Tokki.Application.UseCases.Payments.Queries.GetPaymentById
 
             if (payment == null)
             {
-                return OperationResult<Payment>.Failure("Không tìm thấy giao dịch.", 404);
+                return OperationResult<Payment>.Failure(AppErrors.PaymentNotFound, 404);
             }
 
-            return OperationResult<Payment>.Success(payment);
+            return OperationResult<Payment>.Success(payment, 200, OperationMessages.GetSuccess("Giao dịch"));
         }
     }
 }

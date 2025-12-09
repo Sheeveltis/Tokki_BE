@@ -10,13 +10,13 @@ namespace Tokki.Application.UseCases.Payments.Commands.CreatePayment
     public class CreatePaymentCommandHandler : IRequestHandler<CreatePaymentCommand, OperationResult<CreatePaymentResult>>
     {
         private readonly IPaymentRepository _paymentRepository;
-        private readonly IVipPackageRepository _vipPackageRepository; 
+        private readonly IVipPackageRepository _vipPackageRepository;
         private readonly ISePayService _sePayService;
         private readonly IIdGeneratorService _idGeneratorService;
 
         public CreatePaymentCommandHandler(
             IPaymentRepository paymentRepository,
-            IVipPackageRepository vipPackageRepository, 
+            IVipPackageRepository vipPackageRepository,
             ISePayService sePayService,
             IIdGeneratorService idGeneratorService)
         {
@@ -32,17 +32,15 @@ namespace Tokki.Application.UseCases.Payments.Commands.CreatePayment
 
             if (vipPackage == null)
             {
-                return OperationResult<CreatePaymentResult>.Failure("Gói dịch vụ không tồn tại.");
+                return OperationResult<CreatePaymentResult>.Failure(AppErrors.VipPackageNotFound, 404);
             }
             if (!vipPackage.IsActive)
             {
-                return OperationResult<CreatePaymentResult>.Failure("Gói dịch vụ này đang tạm ngừng kinh doanh.");
+                return OperationResult<CreatePaymentResult>.Failure(AppErrors.VipPackageInactive, 400);
             }
 
             var paymentId = _idGeneratorService.GenerateCustom(10);
-
-           
-            var description = $"Thanh toan {paymentId}";
+            var description = $"Thanh toán {paymentId}"; 
 
             var qrUrl = _sePayService.GenerateQrUrl(paymentId, vipPackage.Price, description);
 
@@ -50,9 +48,7 @@ namespace Tokki.Application.UseCases.Payments.Commands.CreatePayment
             {
                 Id = paymentId,
                 UserId = request.UserId,
-
                 Amount = vipPackage.Price,
-
                 Description = description,
                 VipPackageId = vipPackage.Id,
                 Status = PaymentStatus.Pending,
@@ -63,7 +59,11 @@ namespace Tokki.Application.UseCases.Payments.Commands.CreatePayment
 
             var resultData = new CreatePaymentResult(payment.Id, qrUrl);
 
-            return OperationResult<CreatePaymentResult>.Success(resultData, 201, "Tạo giao dịch thành công. Vui lòng quét mã QR.");
+            return OperationResult<CreatePaymentResult>.Success(
+                resultData,
+                201,
+                OperationMessages.CreateSuccess("Giao dịch thanh toán")
+            );
         }
     }
 }

@@ -40,5 +40,14 @@ namespace Tokki.Application.Common.Models
 
         public static string AlreadyExists(string target) =>
             $"{target} đã tồn tại trong hệ thống.";
+
+        public static string PaymentSuccess() =>
+            "Thanh toán thành công. Dịch vụ đã được kích hoạt.";
+
+        public static string PaymentPending() =>
+            "Giao dịch đang chờ xử lý.";
+
+        public static string InsufficientAmount(decimal received, decimal required) =>
+            $"Số tiền chuyển ({received:N0}) thấp hơn giá trị gói ({required:N0}).";
     }
 }

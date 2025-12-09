@@ -22,13 +22,12 @@ namespace Tokki.Application.UseCases.Payments.Queries.GetPaymentQr
 
             if (payment == null)
             {
-                return OperationResult<string>.Failure("Không tìm thấy giao dịch.", 404);
+                return OperationResult<string>.Failure(AppErrors.PaymentNotFound, 404);
             }
 
-          
             var qrUrl = _sePayService.GenerateQrUrl(payment.Id, payment.Amount, payment.Description);
 
-            return OperationResult<string>.Success(qrUrl);
+            return OperationResult<string>.Success(qrUrl, 200, OperationMessages.GetSuccess("Mã QR"));
         }
     }
 }
