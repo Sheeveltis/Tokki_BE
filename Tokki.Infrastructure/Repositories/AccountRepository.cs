@@ -11,7 +11,6 @@ namespace Tokki.Infrastructure.Repositories
     public class AccountRepository : IAccountRepository
     {
         private readonly TokkiDbContext _context;
-
         public AccountRepository(TokkiDbContext context)
         {
             _context = context;
@@ -74,7 +73,7 @@ namespace Tokki.Infrastructure.Repositories
                     // Logic: Có ít nhất 1 gói Active và còn hạn
                     query = query.Where(u => _context.Subscriptions.Any(s =>
                         s.UserId == u.UserId &&
-                        s.Status == "Active" &&
+                        s.Status == SubscriptionStatus.Active &&
                         s.EndDate > now
                     ));
                     break;
@@ -83,7 +82,7 @@ namespace Tokki.Infrastructure.Repositories
                     // Logic: KHÔNG CÓ gói nào Active và còn hạn
                     query = query.Where(u => !_context.Subscriptions.Any(s =>
                         s.UserId == u.UserId &&
-                        s.Status == "Active" &&
+                        s.Status == SubscriptionStatus.Active &&
                         s.EndDate > now
                     ));
                     break;

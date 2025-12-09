@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Tokki.Infrastructure.Data;
 using Tokki.Application.IServices;
 using Tokki.Domain.Entities;
+using Tokki.Domain.Enums; 
 
 namespace Tokki.Infrastructure.BackgroundJobs
 {
@@ -149,7 +150,7 @@ namespace Tokki.Infrastructure.BackgroundJobs
             // 3. Lấy danh sách subscription sắp hết hạn
             var subs = await context.Subscriptions
                 .Include(s => s.Account)
-                .Where(s => s.Status == "Active" && s.EndDate.Date == targetDate) // Hết hạn đúng ngày
+                .Where(s => s.Status == SubscriptionStatus.Active && s.EndDate.Date == targetDate) // Hết hạn đúng ngày
                 .Where(s => !context.EmailHistories.Any(h =>  // Chưa từng nhận email này
                     h.UserId == s.UserId &&
                     h.TemplateKey == templateKey

@@ -18,11 +18,30 @@ namespace Tokki.Application.UseCases.VipPackages.Commands.UpdateVipPackage
             var package = await _repository.GetByIdAsync(request.Id);
             if (package == null) return OperationResult<bool>.Failure("Gói VIP không tồn tại.");
 
-            package.Name = request.Name;
-            package.Price = request.Price;
-            package.DurationDays = request.DurationDays;
-            package.Description = request.Description;
-            package.IsActive = request.IsActive;
+            if (!string.IsNullOrEmpty(request.Name) && request.Name != "string")
+            {
+                package.Name = request.Name;
+            }
+
+            if (request.Price > 0)
+            {
+                package.Price = request.Price;
+            }
+
+            if (request.DurationDays > 0)
+            {
+                package.DurationDays = request.DurationDays;
+            }
+
+            if (!string.IsNullOrEmpty(request.Description) && request.Description != "string")
+            {
+                package.Description = request.Description;
+            }
+
+            if (request.IsActive.HasValue)
+            {
+                package.IsActive = request.IsActive.Value;
+            }
 
             await _repository.UpdateAsync(package);
             return OperationResult<bool>.Success(true);
