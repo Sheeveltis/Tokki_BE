@@ -22,7 +22,7 @@ namespace Tokki.WebAPI.Controllers
         public async Task<IActionResult> Create([FromBody] CreateVipPackageCommand command)
         {
             var result = await _mediator.Send(command);
-            return result.IsSuccess ? Ok(result) : BadRequest(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpGet]
@@ -30,7 +30,7 @@ namespace Tokki.WebAPI.Controllers
         {
             var query = new GetAllVipPackagesQuery { IsAdmin = false };
             var result = await _mediator.Send(query);
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpGet("admin")]
@@ -38,15 +38,19 @@ namespace Tokki.WebAPI.Controllers
         {
             var query = new GetAllVipPackagesQuery { IsAdmin = true };
             var result = await _mediator.Send(query);
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(string id, [FromBody] UpdateVipPackageCommand command)
         {
-            command.Id = id; 
+            if (id != command.Id)
+            {
+                return BadRequest("ID trong URL không khớp với ID trong body.");
+            }
+
             var result = await _mediator.Send(command);
-            return result.IsSuccess ? Ok(result) : BadRequest(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpDelete("{id}")]
@@ -54,7 +58,7 @@ namespace Tokki.WebAPI.Controllers
         {
             var command = new DeleteVipPackageCommand { Id = id };
             var result = await _mediator.Send(command);
-            return result.IsSuccess ? Ok(result) : BadRequest(result);
+            return StatusCode(result.StatusCode, result);
         }
     }
 }

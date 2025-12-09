@@ -7,6 +7,7 @@ using Tokki.Application.UseCases.Reports.Commands.UpdateReportStatus;
 using Tokki.Application.UseCases.Reports.Queries.GetAllReports;
 using Tokki.Application.UseCases.Reports.Queries.GetReportNotifications;
 using Tokki.Domain.Entities;
+using Tokki.Domain.Enums;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -33,13 +34,13 @@ namespace Tokki.WebAPI.Controllers
         {
             var query = new GetAllReportsQuery { Status = status };
             var result = await _mediator.Send(query);
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpGet("notifications")]
         public async Task<IActionResult> GetNotifications([FromQuery] string userId)
         {
-            if (string.IsNullOrEmpty(userId)) return BadRequest("Vui lòng nhập userId để test");
+            if (string.IsNullOrEmpty(userId)) return BadRequest("Vui lòng nhập userId");
 
             var query = new GetReportNotificationsQuery { UserId = userId };
             var result = await _mediator.Send(query);
@@ -50,7 +51,7 @@ namespace Tokki.WebAPI.Controllers
         [HttpPut("{id}/mark-read")]
         public async Task<IActionResult> MarkRead(string id, [FromQuery] string userId)
         {
-            if (string.IsNullOrEmpty(userId)) return BadRequest("Vui lòng nhập userId để test");
+            if (string.IsNullOrEmpty(userId)) return BadRequest("Vui lòng nhập userId");
 
             var command = new MarkReportReadCommand { ReportId = id, UserId = userId };
             var result = await _mediator.Send(command);
@@ -64,13 +65,7 @@ namespace Tokki.WebAPI.Controllers
             command.ReportId = id;
 
             var result = await _mediator.Send(command);
-
-            if (!result.IsSuccess)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpDelete("{id}")]
@@ -86,7 +81,7 @@ namespace Tokki.WebAPI.Controllers
             };
 
             var result = await _mediator.Send(command);
-            return result.IsSuccess ? Ok(result) : BadRequest(result);
+            return StatusCode(result.StatusCode, result);
         }
     }
 }
