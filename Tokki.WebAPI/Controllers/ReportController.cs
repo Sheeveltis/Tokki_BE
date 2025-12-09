@@ -28,6 +28,14 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetAll([FromQuery] ReportStatus? status)
+        {
+            var query = new GetAllReportsQuery { Status = status };
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+
         [HttpGet("notifications")]
         public async Task<IActionResult> GetNotifications([FromQuery] string userId)
         {
@@ -79,14 +87,6 @@ namespace Tokki.WebAPI.Controllers
 
             var result = await _mediator.Send(command);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] ReportStatus? status)
-        {
-            var query = new GetAllReportsQuery { Status = status };
-            var result = await _mediator.Send(query);
-            return Ok(result);
         }
     }
 }
