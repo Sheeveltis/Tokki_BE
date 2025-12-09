@@ -9,8 +9,8 @@ using Tokki.Application.IServices;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 using Tokki.Application.UseCases.Blogs.Commands.CreateBlog;
-
-namespace Tokki.UnitTests.UseCases.Accounts
+using EntityAccount = Tokki.Domain.Entities.Account;
+namespace Tokki.UnitTests.UseCases.Account.Commands
 {
     public class RegisterUserAccountCommandHandlerTests
     {
@@ -76,7 +76,7 @@ namespace Tokki.UnitTests.UseCases.Accounts
             Assert.Equal("User123", result.Data);
 
             // Kiểm tra xem hàm lưu xuống DB có được gọi không
-            _mockAccountRepo.Verify(r => r.AddAsync(It.IsAny<Account>()), Times.Once);
+            _mockAccountRepo.Verify(r => r.AddAsync(It.IsAny<EntityAccount>()), Times.Once);
             _mockAccountRepo.Verify(r => r.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 
@@ -109,7 +109,7 @@ namespace Tokki.UnitTests.UseCases.Accounts
             Assert.Contains("Validation.Failed", result.Errors[0].Code);
 
             // QUAN TRỌNG: Nếu Validate lỗi thì KHÔNG ĐƯỢC gọi xuống DB
-            _mockAccountRepo.Verify(r => r.AddAsync(It.IsAny<Account>()), Times.Never);
+            _mockAccountRepo.Verify(r => r.AddAsync(It.IsAny<EntityAccount>()), Times.Never);
         }
 
         // ==========================================
@@ -138,7 +138,7 @@ namespace Tokki.UnitTests.UseCases.Accounts
             Assert.Equal("User.EmailDuplicated", result.Errors[0].Code);
 
             // Không được lưu DB
-            _mockAccountRepo.Verify(r => r.AddAsync(It.IsAny<Account>()), Times.Never);
+            _mockAccountRepo.Verify(r => r.AddAsync(It.IsAny<EntityAccount>()), Times.Never);
         }
 
         // ==========================================
@@ -157,7 +157,7 @@ namespace Tokki.UnitTests.UseCases.Accounts
                 .ReturnsAsync(false);
 
             // Giả lập: Khi gọi AddAsync thì ném ra Exception
-            _mockAccountRepo.Setup(r => r.AddAsync(It.IsAny<Account>()))
+            _mockAccountRepo.Setup(r => r.AddAsync(It.IsAny<EntityAccount>()))
                 .ThrowsAsync(new Exception("DB connection failed"));
 
             // Act

@@ -34,24 +34,17 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
 
         public async Task<OperationResult<LoginResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
-            // --- 1. Validate Input ---
-            var validationResult = await _validator.ValidateAsync(request, cancellationToken);
-            if (!validationResult.IsValid)
-            {
-                var errorMessages = string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage));
-                return OperationResult<LoginResponse>.Failure(errorMessages, 400);
-            }
+            
 
-            // --- 2. Tìm User ---
             var user = await _accountRepository.GetByEmailAsync(request.Email);
 
-            // YÊU CẦU: Báo lỗi rõ ràng nếu không tìm thấy user
+            //  Báo lỗi rõ ràng nếu không tìm thấy user
             if (user == null)
             {
                 return OperationResult<LoginResponse>.Failure("Tài khoản không tồn tại.", 404);
             }
 
-            // --- 3. Kiểm tra trạng thái khóa (Lockout Check) ---
+            //  tra trạng thái khóa (Lockout Check) ---
             DateTime currentTime = DateTime.UtcNow.AddHours(7); // Đồng bộ giờ VN
 
             if (user.Status == AccountStatus.Banned)
@@ -65,7 +58,7 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
                 return OperationResult<LoginResponse>.Failure($"Tài khoản đang bị tạm khóa. Vui lòng thử lại sau {remainingMinutes} phút.", 403);
             }
 
-            // --- 4. Kiểm tra mật khẩu ---
+            // Kiểm tra mật khẩu 
             bool isPasswordValid = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
 
             if (!isPasswordValid)
@@ -82,8 +75,7 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
             {
                 user.FailedLoginCount = 0;
                 user.LockedUntil = null;
-                // Không cần save ngay vì đoạn dưới có save session, EF sẽ track cả user nếu chung context
-                // Tuy nhiên để chắc chắn ta update user luôn
+               
                 await _accountRepository.UpdateUserAsync(user); // Cần đảm bảo Repo có hàm này
             }
 
