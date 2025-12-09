@@ -15,7 +15,7 @@ namespace Tokki.Domain.Entities
         public string SubAccount { get; set; } = string.Empty;
         public decimal AmountIn { get; set; } = 0;
         public decimal AmountOut { get; set; } = 0;
-        public decimal Accumulated { get; set; } = 0; // Số dư lũy kế
+        public decimal Accumulated { get; set; } = 0; 
         public string Code { get; set; } = string.Empty; 
         public string TransactionContent { get; set; } = string.Empty; 
         public string ReferenceNumber { get; set; } = string.Empty; 
