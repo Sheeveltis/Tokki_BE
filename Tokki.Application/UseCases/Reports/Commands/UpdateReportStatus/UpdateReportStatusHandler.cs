@@ -2,6 +2,7 @@
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Domain.Entities;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Reports.Commands.UpdateReportStatus
 {
@@ -20,17 +21,16 @@ namespace Tokki.Application.UseCases.Reports.Commands.UpdateReportStatus
 
             if (report == null)
             {
-                return OperationResult<bool>.Failure("Không tìm thấy report.");
+                return OperationResult<bool>.Failure(AppErrors.ReportNotFound);
             }
 
-            report.Status = request.NewStatus; 
+            report.Status = request.NewStatus;
             report.AdminReply = request.AdminReply;
 
-           
             if (request.NewStatus == ReportStatus.Fixed || request.NewStatus == ReportStatus.Rejected)
             {
                 report.ResolvedAt = DateTime.UtcNow;
-                report.UserHasRead = false; 
+                report.UserHasRead = false;
             }
             else
             {

@@ -1,8 +1,9 @@
 ﻿using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
-using Tokki.Application.IServices; 
+using Tokki.Application.IServices;
 using Tokki.Domain.Entities;
+using Tokki.Domain.Enums; 
 
 namespace Tokki.Application.UseCases.Reports.Commands.CreateReport
 {
@@ -23,12 +24,12 @@ namespace Tokki.Application.UseCases.Reports.Commands.CreateReport
             {
                 var report = new Report
                 {
-                    Id = _idGenerator.GenerateCustom(21), 
+                    Id = _idGenerator.GenerateCustom(21),
                     UserId = request.UserId,
                     Description = request.Description,
                     ImageUrl = request.ImageUrl,
                     TargetUrl = request.TargetUrl,
-                    Status = 0, 
+                    Status = ReportStatus.Pending, 
                     UserHasRead = true, 
                     CreatedAt = DateTime.UtcNow
                 };
@@ -36,9 +37,9 @@ namespace Tokki.Application.UseCases.Reports.Commands.CreateReport
                 await _reportRepository.AddAsync(report);
                 return OperationResult<string>.Success(report.Id);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return OperationResult<string>.Failure("Lỗi tạo báo cáo: " + ex.Message);
+                return OperationResult<string>.Failure(AppErrors.ReportCreationFailed);
             }
         }
     }

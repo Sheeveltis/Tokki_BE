@@ -18,16 +18,17 @@ namespace Tokki.Application.UseCases.Reports.Commands.DeleteReport
         public async Task<OperationResult<bool>> Handle(DeleteReportCommand request, CancellationToken cancellationToken)
         {
             var report = await _reportRepository.GetByIdAsync(request.ReportId);
+
             if (report == null)
-                return OperationResult<bool>.Failure("Không tìm thấy report.");
+                return OperationResult<bool>.Failure(AppErrors.ReportNotFound);
 
             if (!request.IsAdmin)
             {
                 if (report.UserId != request.UserId)
-                    return OperationResult<bool>.Failure("Bạn không có quyền xóa report này.");
+                    return OperationResult<bool>.Failure(AppErrors.ReportUnauthorized);
 
                 if (report.Status != ReportStatus.Pending)
-                    return OperationResult<bool>.Failure("Không thể xóa báo cáo đang xử lý hoặc đã xong.");
+                    return OperationResult<bool>.Failure(AppErrors.ReportCannotDelete);
             }
 
             await _reportRepository.DeleteAsync(report);

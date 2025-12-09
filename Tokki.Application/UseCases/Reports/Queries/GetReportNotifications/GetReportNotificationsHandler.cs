@@ -25,14 +25,17 @@ namespace Tokki.Application.UseCases.Reports.Queries.GetReportNotifications
                     ReportId = r.Id,
                     Status = (int)r.Status,
                     AdminReply = r.AdminReply,
-                    ResolvedAt = r.ResolvedAt
+                    ResolvedAt = r.ResolvedAt,
+                    Description = r.Description,
+                    TargetUrl = r.TargetUrl,
+                    ImageUrl = r.ImageUrl
                 }).ToList();
 
                 return OperationResult<List<ReportNotificationDTO>>.Success(dtos);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return OperationResult<List<ReportNotificationDTO>>.Failure("Lỗi lấy thông báo.");
+                return OperationResult<List<ReportNotificationDTO>>.Failure(AppErrors.ReportFetchFailed);
             }
         }
     }

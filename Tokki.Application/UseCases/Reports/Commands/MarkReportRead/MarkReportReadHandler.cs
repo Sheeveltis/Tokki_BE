@@ -16,11 +16,12 @@ namespace Tokki.Application.UseCases.Reports.Commands.MarkReportRead
         public async Task<OperationResult<bool>> Handle(MarkReportReadCommand request, CancellationToken cancellationToken)
         {
             var report = await _reportRepository.GetByIdAsync(request.ReportId);
+
             if (report == null)
-                return OperationResult<bool>.Failure("Không tìm thấy report.");
+                return OperationResult<bool>.Failure(AppErrors.ReportNotFound);
 
             if (report.UserId != request.UserId)
-                return OperationResult<bool>.Failure("Không có quyền truy cập.");
+                return OperationResult<bool>.Failure(AppErrors.ReportUnauthorized);
 
             report.UserHasRead = true;
             await _reportRepository.UpdateAsync(report);

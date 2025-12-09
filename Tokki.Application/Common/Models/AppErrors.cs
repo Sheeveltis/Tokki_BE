@@ -30,6 +30,13 @@ namespace Tokki.Application.Common.Models
         public static readonly Error PaymentInvalidContent = new("Payment.InvalidContent", "Nội dung chuyển khoản không chứa mã đơn hàng hợp lệ.");
         public static readonly Error PaymentInsufficientAmount = new("Payment.InsufficientAmount", "Số tiền chuyển khoản không đủ để kích hoạt gói.");
         public static readonly Error PaymentAlreadyProcessed = new("Payment.AlreadyProcessed", "Giao dịch này đã được xử lý trước đó.");
+
+        //Report
+        public static readonly Error ReportNotFound = new("Report.NotFound", "Không tìm thấy báo cáo hoặc báo cáo đã bị xóa.");
+        public static readonly Error ReportUnauthorized = new("Report.Unauthorized", "Bạn không có quyền thực hiện thao tác trên báo cáo này.");
+        public static readonly Error ReportCannotDelete = new("Report.CannotDelete", "Không thể xóa báo cáo đang xử lý hoặc đã hoàn tất.");
+        public static readonly Error ReportFetchFailed = new("Report.FetchFailed", "Đã xảy ra lỗi khi lấy danh sách báo cáo.");
+        public static readonly Error ReportCreationFailed = new("Report.CreationFailed", "Không thể tạo báo cáo. Vui lòng thử lại.");
     }
 }
 
