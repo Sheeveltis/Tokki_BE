@@ -25,7 +25,7 @@ namespace Tokki.Application.UseCases.Categories.Commands.UpdateCategory
 
             if (category == null)
             {
-                return OperationResult<bool>.Failure(AppErrors.CategoryNotFound, 404, OperationMessages.NotFound("Danh mục"));
+                return OperationResult<bool>.Failure(AppErrors.CategoryNotFound, 404);
             }
 
             category.Name = request.Name;

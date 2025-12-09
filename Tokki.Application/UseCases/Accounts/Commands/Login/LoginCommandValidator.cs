@@ -7,11 +7,13 @@ namespace Tokki.Application.UseCases.Accounts.Commands.Login
         public LoginCommandValidator()
         {
             RuleFor(x => x.Email)
-                .NotEmpty() // Tự động: "'{PropertyName}' không được để trống."
-                .EmailAddress(); // Tự động: "'{PropertyName}' không đúng định dạng email."
+                .NotEmpty()
+                .EmailAddress().WithMessage("Định dạng email không hợp lệ.")
+                .WithName("Email");
 
             RuleFor(x => x.Password)
-                .NotEmpty(); // Tự động: "'{PropertyName}' không được để trống."
+                .NotEmpty()
+                .WithName("Mật khẩu");
         }
     }
 }

@@ -9,7 +9,7 @@ namespace Tokki.Infrastructure.Services
 {
     public class IdGeneratorService : IIdGeneratorService
     {
-        private const string _customAlphabet = "23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz";
+        private const string _customAlphabet = "23456789abcdefghijkmnpqrstuvwxyz";
 
         // Mặc định NanoID sinh 21 ký tự
         public string Generate()

@@ -1,16 +1,14 @@
-﻿using Tokki.Infrastructure;
-using Tokki.Application;
-using Microsoft.EntityFrameworkCore;
-// 1. THÊM CÁC NAMESPACE NÀY
+﻿// 1. THÊM CÁC NAMESPACE NÀY
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models; // Dùng cho Swagger
 using System.Text;
+using Tokki.Application;
 using Tokki.Application.Common.Helpers;
-using Tokki.Infrastructure.BackgroundJobs;
-using FluentValidation; // THÊM NAMESPACE NÀY
-using System.Globalization; // THÊM NAMESPACE NÀY
-
+using Tokki.Infrastructure;
+using Tokki.Infrastructure.BackgroundJobs; // Nơi chứa class JwtSettings
+using Tokki.WebAPI.Middlewares;
 var builder = WebApplication.CreateBuilder(args);
 
 // ==========================================
@@ -106,9 +104,17 @@ builder.Services.AddCors(options =>
 });
 
 // ==========================================
-var app = builder.Build();
-// ==========================================
 
+var app = builder.Build();
+app.UseMiddleware<GlobalExceptionMiddleware>();
+// ==========================================
+var supportedCultures = new[] { "vi" };
+var localizationOptions = new RequestLocalizationOptions()
+    .SetDefaultCulture("vi")
+    .AddSupportedCultures(supportedCultures)
+    .AddSupportedUICultures(supportedCultures);
+
+app.UseRequestLocalization(localizationOptions);
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -118,7 +124,6 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowReactApp");
 app.UseHttpsRedirection();
 
-// 5. THÊM MIDDLEWARE XÁC THỰC (Bắt buộc phải đặt TRƯỚC UseAuthorization)
 app.UseAuthentication();
 app.UseAuthorization();
 

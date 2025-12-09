@@ -58,10 +58,9 @@ namespace Tokki.Infrastructure.Data
             modelBuilder.Entity<Blog>().HasIndex(b => b.Slug).IsUnique();
             modelBuilder.Entity<Category>().HasIndex(c => c.Slug).IsUnique();
 
-            // Convert Enum BlogStatus (nếu có)
             modelBuilder.Entity<Blog>()
                 .Property(b => b.Status)
-                .HasConversion<string>();
+                .HasConversion<int>();
 
             modelBuilder.Entity<Report>()
             .Property(r => r.Status)

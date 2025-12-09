@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using FluentValidation;
 using MediatR;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Globalization;
 using System.Reflection;
+using Tokki.Application.Common.Behaviors;
 using Tokki.Application.Common.Helpers;
 
 namespace Tokki.Application
@@ -21,9 +23,10 @@ namespace Tokki.Application
 
             // Đăng ký MediatR
             services.AddMediatR(configuration =>
-                configuration.RegisterServicesFromAssembly(assembly));
-
-            // Đăng ký AutoMapper
+            {
+                configuration.RegisterServicesFromAssembly(assembly);
+                configuration.AddOpenBehavior(typeof(ValidationBehavior<,>));
+            });
             services.AddAutoMapper(cfg => cfg.AddMaps(assembly));
 
             // Đăng ký tất cả Validators
