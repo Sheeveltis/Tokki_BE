@@ -28,6 +28,8 @@ namespace Tokki.Infrastructure
             services.AddScoped<IEmailJobRepository, EmailJobRepository>();
             services.AddScoped<IEmailTemplateRepository, EmailTemplateRepository>();
             services.AddScoped<IReportRepository, ReportRepository>();
+            services.AddScoped<IVipPackageRepository, VipPackageRepository>();
+            services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
             // 3. Đăng ký các Services khác (IdGenerator, Email, Storage...)
             services.AddSingleton<IIdGeneratorService, IdGeneratorService>();
             services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));

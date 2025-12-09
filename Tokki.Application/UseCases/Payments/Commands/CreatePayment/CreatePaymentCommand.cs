@@ -8,9 +8,7 @@ namespace Tokki.Application.UseCases.Payments.Commands.CreatePayment
 
     public class CreatePaymentCommand : IRequest<OperationResult<CreatePaymentResult>>
     {
-        public decimal Amount { get; set; }
-        public string Description { get; set; } = string.Empty;
         public string UserId { get; set; } = string.Empty;
-        public VipPlanType PlanType { get; set; }
+        public string VipPackageId { get; set; }
     }
 }

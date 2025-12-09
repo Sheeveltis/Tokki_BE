@@ -21,7 +21,7 @@ namespace Tokki.Infrastructure.Data
         public DbSet<Session> Session { get; set; }
         public DbSet<Otp> OtpCodes { get; set; }
         public DbSet<SystemConfig> SystemConfig { get; set; }
-
+        public DbSet<VipPackage> VipPackages { get; set; }
         public DbSet<SocialLogin> SocialLogins { get; set; } // Đổi tên cho khớp với Entity (ExternalLogins cũng đc nhưng SocialLogins chuẩn hơn)
         public DbSet<EmailJob> EmailJobs { get; set; }
         public DbSet<Subscription> Subscriptions { get; set; }
