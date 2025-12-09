@@ -17,9 +17,9 @@ namespace Tokki.Application.Common.Models
         public static readonly Error EmailDuplicated = new("Auth.EmailDuplicated", "Email này đã được sử dụng.");
 
         // --- NHÓM 3: BLOG/POST ---
-        public static readonly Error BlogNotFound = new("Blog.NotFound", "Bài viết không tìm thấy.");
+        public static readonly Error BlogNotFound = new("Blog.NotFound", OperationMessages.NotFound("Blog"));
         public static readonly Error CannotDeleteOthersBlog = new("Blog.UnauthorizedDelete", "Bạn không được xóa bài của người khác.");
         // --- NHÓM 4: CATEGORY ---
-        public static readonly Error CategoryNotFound = new("Category.NotFound", "Danh mục yêu cầu không tồn tại.");
+        public static readonly Error CategoryNotFound = new("Category.NotFound", OperationMessages.NotFound("Category"));
     }
 }

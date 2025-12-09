@@ -61,7 +61,7 @@ namespace Tokki.Infrastructure.Data
             // Convert Enum BlogStatus (nếu có)
             modelBuilder.Entity<Blog>()
                 .Property(b => b.Status)
-                .HasConversion<string>();
+                .HasConversion<int>();
 
             modelBuilder.Entity<Report>()
             .Property(r => r.Status)
