@@ -16,8 +16,15 @@ namespace Tokki.Application.UseCases.VipPackages.Queries.GetAllVipPackages
 
         public async Task<OperationResult<List<VipPackage>>> Handle(GetAllVipPackagesQuery request, CancellationToken cancellationToken)
         {
-            var packages = await _repository.GetAllAsync(request.IsAdmin);
-            return OperationResult<List<VipPackage>>.Success(packages);
+            try
+            {
+                var packages = await _repository.GetAllAsync(request.IsAdmin);
+                return OperationResult<List<VipPackage>>.Success(packages);
+            }
+            catch (Exception)
+            {
+                return OperationResult<List<VipPackage>>.Failure(AppErrors.VipPackageFetchFailed);
+            }
         }
     }
 }

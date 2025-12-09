@@ -16,7 +16,9 @@ namespace Tokki.Application.UseCases.VipPackages.Commands.DeleteVipPackage
         public async Task<OperationResult<bool>> Handle(DeleteVipPackageCommand request, CancellationToken cancellationToken)
         {
             var package = await _repository.GetByIdAsync(request.Id);
-            if (package == null) return OperationResult<bool>.Failure("Gói VIP không tồn tại.");
+
+            if (package == null)
+                return OperationResult<bool>.Failure(AppErrors.VipPackageNotFound);
 
             package.IsDeleted = true;
             package.IsActive = false; 

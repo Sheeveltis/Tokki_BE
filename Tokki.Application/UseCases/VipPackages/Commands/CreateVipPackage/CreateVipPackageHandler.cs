@@ -9,7 +9,7 @@ namespace Tokki.Application.UseCases.VipPackages.Commands.CreateVipPackage
     public class CreateVipPackageHandler : IRequestHandler<CreateVipPackageCommand, OperationResult<string>>
     {
         private readonly IVipPackageRepository _repository;
-        private readonly IIdGeneratorService _idGenerator; 
+        private readonly IIdGeneratorService _idGenerator;
 
         public CreateVipPackageHandler(IVipPackageRepository repository, IIdGeneratorService idGenerator)
         {
@@ -19,22 +19,32 @@ namespace Tokki.Application.UseCases.VipPackages.Commands.CreateVipPackage
 
         public async Task<OperationResult<string>> Handle(CreateVipPackageCommand request, CancellationToken cancellationToken)
         {
-            if (request.Price < 0) return OperationResult<string>.Failure("Giá không hợp lệ.");
-            if (request.DurationDays <= 0) return OperationResult<string>.Failure("Thời hạn phải lớn hơn 0.");
+            if (request.Price < 0)
+                return OperationResult<string>.Failure(AppErrors.VipPackageInvalidPrice);
 
-            var package = new VipPackage
+            if (request.DurationDays <= 0)
+                return OperationResult<string>.Failure(AppErrors.VipPackageInvalidDuration);
+
+            try
             {
-                Id = _idGenerator.GenerateCustom(21), 
-                Name = request.Name,
-                Price = request.Price,
-                DurationDays = request.DurationDays,
-                Description = request.Description,
-                IsActive = false, 
-                CreatedAt = DateTime.UtcNow
-            };
+                var package = new VipPackage
+                {
+                    Id = _idGenerator.GenerateCustom(21),
+                    Name = request.Name,
+                    Price = request.Price,
+                    DurationDays = request.DurationDays,
+                    Description = request.Description,
+                    IsActive = false, 
+                    CreatedAt = DateTime.UtcNow
+                };
 
-            await _repository.AddAsync(package);
-            return OperationResult<string>.Success(package.Id);
+                await _repository.AddAsync(package);
+                return OperationResult<string>.Success(package.Id);
+            }
+            catch (Exception)
+            {
+                return OperationResult<string>.Failure(AppErrors.VipPackageCreationFailed);
+            }
         }
     }
 }

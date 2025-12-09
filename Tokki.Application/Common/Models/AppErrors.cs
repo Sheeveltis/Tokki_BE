@@ -37,6 +37,12 @@ namespace Tokki.Application.Common.Models
         public static readonly Error ReportCannotDelete = new("Report.CannotDelete", "Không thể xóa báo cáo đang xử lý hoặc đã hoàn tất.");
         public static readonly Error ReportFetchFailed = new("Report.FetchFailed", "Đã xảy ra lỗi khi lấy danh sách báo cáo.");
         public static readonly Error ReportCreationFailed = new("Report.CreationFailed", "Không thể tạo báo cáo. Vui lòng thử lại.");
+
+        //VIP Package
+        public static readonly Error VipPackageInvalidPrice = new("VipPackage.InvalidPrice", "Giá gói VIP không được nhỏ hơn 0.");
+        public static readonly Error VipPackageInvalidDuration = new("VipPackage.InvalidDuration", "Thời hạn gói phải lớn hơn 0 ngày.");
+        public static readonly Error VipPackageFetchFailed = new("VipPackage.FetchFailed", "Lỗi khi lấy danh sách gói VIP.");
+        public static readonly Error VipPackageCreationFailed = new("VipPackage.CreationFailed", "Không thể tạo gói VIP do lỗi hệ thống.");
     }
 }
 

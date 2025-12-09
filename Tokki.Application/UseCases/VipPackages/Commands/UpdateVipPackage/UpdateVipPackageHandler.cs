@@ -16,16 +16,22 @@ namespace Tokki.Application.UseCases.VipPackages.Commands.UpdateVipPackage
         public async Task<OperationResult<bool>> Handle(UpdateVipPackageCommand request, CancellationToken cancellationToken)
         {
             var package = await _repository.GetByIdAsync(request.Id);
-            if (package == null) return OperationResult<bool>.Failure("Gói VIP không tồn tại.");
+
+            if (package == null)
+                return OperationResult<bool>.Failure(AppErrors.VipPackageNotFound);
 
             if (!string.IsNullOrEmpty(request.Name) && request.Name != "string")
             {
                 package.Name = request.Name;
             }
 
-            if (request.Price > 0)
+            if (request.Price >= 0) 
             {
                 package.Price = request.Price;
+            }
+            else
+            {
+                return OperationResult<bool>.Failure(AppErrors.VipPackageInvalidPrice);
             }
 
             if (request.DurationDays > 0)
