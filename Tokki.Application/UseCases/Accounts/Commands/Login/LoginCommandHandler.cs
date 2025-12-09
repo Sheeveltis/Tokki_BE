@@ -36,6 +36,7 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
         {
             
 
+            // --- 2. Tìm User ---
             var user = await _accountRepository.GetByEmailAsync(request.Email);
 
             //  Báo lỗi rõ ràng nếu không tìm thấy user

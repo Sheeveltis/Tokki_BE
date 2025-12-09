@@ -22,12 +22,13 @@ namespace Tokki.Infrastructure.Services
 
             var accountToUse = !string.IsNullOrEmpty(subAccount) ? subAccount : bankAccount;
 
-            var template = "compact"; 
+            var template = "compact";
 
+            long amountInteger = (long)amount;
 
-            var content = paymentId;
+            var content = description;
 
-            var url = $"https://qr.sepay.vn/img?bank={bankName}&acc={accountToUse}&template={template}&amount={amount}&des={content}";
+            var url = $"https://qr.sepay.vn/img?bank={bankName}&acc={accountToUse}&template={template}&amount={amountInteger}&des={description}";
 
             return url;
         }

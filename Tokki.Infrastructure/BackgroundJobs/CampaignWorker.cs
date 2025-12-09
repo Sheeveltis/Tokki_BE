@@ -79,7 +79,7 @@ namespace Tokki.Infrastructure.BackgroundJobs
                             // VIP: Có gói Active và chưa hết hạn
                             query = query.Where(u => context.Subscriptions.Any(s =>
                                 s.UserId == u.UserId &&
-                                s.Status == "Active" &&
+                                s.Status == SubscriptionStatus.Active &&
                                 s.EndDate > now
                             ));
                         }
@@ -88,7 +88,7 @@ namespace Tokki.Infrastructure.BackgroundJobs
                             // FREE: Không có gói Active nào
                             query = query.Where(u => !context.Subscriptions.Any(s =>
                                 s.UserId == u.UserId &&
-                                s.Status == "Active" &&
+                                s.Status == SubscriptionStatus.Active &&
                                 s.EndDate > now
                             ));
                         }
