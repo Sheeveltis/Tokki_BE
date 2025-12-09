@@ -3,11 +3,9 @@ using Microsoft.Extensions.Logging;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
-using Tokki.Domain.Entities;
 using Tokki.Application.UseCases.Blogs.Commands.CreateBlog;
-using BCrypt.Net;
+using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
-using FluentValidation; 
 
 namespace Tokki.Application.UseCases.Accounts.Commands.Register
 {
@@ -16,30 +14,22 @@ namespace Tokki.Application.UseCases.Accounts.Commands.Register
         private readonly IAccountRepository _accountRepository;
         private readonly IIdGeneratorService _idGeneratorService;
         private readonly ILogger<RegisterUserAccountCommandHandler> _logger;
-        private readonly IValidator<RegisterUserAccountCommand> _validator; // ✅ THÊM
 
         public RegisterUserAccountCommandHandler(
             IAccountRepository accountRepository,
             IIdGeneratorService idGeneratorService,
-            ILogger<RegisterUserAccountCommandHandler> logger,
-            IValidator<RegisterUserAccountCommand> validator) // ✅ THÊM
+            ILogger<RegisterUserAccountCommandHandler> logger)
         {
             _accountRepository = accountRepository;
             _idGeneratorService = idGeneratorService;
             _logger = logger;
-            _validator = validator; // ✅ THÊM
         }
 
         public async Task<OperationResult<string>> Handle(RegisterUserAccountCommand request, CancellationToken cancellationToken)
         {
-            var validationResult = await _validator.ValidateAsync(request, cancellationToken);
-            if (!validationResult.IsValid)
-            {
-                var errorMessages = string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage));
-                var error = new Error("Validation.Failed", errorMessages);
-                return OperationResult<string>.Failure(error, 400, "Dữ liệu không hợp lệ");
-            }
+            // ✅ XÓA phần validate thủ công - ValidationBehavior đã xử lý rồi
 
+            // Kiểm tra email tồn tại (Logic nghiệp vụ, không phải validation cơ bản)
             bool emailExists = await _accountRepository.IsEmailExistsAsync(request.Email);
             if (emailExists)
             {
@@ -72,7 +62,7 @@ namespace Tokki.Application.UseCases.Accounts.Commands.Register
                 return OperationResult<string>.Success(
                     accountEntity.UserId,
                     201,
-                    "Đăng ký tài khoảng thành công"
+                    "Đăng ký tài khoản thành công"
                 );
             }
             catch (Exception ex)

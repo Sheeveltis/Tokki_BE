@@ -7,7 +7,9 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models; // Dùng cho Swagger
 using System.Text;
 using Tokki.Application.Common.Helpers;
-using Tokki.Infrastructure.BackgroundJobs; // Nơi chứa class JwtSettings
+using Tokki.Infrastructure.BackgroundJobs;
+using FluentValidation; // THÊM NAMESPACE NÀY
+using System.Globalization; // THÊM NAMESPACE NÀY
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -69,20 +71,23 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-
         ValidIssuer = jwtSettings.Issuer,
         ValidAudience = jwtSettings.Audience,
         IssuerSigningKey = new SymmetricSecurityKey(key),
-
         // Quan trọng: Set ClockSkew về 0 để token hết hạn đúng chính xác từng giây
         ClockSkew = TimeSpan.Zero
     };
 });
 
+// 4. CẤU HÌNH FLUENTVALIDATION TIẾNG VIỆT (THÊM PHẦN NÀY)
+ValidatorOptions.Global.LanguageManager = new ValidationVietnameseLanguageManager();
+ValidatorOptions.Global.LanguageManager.Enabled = true;
+ValidatorOptions.Global.LanguageManager.Culture = new CultureInfo("vi");
 
 // Đăng ký các layer khác (Giữ nguyên)
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddApplication();
+
 builder.Services.AddSingleton<Tokki.Infrastructure.BackgroundJobs.AutomationWorker>();
 builder.Services.AddHostedService(provider =>
     provider.GetRequiredService<Tokki.Infrastructure.BackgroundJobs.AutomationWorker>());
@@ -99,6 +104,7 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod();
     });
 });
+
 // ==========================================
 var app = builder.Build();
 // ==========================================
@@ -108,12 +114,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
 app.UseCors("AllowReactApp");
 app.UseHttpsRedirection();
 
-// 4. THÊM MIDDLEWARE XÁC THỰC (Bắt buộc phải đặt TRƯỚC UseAuthorization)
+// 5. THÊM MIDDLEWARE XÁC THỰC (Bắt buộc phải đặt TRƯỚC UseAuthorization)
 app.UseAuthentication();
-
 app.UseAuthorization();
 
 app.MapControllers();
