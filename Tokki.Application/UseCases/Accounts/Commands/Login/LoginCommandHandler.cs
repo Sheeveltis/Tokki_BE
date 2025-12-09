@@ -34,14 +34,6 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
 
         public async Task<OperationResult<LoginResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
-            // --- 1. Validate Input ---
-            var validationResult = await _validator.ValidateAsync(request, cancellationToken);
-            if (!validationResult.IsValid)
-            {
-                var errorMessages = string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage));
-                return OperationResult<LoginResponse>.Failure(errorMessages, 400);
-            }
-
             // --- 2. Tìm User ---
             var user = await _accountRepository.GetByEmailAsync(request.Email);
 
