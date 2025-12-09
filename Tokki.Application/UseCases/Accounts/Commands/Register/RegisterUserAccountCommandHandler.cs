@@ -18,7 +18,8 @@ namespace Tokki.Application.UseCases.Accounts.Commands.Register
         public RegisterUserAccountCommandHandler(
             IAccountRepository accountRepository,
             IIdGeneratorService idGeneratorService,
-            ILogger<RegisterUserAccountCommandHandler> logger)
+            ILogger<RegisterUserAccountCommandHandler> logger,
+            FluentValidation.IValidator<RegisterUserAccountCommand> @object)
         {
             _accountRepository = accountRepository;
             _idGeneratorService = idGeneratorService;

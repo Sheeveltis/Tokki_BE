@@ -1,7 +1,9 @@
-﻿using Moq;
+﻿using Microsoft.Extensions.Logging;
+using Moq;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Application.UseCases.Payments.Commands.CreatePayment;
+using Tokki.Application.UseCases.Payments.Commands.ProcessWebhook;
 
 namespace Tokki.UnitTests.Common.Bases
 {
@@ -9,30 +11,29 @@ namespace Tokki.UnitTests.Common.Bases
     {
         protected readonly Mock<IPaymentRepository> _mockPaymentRepo;
         protected readonly Mock<IVipPackageRepository> _mockVipRepo;
+        protected readonly Mock<IAccountRepository> _mockAccountRepo;       
+        protected readonly Mock<ISubscriptionRepository> _mockSubRepo;      
+
         protected readonly Mock<ISePayService> _mockSePayService;
         protected readonly Mock<IIdGeneratorService> _mockIdGen;
 
-        protected readonly CreatePaymentCommandHandler _handler;
+        protected readonly Mock<ILogger<ProcessWebhookCommandHandler>> _mockWebhookLogger;
+        protected readonly Mock<ILogger<CreatePaymentCommandHandler>> _mockCreateLogger; 
 
         public PaymentTestBase()
         {
             _mockPaymentRepo = new Mock<IPaymentRepository>();
             _mockVipRepo = new Mock<IVipPackageRepository>();
+            _mockAccountRepo = new Mock<IAccountRepository>();
+            _mockSubRepo = new Mock<ISubscriptionRepository>();
+
             _mockSePayService = new Mock<ISePayService>();
             _mockIdGen = new Mock<IIdGeneratorService>();
 
-            _mockIdGen.Setup(x => x.GenerateCustom(It.IsAny<int>()))
-                      .Returns("PAY-MOCK-ID");
+            _mockWebhookLogger = new Mock<ILogger<ProcessWebhookCommandHandler>>();
+            _mockCreateLogger = new Mock<ILogger<CreatePaymentCommandHandler>>();
 
-            _mockSePayService.Setup(x => x.GenerateQrUrl(It.IsAny<string>(), It.IsAny<decimal>(), It.IsAny<string>()))
-                             .Returns("https://qr.sepay.vn/mock-url");
-
-            _handler = new CreatePaymentCommandHandler(
-                _mockPaymentRepo.Object,
-                _mockVipRepo.Object,
-                _mockSePayService.Object,
-                _mockIdGen.Object
-            );
+            _mockIdGen.Setup(x => x.GenerateCustom(It.IsAny<int>())).Returns("MOCK_GEN_ID");
         }
     }
 }

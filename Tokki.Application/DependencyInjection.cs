@@ -25,7 +25,7 @@ namespace Tokki.Application
             services.AddMediatR(configuration =>
             {
                 configuration.RegisterServicesFromAssembly(assembly);
-                configuration.AddOpenBehavior(typeof(ValidationBehavior<,>));
+                configuration.AddOpenBehavior(typeof(Common.Behaviors.ValidationBehavior<,>));
             });
             services.AddAutoMapper(cfg => cfg.AddMaps(assembly));
 
@@ -33,7 +33,7 @@ namespace Tokki.Application
             services.AddValidatorsFromAssembly(assembly);
 
             // QUAN TRỌNG: Đăng ký ValidationBehavior để tự động validate
-            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Common.Behaviors.ValidationBehavior<,>));
 
             return services;
         }

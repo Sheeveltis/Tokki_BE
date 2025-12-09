@@ -11,7 +11,7 @@ namespace Tokki.Application.UseCases.Payments.Commands.ProcessWebhook
         public string AccountNumber { get; set; }
         public string SubAccount { get; set; }
         public decimal TransferAmount { get; set; }
-        public string TransferType { get; set; } 
+        public string TransferType { get; set; }
         public string Content { get; set; }
         public string ReferenceCode { get; set; }
         public string Description { get; set; }
@@ -20,5 +20,13 @@ namespace Tokki.Application.UseCases.Payments.Commands.ProcessWebhook
     public class ProcessWebhookCommand : IRequest<OperationResult<string>>
     {
         public SePayWebhookData Data { get; set; }
+
+        public ProcessWebhookCommand(SePayWebhookData data)
+        {
+            {
+                Data = data;
+            }
+        }
+    
+        }
     }
-}

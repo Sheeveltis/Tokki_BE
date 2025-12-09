@@ -1,8 +1,10 @@
 ﻿// 1. THÊM CÁC NAMESPACE NÀY
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models; // Dùng cho Swagger
+using System.Globalization;
 using System.Text;
 using Tokki.Application;
 using Tokki.Application.Common.Helpers;

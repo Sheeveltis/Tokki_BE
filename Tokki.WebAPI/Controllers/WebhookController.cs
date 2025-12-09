@@ -18,7 +18,7 @@ namespace Tokki.WebAPI.Controllers
         [HttpPost("payment")]
         public async Task<IActionResult> ReceiveSePayWebhook([FromBody] SePayWebhookData data)
         {
-            var command = new ProcessWebhookCommand { Data = data };
+            var command = new ProcessWebhookCommand (data);
             var result = await _sender.Send(command);
 
             return Ok(new { success = true, message = result.Message });
