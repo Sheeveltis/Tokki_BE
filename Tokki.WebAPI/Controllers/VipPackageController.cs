@@ -18,6 +18,13 @@ namespace Tokki.WebAPI.Controllers
             _mediator = mediator;
         }
 
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] CreateVipPackageCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetAllForUser()
         {
@@ -32,13 +39,6 @@ namespace Tokki.WebAPI.Controllers
             var query = new GetAllVipPackagesQuery { IsAdmin = true };
             var result = await _mediator.Send(query);
             return Ok(result);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateVipPackageCommand command)
-        {
-            var result = await _mediator.Send(command);
-            return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
         [HttpPut("{id}")]
