@@ -43,6 +43,17 @@ namespace Tokki.Domain.Entities
 
         public DateTimeOffset? VipExpirationDate { get; set; }
 
+        public long TotalXP { get; set; } = 0; 
+
+        public int CurrentStreak { get; set; } = 0; 
+        public int MaxStreak { get; set; } = 0;
+        public DateTime? LastStreakDate { get; set; }
+        public double DailyStudySeconds { get; set; } = 0;
+        public int? CurrentTitleId { get; set; }
+        [ForeignKey("CurrentTitleId")]
+        public virtual Title? CurrentTitle { get; set; }
+        public virtual ICollection<AccountTitle> UnlockedTitles { get; set; } = new List<AccountTitle>();
+
         // --- MỚI THÊM LẠI (Bảo mật & Tracking) ---
 
         [Required]
