@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Domain.Entities
 {
@@ -21,6 +22,7 @@ namespace Tokki.Domain.Entities
         [MaxLength(20)]
         public string ColorHex { get; set; } = "#000000"; 
 
-        public string? IconUrl { get; set; } 
+        public string? IconUrl { get; set; }
+        public TitleStatus Status { get; set; } = TitleStatus.Active;
     }
 }
