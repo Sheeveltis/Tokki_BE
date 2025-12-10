@@ -2,16 +2,19 @@
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Domain.Entities;
+using Tokki.Application.IServices; 
 
 namespace Tokki.Application.UseCases.Titles.Commands.CreateTitle
 {
     public class CreateTitleCommandHandler : IRequestHandler<CreateTitleCommand, OperationResult<Title>>
     {
         private readonly ITitleRepository _titleRepository;
+        private readonly IIdGeneratorService _idGenerator;
 
-        public CreateTitleCommandHandler(ITitleRepository titleRepository)
+        public CreateTitleCommandHandler(ITitleRepository titleRepository, IIdGeneratorService idGenerator)
         {
             _titleRepository = titleRepository;
+            _idGenerator = idGenerator;
         }
 
         public async Task<OperationResult<Title>> Handle(CreateTitleCommand request, CancellationToken cancellationToken)
@@ -26,9 +29,10 @@ namespace Tokki.Application.UseCases.Titles.Commands.CreateTitle
             {
                 return OperationResult<Title>.Failure(new List<Error>(), 400, "XP không được âm.");
             }
-
+            string newTitleId = _idGenerator.Generate(10);
             var newTitle = new Title
             {
+                TitleId = newTitleId,
                 Name = request.Name,
                 Description = request.Description,
                 RequiredXP = request.RequiredXP,

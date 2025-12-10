@@ -6,7 +6,8 @@ namespace Tokki.Domain.Entities
     public class Title
     {
         [Key]
-        public int TitleId { get; set; }
+        [MaxLength(21)] 
+        public string TitleId { get; set; }
 
         [Required]
         [MaxLength(100)]

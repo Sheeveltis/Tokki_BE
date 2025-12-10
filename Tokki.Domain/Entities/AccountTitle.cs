@@ -9,7 +9,8 @@ namespace Tokki.Domain.Entities
         [MaxLength(15)]
         public string UserId { get; set; } = string.Empty;
 
-        public int TitleId { get; set; }
+        [MaxLength(21)]
+        public string TitleId { get; set; }
 
         public DateTime EarnedAt { get; set; } = DateTime.UtcNow.AddHours(7);
 

@@ -49,7 +49,9 @@ namespace Tokki.Domain.Entities
         public int MaxStreak { get; set; } = 0;
         public DateTime? LastStreakDate { get; set; }
         public double DailyStudySeconds { get; set; } = 0;
-        public int? CurrentTitleId { get; set; }
+        [MaxLength(21)]
+        public string? CurrentTitleId { get; set; } 
+
         [ForeignKey("CurrentTitleId")]
         public virtual Title? CurrentTitle { get; set; }
         public virtual ICollection<AccountTitle> UnlockedTitles { get; set; } = new List<AccountTitle>();
