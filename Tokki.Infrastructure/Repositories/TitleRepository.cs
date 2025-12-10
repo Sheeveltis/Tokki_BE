@@ -32,7 +32,7 @@ namespace Tokki.Infrastructure.Repositories
             return await _context.Titles.FirstOrDefaultAsync(t => t.Name == name);
         }
 
-        public async Task<Title?> GetTitleByIdAsync(int id)
+        public async Task<Title?> GetTitleByIdAsync(string id)
         {
             return await _context.Titles.FindAsync(id);
         }

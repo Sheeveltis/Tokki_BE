@@ -47,7 +47,7 @@ namespace Tokki.WebAPI.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<IActionResult> GetById(string id)
         {
             var result = await _sender.Send(new GetTitleByIdQuery(id));
 
@@ -60,7 +60,7 @@ namespace Tokki.WebAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] UpdateTitleCommand command)
+        public async Task<IActionResult> Update(string id, [FromBody] UpdateTitleCommand command)
         {
             if (id != command.TitleId)
             {
@@ -78,7 +78,7 @@ namespace Tokki.WebAPI.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(string id)
         {
             var result = await _sender.Send(new DeleteTitleCommand(id));
 

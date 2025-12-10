@@ -6,7 +6,8 @@ namespace Tokki.Domain.Entities
     public class UserXpHistory
     {
         [Key]
-        public int Id { get; set; }
+        [MaxLength(21)] 
+        public string Id { get; set; }
 
         [Required]
         [MaxLength(15)]

@@ -4,5 +4,5 @@ using Tokki.Domain.Entities;
 
 namespace Tokki.Application.UseCases.Titles.Queries.GetTitleById
 {
-    public record GetTitleByIdQuery(int Id) : IRequest<OperationResult<Title>>;
+    public record GetTitleByIdQuery(string Id) : IRequest<OperationResult<Title>>;
 }

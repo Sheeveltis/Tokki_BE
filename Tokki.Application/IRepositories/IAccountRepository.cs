@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using Tokki.Application.UseCases.Leaderboard.DTOs;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 
@@ -20,5 +21,6 @@ namespace Tokki.Application.IRepositories
 
         Task<bool> HasTitleAsync(string userId, string titleId);
         Task AddAccountTitleAsync(AccountTitle accountTitle);
+        Task<List<LeaderboardItemDto>> GetLeaderboardAsync(LeaderboardTimeFrame timeFrame, int top);
     }
 }

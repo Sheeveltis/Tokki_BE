@@ -1,4 +1,5 @@
-﻿using Tokki.Application.IRepositories;
+﻿using System.Reflection.Emit;
+using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Domain.Entities;
 using Tokki.Infrastructure.Data;
@@ -9,14 +10,16 @@ namespace Tokki.Infrastructure.Services
         private readonly IAccountRepository _accountRepository;
         private readonly ITitleRepository _titleRepository;
         private readonly TokkiDbContext _context;
+        private readonly IIdGeneratorService _idGenerator;
         private const int TARGET_STUDY_SECONDS = 900; 
         private const string LAZY_TITLE_NAME = "Con Lười";
 
-        public GamificationService(IAccountRepository accountRepository, ITitleRepository titleRepository, TokkiDbContext context)
+        public GamificationService(IAccountRepository accountRepository, ITitleRepository titleRepository, TokkiDbContext context, IIdGeneratorService idGenerator)
         {
             _accountRepository = accountRepository;
             _titleRepository = titleRepository;
             _context = context;
+            _idGenerator = idGenerator;
         }
 
         private async Task UnlockAndEquipTitleAsync(Account user, Title title)
@@ -79,6 +82,7 @@ namespace Tokki.Infrastructure.Services
 
                 var history = new UserXpHistory
                 {
+                    Id = _idGenerator.Generate(),
                     UserId = user.UserId,
                     Amount = bonusXP,
                     Action = "Daily Streak", 

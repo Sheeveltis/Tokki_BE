@@ -1,7 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Tokki.Application.IRepositories;
+using Tokki.Application.UseCases.Leaderboard.DTOs;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 using Tokki.Infrastructure.Data;
@@ -123,6 +124,94 @@ namespace Tokki.Infrastructure.Repositories
         {
             await _context.AccountTitles.AddAsync(accountTitle);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<LeaderboardItemDto>> GetLeaderboardAsync(LeaderboardTimeFrame timeFrame, int top)
+        {
+            var result = new List<LeaderboardItemDto>();
+
+            if (timeFrame == LeaderboardTimeFrame.AllTime)
+            {
+                var users = await _context.Accounts
+                    .AsNoTracking()
+                    .Where(u => u.Status == Domain.Enums.AccountStatus.Active)
+                    .OrderByDescending(u => u.TotalXP)
+                    .Take(top)
+                    .Include(u => u.CurrentTitle)
+                    .Select(u => new LeaderboardItemDto
+                    {
+                        UserId = u.UserId,
+                        FullName = u.FullName,
+                        AvatarUrl = u.AvatarUrl,
+                        TotalXP = u.TotalXP,
+                        TitleName = u.CurrentTitle != null ? u.CurrentTitle.Name : "Chưa có",
+                        TitleColor = u.CurrentTitle != null ? u.CurrentTitle.ColorHex : "#000000"
+                    })
+                    .ToListAsync();
+
+                for (int i = 0; i < users.Count; i++) users[i].Rank = i + 1;
+                return users;
+            }
+
+            var now = DateTime.UtcNow.AddHours(7);
+            DateTime startDate;
+
+            switch (timeFrame)
+            {
+                case LeaderboardTimeFrame.Day:
+                    startDate = now.Date;
+                    break;
+                case LeaderboardTimeFrame.Week:
+                    int diff = (7 + (now.DayOfWeek - DayOfWeek.Monday)) % 7;
+                    startDate = now.Date.AddDays(-1 * diff);
+                    break;
+                case LeaderboardTimeFrame.Month:
+                    startDate = new DateTime(now.Year, now.Month, 1);
+                    break;
+                default:
+                    startDate = now.Date;
+                    break;
+            }
+
+            var rankingData = await _context.UserXpHistories
+                .Where(h => h.CreatedAt >= startDate)
+                .GroupBy(h => h.UserId)
+                .Select(g => new
+                {
+                    UserId = g.Key,
+                    Score = g.Sum(x => x.Amount)
+                })
+                .OrderByDescending(x => x.Score)
+                .Take(top)
+                .ToListAsync();
+
+            if (!rankingData.Any()) return new List<LeaderboardItemDto>();
+
+            var userIds = rankingData.Select(r => r.UserId).ToList();
+            var userInfos = await _context.Accounts
+                .AsNoTracking()
+                .Where(u => userIds.Contains(u.UserId))
+                .Include(u => u.CurrentTitle)
+                .ToDictionaryAsync(u => u.UserId, u => u);
+
+            int rank = 1;
+            foreach (var item in rankingData)
+            {
+                if (userInfos.TryGetValue(item.UserId, out var user))
+                {
+                    result.Add(new LeaderboardItemDto
+                    {
+                        Rank = rank++,
+                        UserId = user.UserId,
+                        FullName = user.FullName,
+                        AvatarUrl = user.AvatarUrl,
+                        TotalXP = item.Score,
+                        TitleName = user.CurrentTitle?.Name ?? "Chưa có",
+                        TitleColor = user.CurrentTitle?.ColorHex ?? "#000000"
+                    });
+                }
+            }
+            return result;
         }
     }
 }

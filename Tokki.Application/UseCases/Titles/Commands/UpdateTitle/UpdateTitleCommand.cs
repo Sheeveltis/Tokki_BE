@@ -6,7 +6,7 @@ namespace Tokki.Application.UseCases.Titles.Commands.UpdateTitle
 {
     public class UpdateTitleCommand : IRequest<OperationResult<Title>>
     {
-        public int TitleId { get; set; } 
+        public string TitleId { get; set; } 
         public string Name { get; set; }
         public string? Description { get; set; }
         public long RequiredXP { get; set; }
