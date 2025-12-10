@@ -58,7 +58,14 @@ namespace Tokki.Infrastructure.Repositories
             return await _context.Accounts.FirstOrDefaultAsync(u => u.UserId == userId);
         }
         // Tokki.Infrastructure/Repositories/AccountRepository.cs
+        public async Task<bool> IsPhoneNumberExistsAsync(string phoneNumber)
+        {
+            // Nếu số điện thoại truyền vào rỗng thì coi như không trùng (bỏ qua)
+            if (string.IsNullOrWhiteSpace(phoneNumber)) return false;
 
+            return await _context.Accounts
+                .AnyAsync(u => u.PhoneNumber == phoneNumber);
+        }
         public async Task<List<string>> GetEmailsByTargetGroupAsync(UserTargetGroup targetGroup)
         {
             var now = DateTime.UtcNow.AddHours(7);
@@ -95,6 +102,15 @@ namespace Tokki.Infrastructure.Repositories
 
             // Chỉ select cột Email để tối ưu hiệu suất
             return await query.Select(u => u.Email).ToListAsync();
+        }
+        public async Task<bool> IsPhoneNumberUsedByOtherUserAsync(string phoneNumber, string currentUserId)
+        {
+            // 1. Nếu số điện thoại truyền vào rỗng thì coi như không trùng (bỏ qua)
+            if (string.IsNullOrWhiteSpace(phoneNumber)) return false;
+
+            // 2. Tìm kiếm: Tìm user có số điện thoại trùng VÀ user đó KHÔNG phải là người đang sửa.
+            return await _context.Accounts
+                .AnyAsync(u => u.PhoneNumber == phoneNumber && u.UserId != currentUserId);
         }
     }
 }

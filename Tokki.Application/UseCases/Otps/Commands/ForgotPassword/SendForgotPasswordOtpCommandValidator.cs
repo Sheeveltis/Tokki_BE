@@ -1,16 +1,17 @@
 ﻿using FluentValidation;
-using Tokki.Application.UseCases.Otps.Commands.ForgotPassword;
 
-namespace Tokki.Application.UseCases.Otps.Validators
+namespace Tokki.Application.UseCases.Otps.Commands.ForgotPassword
 {
     public class SendForgotPasswordOtpCommandValidator : AbstractValidator<SendForgotPasswordOtpCommand>
     {
         public SendForgotPasswordOtpCommandValidator()
         {
+            // Validate Email
             RuleFor(x => x.Email)
                 .NotEmpty()
                 .EmailAddress()
-                .MaximumLength(255);
+                .MaximumLength(255)
+                .WithName("Email");
         }
     }
 }

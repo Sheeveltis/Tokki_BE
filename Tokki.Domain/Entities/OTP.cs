@@ -1,18 +1,19 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Tokki.Domain.Enums; // Nhớ using namespace chứa Enum
-
+using Tokki.Domain.Enums; 
 namespace Tokki.Domain.Entities
 {
     public class Otp
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public long OtpId { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.None)] 
+        [MaxLength(15)]
+        public string OtpId { get; set; } = string.Empty; 
+
 
         [MaxLength(15)]
-        public string? UserId { get; set; } // Đã khớp với bảng Account mới
+        public string? UserId { get; set; }
 
         [Required]
         [MaxLength(255)]

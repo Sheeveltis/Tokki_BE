@@ -2,12 +2,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tokki.Application.UseCases.Accounts.Commands.CreateEmailCampaign;
-using Tokki.Application.UseCases.Email.Commands.CreateCampaign; // Namespace chứa Command
-using Tokki.Domain.Enums; // Namespace chứa Enum AccountRole
+using Tokki.Application.UseCases.Email.Commands.CreateCampaign;
+using Tokki.Domain.Enums;
 
 namespace Tokki.API.Controllers
 {
-    [Route("api/email-campaigns")] // Đường dẫn: api/email-campaigns
+    [Route("api/email-campaigns")] 
     [ApiController]
     public class EmailCampaignController : ControllerBase
     {
@@ -21,9 +21,9 @@ namespace Tokki.API.Controllers
         /// <summary>
         /// API cho Admin tạo chiến dịch gửi email (Gửi ngay hoặc Lên lịch)
         /// </summary>
-        [HttpPost]
-        [Authorize(Roles = "Admin")] // Quan trọng: Chỉ Admin mới được phép gọi
-        public async Task<IActionResult> CreateCampaign([FromBody] CreateEmailCampaignCommand command)
+        [HttpPost("create-campaign-by-group")]
+        [Authorize(Roles = "Admin")] 
+        public async Task<IActionResult> CreateCampaignByGroup([FromBody] CreateEmailCampaignByGroupCommand command)
         {
             // Gọi sang Handler thông qua MediatR
             var result = await _mediator.Send(command);

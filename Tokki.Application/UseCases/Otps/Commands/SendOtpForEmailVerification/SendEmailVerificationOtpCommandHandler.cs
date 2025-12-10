@@ -15,35 +15,30 @@ namespace Tokki.Application.UseCases.Accounts.Commands.SendEmailVerificationOtp
         private readonly IEmailService _emailService;
         private readonly IValidator<SendEmailVerificationOtpCommand> _validator;
         private readonly ISystemConfigRepository _systemConfigRepository;
+        private readonly IIdGeneratorService _idGenerator; 
 
         public SendGeneralOtpCommandHandler(
             IOtpRepository otpRepository,
             IEmailService emailService,
             IValidator<SendEmailVerificationOtpCommand> validator,
-            ISystemConfigRepository systemConfigRepository)
+            ISystemConfigRepository systemConfigRepository,
+            IIdGeneratorService idGenerator) 
         {
             _otpRepository = otpRepository;
             _emailService = emailService;
             _validator = validator;
             _systemConfigRepository = systemConfigRepository;
+            _idGenerator = idGenerator; 
         }
 
         public async Task<OperationResult<string>> Handle(SendEmailVerificationOtpCommand request, CancellationToken cancellationToken)
         {
-            // 1. Validate Email đầu vào
-            var validationResult = await _validator.ValidateAsync(request, cancellationToken);
-            if (!validationResult.IsValid)
-            {
-                var errorMessages = string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage));
-                return OperationResult<string>.Failure(errorMessages, 400);
-            }
-
-            // 2. (Tùy chọn) Rate Limit: Kiểm tra xem có OTP nào còn hạn vừa gửi không?
+            // Rate Limit Check
             var existingOtp = await _otpRepository.GetLatestValidOtpAsync(request.Email, OtpType.VerifyEmail);
             if (existingOtp != null)
             {
                 var timeSinceLastOtp = (DateTime.UtcNow.AddHours(7) - existingOtp.CreatedAt).TotalSeconds;
-                if (timeSinceLastOtp < 60) // Chặn spam trong vòng 60 giây
+                if (timeSinceLastOtp < 60)
                 {
                     return OperationResult<string>.Failure(
                         $"Vui lòng đợi {60 - (int)timeSinceLastOtp} giây trước khi gửi lại.",
@@ -51,21 +46,19 @@ namespace Tokki.Application.UseCases.Accounts.Commands.SendEmailVerificationOtp
                 }
             }
 
-            // 3. Tạo OTP Code mới
             var otpCode = new Random().Next(100000, 999999).ToString();
 
-            // 4. Lấy cấu hình thời gian hết hạn OTP
             string? configValue = await _systemConfigRepository.GetValueByKeyAsync("OTP_EXPIRATION_SECONDS");
-            int otpLifeTimeSeconds = 300; // Mặc định 5 phút
+            int otpLifeTimeSeconds = 300;
 
             if (!string.IsNullOrEmpty(configValue) && int.TryParse(configValue, out int result))
             {
                 otpLifeTimeSeconds = result;
             }
 
-            // 5. Tạo Entity Otp
             var newOtp = new Otp
             {
+                OtpId = _idGenerator.Generate(15), 
                 Email = request.Email,
                 OtpCode = otpCode,
                 Type = OtpType.VerifyEmail,
@@ -76,33 +69,27 @@ namespace Tokki.Application.UseCases.Accounts.Commands.SendEmailVerificationOtp
                 UsedAt = null
             };
 
-            // 6. Lưu vào DB
             await _otpRepository.AddAsync(newOtp);
             await _otpRepository.SaveChangesAsync(cancellationToken);
 
-            // 7. Gửi Email
             try
             {
                 string subject = "[Tokki] Mã xác thực email";
                 string body = $@"
-                    <h3>Xin chào,</h3>
-                    <p>Bạn vừa yêu cầu xác thực email tại Tokki.</p>
-                    <p>Mã xác thực (OTP) của bạn là: <b style='font-size: 20px; color: blue;'>{otpCode}</b></p>
-                    <p>Mã này sẽ hết hạn sau {otpLifeTimeSeconds / 60} phút.</p>
-                    <p>Nếu bạn không yêu cầu mã này, vui lòng bỏ qua email.</p>";
+            <h3>Xin chào,</h3>
+            <p>Bạn vừa yêu cầu xác thực email tại Tokki.</p>
+            <p>Mã xác thực (OTP) của bạn là: <b style='font-size: 20px; color: blue;'>{otpCode}</b></p>
+            <p>Mã này sẽ hết hạn sau {otpLifeTimeSeconds / 60} phút.</p>
+            <p>Nếu bạn không yêu cầu mã này, vui lòng bỏ qua email.</p>";
 
                 await _emailService.SendEmailAsync(request.Email, subject, body);
             }
             catch (Exception)
             {
-                return OperationResult<string>.Failure(
-                    "Hệ thống gửi mail đang gặp sự cố. Vui lòng thử lại sau.",
-                    500);
+                return OperationResult<string>.Failure(new List<Error> { AppErrors.EmailServiceError });
             }
 
-            return OperationResult<string>.Success(
-                "Mã OTP đã được gửi đến email của bạn.",
-                200);
+            return OperationResult<string>.Success("Mã OTP đã được gửi đến email của bạn.", 200);
         }
     }
 }

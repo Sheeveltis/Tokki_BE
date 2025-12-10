@@ -14,6 +14,8 @@ namespace Tokki.Application.IRepositories
         Task AddSessionAsync(Session session);
         Task UpdateUserAsync(Account user);
         Task<Account?> GetByIdAsync(string userId);
+        Task<bool> IsPhoneNumberExistsAsync(string phoneNumber);
         Task<List<string>> GetEmailsByTargetGroupAsync(UserTargetGroup targetGroup);
+        Task<bool> IsPhoneNumberUsedByOtherUserAsync(string phoneNumber, string currentUserId);
     }
 }

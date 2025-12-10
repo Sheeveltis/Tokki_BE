@@ -1,26 +1,27 @@
 ﻿using FluentValidation;
-using Tokki.Application.UseCases.EmailTemplates.Commands.UpdateEmailTemplate;
 
-namespace Tokki.Application.UseCases.EmailTemplates.Validators
+namespace Tokki.Application.UseCases.EmailTemplates.Commands.UpdateEmailTemplate
 {
     public class UpdateEmailTemplateCommandValidator : AbstractValidator<UpdateEmailTemplateCommand>
     {
         public UpdateEmailTemplateCommandValidator()
         {
             RuleFor(x => x.TemplateId)
-                .GreaterThan(0).WithMessage("TemplateId phải lớn hơn 0.");
+                .NotEmpty()
+                .WithName("ID mẫu email");
 
             RuleFor(x => x.Subject)
                 .NotEmpty()
-                .MaximumLength(200);
+                .MaximumLength(255)
+                .WithName("Tiêu đề email");
 
             RuleFor(x => x.Body)
                 .NotEmpty()
-                .MaximumLength(10000);
+                .WithName("Nội dung email");
 
             RuleFor(x => x.Description)
                 .MaximumLength(500)
-                .When(x => !string.IsNullOrEmpty(x.Description));
+                .WithName("Mô tả");
         }
     }
 }

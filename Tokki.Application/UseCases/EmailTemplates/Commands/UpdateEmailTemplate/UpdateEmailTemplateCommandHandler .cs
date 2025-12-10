@@ -1,4 +1,9 @@
-﻿using MediatR;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.EmailTemplates.Commands.UpdateEmailTemplate;
@@ -17,11 +22,11 @@ namespace Tokki.Application.UseCases.EmailTemplates.Handlers
         public async Task<OperationResult<string>> Handle(UpdateEmailTemplateCommand request, CancellationToken cancellationToken)
         {
             var template = await _repository.GetByIdAsync(request.TemplateId);
-
             if (template == null)
             {
-                return OperationResult<string>.Failure("Không tìm thấy template!", 404);
+                return OperationResult<string>.Failure(new List<Error> { AppErrors.EmailTemplateNotFound });
             }
+
 
             template.Subject = request.Subject;
             template.Body = request.Body;

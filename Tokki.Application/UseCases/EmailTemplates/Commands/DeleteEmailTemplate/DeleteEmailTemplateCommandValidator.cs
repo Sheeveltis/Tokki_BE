@@ -1,14 +1,14 @@
 ﻿using FluentValidation;
-using Tokki.Application.UseCases.EmailTemplates.Commands.DeleteEmailTemplate;
 
-namespace Tokki.Application.UseCases.EmailTemplates.Validators
+namespace Tokki.Application.UseCases.EmailTemplates.Commands.DeleteEmailTemplate
 {
     public class DeleteEmailTemplateCommandValidator : AbstractValidator<DeleteEmailTemplateCommand>
     {
         public DeleteEmailTemplateCommandValidator()
         {
             RuleFor(x => x.TemplateId)
-                .GreaterThan(0).WithMessage("TemplateId phải lớn hơn 0.");
+                .NotEmpty()
+                .WithName("ID mẫu email");
         }
     }
 }

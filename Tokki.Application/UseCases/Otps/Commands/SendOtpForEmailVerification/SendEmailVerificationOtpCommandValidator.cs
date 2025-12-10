@@ -8,8 +8,10 @@ namespace Tokki.Application.UseCases.Accounts.Commands.SendOtpForEmailVerificati
         public SendEmailVerificationOtpCommandValidator()
         {
             RuleFor(x => x.Email)
-                .NotEmpty().WithMessage("Vui lòng nhập email.")
-                .EmailAddress().WithMessage("Email không đúng định dạng.");
+                .NotEmpty()         
+                .EmailAddress()    
+                .MaximumLength(255)  
+                .WithName("Email");
         }
     }
 }

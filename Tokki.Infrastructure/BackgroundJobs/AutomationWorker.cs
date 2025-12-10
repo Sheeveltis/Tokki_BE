@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Tokki.Infrastructure.Data;
 using Tokki.Application.IServices;
 using Tokki.Domain.Entities;
-using Tokki.Domain.Enums; 
+using Tokki.Domain.Enums;
 
 namespace Tokki.Infrastructure.BackgroundJobs
 {
@@ -49,18 +49,19 @@ namespace Tokki.Infrastructure.BackgroundJobs
             {
                 var context = scope.ServiceProvider.GetRequiredService<TokkiDbContext>();
                 var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
+                var idGenerator = scope.ServiceProvider.GetRequiredService<IIdGeneratorService>(); // ✅ Thêm dòng này
 
                 try
                 {
                     // ========== OFFLINE REMINDERS ==========
-                    await SendOfflineReminder(context, emailService, 30, "OFFLINE_30_DAYS");
-                    await SendOfflineReminder(context, emailService, 90, "OFFLINE_90_DAYS");
-                    await SendOfflineReminder(context, emailService, 180, "OFFLINE_180_DAYS");
+                    await SendOfflineReminder(context, emailService, idGenerator, 30, "OFFLINE_30_DAYS");
+                    await SendOfflineReminder(context, emailService, idGenerator, 90, "OFFLINE_90_DAYS");
+                    await SendOfflineReminder(context, emailService, idGenerator, 180, "OFFLINE_180_DAYS");
 
                     // ========== VIP EXPIRING REMINDERS ==========
-                    await SendVipExpiringReminder(context, emailService, 7, "VIP_EXPIRING_7_DAYS");
-                    await SendVipExpiringReminder(context, emailService, 3, "VIP_EXPIRING_3_DAYS");
-                    await SendVipExpiringReminder(context, emailService, 1, "VIP_EXPIRING_1_DAY");
+                    await SendVipExpiringReminder(context, emailService, idGenerator, 7, "VIP_EXPIRING_7_DAYS");
+                    await SendVipExpiringReminder(context, emailService, idGenerator, 3, "VIP_EXPIRING_3_DAYS");
+                    await SendVipExpiringReminder(context, emailService, idGenerator, 1, "VIP_EXPIRING_1_DAY");
 
                     _logger.LogInformation("=== Hoàn thành Daily Tasks ===");
                 }
@@ -72,7 +73,12 @@ namespace Tokki.Infrastructure.BackgroundJobs
         }
 
         // ========== HÀM GỬI EMAIL OFFLINE (ĐÃ SỬA) ==========
-        private async Task SendOfflineReminder(TokkiDbContext context, IEmailService emailService, int days, string templateKey)
+        private async Task SendOfflineReminder(
+            TokkiDbContext context,
+            IEmailService emailService,
+            IIdGeneratorService idGenerator, // ✅ Thêm parameter
+            int days,
+            string templateKey)
         {
             _logger.LogInformation($"[{templateKey}] Bắt đầu kiểm tra user offline >= {days} ngày...");
 
@@ -90,8 +96,8 @@ namespace Tokki.Infrastructure.BackgroundJobs
 
             // 3. Lấy danh sách user thỏa điều kiện
             var users = await context.Accounts
-                .Where(u => u.LastLoginAt != null && u.LastLoginAt <= cutoffDate) // Offline >= X ngày
-                .Where(u => !context.EmailHistories.Any(h =>  // Chưa từng nhận email này
+                .Where(u => u.LastLoginAt != null && u.LastLoginAt <= cutoffDate)
+                .Where(u => !context.EmailHistories.Any(h =>
                     h.UserId == u.UserId &&
                     h.TemplateKey == templateKey
                 ))
@@ -110,9 +116,10 @@ namespace Tokki.Infrastructure.BackgroundJobs
                     string body = template.Body.Replace("{FullName}", user.FullName);
                     await emailService.SendEmailAsync(user.Email, template.Subject, body);
 
-                    // ✅ Lưu lịch sử đã gửi (QUAN TRỌNG)
+                    // ✅ Lưu lịch sử đã gửi với NanoID
                     context.EmailHistories.Add(new EmailHistory
                     {
+                        Id = idGenerator.Generate(), // ✅ Tạo ID bằng NanoID
                         UserId = user.UserId,
                         TemplateKey = templateKey,
                         SentAt = DateTime.UtcNow.AddHours(7)
@@ -131,7 +138,12 @@ namespace Tokki.Infrastructure.BackgroundJobs
         }
 
         // ========== HÀM NHẮC VIP SẮP HẾT HẠN (ĐÃ SỬA) ==========
-        private async Task SendVipExpiringReminder(TokkiDbContext context, IEmailService emailService, int daysLeft, string templateKey)
+        private async Task SendVipExpiringReminder(
+            TokkiDbContext context,
+            IEmailService emailService,
+            IIdGeneratorService idGenerator, // ✅ Thêm parameter
+            int daysLeft,
+            string templateKey)
         {
             _logger.LogInformation($"[{templateKey}] Bắt đầu kiểm tra VIP hết hạn trong {daysLeft} ngày...");
 
@@ -150,8 +162,8 @@ namespace Tokki.Infrastructure.BackgroundJobs
             // 3. Lấy danh sách subscription sắp hết hạn
             var subs = await context.Subscriptions
                 .Include(s => s.Account)
-                .Where(s => s.Status == SubscriptionStatus.Active && s.EndDate.Date == targetDate) // Hết hạn đúng ngày
-                .Where(s => !context.EmailHistories.Any(h =>  // Chưa từng nhận email này
+                .Where(s => s.Status == SubscriptionStatus.Active && s.EndDate.Date == targetDate)
+                .Where(s => !context.EmailHistories.Any(h =>
                     h.UserId == s.UserId &&
                     h.TemplateKey == templateKey
                 ))
@@ -175,9 +187,10 @@ namespace Tokki.Infrastructure.BackgroundJobs
 
                     await emailService.SendEmailAsync(sub.Account.Email, template.Subject, body);
 
-                    // ✅ Lưu lịch sử đã gửi
+                    // ✅ Lưu lịch sử đã gửi với NanoID
                     context.EmailHistories.Add(new EmailHistory
                     {
+                        Id = idGenerator.Generate(15), 
                         UserId = sub.UserId,
                         TemplateKey = templateKey,
                         SentAt = DateTime.UtcNow.AddHours(7)

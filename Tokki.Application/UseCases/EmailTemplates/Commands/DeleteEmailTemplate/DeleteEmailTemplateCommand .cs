@@ -10,6 +10,6 @@ namespace Tokki.Application.UseCases.EmailTemplates.Commands.DeleteEmailTemplate
 {
     public class DeleteEmailTemplateCommand : IRequest<OperationResult<string>>
     {
-        public int TemplateId { get; set; }
+        public string TemplateId { get; set; } = string.Empty; 
     }
 }

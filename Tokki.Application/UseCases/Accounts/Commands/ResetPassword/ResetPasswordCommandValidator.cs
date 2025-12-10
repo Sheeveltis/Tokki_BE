@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FluentValidation;
+﻿using FluentValidation;
 
 namespace Tokki.Application.UseCases.Accounts.Commands.ResetPassword
 {
@@ -11,8 +6,18 @@ namespace Tokki.Application.UseCases.Accounts.Commands.ResetPassword
     {
         public ResetPasswordCommandValidator()
         {
-            RuleFor(x => x.NewPassword).MinimumLength(6).WithMessage("Mật khẩu tối thiểu 6 ký tự.");
-            RuleFor(x => x.ConfirmPassword).Equal(x => x.NewPassword).WithMessage("Mật khẩu nhập lại không khớp.");
+           
+
+            RuleFor(x => x.NewPassword)
+                .NotEmpty()
+                .MinimumLength(6)
+                .MaximumLength(100)
+                .WithName("Mật khẩu mới");
+
+            RuleFor(x => x.ConfirmPassword)
+                .NotEmpty()
+                .Equal(x => x.NewPassword)
+                .WithName("Mật khẩu nhập lại");
         }
     }
 }

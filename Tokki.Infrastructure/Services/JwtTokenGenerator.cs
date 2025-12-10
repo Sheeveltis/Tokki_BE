@@ -18,31 +18,27 @@ namespace Tokki.Infrastructure.Services // Đặt chung namespace với Services
             _jwtSettings = jwtOptions.Value;
         }
 
-        public string GenerateToken(Account user)
+        public string GenerateToken(Account user, DateTime expiresAt) // <--- 1. Thêm tham số nhận giờ từ bên ngoài
         {
-            // 1. Tạo các Claim (Thông tin chứa bên trong Token)
             var claims = new List<Claim>
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim("role", user.Role.ToString()) // Lưu quyền hạn (Admin/User)
-            };
+    {
+        new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
+        new Claim(JwtRegisteredClaimNames.Email, user.Email),
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        new Claim("role", user.Role.ToString()) 
+    };
 
-            // 2. Lấy khóa bí mật và mã hóa
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Secret));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            // 3. Cấu hình Token
             var token = new JwtSecurityToken(
                 issuer: _jwtSettings.Issuer,
                 audience: _jwtSettings.Audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(7).AddMinutes(_jwtSettings.ExpiryMinutes),
+                expires: expiresAt, 
                 signingCredentials: creds
             );
 
-            // 4. Trả về chuỗi Token
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
         public string GenerateForgotPasswordToken(string email)

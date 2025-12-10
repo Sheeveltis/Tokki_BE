@@ -6,6 +6,6 @@ namespace Tokki.Application.UseCases.EmailTemplates.Queries
 {
     public class GetEmailTemplateByIdQuery : IRequest<OperationResult<EmailTemplate>>
     {
-        public int TemplateId { get; set; }
+        public string TemplateId { get; set; }
     }
 }

@@ -1,23 +1,24 @@
 ﻿using FluentValidation;
-using Tokki.Application.UseCases.SystemConfigs.Commands.Update;
 
-namespace Tokki.Application.UseCases.SystemConfigs.Validators
+namespace Tokki.Application.UseCases.SystemConfigs.Commands.Update
 {
     public class UpdateSystemConfigCommandValidator : AbstractValidator<UpdateSystemConfigCommand>
     {
         public UpdateSystemConfigCommandValidator()
         {
+           
             RuleFor(x => x.Key)
                 .NotEmpty()
-                .MaximumLength(100);
+                .MaximumLength(100)
+                .WithName("Mã cấu hình");
 
-            RuleFor(x => x.Value)
-                .MaximumLength(1000)
-                .When(x => !string.IsNullOrEmpty(x.Value));
+             RuleFor(x => x.Value)
+                .MaximumLength(2000) 
+                .WithName("Giá trị cấu hình");
 
             RuleFor(x => x.Description)
                 .MaximumLength(500)
-                .When(x => !string.IsNullOrEmpty(x.Description));
+                .WithName("Mô tả");
         }
     }
 }

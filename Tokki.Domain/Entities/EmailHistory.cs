@@ -8,8 +8,9 @@ namespace Tokki.Domain.Entities
     public class EmailHistory
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        [MaxLength(15)] 
+        public string Id { get; set; } = string.Empty;
 
         [Required]
         [MaxLength(15)]

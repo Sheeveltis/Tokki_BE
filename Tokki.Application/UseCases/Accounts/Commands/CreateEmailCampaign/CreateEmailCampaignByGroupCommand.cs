@@ -9,11 +9,11 @@ using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Accounts.Commands.CreateEmailCampaign
 {
-    public class CreateEmailCampaignCommand : IRequest<OperationResult<string>>
+    public class CreateEmailCampaignByGroupCommand : IRequest<OperationResult<string>>
     {
         public string Subject { get; set; }
         public string Body { get; set; }
-        public UserTargetGroup TargetGroup { get; set; } // Chọn Free/VIP/All
+        public UserTargetGroup TargetGroup { get; set; } 
         public DateTime? ScheduledTime { get; set; } // Null = Gửi ngay
     }
 }

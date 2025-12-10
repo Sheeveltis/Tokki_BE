@@ -6,11 +6,10 @@ namespace Tokki.Application.UseCases.Otps.Commands.SendGeneralOtp
     {
         public SendGeneralOtpCommandValidator()
         {
-            // CODE Validation như trong hình của bạn
-
             RuleFor(x => x.Email)
                 .NotEmpty()
-                .EmailAddress().WithMessage("Định dạng email không hợp lệ.")
+                .EmailAddress()     
+                .MaximumLength(255)  
                 .WithName("Email");
         }
     }

@@ -75,14 +75,11 @@ namespace Tokki.WebAPI.Controllers
         }
 
         [HttpPut("profile")]
-        [Authorize] // Bắt buộc phải đăng nhập
+        [Authorize] 
         public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileCommand command)
         {
-            // 1. Lấy UserId từ Token
-            // ClaimTypes.NameIdentifier thường được map với "sub" hoặc "uid" trong Token
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                         ?? User.FindFirst("sub")?.Value
-                         ?? User.FindFirst("UserId")?.Value;
+                         ?? User.FindFirst("sub")?.Value;
 
             if (string.IsNullOrEmpty(userId))
             {

@@ -21,10 +21,9 @@ namespace Tokki.Application.UseCases.EmailTemplates.Commands.DeleteEmailTemplate
         public async Task<OperationResult<string>> Handle(DeleteEmailTemplateCommand request, CancellationToken cancellationToken)
         {
             var template = await _repository.GetByIdAsync(request.TemplateId);
-
             if (template == null)
             {
-                return OperationResult<string>.Failure("Không tìm thấy template!", 404);
+                return OperationResult<string>.Failure(new List<Error> { AppErrors.EmailTemplateNotFound });
             }
 
             await _repository.DeleteAsync(request.TemplateId);

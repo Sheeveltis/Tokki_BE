@@ -7,22 +7,19 @@ using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Email.Commands.CreateCampaign
 {
-    public class CreateEmailCampaignCommandHandler : IRequestHandler<CreateEmailCampaignCommand, OperationResult<string>>
+    public class CreateEmailCampaignByGroupCommandHandler : IRequestHandler<CreateEmailCampaignByGroupCommand, OperationResult<string>>
     {
-        // Thay DbContext bằng Repository Interface
         private readonly IEmailJobRepository _emailJobRepository;
 
-        public CreateEmailCampaignCommandHandler(IEmailJobRepository emailJobRepository)
+        public CreateEmailCampaignByGroupCommandHandler(IEmailJobRepository emailJobRepository)
         {
             _emailJobRepository = emailJobRepository;
         }
 
-        public async Task<OperationResult<string>> Handle(CreateEmailCampaignCommand request, CancellationToken cancellationToken)
+        public async Task<OperationResult<string>> Handle(CreateEmailCampaignByGroupCommand request, CancellationToken cancellationToken)
         {
-            // 1. Logic xử lý thời gian (Giữ nguyên logic UTC+7 của bạn)
             var sendTime = request.ScheduledTime ?? DateTime.UtcNow.AddHours(7);
 
-            // 2. Tạo Entity
             var job = new EmailJob
             {
                 Subject = request.Subject,

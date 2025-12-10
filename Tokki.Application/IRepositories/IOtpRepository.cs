@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// IOtpRepository.cs
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 
@@ -10,9 +6,11 @@ namespace Tokki.Application.IRepositories
 {
     public interface IOtpRepository
     {
-        Task AddAsync(Otp otp);
+        Task<Otp?> GetByIdAsync(string id); // ✅ Đổi long → string
         Task<Otp?> GetLatestValidOtpAsync(string email, OtpType type);
-        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+        Task AddAsync(Otp otp);
         Task UpdateAsync(Otp otp);
+        Task DeleteAsync(string id); // ✅ Đổi long → string (nếu có)
+        Task SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }

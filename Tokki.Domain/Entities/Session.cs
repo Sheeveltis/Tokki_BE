@@ -7,21 +7,21 @@ namespace Tokki.Domain.Entities
     public class Session
     {
         [Key]
-        [MaxLength(36)] // SỬA: Từ 15 -> 36 để chứa đủ UUID (ví dụ: "550e8400-e29b-41d4-a716-446655440000")
+        [MaxLength(36)]
         public string SessionId { get; set; } = string.Empty;
 
         [Required]
-        [MaxLength(15)] // Khớp với UserId  bên bảng Account
+        [MaxLength(15)] 
         public string UserId { get; set; } = string.Empty;
 
         [Required]
-        [MaxLength(500)] // SỬA: Từ 255 -> 500. Token JWT thường dài hơn 300 ký tự.
+        [MaxLength(500)]
         public string RefreshToken { get; set; } = string.Empty;
 
         [Required]
         public DateTime ExpiresAt { get; set; }
 
-        [MaxLength(45)] // SỬA: Từ 50 -> 45 (Độ dài tối đa của IPv6)
+        [MaxLength(45)] 
         public string? IpAddress { get; set; }
 
         [MaxLength(500)]
@@ -32,8 +32,7 @@ namespace Tokki.Domain.Entities
 
         public DateTime? RevokedAt { get; set; }
 
-        // Relationship
-        [ForeignKey(nameof(UserId))] // Chỉ định rõ khóa ngoại
+        [ForeignKey(nameof(UserId))] 
         public virtual Account? Account { get; set; }
     }
 }

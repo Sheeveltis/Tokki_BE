@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
-using Tokki.Application.UseCases.Otps.Commands.VerifyForgotPasswordOtp;
 
-namespace Tokki.Application.UseCases.Otps.Validators
+namespace Tokki.Application.UseCases.Otps.Commands.VerifyForgotPasswordOtp
 {
     public class VerifyForgotPasswordOtpCommandValidator : AbstractValidator<VerifyForgotPasswordOtpCommand>
     {
@@ -9,13 +8,15 @@ namespace Tokki.Application.UseCases.Otps.Validators
         {
             RuleFor(x => x.Email)
                 .NotEmpty()
-                .EmailAddress()
-                .MaximumLength(255);
+                .EmailAddress() 
+                .MaximumLength(255)
+                .WithName("Email");
 
             RuleFor(x => x.OtpCode)
                 .NotEmpty()
-                .Length(6).WithMessage("Mã OTP phải có đúng 6 ký tự.")
-                .Matches("^[0-9]+$").WithMessage("Mã OTP chỉ được chứa số.");
+                .Length(6) 
+                .Matches(@"^\d+$").WithMessage("'{PropertyName}' chỉ được chứa các ký tự số.")
+                .WithName("Mã OTP");
         }
     }
 }

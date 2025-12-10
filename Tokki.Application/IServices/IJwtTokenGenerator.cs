@@ -9,7 +9,7 @@ namespace Tokki.Application.IServices
 {
     public interface IJwtTokenGenerator
     {
-        string GenerateToken(Account user);
+        string GenerateToken(Account user, DateTime expireAt);
         string GenerateForgotPasswordToken(string email);
     }
 }
