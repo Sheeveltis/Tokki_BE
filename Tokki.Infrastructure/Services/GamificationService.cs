@@ -1,20 +1,22 @@
 ﻿using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Domain.Entities;
-
+using Tokki.Infrastructure.Data;
 namespace Tokki.Infrastructure.Services
 {
     public class GamificationService : IGamificationService
     {
         private readonly IAccountRepository _accountRepository;
         private readonly ITitleRepository _titleRepository;
+        private readonly TokkiDbContext _context;
         private const int TARGET_STUDY_SECONDS = 900; 
         private const string LAZY_TITLE_NAME = "Con Lười";
 
-        public GamificationService(IAccountRepository accountRepository, ITitleRepository titleRepository)
+        public GamificationService(IAccountRepository accountRepository, ITitleRepository titleRepository, TokkiDbContext context)
         {
             _accountRepository = accountRepository;
             _titleRepository = titleRepository;
+            _context = context;
         }
 
         private async Task UnlockAndEquipTitleAsync(Account user, Title title)
@@ -68,14 +70,25 @@ namespace Tokki.Infrastructure.Services
             bool completedToday = user.LastStreakDate.HasValue
                       && user.LastStreakDate.Value.Date == DateTime.UtcNow.AddHours(7).Date;
 
-            if (user.DailyStudySeconds >= 900 && !completedToday) 
+            if (user.DailyStudySeconds >= 900 && !completedToday)
             {
                 isStreakCompletedNow = true;
-                user.TotalXP += 100;
+                long bonusXP = 100; 
+
+                user.TotalXP += bonusXP;
+
+                var history = new UserXpHistory
+                {
+                    UserId = user.UserId,
+                    Amount = bonusXP,
+                    Action = "Daily Streak", 
+                    CreatedAt = DateTime.UtcNow.AddHours(7)
+                };
+
+                _context.UserXpHistories.Add(history);
 
                 if (user.CurrentTitleId != null)
                 {
-                 
                 }
 
                 var bestTitle = await _titleRepository.GetTitleByXpAsync(user.TotalXP);
@@ -87,6 +100,7 @@ namespace Tokki.Infrastructure.Services
             }
 
             await _accountRepository.UpdateUserAsync(user);
+
             await _accountRepository.SaveChangesAsync(default);
 
             return isStreakCompletedNow;
