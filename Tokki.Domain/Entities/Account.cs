@@ -58,7 +58,7 @@ namespace Tokki.Domain.Entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow.AddHours(7);
 
         [Required]
-        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow.AddHours(7);
+        public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow.AddHours(7);
 
         // Navigation Properties
         public virtual ICollection<Session> Sessions { get; set; } = new List<Session>();

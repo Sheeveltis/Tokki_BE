@@ -6,8 +6,9 @@ namespace Tokki.Application.UseCases.EmailTemplates.Commands.DeleteEmailTemplate
     {
         public DeleteEmailTemplateCommandValidator()
         {
-            
-            
+            RuleFor(x => x.TemplateId)
+                .NotEmpty()
+                .WithName("ID mẫu email");
         }
     }
 }
