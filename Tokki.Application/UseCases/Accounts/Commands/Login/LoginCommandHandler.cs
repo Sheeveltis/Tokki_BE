@@ -17,12 +17,14 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
         private readonly IJwtTokenGenerator _jwtGenerator;
         private readonly IIdGeneratorService _idGenerator;
         private readonly IValidator<LoginCommand> _validator;
+        private readonly IGamificationService _gamificationService;
 
         public LoginCommandHandler(
             IAccountRepository accountRepository,
             ISystemConfigRepository systemConfigRepository,
             IJwtTokenGenerator jwtGenerator,
             IIdGeneratorService idGenerator,
+            IGamificationService gamificationService,
             IValidator<LoginCommand> validator)
         {
             _accountRepository = accountRepository;
@@ -30,6 +32,7 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
             _jwtGenerator = jwtGenerator;
             _idGenerator = idGenerator;
             _validator = validator;
+            _gamificationService = gamificationService;
         }
 
         public async Task<OperationResult<LoginResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
@@ -92,6 +95,7 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
                 user.LockedUntil = null;
                 await _accountRepository.UpdateUserAsync(user);
             }
+            await _gamificationService.CheckLoginGamificationAsync(user.UserId);        
 
             // --- 5. LOGIC TẠO TOKEN & SESSION ---
 
