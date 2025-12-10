@@ -15,12 +15,16 @@ namespace Tokki.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<List<Title>> GetAllTitlesAsync()
+        public async Task<List<Title>> GetAllTitlesAsync(bool includeInactive = false)
         {
-            return await _context.Titles
-                .Where(t => t.Status == TitleStatus.Active) 
-                .OrderBy(t => t.RequiredXP)
-                .ToListAsync();
+            var query = _context.Titles.AsQueryable();
+
+            if (!includeInactive)
+            {
+                query = query.Where(t => t.Status == TitleStatus.Active);
+            }
+
+            return await query.OrderBy(t => t.RequiredXP).ToListAsync();
         }
 
         public async Task<Title?> GetTitleByNameAsync(string name)
@@ -41,6 +45,17 @@ namespace Tokki.Infrastructure.Repositories
                             && t.Status == TitleStatus.Active) 
                 .OrderByDescending(t => t.RequiredXP)
                 .FirstOrDefaultAsync();
+        }
+        public async Task AddAsync(Title title)
+        {
+            await _context.Titles.AddAsync(title);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateAsync(Title title)
+        {
+            _context.Titles.Update(title);
+            await _context.SaveChangesAsync();
         }
     }
 }
