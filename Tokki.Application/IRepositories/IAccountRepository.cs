@@ -17,5 +17,8 @@ namespace Tokki.Application.IRepositories
         Task<bool> IsPhoneNumberExistsAsync(string phoneNumber);
         Task<List<string>> GetEmailsByTargetGroupAsync(UserTargetGroup targetGroup);
         Task<bool> IsPhoneNumberUsedByOtherUserAsync(string phoneNumber, string currentUserId);
+
+        Task<bool> HasTitleAsync(string userId, string titleId);
+        Task AddAccountTitleAsync(AccountTitle accountTitle);
     }
 }

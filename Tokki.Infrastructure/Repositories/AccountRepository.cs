@@ -112,5 +112,17 @@ namespace Tokki.Infrastructure.Repositories
             return await _context.Accounts
                 .AnyAsync(u => u.PhoneNumber == phoneNumber && u.UserId != currentUserId);
         }
+
+        public async Task<bool> HasTitleAsync(string userId, string titleId)
+        {
+            return await _context.AccountTitles
+                .AnyAsync(at => at.UserId == userId && at.TitleId == titleId);
+        }
+
+        public async Task AddAccountTitleAsync(AccountTitle accountTitle)
+        {
+            await _context.AccountTitles.AddAsync(accountTitle);
+            await _context.SaveChangesAsync();
+        }
     }
 }
