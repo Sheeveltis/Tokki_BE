@@ -29,6 +29,7 @@ namespace Tokki.Infrastructure.Data
         public DbSet<EmailHistory> EmailHistories { get; set; }
         public DbSet<Title> Titles { get; set; }
         public DbSet<AccountTitle> AccountTitles { get; set; }
+        public DbSet<UserXpHistory> UserXpHistories { get; set; } 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
