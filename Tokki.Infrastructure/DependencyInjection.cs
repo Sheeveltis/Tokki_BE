@@ -31,6 +31,8 @@ namespace Tokki.Infrastructure
             services.AddScoped<IVipPackageRepository, VipPackageRepository>();
             services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
             services.AddScoped<IStatisticsRepository, StatisticsRepository>();
+            services.AddScoped<ITitleRepository, TitleRepository>();
+            services.AddScoped<IGamificationService, GamificationService>();
             // 3. Đăng ký các Services khác (IdGenerator, Email, Storage...)
             services.AddSingleton<IIdGeneratorService, IdGeneratorService>();
             services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
