@@ -22,12 +22,12 @@ namespace Tokki.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<EmailTemplate?> GetByIdAsync(int id)
+        public async Task<EmailTemplate?> GetByIdAsync(string id) 
         {
             return await _context.EmailTemplates.FindAsync(id);
         }
 
-        public async Task<EmailTemplate?> GetByKeyAsync(string key)
+        public async Task<EmailTemplate?> GetByKeyAsync(string key) 
         {
             return await _context.EmailTemplates
                 .FirstOrDefaultAsync(t => t.TemplateKey == key);
@@ -44,7 +44,7 @@ namespace Tokki.Infrastructure.Repositories
             return Task.CompletedTask;
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(string id) 
         {
             var template = await GetByIdAsync(id);
             if (template != null)

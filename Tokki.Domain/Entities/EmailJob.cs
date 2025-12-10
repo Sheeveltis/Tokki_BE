@@ -8,8 +8,9 @@ namespace Tokki.Domain.Entities
     public class EmailJob
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int JobId { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        [MaxLength(15)] 
+        public string JobId { get; set; } = string.Empty;
 
         [Required]
         [MaxLength(255)]

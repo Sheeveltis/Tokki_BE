@@ -2,46 +2,45 @@
 using global::Tokki.Application.IRepositories;
 using global::Tokki.Domain.Entities;
 using MediatR;
-using Tokki.Application.UseCases.EmailTemplates.Commands.CreateEmailTemplate;
-
-namespace Tokki.Application.UseCases.EmailTemplates.Commands
+using Tokki.Application.IServices; 
+namespace Tokki.Application.UseCases.EmailTemplates.Commands.CreateEmailTemplate
 {
-   
-    namespace Tokki.Application.UseCases.EmailTemplates.Commands
+    public class CreateEmailTemplateCommandHandler : IRequestHandler<CreateEmailTemplateCommand, OperationResult<string>> // ✅ Đổi int → string
     {
-        public class CreateEmailTemplateCommandHandler : IRequestHandler<CreateEmailTemplateCommand, OperationResult<int>>
+        private readonly IEmailTemplateRepository _repository;
+        private readonly IIdGeneratorService _idGenerator;
+
+        public CreateEmailTemplateCommandHandler(
+            IEmailTemplateRepository repository,
+            IIdGeneratorService idGenerator) 
         {
-            private readonly IEmailTemplateRepository _repository;
+            _repository = repository;
+            _idGenerator = idGenerator;
+        }
 
-            public CreateEmailTemplateCommandHandler(IEmailTemplateRepository repository)
+        public async Task<OperationResult<string>> Handle(CreateEmailTemplateCommand request, CancellationToken cancellationToken)
+        {
+            // Kiểm tra TemplateKey đã tồn tại chưa
+            var existing = await _repository.GetByKeyAsync(request.TemplateKey);
+            if (existing != null)
             {
-                _repository = repository;
+                return OperationResult<string>.Failure(new List<Error> { AppErrors.EmailTemplateKeyDuplicated });
             }
 
-            public async Task<OperationResult<int>> Handle(CreateEmailTemplateCommand request, CancellationToken cancellationToken)
+            var template = new EmailTemplate
             {
-                // Kiểm tra TemplateKey đã tồn tại chưa
-                var existing = await _repository.GetByKeyAsync(request.TemplateKey);
-                if (existing != null)
-                {
-                    return OperationResult<int>.Failure($"TemplateKey '{request.TemplateKey}' đã tồn tại!", 400);
-                }
+                TemplateId = _idGenerator.Generate(15), 
+                TemplateKey = request.TemplateKey,
+                Subject = request.Subject,
+                Body = request.Body,
+                Description = request.Description,
+                UpdatedAt = DateTime.UtcNow.AddHours(7)
+            };
 
-                var template = new EmailTemplate
-                {
-                    TemplateKey = request.TemplateKey,
-                    Subject = request.Subject,
-                    Body = request.Body,
-                    Description = request.Description,
-                    UpdatedAt = DateTime.UtcNow.AddHours(7)
-                };
+            await _repository.AddAsync(template);
+            await _repository.SaveChangesAsync(cancellationToken);
 
-                await _repository.AddAsync(template);
-                await _repository.SaveChangesAsync(cancellationToken);
-
-                return OperationResult<int>.Success(template.TemplateId, 201, "Tạo template thành công!");
-            }
+            return OperationResult<string>.Success(template.TemplateId, 201, "Tạo template thành công!");
         }
     }
-
 }

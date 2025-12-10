@@ -52,5 +52,7 @@ namespace Tokki.Application.Common.Models
         {
             return Failure(new Error("Error.Generic", errorMsg), statusCode, errorMsg);
         }
+
+
     }
 }

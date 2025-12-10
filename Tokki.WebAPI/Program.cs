@@ -74,7 +74,6 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = jwtSettings.Audience,
         IssuerSigningKey = new SymmetricSecurityKey(key),
 
-        // Quan trọng: Set ClockSkew về 0 để token hết hạn đúng chính xác từng giây
         ClockSkew = TimeSpan.Zero
     };
 });

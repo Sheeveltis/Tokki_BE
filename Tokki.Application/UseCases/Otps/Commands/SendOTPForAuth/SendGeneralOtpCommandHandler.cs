@@ -13,36 +13,29 @@ namespace Tokki.Application.UseCases.Otps.Commands.SendGeneralOtp
     {
         private readonly IOtpRepository _otpRepository;
         private readonly IEmailService _emailService;
-        private readonly IValidator<SendGeneralOtpCommand> _validator;
+        private readonly IIdGeneratorService _idGenerator; 
 
         public SendGeneralOtpCommandHandler(
             IOtpRepository otpRepository,
             IEmailService emailService,
-            IValidator<SendGeneralOtpCommand> validator)
+            IIdGeneratorService idGenerator)
         {
             _otpRepository = otpRepository;
             _emailService = emailService;
-            _validator = validator;
+            _idGenerator = idGenerator; 
         }
 
         public async Task<OperationResult<string>> Handle(
             SendGeneralOtpCommand request,
             CancellationToken cancellationToken)
         {
-            // 1. Validate bằng FluentValidation
-            var validationResult = await _validator.ValidateAsync(request, cancellationToken);
-            if (!validationResult.IsValid)
-            {
-                var errorMessages = string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage));
-                return OperationResult<string>.Failure(errorMessages, 400);
-            }
-
-            // 2. Tạo mã OTP ngẫu nhiên
+            // Tạo mã OTP ngẫu nhiên
             var otpCode = new Random().Next(100000, 999999).ToString();
 
-            // 3. Tạo Entity OTP (Type = General)
+            // Tạo Entity OTP (Type = General)
             var otpEntity = new Otp
             {
+                OtpId = _idGenerator.Generate(15), // ✅ Thêm dòng này - Tạo NanoID 15 ký tự
                 Email = request.Email,
                 OtpCode = otpCode,
                 Type = OtpType.General,
@@ -52,11 +45,10 @@ namespace Tokki.Application.UseCases.Otps.Commands.SendGeneralOtp
                 ExpiredAt = DateTime.UtcNow.AddHours(7).AddMinutes(5)
             };
 
-            // 4. Lưu vào DB
             await _otpRepository.AddAsync(otpEntity);
             await _otpRepository.SaveChangesAsync(cancellationToken);
 
-            // 5. Gửi email OTP
+            // Gửi email 
             string subject = "Mã xác thực (General)";
             string body =
                 $"<h3>Mã xác thực của bạn là: " +

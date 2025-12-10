@@ -170,7 +170,7 @@ namespace Tokki.Infrastructure.Data
 
             modelBuilder.Entity<EmailJob>()
                 .Property(j => j.TargetGroup)
-                .HasConversion<string>();
+                .HasConversion<int>();
 
             modelBuilder.Entity<EmailJob>().Property(j => j.Status).HasConversion<string>();
 
@@ -188,6 +188,30 @@ namespace Tokki.Infrastructure.Data
                       .WithMany()
                       .HasForeignKey(e => e.UserId)
                       .OnDelete(DeleteBehavior.Cascade);
+            });
+            modelBuilder.Entity<EmailTemplate>(entity =>
+            {
+                // Cấu hình khóa chính (nếu chưa có attribute [Key] bên Entity)
+                entity.HasKey(e => e.TemplateId);
+
+                // Đảm bảo TemplateKey là duy nhất
+                entity.HasIndex(e => e.TemplateKey).IsUnique();
+
+                // Cấu hình Subject: Bắt buộc, tối đa 255 ký tự, HỖ TRỢ TIẾNG VIỆT
+                entity.Property(e => e.Subject)
+                      .IsRequired()
+                      .HasMaxLength(255)
+                      .IsUnicode(true); // <--- QUAN TRỌNG: Tạo ra NVARCHAR
+
+                // Cấu hình Body: Bắt buộc, không giới hạn độ dài, HỖ TRỢ TIẾNG VIỆT
+                entity.Property(e => e.Body)
+                      .IsRequired()
+                      .IsUnicode(true); // <--- QUAN TRỌNG: Tạo ra NVARCHAR(MAX)
+
+                // Cấu hình Description: HỖ TRỢ TIẾNG VIỆT
+                entity.Property(e => e.Description)
+                      .HasMaxLength(500)
+                      .IsUnicode(true); // <--- QUAN TRỌNG
             });
         }
     }

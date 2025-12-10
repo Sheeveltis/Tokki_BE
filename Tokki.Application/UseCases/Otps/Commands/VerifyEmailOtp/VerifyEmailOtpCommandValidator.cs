@@ -7,12 +7,15 @@ namespace Tokki.Application.UseCases.Accounts.Commands.VerifyEmailOtp
         public VerifyEmailOtpCommandValidator()
         {
             RuleFor(x => x.Email)
-                .NotEmpty().WithMessage("Vui lòng nhập email.")
-                .EmailAddress().WithMessage("Email không đúng định dạng.");
+                .NotEmpty()
+                .EmailAddress()
+                .MaximumLength(255)
+                .WithName("Email");
 
             RuleFor(x => x.OtpCode)
-                .NotEmpty().WithMessage("Vui lòng nhập mã OTP.")
-                .Length(6).WithMessage("Mã OTP phải có 6 ký tự.");
+                .NotEmpty()
+                .Length(6) 
+                .WithName("Mã OTP");
         }
     }
 }

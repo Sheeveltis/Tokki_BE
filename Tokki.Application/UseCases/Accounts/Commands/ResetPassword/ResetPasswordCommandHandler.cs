@@ -10,24 +10,23 @@ using Tokki.Application.IRepositories;
 
 namespace Tokki.Application.UseCases.Accounts.Commands.ResetPassword
 {
-    // UseCases/Accounts/Commands/ForgotPassword/ResetPassword/ResetPasswordCommandHandler.cs
     public class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommand, OperationResult<string>>
     {
         private readonly IAccountRepository _accountRepository;
-        private readonly IValidator<ResetPasswordCommand> _validator;
 
         public ResetPasswordCommandHandler(IAccountRepository accountRepository, IValidator<ResetPasswordCommand> validator)
         {
             _accountRepository = accountRepository;
-            _validator = validator;
         }
 
-        // ResetPasswordCommandHandler.cs
         public async Task<OperationResult<string>> Handle(ResetPasswordCommand request, CancellationToken cancellationToken)
         {
             // 1. Tìm User
             var user = await _accountRepository.GetByEmailAsync(request.Email);
-            if (user == null) return OperationResult<string>.Failure("User không tồn tại.", 404);
+            if (user == null)
+            {
+                return OperationResult<string>.Failure(new List<Error> { AppErrors.UserNotFound });
+            }
 
             // 2. Đổi mật khẩu
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
@@ -42,6 +41,5 @@ namespace Tokki.Application.UseCases.Accounts.Commands.ResetPassword
 
             return OperationResult<string>.Success("Đổi mật khẩu thành công!", 200);
         }
-
     }
 }

@@ -4,10 +4,11 @@ using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Domain.Entities;
-using Tokki.Application.UseCases.Blogs.Commands.CreateBlog;
+using Tokki.Application.UseCases.Accounts.Commands.Register; // Sửa namespace cho đúng
 using BCrypt.Net;
 using Tokki.Domain.Enums;
-using FluentValidation; 
+using FluentValidation;
+using Tokki.Application.UseCases.Blogs.Commands.CreateBlog;
 
 namespace Tokki.Application.UseCases.Accounts.Commands.Register
 {
@@ -16,37 +17,45 @@ namespace Tokki.Application.UseCases.Accounts.Commands.Register
         private readonly IAccountRepository _accountRepository;
         private readonly IIdGeneratorService _idGeneratorService;
         private readonly ILogger<RegisterUserAccountCommandHandler> _logger;
-        private readonly IValidator<RegisterUserAccountCommand> _validator; // ✅ THÊM
+        private readonly IValidator<RegisterUserAccountCommand> _validator;
 
         public RegisterUserAccountCommandHandler(
             IAccountRepository accountRepository,
             IIdGeneratorService idGeneratorService,
             ILogger<RegisterUserAccountCommandHandler> logger,
-            IValidator<RegisterUserAccountCommand> validator) // ✅ THÊM
+            IValidator<RegisterUserAccountCommand> validator)
         {
             _accountRepository = accountRepository;
             _idGeneratorService = idGeneratorService;
             _logger = logger;
-            _validator = validator; // ✅ THÊM
+            _validator = validator;
         }
 
         public async Task<OperationResult<string>> Handle(RegisterUserAccountCommand request, CancellationToken cancellationToken)
         {
-            var validationResult = await _validator.ValidateAsync(request, cancellationToken);
-            if (!validationResult.IsValid)
-            {
-                var errorMessages = string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage));
-                var error = new Error("Validation.Failed", errorMessages);
-                return OperationResult<string>.Failure(error, 400, "Dữ liệu không hợp lệ");
-            }
+            
 
             bool emailExists = await _accountRepository.IsEmailExistsAsync(request.Email);
             if (emailExists)
             {
-                var error = new Error("User.EmailDuplicated", "Email này đã được sử dụng.");
-                return OperationResult<string>.Failure(error, 400, "Email đã tồn tại");
+                return OperationResult<string>.Failure(
+                    new List<Error> { AppErrors.EmailDuplicated },
+                    409, 
+                    AppErrors.EmailDuplicated.Description
+                );
             }
-
+            if (!string.IsNullOrEmpty(request.PhoneNumber))
+            {
+                bool phoneExists = await _accountRepository.IsPhoneNumberExistsAsync(request.PhoneNumber);
+                if (phoneExists)
+                {
+                    return OperationResult<string>.Failure(
+                        new List<Error> { AppErrors.PhoneNumberDuplicated },
+                        409, // Conflict
+                        AppErrors.PhoneNumberDuplicated.Description
+                    );
+                }
+            }
             try
             {
                 string newId = _idGeneratorService.GenerateCustom(10);
@@ -58,7 +67,7 @@ namespace Tokki.Application.UseCases.Accounts.Commands.Register
                     Email = request.Email,
                     PasswordHash = passwordHash,
                     FullName = request.FullName,
-                    AvatarUrl = "null",
+                    AvatarUrl = null,
                     PhoneNumber = request.PhoneNumber,
                     DateOfBirth = request.DateOfBirth.ToDateTime(TimeOnly.MinValue),
                     CreatedAt = DateTime.UtcNow.AddHours(7),
@@ -77,12 +86,11 @@ namespace Tokki.Application.UseCases.Accounts.Commands.Register
             }
             catch (Exception ex)
             {
-                var realError = ex.InnerException?.Message ?? ex.Message;
-                _logger.LogError(ex, "Đăng ký thất bại: {RealError}", realError);
+                
                 return OperationResult<string>.Failure(
-                    AppErrors.ServerError,
+                    new List<Error> { AppErrors.ServerError },
                     500,
-                    $"Lỗi hệ thống: {realError}"
+                    AppErrors.ServerError.Description
                 );
             }
         }

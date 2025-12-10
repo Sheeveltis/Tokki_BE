@@ -10,29 +10,20 @@ namespace Tokki.Application.UseCases.Accounts.Commands.VerifyEmailOtp
     {
         private readonly IOtpRepository _otpRepository;
         private readonly ISystemConfigRepository _systemConfigRepository;
-        private readonly IValidator<VerifyEmailOtpCommand> _validator;
 
         public VerifyEmailOtpCommandHandler(
             IOtpRepository otpRepository,
-            ISystemConfigRepository systemConfigRepository,
-            IValidator<VerifyEmailOtpCommand> validator)
+            ISystemConfigRepository systemConfigRepository
+            )
         {
             _otpRepository = otpRepository;
             _systemConfigRepository = systemConfigRepository;
-            _validator = validator;
+            
         }
 
         public async Task<OperationResult<string>> Handle(VerifyEmailOtpCommand request, CancellationToken cancellationToken)
         {
-            // --- 1. Validate Input ---
-            var validationResult = await _validator.ValidateAsync(request, cancellationToken);
-            if (!validationResult.IsValid)
-            {
-                var errorMessages = string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage));
-                return OperationResult<string>.Failure(errorMessages, 400);
-            }
-
-            // --- 2. Lấy Config Retry Limit ---
+            // Lấy Config Retry Limit
             string? configValue = await _systemConfigRepository.GetValueByKeyAsync("OTP_RETRY_LIMIT");
             int maxRetryLimit = 5;
             if (!string.IsNullOrEmpty(configValue) && int.TryParse(configValue, out int result))
@@ -40,27 +31,26 @@ namespace Tokki.Application.UseCases.Accounts.Commands.VerifyEmailOtp
                 maxRetryLimit = result;
             }
 
-            // --- 3. Tìm OTP trong DB ---
+            // Tìm OTP 
             var validOtp = await _otpRepository.GetLatestValidOtpAsync(request.Email, OtpType.VerifyEmail);
 
             if (validOtp == null)
             {
-                return OperationResult<string>.Failure("Mã xác thực không tồn tại hoặc đã hết hạn.", 400);
+                return OperationResult<string>.Failure(new List<Error> { AppErrors.OtpNotFound });
             }
 
-            // Lấy giờ hiện tại (UTC+7)
             DateTime currentTime = DateTime.UtcNow.AddHours(7);
 
-            // --- 4. Kiểm tra hết hạn (Lazy Check) ---
+            // Kiểm tra hết hạn
             if (validOtp.ExpiredAt < currentTime)
             {
                 validOtp.Status = OtpStatus.Expired;
                 await _otpRepository.UpdateAsync(validOtp);
                 await _otpRepository.SaveChangesAsync(cancellationToken);
-                return OperationResult<string>.Failure("Mã xác thực đã hết hạn.", 400);
+                return OperationResult<string>.Failure(new List<Error> { AppErrors.OtpExpired });
             }
 
-            // --- 5. Kiểm tra Max Retry ---
+            // Kiểm tra Max Retry 
             if (validOtp.AttemptCount >= maxRetryLimit)
             {
                 if (validOtp.Status == OtpStatus.Active)
@@ -69,16 +59,14 @@ namespace Tokki.Application.UseCases.Accounts.Commands.VerifyEmailOtp
                     await _otpRepository.UpdateAsync(validOtp);
                     await _otpRepository.SaveChangesAsync(cancellationToken);
                 }
-                return OperationResult<string>.Failure("Bạn đã nhập sai quá số lần quy định. Mã xác thực đã bị hủy.", 400);
+                return OperationResult<string>.Failure(new List<Error> { AppErrors.OtpMaxRetryExceeded });
             }
 
-            // --- 6. So sánh Code ---
+            // So sánh Code
             if (validOtp.OtpCode != request.OtpCode)
             {
-                // XỬ LÝ KHI SAI
                 validOtp.AttemptCount++;
 
-                // Nếu chạm ngưỡng -> Hủy luôn
                 if (validOtp.AttemptCount >= maxRetryLimit)
                 {
                     validOtp.Status = OtpStatus.Revoked;
@@ -90,22 +78,17 @@ namespace Tokki.Application.UseCases.Accounts.Commands.VerifyEmailOtp
                 int remainingAttempts = maxRetryLimit - validOtp.AttemptCount;
                 if (remainingAttempts <= 0)
                 {
-                    return OperationResult<string>.Failure("Bạn đã nhập sai quá số lần quy định. Mã này đã bị khóa.", 400);
+                    return OperationResult<string>.Failure(new List<Error> { AppErrors.OtpRevoked });
                 }
 
+                // Trường hợp này cần dynamic message, giữ nguyên hoặc tạo Error mới với placeholder
                 return OperationResult<string>.Failure($"Mã xác thực không chính xác. Bạn còn {remainingAttempts} lần thử.", 400);
             }
 
-            // --- 7. XỬ LÝ KHI ĐÚNG ---
+            // Xử lý khi đúng
             validOtp.Status = OtpStatus.Used;
             validOtp.UsedAt = currentTime;
 
-
-            // 6.1. Cập nhật OTP
-            validOtp.Status = OtpStatus.Used;      // Thay IsUsed = true bằng Enum Used
-            validOtp.UsedAt = currentTime;         // Lưu thời gian UTC+7
-
- 
             await _otpRepository.UpdateAsync(validOtp);
             await _otpRepository.SaveChangesAsync(cancellationToken);
 

@@ -1,17 +1,17 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore; // Cần cái này cho [Index]
+using Microsoft.EntityFrameworkCore;
 
 namespace Tokki.Domain.Entities
 {
-    // Đảm bảo Key không bị trùng
     [Index(nameof(TemplateKey), IsUnique = true)]
     public class EmailTemplate
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int TemplateId { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.None)] 
+        [MaxLength(15)] 
+        public string TemplateId { get; set; } = string.Empty;
 
         [Required]
         [MaxLength(50)]

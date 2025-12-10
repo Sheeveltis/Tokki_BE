@@ -19,17 +19,13 @@ namespace Tokki.Application.UseCases.SystemConfigs.Commands.Create
 
         public async Task<OperationResult<string>> Handle(CreateSystemConfigCommand request, CancellationToken cancellationToken)
         {
-            // 1. Validate Input
-            var validationResult = await _validator.ValidateAsync(request, cancellationToken);
-            if (!validationResult.IsValid)
-                return OperationResult<string>.Failure(validationResult.ToString(), 400);
-
-            // 2. Check trùng Key
+            // Check trùng Key
             var existingConfig = await _repository.GetByKeyAsync(request.Key);
             if (existingConfig != null)
-                return OperationResult<string>.Failure($"Cấu hình với Key '{request.Key}' đã tồn tại.", 400);
+            {
+                return OperationResult<string>.Failure(new List<Error> { AppErrors.ConfigKeyDuplicated });
+            }
 
-            // 3. Map to Entity
             var newConfig = new SystemConfig
             {
                 Key = request.Key,
@@ -40,7 +36,6 @@ namespace Tokki.Application.UseCases.SystemConfigs.Commands.Create
                 CreatedAt = DateTime.UtcNow.AddHours(7)
             };
 
-            // 4. Save
             await _repository.AddAsync(newConfig);
             await _repository.SaveChangesAsync(cancellationToken);
 

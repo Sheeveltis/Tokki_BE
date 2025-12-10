@@ -13,7 +13,8 @@ namespace Tokki.Domain.Entities
     public class SocialLogin
     {
         [Key]
-        public long Id { get; set; }
+        [MaxLength(15)]
+        public string Id { get; set; }
 
         [Required]
         [MaxLength(15)]

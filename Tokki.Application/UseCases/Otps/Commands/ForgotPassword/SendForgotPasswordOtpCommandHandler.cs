@@ -18,36 +18,46 @@ namespace Tokki.Application.UseCases.Otps.Commands.ForgotPassword
         private readonly IOtpRepository _otpRepository;
         private readonly IEmailService _emailService;
         private readonly ISystemConfigRepository _systemConfigRepo;
+        private readonly IIdGeneratorService _idGenerator; // ✅ Thêm dòng này
 
         public SendForgotPasswordOtpCommandHandler(
-            IAccountRepository accountRepository, IOtpRepository otpRepository,
-            IEmailService emailService, ISystemConfigRepository systemConfigRepo)
+            IAccountRepository accountRepository,
+            IOtpRepository otpRepository,
+            IEmailService emailService,
+            ISystemConfigRepository systemConfigRepo,
+            IIdGeneratorService idGenerator) // ✅ Thêm parameter
         {
             _accountRepository = accountRepository;
             _otpRepository = otpRepository;
             _emailService = emailService;
             _systemConfigRepo = systemConfigRepo;
+            _idGenerator = idGenerator; // ✅ Thêm dòng này
         }
 
         public async Task<OperationResult<string>> Handle(SendForgotPasswordOtpCommand request, CancellationToken cancellationToken)
         {
-            // 1. Kiểm tra Email
             var user = await _accountRepository.GetByEmailAsync(request.Email);
-            if (user == null) return OperationResult<string>.Failure("Email không tồn tại.", 404);
-            if (user.Status == AccountStatus.Banned) return OperationResult<string>.Failure("Tài khoản đã bị khóa.", 403);
+            if (user == null)
+            {
+                return OperationResult<string>.Failure(new List<Error> { AppErrors.UserNotFound });
+            }
 
-            // 2. Lấy thời gian hết hạn OTP (Mặc định 300s)
+            if (user.Status == AccountStatus.Banned)
+            {
+                return OperationResult<string>.Failure(new List<Error> { AppErrors.AccountBanned });
+            }
+
             string? configValue = await _systemConfigRepo.GetValueByKeyAsync("OTP_EXPIRATION_SECONDS");
             int lifeTime = 300;
             if (int.TryParse(configValue, out int result)) lifeTime = result;
 
-            // 3. Tạo OTP
             var otpCode = new Random().Next(100000, 999999).ToString();
             var newOtp = new Otp
             {
+                OtpId = _idGenerator.Generate(15), // ✅ Tạo NanoID 15 ký tự
                 Email = user.Email,
                 OtpCode = otpCode,
-                Type = OtpType.ResetPassword, // <--- Dùng đúng Enum của bạn
+                Type = OtpType.ResetPassword,
                 Status = OtpStatus.Active,
                 CreatedAt = DateTime.UtcNow.AddHours(7),
                 ExpiredAt = DateTime.UtcNow.AddHours(7).AddSeconds(lifeTime)
@@ -56,7 +66,6 @@ namespace Tokki.Application.UseCases.Otps.Commands.ForgotPassword
             await _otpRepository.AddAsync(newOtp);
             await _otpRepository.SaveChangesAsync(cancellationToken);
 
-            // 4. Gửi Email
             await _emailService.SendEmailAsync(user.Email, "Mã khôi phục mật khẩu",
                 $"Mã OTP của bạn là: <b>{otpCode}</b>. Mã hết hạn sau {lifeTime / 60} phút.");
 
