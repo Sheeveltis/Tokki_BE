@@ -7,5 +7,6 @@ namespace Tokki.Application.IRepositories
         Task<Title?> GetTitleByNameAsync(string name);
         Task<Title?> GetTitleByIdAsync(int id);
         Task<Title?> GetTitleByXpAsync(long xp); 
+        Task<Title?> GetAllTitlesAsync();
     }
 }
