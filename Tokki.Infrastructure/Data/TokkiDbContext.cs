@@ -27,7 +27,8 @@ namespace Tokki.Infrastructure.Data
         public DbSet<Subscription> Subscriptions { get; set; }
         public DbSet<EmailTemplate> EmailTemplates { get; set; }
         public DbSet<EmailHistory> EmailHistories { get; set; }
-
+        public DbSet<Title> Titles { get; set; }
+        public DbSet<AccountTitle> AccountTitles { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -66,11 +67,31 @@ namespace Tokki.Infrastructure.Data
             .Property(r => r.Status)
             .HasConversion<int>();
 
-            // =========================================================
-            // 2. CONFIG ACCOUNT
-            // =========================================================
+            modelBuilder.Entity<AccountTitle>()
+            .HasKey(at => new { at.UserId, at.TitleId }); 
 
-            modelBuilder.Entity<Account>(entity =>
+            modelBuilder.Entity<AccountTitle>()
+                .HasOne(at => at.Account)
+                .WithMany(a => a.UnlockedTitles)
+                .HasForeignKey(at => at.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<AccountTitle>()
+                .HasOne(at => at.Title)
+                .WithMany()
+                .HasForeignKey(at => at.TitleId)
+                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<Account>()
+            .HasOne(a => a.CurrentTitle)
+            .WithMany()
+            .HasForeignKey(a => a.CurrentTitleId)
+            .OnDelete(DeleteBehavior.SetNull); 
+        
+        // =========================================================
+        // 2. CONFIG ACCOUNT
+        // =========================================================
+
+        modelBuilder.Entity<Account>(entity =>
             {
                 // Khóa chính
                 entity.HasKey(e => e.UserId);
