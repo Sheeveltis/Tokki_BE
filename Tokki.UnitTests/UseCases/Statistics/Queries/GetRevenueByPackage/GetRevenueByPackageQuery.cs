@@ -1,0 +1,12 @@
+﻿using MediatR;
+using Tokki.Application.Common.Models;
+using Tokki.Application.Common.Models.Statistics;
+
+namespace Tokki.Application.UseCases.Statistics.Queries
+{
+    public class GetRevenueByPackageQuery : IRequest<OperationResult<List<RevenueByPackageDto>>>
+    {
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+    }   
+}
