@@ -28,8 +28,4 @@
 	  <Folder Include="UseCases\Otps\Queries\" />
 	</ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="UseCases\Payments\DTOs\" />
-  </ItemGroup>
-
 </Project>
