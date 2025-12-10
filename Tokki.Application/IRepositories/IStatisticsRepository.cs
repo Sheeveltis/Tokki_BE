@@ -1,4 +1,4 @@
-﻿using Tokki.Application.Common.Models.Statistics;
+﻿using Tokki.Application.UseCases.Payments.DTOs; 
 namespace Tokki.Application.IRepositories
 {
     public interface IStatisticsRepository

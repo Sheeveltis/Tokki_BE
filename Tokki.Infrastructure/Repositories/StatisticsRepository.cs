@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Tokki.Application.Common.Models.Statistics;
 using Tokki.Application.IRepositories;
+using Tokki.Application.UseCases.Payments.DTOs; 
 using Tokki.Domain.Enums;
 using Tokki.Infrastructure.Data;
 

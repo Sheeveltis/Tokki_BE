@@ -1,4 +1,4 @@
-﻿namespace Tokki.Application.Common.Models.Statistics
+﻿namespace Tokki.Application.UseCases.Payments.DTOs
 {
     public class DashboardOverviewDto
     {

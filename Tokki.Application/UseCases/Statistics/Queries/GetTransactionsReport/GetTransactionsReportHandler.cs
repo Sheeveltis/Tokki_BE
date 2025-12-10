@@ -1,6 +1,6 @@
 ﻿using MediatR;
 using Tokki.Application.Common.Models;
-using Tokki.Application.Common.Models.Statistics;
+using Tokki.Application.UseCases.Payments.DTOs;
 using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.Statistics.Queries;
 
