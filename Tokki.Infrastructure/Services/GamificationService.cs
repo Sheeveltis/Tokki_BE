@@ -17,6 +17,26 @@ namespace Tokki.Infrastructure.Services
             _titleRepository = titleRepository;
         }
 
+        private async Task UnlockAndEquipTitleAsync(Account user, Title title)
+        {
+            bool hasTitle = await _accountRepository.HasTitleAsync(user.UserId, title.TitleId);
+
+            if (!hasTitle)
+            {
+                var newUnlock = new AccountTitle
+                {
+                    UserId = user.UserId,
+                    TitleId = title.TitleId,
+                    EarnedAt = DateTime.UtcNow.AddHours(7)
+                };
+                await _accountRepository.AddAccountTitleAsync(newUnlock);
+            }
+
+            if (user.CurrentTitleId != title.TitleId)
+            {
+                user.CurrentTitleId = title.TitleId;
+            }
+        }
         public async Task CheckLoginGamificationAsync(string userId)
         {
             var user = await _accountRepository.GetByIdAsync(userId);
@@ -28,12 +48,10 @@ namespace Tokki.Infrastructure.Services
 
                 if (daysInactive > 3)
                 {
-                    var lazyTitle = await _titleRepository.GetTitleByNameAsync(LAZY_TITLE_NAME);
-                    if (lazyTitle != null && user.CurrentTitleId != lazyTitle.TitleId)
+                    var lazyTitle = await _titleRepository.GetTitleByNameAsync("Con Lười");
+                    if (lazyTitle != null)
                     {
-                        user.CurrentTitleId = lazyTitle.TitleId;
-                        await _accountRepository.UpdateUserAsync(user);
-                        await _accountRepository.SaveChangesAsync(default);
+                        await UnlockAndEquipTitleAsync(user, lazyTitle);
                     }
                 }
             }
@@ -44,50 +62,27 @@ namespace Tokki.Infrastructure.Services
             var user = await _accountRepository.GetByIdAsync(userId);
             if (user == null) return false;
 
-            var today = DateTime.UtcNow.AddHours(7).Date;
-
-            if (user.LastStreakDate.HasValue && user.LastStreakDate.Value.Date != today)
-            {
-               
-            }
-
             user.DailyStudySeconds += seconds;
-
             bool isStreakCompletedNow = false;
 
-            bool alreadyCompletedToday = user.LastStreakDate.HasValue && user.LastStreakDate.Value.Date == today;
+            bool completedToday = user.LastStreakDate.HasValue
+                      && user.LastStreakDate.Value.Date == DateTime.UtcNow.AddHours(7).Date;
 
-            if (user.DailyStudySeconds >= TARGET_STUDY_SECONDS && !alreadyCompletedToday)
+            if (user.DailyStudySeconds >= 900 && !completedToday) 
             {
                 isStreakCompletedNow = true;
+                user.TotalXP += 100;
 
-                if (user.LastStreakDate.HasValue)
+                if (user.CurrentTitleId != null)
                 {
-                    var yesterday = today.AddDays(-1);
-                    if (user.LastStreakDate.Value.Date == yesterday)
-                    {
-                        user.CurrentStreak++;
-                    }
-                    else
-                    {
-                        user.CurrentStreak = 1;
-                    }
-                }
-                else
-                {
-                    user.CurrentStreak = 1; 
+                 
                 }
 
-                if (user.CurrentStreak > user.MaxStreak) user.MaxStreak = user.CurrentStreak;
+                var bestTitle = await _titleRepository.GetTitleByXpAsync(user.TotalXP);
 
-                user.LastStreakDate = DateTime.UtcNow.AddHours(7);
-
-                user.TotalXP += 100; 
-
-                if (user.CurrentTitle != null && user.CurrentTitle.Name == LAZY_TITLE_NAME)
+                if (bestTitle != null)
                 {
-                    var realTitle = await _titleRepository.GetTitleByXpAsync(user.TotalXP);
-                    user.CurrentTitleId = realTitle?.TitleId; 
+                    await UnlockAndEquipTitleAsync(user, bestTitle);
                 }
             }
 
