@@ -22,14 +22,21 @@ namespace Tokki.Infrastructure.Data
         public DbSet<Otp> OtpCodes { get; set; }
         public DbSet<SystemConfig> SystemConfig { get; set; }
         public DbSet<VipPackage> VipPackages { get; set; }
-        public DbSet<SocialLogin> SocialLogins { get; set; } // Đổi tên cho khớp với Entity (ExternalLogins cũng đc nhưng SocialLogins chuẩn hơn)
+        public DbSet<SocialLogin> SocialLogins { get; set; }
         public DbSet<EmailJob> EmailJobs { get; set; }
         public DbSet<Subscription> Subscriptions { get; set; }
         public DbSet<EmailTemplate> EmailTemplates { get; set; }
         public DbSet<EmailHistory> EmailHistories { get; set; }
+<<<<<<< HEAD
         public DbSet<Title> Titles { get; set; }
         public DbSet<AccountTitle> AccountTitles { get; set; }
         public DbSet<UserXpHistory> UserXpHistories { get; set; } 
+=======
+        public DbSet<Topic> Topics { get; set; }
+        public DbSet<Vocabulary> Vocabulary { get; set; }
+
+        
+>>>>>>> 0461690 (feat add vocalbulary, topic, fav word entity)
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -213,27 +220,47 @@ namespace Tokki.Infrastructure.Data
             });
             modelBuilder.Entity<EmailTemplate>(entity =>
             {
-                // Cấu hình khóa chính (nếu chưa có attribute [Key] bên Entity)
                 entity.HasKey(e => e.TemplateId);
 
-                // Đảm bảo TemplateKey là duy nhất
                 entity.HasIndex(e => e.TemplateKey).IsUnique();
 
-                // Cấu hình Subject: Bắt buộc, tối đa 255 ký tự, HỖ TRỢ TIẾNG VIỆT
                 entity.Property(e => e.Subject)
                       .IsRequired()
                       .HasMaxLength(255)
-                      .IsUnicode(true); // <--- QUAN TRỌNG: Tạo ra NVARCHAR
+                      .IsUnicode(true); 
 
-                // Cấu hình Body: Bắt buộc, không giới hạn độ dài, HỖ TRỢ TIẾNG VIỆT
                 entity.Property(e => e.Body)
                       .IsRequired()
-                      .IsUnicode(true); // <--- QUAN TRỌNG: Tạo ra NVARCHAR(MAX)
+                      .IsUnicode(true); 
 
-                // Cấu hình Description: HỖ TRỢ TIẾNG VIỆT
                 entity.Property(e => e.Description)
                       .HasMaxLength(500)
-                      .IsUnicode(true); // <--- QUAN TRỌNG
+                      .IsUnicode(true); 
+            });
+
+            modelBuilder.Entity<Topic>(entity =>
+            {
+                entity.Property(e => e.TopicName).IsRequired().IsUnicode(true).HasMaxLength(100);
+                entity.Property(e => e.Description).IsUnicode(true).HasMaxLength(255);
+                entity.Property(e => e.Status)
+                .HasConversion<int>();
+
+                entity.HasKey(e => e.TopicId); 
+            });
+
+            modelBuilder.Entity<Vocabulary>(entity =>
+            {
+                entity.Property(e => e.Word).IsRequired().IsUnicode(true).HasMaxLength(255);
+                entity.Property(e => e.Meaning).IsRequired().IsUnicode(true).HasMaxLength(1000); // Tăng giới hạn nếu cần
+                entity.Property(e => e.Pronunciation).IsUnicode(true).HasMaxLength(100);
+                entity.Property(e => e.ExampleSentence).IsUnicode(true).HasMaxLength(2000); // Tăng giới hạn nếu cần
+
+                entity.HasOne(v => v.Topic)
+                      .WithMany(t => t.Vocabularies)
+                      .HasForeignKey(v => v.TopicId)
+                      .OnDelete(DeleteBehavior.Cascade); 
+
+                entity.HasKey(e => e.VocabId);
             });
         }
     }
