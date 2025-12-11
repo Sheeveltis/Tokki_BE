@@ -20,7 +20,6 @@ namespace Tokki.Application.UseCases.VipPackages.Commands.DeleteVipPackage
             if (package == null)
                 return OperationResult<bool>.Failure(AppErrors.VipPackageNotFound);
 
-            package.IsDeleted = true;
             package.IsActive = false; 
 
             await _repository.UpdateAsync(package);

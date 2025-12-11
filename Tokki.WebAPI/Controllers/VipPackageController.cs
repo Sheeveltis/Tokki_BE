@@ -44,10 +44,7 @@ namespace Tokki.WebAPI.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(string id, [FromBody] UpdateVipPackageCommand command)
         {
-            if (id != command.Id)
-            {
-                return BadRequest("ID trong URL không khớp với ID trong body.");
-            }
+            command.Id = id;
 
             var result = await _mediator.Send(command);
             return StatusCode(result.StatusCode, result);

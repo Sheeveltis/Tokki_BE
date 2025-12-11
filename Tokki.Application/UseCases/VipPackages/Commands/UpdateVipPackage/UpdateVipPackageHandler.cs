@@ -25,6 +25,11 @@ namespace Tokki.Application.UseCases.VipPackages.Commands.UpdateVipPackage
                 package.Name = request.Name;
             }
 
+            if (!string.IsNullOrEmpty(request.PackageType) && request.PackageType != "string")
+            {
+                package.PackageType = request.PackageType;
+            }
+
             if (request.Price >= 0) 
             {
                 package.Price = request.Price;

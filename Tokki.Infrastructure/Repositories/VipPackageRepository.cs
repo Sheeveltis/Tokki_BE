@@ -29,14 +29,12 @@ namespace Tokki.Infrastructure.Repositories
         public async Task<VipPackage?> GetByIdAsync(string id)
         {
             return await _context.VipPackages
-                .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
+                .FirstOrDefaultAsync(p => p.Id == id);
         }
 
         public async Task<List<VipPackage>> GetAllAsync(bool includeInactive = false)
         {
             var query = _context.VipPackages.AsQueryable();
-
-            query = query.Where(p => !p.IsDeleted);
 
             if (!includeInactive)
             {
