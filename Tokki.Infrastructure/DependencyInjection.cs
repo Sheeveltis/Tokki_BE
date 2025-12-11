@@ -30,15 +30,12 @@ namespace Tokki.Infrastructure
             services.AddScoped<IReportRepository, ReportRepository>();
             services.AddScoped<IVipPackageRepository, VipPackageRepository>();
             services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
-<<<<<<< HEAD
             services.AddScoped<IStatisticsRepository, StatisticsRepository>();
             services.AddScoped<IStatisticBlogRepository, StatisticBlogRepository>();
             services.AddScoped<ITitleRepository, TitleRepository>();
             services.AddScoped<IGamificationService, GamificationService>();
-=======
             services.AddScoped<ITopicRepository, TopicRepository>();
 
->>>>>>> 0461690 (feat add vocalbulary, topic, fav word entity)
             // 3. Đăng ký các Services khác (IdGenerator, Email, Storage...)
             services.AddSingleton<IIdGeneratorService, IdGeneratorService>();
             services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));

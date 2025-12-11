@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Tokki.Application.IRepositories;
 using Tokki.Domain.Entities;
+using Tokki.Domain.Enums;
 using Tokki.Infrastructure.Data;
 
 namespace Tokki.Infrastructure.Repositories
@@ -25,7 +26,7 @@ namespace Tokki.Infrastructure.Repositories
             int pageNumber,
             int pageSize,
             string? searchTerm = null,
-            bool? isActive = null)
+            TopicStatus? status = null)
         {
             var query = _context.Topics
                 .Include(t => t.Vocabularies)
@@ -41,9 +42,9 @@ namespace Tokki.Infrastructure.Repositories
             }
 
             // Filter by active status
-            if (isActive.HasValue)
+            if (status.HasValue)
             {
-                query = query.Where(t => t.IsActive == isActive.Value);
+                query = query.Where(t => t.Status == status.Value);
             }
 
             // Get total count

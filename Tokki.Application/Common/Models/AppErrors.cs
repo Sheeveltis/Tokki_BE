@@ -81,8 +81,7 @@ namespace Tokki.Application.Common.Models
         public static readonly Error EmailCampaignInvalidSchedule = new("EmailCampaign.InvalidSchedule", "Thời gian lên lịch không hợp lệ.");
         public static readonly Error EmailCampaignAlreadySent = new("EmailCampaign.AlreadySent", "Chiến dịch đã được gửi.");
 
-<<<<<<< HEAD
-=======
+
         // --- NHÓM: TOPIC (Chủ đề từ vựng) ---
         public static readonly Error TopicNotFound = new("Topic.NotFound", "Chủ đề không tồn tại.");
         public static readonly Error TopicNameDuplicated = new("Topic.NameDuplicated", "Tên chủ đề đã tồn tại.");
@@ -96,7 +95,6 @@ namespace Tokki.Application.Common.Models
         // --- NHÓM: USER FAVORITE (Yêu thích) ---
         public static readonly Error FavoriteNotFound = new("Favorite.NotFound", "Từ vựng yêu thích không tồn tại.");
         public static readonly Error FavoriteAlreadyExists = new("Favorite.AlreadyExists", "Từ vựng đã có trong danh sách yêu thích.");
->>>>>>> 0461690 (feat add vocalbulary, topic, fav word entity)
 
     }
 }

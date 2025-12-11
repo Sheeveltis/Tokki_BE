@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Topics.DTOs
 {
@@ -15,7 +16,7 @@ namespace Tokki.Application.UseCases.Topics.DTOs
         public DateTime CreateDate { get; set; }
         public string? UpdateBy { get; set; }
         public DateTime? UpdateDate { get; set; }
-        public bool IsActive { get; set; }
+        public TopicStatus Status { get; set; }
         public int VocabularyCount { get; set; }
     }
 }

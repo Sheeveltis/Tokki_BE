@@ -27,16 +27,13 @@ namespace Tokki.Infrastructure.Data
         public DbSet<Subscription> Subscriptions { get; set; }
         public DbSet<EmailTemplate> EmailTemplates { get; set; }
         public DbSet<EmailHistory> EmailHistories { get; set; }
-<<<<<<< HEAD
         public DbSet<Title> Titles { get; set; }
         public DbSet<AccountTitle> AccountTitles { get; set; }
         public DbSet<UserXpHistory> UserXpHistories { get; set; } 
-=======
         public DbSet<Topic> Topics { get; set; }
         public DbSet<Vocabulary> Vocabulary { get; set; }
 
         
->>>>>>> 0461690 (feat add vocalbulary, topic, fav word entity)
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

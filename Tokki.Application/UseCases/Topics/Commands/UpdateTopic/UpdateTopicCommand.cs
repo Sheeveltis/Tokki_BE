@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MediatR;
 using Tokki.Application.Common.Models;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Topics.Commands.UpdateTopic
 {
@@ -14,6 +15,6 @@ namespace Tokki.Application.UseCases.Topics.Commands.UpdateTopic
         public string TopicName { get; set; } = string.Empty;
         public string? Description { get; set; }
         public string UpdatedBy { get; set; } = string.Empty;
-        public bool IsActive { get; set; }
+        public TopicStatus Status { get; set; }
     }
 }

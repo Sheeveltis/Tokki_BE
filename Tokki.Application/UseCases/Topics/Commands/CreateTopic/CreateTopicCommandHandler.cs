@@ -46,7 +46,7 @@ namespace Tokki.Application.UseCases.Topics.Commands.CreateTopic
                     Description = request.Description,
                     CreateBy = request.CreateBy,
                     CreateDate = DateTime.UtcNow.AddHours(7),
-                    IsActive = true
+                    Status = 0
                 };
 
                 await _topicRepository.AddAsync(topic);

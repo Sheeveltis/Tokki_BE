@@ -26,7 +26,7 @@ namespace Tokki.Application.UseCases.Topics.Queries
                 request.PageNumber,
                 request.PageSize,
                 request.SearchTerm,
-                request.IsActive
+                request.Status
             );
 
             var dtos = items.Select(t => new TopicDto
@@ -38,7 +38,7 @@ namespace Tokki.Application.UseCases.Topics.Queries
                 CreateDate = t.CreateDate,
                 UpdateBy = t.UpdateBy,
                 UpdateDate = t.UpdateDate,
-                IsActive = t.IsActive,
+                Status = t.Status,
                 VocabularyCount = t.Vocabularies?.Count ?? 0
             }).ToList();
 
