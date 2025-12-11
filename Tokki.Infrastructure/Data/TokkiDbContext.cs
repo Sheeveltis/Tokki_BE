@@ -100,11 +100,11 @@ namespace Tokki.Infrastructure.Data
                 entity.HasIndex(e => e.Email).IsUnique();
 
                 entity.Property(e => e.Role)
-                      .HasConversion<string>()
+                      .HasConversion<int>()
                       .HasMaxLength(20);
 
                 entity.Property(e => e.Status)
-                      .HasConversion<string>()
+                      .HasConversion<int>()
                       .HasMaxLength(20);
 
                 entity.Property(e => e.DateOfBirth)
@@ -149,12 +149,11 @@ namespace Tokki.Infrastructure.Data
                       .OnDelete(DeleteBehavior.Cascade);
 
                 entity.Property(o => o.Status)
-                      .HasConversion<string>()
+                      .HasConversion<int>()
                       .HasMaxLength(20);
 
-                // Cấu hình ENUM Type -> string
                 entity.Property(o => o.Type)
-                      .HasConversion<string>()
+                      .HasConversion<int>()
                       .HasMaxLength(30);
             });
 
@@ -190,13 +189,12 @@ namespace Tokki.Infrastructure.Data
 
             modelBuilder.Entity<EmailJob>()
                 .Property(j => j.Status)
-                .HasConversion<string>();
+                .HasConversion<int>();
 
             modelBuilder.Entity<EmailJob>()
                 .Property(j => j.TargetGroup)
                 .HasConversion<int>();
 
-            modelBuilder.Entity<EmailJob>().Property(j => j.Status).HasConversion<string>();
 
             // =========================================================
             // CONFIG EMAIL HISTORY

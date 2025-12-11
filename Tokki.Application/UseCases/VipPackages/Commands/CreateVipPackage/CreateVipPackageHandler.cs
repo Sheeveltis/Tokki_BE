@@ -31,6 +31,7 @@ namespace Tokki.Application.UseCases.VipPackages.Commands.CreateVipPackage
                 {
                     Id = _idGenerator.GenerateCustom(21),
                     Name = request.Name,
+                    PackageType = request.PackageType,
                     Price = request.Price,
                     DurationDays = request.DurationDays,
                     Description = request.Description,
