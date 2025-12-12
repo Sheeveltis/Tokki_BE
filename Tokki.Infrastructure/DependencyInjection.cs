@@ -44,6 +44,8 @@ namespace Tokki.Infrastructure
 
             //TextToSpeech
             services.AddScoped<ITextToSpeechService, TextToSpeechService>();
+            //Cloudinary 
+            services.AddScoped<ICloudinaryService, CloudinaryService>();
             return services;
         }
     }
