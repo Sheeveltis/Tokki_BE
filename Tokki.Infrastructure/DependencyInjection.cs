@@ -42,6 +42,8 @@ namespace Tokki.Infrastructure
             services.AddScoped<ISePayService, SePayService>();
             services.AddScoped<IPaymentRepository, PaymentRepository>();
 
+            //TextToSpeech
+            services.AddScoped<ITextToSpeechService, TextToSpeechService>();
             return services;
         }
     }
