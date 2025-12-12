@@ -32,8 +32,9 @@ namespace Tokki.Infrastructure.Data
         public DbSet<UserXpHistory> UserXpHistories { get; set; } 
         public DbSet<Topic> Topics { get; set; }
         public DbSet<Vocabulary> Vocabulary { get; set; }
+        public DbSet<Comment> Comments { get; set; }
 
-        
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -258,6 +259,23 @@ namespace Tokki.Infrastructure.Data
                       .OnDelete(DeleteBehavior.Cascade); 
 
                 entity.HasKey(e => e.VocabId);
+            });
+            modelBuilder.Entity<Comment>(entity =>
+            {
+                entity.HasOne(c => c.Blog)
+                      .WithMany(b => b.Comments) 
+                      .HasForeignKey(c => c.BlogId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(c => c.User)
+                      .WithMany()
+                      .HasForeignKey(c => c.UserId)
+                      .OnDelete(DeleteBehavior.Restrict); 
+
+                entity.HasOne(c => c.ParentComment)
+                      .WithMany(c => c.Replies)
+                      .HasForeignKey(c => c.ParentId)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }
