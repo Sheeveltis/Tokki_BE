@@ -18,15 +18,11 @@ namespace Tokki.Application.IRepositories
         Task AddAsync(Blog blog);
         Task UpdateAsync(Blog blog); 
         Task DeleteAsync(Blog blog); 
-
-
-        // Kiểm tra xem Category có tồn tại không (nhanh, nhẹ)
         Task<bool> CategoryExistsAsync(string categoryId);
 
-        //  Đưa vào danh sách tên Tag (string) -> Trả về danh sách Entity Tag
-        // (Nếu tag chưa có thì tự tạo mới, có rồi thì lấy ra dùng lại)
         Task<ICollection<Tag>> GetOrCreateTagsAsync(List<string> tagNames);
 
+        Task<bool> ExistsAsync(string blogId);
         // Transaction
         Task SaveChangesAsync(CancellationToken cancellationToken);
     }

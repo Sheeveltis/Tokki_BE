@@ -137,5 +137,11 @@ namespace Tokki.Infrastructure.Repositories
         {
             await _context.SaveChangesAsync(cancellationToken);
         }
+        public async Task<bool> ExistsAsync(string blogId)
+        {
+            return await _context.Blogs
+                                 .AsNoTracking() 
+                                 .AnyAsync(b => b.Id  == blogId && b.Status != BlogStatus.Hidden);
+        }
     }
 }

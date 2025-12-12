@@ -70,9 +70,6 @@ namespace Tokki.Application.UseCases.Blogs.Commands.CreateBlog
             catch (Exception ex)
             {
                 var realError = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
-
-                _logger.LogError(ex, "TOANG RỒI: {RealError}", realError);
-
                 return OperationResult<string>.Failure(
                     AppErrors.ServerError,
                     500,
