@@ -96,6 +96,9 @@ namespace Tokki.Application.Common.Models
         public static readonly Error FavoriteNotFound = new("Favorite.NotFound", "Từ vựng yêu thích không tồn tại.");
         public static readonly Error FavoriteAlreadyExists = new("Favorite.AlreadyExists", "Từ vựng đã có trong danh sách yêu thích.");
 
+        //Comment
+        public static readonly Error CommentNotFound = new("Comment.NotFound", OperationMessages.NotFound("bình luận"));
+        public static readonly Error Forbidden = new("Comment.Forbidden", "Bạn không có quyền thực hiện thao tác này trên bình luận.");
     }
 }
 
