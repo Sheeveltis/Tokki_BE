@@ -17,6 +17,7 @@ namespace Tokki.Application.Common.Models
         public static readonly Error UserUnauthorized = new("User.Unauthorized", "Không xác định được người dùng.");
         public static readonly Error CannotDeleteSelf = new("User.CannotDeleteSelf", "Bạn không thể xóa chính mình.");
         public static readonly Error UserInactive = new("User.Inactive", "Tài khoản người dùng đã bị vô hiệu hóa.");
+        public static readonly Error DefaultPasswordUsed = new("Auth.DefaultPasswordUsed", "Bạn đang sử dụng mật khẩu mặc định.");
 
         //  Lỗi khi tài khoản bị khóa vĩnh viễn (Banned)
         public static readonly Error AccountBanned = new("Auth.AccountBanned", "Tài khoản của bạn đã bị khóa vĩnh viễn.");

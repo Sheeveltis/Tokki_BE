@@ -2,9 +2,11 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Tokki.Application.UseCases.Accounts.Commands.CreateStaffAccount;
 using Tokki.Application.UseCases.Accounts.Commands.Login;
 using Tokki.Application.UseCases.Accounts.Commands.ResetPassword;
 using Tokki.Application.UseCases.Accounts.Commands.UpdateProfile;
+using Tokki.Application.UseCases.Accounts.Queries.GetUserProfile;
 using Tokki.Application.UseCases.Blogs.Commands.CreateBlog;
 using Tokki.Application.UseCases.Blogs.Commands.DeleteBlog;
 using Tokki.Application.UseCases.Blogs.Commands.UpdateBlog;
@@ -73,7 +75,30 @@ namespace Tokki.WebAPI.Controllers
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
         }
+        [HttpPost("staff")]
+        [Authorize(Roles = "Admin")] // Chỉ Admin mới được gọi
+        public async Task<IActionResult> CreateStaffAccount([FromBody] CreateStaffAccountCommand command)
+        {
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+        [HttpGet("me")]
+        [Authorize]
+        public async Task<IActionResult> GetCurrentUserProfile()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                      ?? User.FindFirst("sub")?.Value;
 
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(new { message = "Token không hợp lệ hoặc thiếu thông tin định danh." });
+            }
+
+            var query = new GetUserProfileQuery(userId);
+            var result = await _sender.Send(query);
+
+            return StatusCode(result.StatusCode, result);
+        }
         [HttpPut("profile")]
         [Authorize] 
         public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileCommand command)

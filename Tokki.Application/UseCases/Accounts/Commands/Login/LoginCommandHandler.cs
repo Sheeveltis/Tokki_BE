@@ -70,7 +70,17 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
                 await HandleFailedLoginAsync(user, vietnamTimeNow, cancellationToken);
                 return OperationResult<LoginResponse>.Failure(new List<Error> { AppErrors.WrongPassword }, 400, "Mật khẩu không chính xác.");
             }
+            string? defaultPassword = await _systemConfigRepository.GetValueByKeyAsync("DEFALUT_PASSWORD_FOR_STAFF");
 
+            // 4.2. So sánh mật khẩu người dùng nhập vào với mật khẩu mặc định
+            if (!string.IsNullOrEmpty(defaultPassword) && request.Password == defaultPassword)
+            {
+                return OperationResult<LoginResponse>.Failure(
+                    new List<Error> { AppErrors.DefaultPasswordUsed }, 
+                    403,
+                    AppErrors.DefaultPasswordUsed.Description 
+                );
+            }
             // === XỬ LÝ KHI ĐÚNG MẬT KHẨU ===
             if (user.FailedLoginCount > 0 || user.LockedUntil != null)
             {
