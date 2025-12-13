@@ -115,6 +115,38 @@ namespace Tokki.Application.Common.Models
         public static readonly Error FavoriteTopicNotFound = new("FavoriteTopic.NotFound", "Chủ đề yêu thích không tồn tại.");
         public static readonly Error FavoriteTopicAlreadyExists = new("FavoriteTopic.AlreadyExists", "Chủ đề đã được thêm vào danh sách yêu thích.");
         public static readonly Error FavoriteTopicUnauthorized = new("FavoriteTopic.Unauthorized", "Bạn không có quyền thao tác với chủ đề yêu thích này.");
+
+        // ============================================
+        // QUESTION TYPE ERRORS
+        // ============================================
+        public static readonly Error QuestionTypeNotFound = new("QuestionType.NotFound", "Loại câu hỏi không tồn tại.");
+        public static readonly Error QuestionTypeCodeDuplicated = new("QuestionType.CodeDuplicated", "Mã loại câu hỏi đã tồn tại.");
+        public static readonly Error QuestionTypeNameDuplicated = new("QuestionType.NameDuplicated", "Tên loại câu hỏi đã tồn tại.");
+        public static readonly Error QuestionTypeInUse = new("QuestionType.InUse", "Loại câu hỏi đang được sử dụng, không thể xóa.");
+
+        // ============================================
+        // PASSAGE ERRORS
+        // ============================================
+        public static readonly Error PassageNotFound = new("Passage.NotFound", "Đoạn văn không tồn tại.");
+        public static readonly Error PassageTitleDuplicated = new("Passage.TitleDuplicated", "Tiêu đề đoạn văn đã tồn tại.");
+        public static readonly Error PassageInUse = new("Passage.InUse", "Đoạn văn đang được sử dụng trong câu hỏi, không thể xóa.");
+
+        // ============================================
+        // QUESTION BANK ERRORS
+        // ============================================
+        public static readonly Error QuestionBankNotFound = new("QuestionBank.NotFound", "Câu hỏi không tồn tại.");
+        public static readonly Error QuestionBankInvalidOptions = new("QuestionBank.InvalidOptions", "Câu hỏi phải có từ 2 đến 4 đáp án.");
+        public static readonly Error QuestionBankNoCorrectAnswer = new("QuestionBank.NoCorrectAnswer", "Câu hỏi phải có ít nhất một đáp án đúng.");
+        public static readonly Error QuestionBankMultipleCorrectAnswers = new("QuestionBank.MultipleCorrectAnswers", "Câu hỏi chỉ được có một đáp án đúng.");
+        public static readonly Error QuestionBankInvalidKeyOption = new("QuestionBank.InvalidKeyOption", "Đáp án phải có KeyOption từ '1' đến '4'.");
+        public static readonly Error QuestionBankDuplicateKeyOption = new("QuestionBank.DuplicateKeyOption", "Không được trùng KeyOption trong các đáp án.");
+
+        // ============================================
+        // QUESTION OPTION ERRORS
+        // ============================================
+        public static readonly Error QuestionOptionNotFound = new("QuestionOption.NotFound", "Đáp án không tồn tại.");
+        public static readonly Error QuestionOptionInvalidKeyOption = new("QuestionOption.InvalidKeyOption", "KeyOption phải là '1', '2', '3' hoặc '4'.");
+
     }
 }
 

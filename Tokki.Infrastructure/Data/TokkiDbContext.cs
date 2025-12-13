@@ -29,13 +29,19 @@ namespace Tokki.Infrastructure.Data
         public DbSet<EmailHistory> EmailHistories { get; set; }
         public DbSet<Title> Titles { get; set; }
         public DbSet<AccountTitle> AccountTitles { get; set; }
-        public DbSet<UserXpHistory> UserXpHistories { get; set; } 
+        public DbSet<UserXpHistory> UserXpHistories { get; set; }
         public DbSet<Topic> Topics { get; set; }
         public DbSet<Word> Word { get; set; }
         public DbSet<Meaning> Meaning { get; set; }
         public DbSet<MeaningTopic> MeaningTopic { get; set; }
         public DbSet<UserFavoriteWord> UserFavoriteWords { get; set; }
         public DbSet<UserFavoriteTopic> UserFavoriteTopics { get; set; }
+
+        // --- QUESTION BANK DbSets ---
+        public DbSet<QuestionType> QuestionTypes { get; set; }
+        public DbSet<Passage> Passages { get; set; }
+        public DbSet<QuestionBank> QuestionBank { get; set; }
+        public DbSet<QuestionOption> QuestionOptions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -76,7 +82,7 @@ namespace Tokki.Infrastructure.Data
             .HasConversion<int>();
 
             modelBuilder.Entity<AccountTitle>()
-            .HasKey(at => new { at.UserId, at.TitleId }); 
+            .HasKey(at => new { at.UserId, at.TitleId });
 
             modelBuilder.Entity<AccountTitle>()
                 .HasOne(at => at.Account)
@@ -93,13 +99,13 @@ namespace Tokki.Infrastructure.Data
             .HasOne(a => a.CurrentTitle)
             .WithMany()
             .HasForeignKey(a => a.CurrentTitleId)
-            .OnDelete(DeleteBehavior.SetNull); 
-        
-        // =========================================================
-        // 2. CONFIG ACCOUNT
-        // =========================================================
+            .OnDelete(DeleteBehavior.SetNull);
 
-        modelBuilder.Entity<Account>(entity =>
+            // =========================================================
+            // 2. CONFIG ACCOUNT
+            // =========================================================
+
+            modelBuilder.Entity<Account>(entity =>
             {
                 // Khóa chính
                 entity.HasKey(e => e.UserId);
@@ -227,15 +233,15 @@ namespace Tokki.Infrastructure.Data
                 entity.Property(e => e.Subject)
                       .IsRequired()
                       .HasMaxLength(255)
-                      .IsUnicode(true); 
+                      .IsUnicode(true);
 
                 entity.Property(e => e.Body)
                       .IsRequired()
-                      .IsUnicode(true); 
+                      .IsUnicode(true);
 
                 entity.Property(e => e.Description)
                       .HasMaxLength(500)
-                      .IsUnicode(true); 
+                      .IsUnicode(true);
             });
 
 
@@ -346,6 +352,106 @@ namespace Tokki.Infrastructure.Data
                 // Đảm bảo 1 user chỉ favorite 1 topic 1 lần
                 entity.HasIndex(e => new { e.UserId, e.TopicId })
                       .IsUnique();
+            });
+
+            // =========================================================
+            // 7. CONFIG QUESTION BANK
+            // =========================================================
+
+            // QuestionType Configuration
+            modelBuilder.Entity<QuestionType>(entity =>
+            {
+                entity.HasKey(qt => qt.QuestionTypeId);
+
+                // Index cho Code để tìm kiếm nhanh
+                entity.HasIndex(qt => qt.Code);
+
+                // Convert enum Skill sang int
+                entity.Property(qt => qt.Skill)
+                      .HasConversion<int>();
+
+                // Default value cho IsActive
+                entity.Property(qt => qt.IsActive)
+                      .HasDefaultValue(true);
+            });
+
+            // Passage Configuration
+            modelBuilder.Entity<Passage>(entity =>
+            {
+                entity.HasKey(p => p.PassageId);
+
+                // Index cho Title để tìm kiếm nhanh
+                entity.HasIndex(p => p.Title);
+
+                // Convert enum Status sang int
+                entity.Property(p => p.Status)
+                      .HasConversion<int>();
+
+                // Convert enum MediaType sang int
+                entity.Property(p => p.MediaType)
+                      .HasConversion<int>();
+
+                // Default values
+                entity.Property(p => p.Status)
+                      .HasDefaultValue(PassageStatus.Active);
+
+                entity.Property(p => p.MediaType)
+                      .HasDefaultValue(PassageMediaType.Text);
+            });
+
+            // QuestionBank Configuration
+            modelBuilder.Entity<QuestionBank>(entity =>
+            {
+                entity.HasKey(qb => qb.QuestionBankId);
+
+                // Convert enum Skill sang int
+                entity.Property(qb => qb.Skill)
+                      .HasConversion<int>();
+
+                // Convert enum DifficultyLevel sang int
+                entity.Property(qb => qb.DifficultyLevel)
+                      .HasConversion<int>();
+
+                // Default values
+                entity.Property(qb => qb.DifficultyLevel)
+                      .HasDefaultValue(DifficultyLevel.Medium);
+
+                entity.Property(qb => qb.IsActive)
+                      .HasDefaultValue(true);
+
+                // Relationship với Passage (Optional)
+                entity.HasOne(qb => qb.Passage)
+                      .WithMany(p => p.QuestionBank)
+                      .HasForeignKey(qb => qb.PassageId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                // Relationship với QuestionType (Optional)
+                entity.HasOne(qb => qb.QuestionType)
+                      .WithMany(qt => qt.QuestionBank)
+                      .HasForeignKey(qb => qb.QuestionTypeId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                // Relationship với QuestionOptions (One-to-Many)
+                entity.HasMany(qb => qb.QuestionOptions)
+                      .WithOne(qo => qo.QuestionBank)
+                      .HasForeignKey(qo => qo.QuestionBankId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // QuestionOption Configuration
+            modelBuilder.Entity<QuestionOption>(entity =>
+            {
+                entity.HasKey(qo => qo.OptionId);
+
+                // Default value cho IsCorrect
+                entity.Property(qo => qo.IsCorrect)
+                      .HasDefaultValue(false);
+
+                // Relationship với QuestionBank
+                entity.HasOne(qo => qo.QuestionBank)
+                      .WithMany(qb => qb.QuestionOptions)
+                      .HasForeignKey(qo => qo.QuestionBankId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
         }
     }
