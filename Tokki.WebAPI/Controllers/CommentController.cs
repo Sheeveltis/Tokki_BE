@@ -26,7 +26,7 @@ public class CommentController : ControllerBase
         return StatusCode(result.StatusCode, result);
     }
 
-    [HttpGet("{blogId}")]
+    [HttpGet("blog/{blogId}")]
     public async Task<IActionResult> GetByBlog(string blogId)
     {
         var query = new GetCommentsQuery { BlogId = blogId };
