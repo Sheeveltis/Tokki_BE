@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Tokki.Application.Common.Models;
 using Tokki.Application.UseCases.EmailTemplates.Commands.UpdateEmailTemplate;
+using Tokki.Application.UseCases.EmailTemplates.Handlers;
 using Tokki.Domain.Entities;
 using Tokki.UnitTests.Common.Bases;
 using Tokki.UnitTests.Common.TestData;

@@ -18,8 +18,23 @@ namespace Tokki.Infrastructure.Repositories
         public async Task<Topic?> GetByIdAsync(string topicId)
         {
             return await _context.Topics
-                .Include(t => t.Vocabularies)
+                .Include(t => t.MeaningTopics)
+                    .ThenInclude(mt => mt.Meaning)
+                        .ThenInclude(m => m.Word)
                 .FirstOrDefaultAsync(t => t.TopicId == topicId);
+        }
+
+        public async Task<Topic?> GetByNameAsync(string topicName)
+        {
+            return await _context.Topics
+                .FirstOrDefaultAsync(t => t.TopicName == topicName);
+        }
+
+        public async Task<List<Topic>> GetByIdsAsync(List<string> topicIds)
+        {
+            return await _context.Topics
+                .Where(t => topicIds.Contains(t.TopicId))
+                .ToListAsync();
         }
 
         public async Task<(List<Topic> Items, int TotalCount)> GetPagedAsync(
@@ -29,7 +44,7 @@ namespace Tokki.Infrastructure.Repositories
             TopicStatus? status = null)
         {
             var query = _context.Topics
-                .Include(t => t.Vocabularies)
+                .Include(t => t.MeaningTopics)
                 .AsQueryable();
 
             // Filter by search term
@@ -41,7 +56,7 @@ namespace Tokki.Infrastructure.Repositories
                 );
             }
 
-            // Filter by active status
+            // Filter by status
             if (status.HasValue)
             {
                 query = query.Where(t => t.Status == status.Value);
@@ -89,9 +104,10 @@ namespace Tokki.Infrastructure.Repositories
             await Task.CompletedTask;
         }
 
-        public async Task<bool> HasVocabulariesAsync(string topicId)
+        public async Task<bool> HasMeaningsAsync(string topicId)
         {
-            return await _context.Vocabulary.AnyAsync(v => v.TopicId == topicId);
+            return await _context.MeaningTopic
+                .AnyAsync(mt => mt.TopicId == topicId);
         }
 
         public async Task SaveChangesAsync(CancellationToken cancellationToken = default)

@@ -77,6 +77,8 @@ builder.Services.AddAuthentication(options =>
         ClockSkew = TimeSpan.Zero
     };
 });
+builder.Services.AddHttpContextAccessor();
+
 
 // 4. CẤU HÌNH FLUENTVALIDATION TIẾNG VIỆT (THÊM PHẦN NÀY)
 ValidatorOptions.Global.LanguageManager = new ValidationVietnameseLanguageManager();

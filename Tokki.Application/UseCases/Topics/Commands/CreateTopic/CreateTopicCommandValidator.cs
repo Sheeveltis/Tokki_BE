@@ -21,10 +21,6 @@ namespace Tokki.Application.UseCases.Topics.Commands.CreateTopic
                 .When(x => !string.IsNullOrEmpty(x.Description))
                 .WithName("Mô tả");
 
-            RuleFor(x => x.CreateBy)
-                .NotEmpty()
-                .MaximumLength(15)
-                .WithName("Người tạo");
         }
     }
 }

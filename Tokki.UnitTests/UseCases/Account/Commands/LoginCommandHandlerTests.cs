@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using EntityAccount = Tokki.Domain.Entities.Account;
 using Tokki.Application.UseCases.Accounts.Queries.Login;
 using System.Linq;
+using Tokki.Application.IServices;
 
 namespace Tokki.UnitTests.UseCases.Accounts
 {
@@ -20,7 +21,7 @@ namespace Tokki.UnitTests.UseCases.Accounts
         // Mock riêng biệt của Use Case này 
         private readonly Mock<IValidator<LoginCommand>> _mockValidator;
         private readonly LoginCommandHandler _handler;
-
+        private readonly Mock<IGamificationService> _mockGamificationService;
         public LoginCommandHandlerTests()
         {
             _mockValidator = new Mock<IValidator<LoginCommand>>();
@@ -33,6 +34,7 @@ namespace Tokki.UnitTests.UseCases.Accounts
                 _mockSystemConfigRepo.Object,
                 _mockJwtGenerator.Object,
                 _mockIdGenerator.Object,
+                _mockGamificationService.Object, 
                 _mockValidator.Object
             );
         }

@@ -35,8 +35,12 @@ namespace Tokki.Infrastructure
             services.AddScoped<ITitleRepository, TitleRepository>();
             services.AddScoped<IGamificationService, GamificationService>();
             services.AddScoped<ITopicRepository, TopicRepository>();
-
-            // 3. Đăng ký các Services khác (IdGenerator, Email, Storage...)
+            services.AddScoped<IWordRepository, WordRepository>();
+            services.AddScoped<IUserFavoriteWordRepository, UserFavoriteWordRepository>();
+            services.AddScoped<IUserFavoriteTopicRepository, UserFavoriteTopicRepository>();
+            // Bạn cũng cần kiểm tra và đăng ký các Repository khác mà Command Handler đang yêu cầu:
+            services.AddScoped<IMeaningRepository, MeaningRepository>();
+            services.AddScoped<IMeaningTopicRepository, MeaningTopicRepository>();            // 3. Đăng ký các Services khác (IdGenerator, Email, Storage...)
             services.AddSingleton<IIdGeneratorService, IdGeneratorService>();
             services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
             services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();

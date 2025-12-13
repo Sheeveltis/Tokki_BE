@@ -92,10 +92,29 @@ namespace Tokki.Application.Common.Models
         public static readonly Error VocabularyNotFound = new("Vocabulary.NotFound", "Từ vựng không tồn tại.");
         public static readonly Error VocabularyDuplicated = new("Vocabulary.Duplicated", "Từ vựng đã tồn tại trong chủ đề này.");
 
-        // --- NHÓM: USER FAVORITE (Yêu thích) ---
-        public static readonly Error FavoriteNotFound = new("Favorite.NotFound", "Từ vựng yêu thích không tồn tại.");
-        public static readonly Error FavoriteAlreadyExists = new("Favorite.AlreadyExists", "Từ vựng đã có trong danh sách yêu thích.");
+       
+        // --- NHÓM: WORD (Từ vựng) ---
+        public static readonly Error WordNotFound = new("Word.NotFound", "Từ vựng không tồn tại.");
+        public static readonly Error WordDuplicated = new("Word.Duplicated", "Từ vựng đã tồn tại.");
+        public static readonly Error WordInUse = new("Word.InUse", "Từ vựng đang được sử dụng, không thể xóa.");
 
+        // --- NHÓM: MEANING (Nghĩa của từ) ---
+        public static readonly Error MeaningNotFound = new("Meaning.NotFound", "Nghĩa của từ không tồn tại.");
+
+        public static readonly Error AudioGenerationFailed = new("Audio.GenerationFailed", "Không thể tạo file âm thanh.");
+        public static readonly Error AudioUploadFailed = new("Audio.UploadFailed", "Không thể tải file âm thanh lên cloud.");
+
+        public static readonly Error MeaningInvalidWord = new("Meaning.InvalidWord", "Nghĩa không thuộc về từ vựng này.");
+        // --- NHÓM: FAVORITE WORD ---
+
+        public static readonly Error FavoriteWordNotFound = new("FavoriteWord.NotFound", "Từ vựng yêu thích không tồn tại.");
+        public static readonly Error FavoriteWordAlreadyExists = new("FavoriteWord.AlreadyExists", "Từ vựng đã được thêm vào danh sách yêu thích.");
+        public static readonly Error FavoriteWordUnauthorized = new("FavoriteWord.Unauthorized", "Bạn không có quyền thao tác với từ vựng yêu thích này.");
+
+        // --- NHÓM: FAVORITE TOPIC ---
+        public static readonly Error FavoriteTopicNotFound = new("FavoriteTopic.NotFound", "Chủ đề yêu thích không tồn tại.");
+        public static readonly Error FavoriteTopicAlreadyExists = new("FavoriteTopic.AlreadyExists", "Chủ đề đã được thêm vào danh sách yêu thích.");
+        public static readonly Error FavoriteTopicUnauthorized = new("FavoriteTopic.Unauthorized", "Bạn không có quyền thao tác với chủ đề yêu thích này.");
     }
 }
 

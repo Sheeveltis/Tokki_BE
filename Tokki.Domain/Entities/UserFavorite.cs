@@ -18,6 +18,6 @@ namespace Tokki.Domain.Entities
 
         // Navigation properties
         public virtual Account User { get; set; } = null!;
-        public virtual Vocabulary Vocabulary { get; set; } = null!;
+        //public virtual Vocabulary Vocabulary { get; set; } = null!;
     }
 }

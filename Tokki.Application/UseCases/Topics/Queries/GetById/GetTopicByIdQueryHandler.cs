@@ -36,8 +36,7 @@ namespace Tokki.Application.UseCases.Topics.Queries.GetById
                 CreateDate = topic.CreateDate,
                 UpdateBy = topic.UpdateBy,
                 UpdateDate = topic.UpdateDate,
-                Status = topic.Status,
-                VocabularyCount = topic.Vocabularies?.Count ?? 0
+                Status = topic.Status
             };
 
             return OperationResult<TopicDto>.Success(

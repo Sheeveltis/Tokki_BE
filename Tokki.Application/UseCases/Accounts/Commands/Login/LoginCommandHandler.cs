@@ -42,36 +42,24 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
             // 1. Kiểm tra tồn tại
             if (user == null)
             {
-                return OperationResult<LoginResponse>.Failure(
-                    new List<Error> { AppErrors.UserNotFound },
-                    404,
-                    "Tài khoản không tồn tại."
-                );
+                return OperationResult<LoginResponse>.Failure(new List<Error> { AppErrors.UserNotFound }, 404, "Tài khoản không tồn tại.");
             }
 
-            // Lấy thời gian hiện tại theo giờ Việt Nam để kiểm tra khóa tài khoản
-            DateTime vietnamTimeNow = DateTime.UtcNow.AddHours(7);
+            // Lấy thời gian hiện tại
+            DateTime utcNow = DateTime.UtcNow;
+            DateTime vietnamTimeNow = utcNow.AddHours(7);
 
             // 2. Kiểm tra Banned
             if (user.Status == AccountStatus.Banned)
             {
-                return OperationResult<LoginResponse>.Failure(
-                    new List<Error> { AppErrors.AccountBanned },
-                    403,
-                    "Tài khoản của bạn đã bị khóa vĩnh viễn. Vui lòng liên hệ CSKH."
-                );
+                return OperationResult<LoginResponse>.Failure(new List<Error> { AppErrors.AccountBanned }, 403, "Tài khoản của bạn đã bị khóa vĩnh viễn.");
             }
 
             // 3. Kiểm tra Locked (Tạm khóa)
             if (user.LockedUntil.HasValue && user.LockedUntil > vietnamTimeNow)
             {
                 var remainingMinutes = Math.Ceiling((user.LockedUntil.Value - vietnamTimeNow).TotalMinutes);
-
-                return OperationResult<LoginResponse>.Failure(
-                    new List<Error> { AppErrors.AccountLocked },
-                    403,
-                    $"Tài khoản đang bị tạm khóa. Vui lòng thử lại sau {remainingMinutes} phút."
-                );
+                return OperationResult<LoginResponse>.Failure(new List<Error> { AppErrors.AccountLocked }, 403, $"Tài khoản đang bị tạm khóa. Thử lại sau {remainingMinutes} phút.");
             }
 
             // 4. Kiểm tra mật khẩu
@@ -80,45 +68,43 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
             if (!isPasswordValid)
             {
                 await HandleFailedLoginAsync(user, vietnamTimeNow, cancellationToken);
-
-                return OperationResult<LoginResponse>.Failure(
-                    new List<Error> { AppErrors.WrongPassword },
-                    400,
-                    "Mật khẩu không chính xác."
-                );
+                return OperationResult<LoginResponse>.Failure(new List<Error> { AppErrors.WrongPassword }, 400, "Mật khẩu không chính xác.");
             }
 
-            // === XỬ LÝ KHI ĐÚNG MẬT KHẨU (Reset bộ đếm) ===
+            // === XỬ LÝ KHI ĐÚNG MẬT KHẨU ===
             if (user.FailedLoginCount > 0 || user.LockedUntil != null)
             {
                 user.FailedLoginCount = 0;
                 user.LockedUntil = null;
                 await _accountRepository.UpdateUserAsync(user);
             }
-            await _gamificationService.CheckLoginGamificationAsync(user.UserId);        
 
-            // --- 5. LOGIC TẠO TOKEN & SESSION ---
+            await _gamificationService.CheckLoginGamificationAsync(user.UserId);
 
-            // A. Lấy thời gian UTC (cho JWT Token)
-            DateTime utcNow = DateTime.UtcNow;
-            DateTime tokenExpiryUtc = utcNow.AddMinutes(1); // Token hết hạn sau 1 phút (UTC)
+            // --- 5. TẠO TOKEN & SESSION ---
 
-            // B. Lấy thời gian Việt Nam (cho Database)
-            DateTime sessionExpiryVietnam = vietnamTimeNow.AddMinutes(1); // Session hết hạn sau 1 phút (VN time)
+            // A. Lấy config thời gian hết hạn từ database (mặc định 60 phút)
+            int tokenExpirationMinutes = await GetIntConfig("TOKEN_EXPIRATION_MINUTES", 60);
 
-            // C. Tạo Token (Truyền giờ UTC vào - KHÔNG cộng 7)
-            var accessToken = _jwtGenerator.GenerateToken(user, tokenExpiryUtc);
+            // B. Tính toán thời gian hết hạn
+            // - Token JWT: Dùng UTC (chuẩn quốc tế, tránh lỗi validate)
+            // - Database: Lưu giờ Việt Nam (+7) để dễ quản lý
+            DateTime tokenExpiresAtUtc = utcNow.AddMinutes(tokenExpirationMinutes);
+            DateTime sessionExpiresAtVietnam = vietnamTimeNow.AddMinutes(tokenExpirationMinutes);
 
-            // D. Lưu Session (Dùng giờ Việt Nam)
+            // C. Tạo JWT Token (truyền UTC)
+            var accessToken = _jwtGenerator.GenerateToken(user, tokenExpiresAtUtc);
+
+            // D. Lưu Session vào database (lưu giờ Việt Nam)
             var newSession = new Session
             {
                 SessionId = _idGenerator.Generate(10),
                 UserId = user.UserId,
-                RefreshToken = accessToken,
-                ExpiresAt = sessionExpiryVietnam, // Lưu giờ VN vào database
-                IpAddress = "Check-Controller",
+                RefreshToken = accessToken, // Có thể tạo refresh token riêng
+                ExpiresAt = sessionExpiresAtVietnam, // Lưu giờ Việt Nam (+7)
+                IpAddress = "Check-Controller", // Nên lấy từ HttpContext
                 UserAgent = "Web-Browser",
-                CreatedAt = vietnamTimeNow,
+                CreatedAt = vietnamTimeNow, // Lưu giờ Việt Nam (+7)
                 RevokedAt = null
             };
 

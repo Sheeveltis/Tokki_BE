@@ -39,7 +39,6 @@ namespace Tokki.Application.UseCases.Topics.Queries
                 UpdateBy = t.UpdateBy,
                 UpdateDate = t.UpdateDate,
                 Status = t.Status,
-                VocabularyCount = t.Vocabularies?.Count ?? 0
             }).ToList();
 
             var pagedResult = PagedResult<TopicDto>.Create(

@@ -31,9 +31,12 @@ namespace Tokki.Infrastructure.Data
         public DbSet<AccountTitle> AccountTitles { get; set; }
         public DbSet<UserXpHistory> UserXpHistories { get; set; } 
         public DbSet<Topic> Topics { get; set; }
-        public DbSet<Vocabulary> Vocabulary { get; set; }
+        public DbSet<Word> Word { get; set; }
+        public DbSet<Meaning> Meaning { get; set; }
+        public DbSet<MeaningTopic> MeaningTopic { get; set; }
+        public DbSet<UserFavoriteWord> UserFavoriteWords { get; set; }
+        public DbSet<UserFavoriteTopic> UserFavoriteTopics { get; set; }
 
-        
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -235,29 +238,114 @@ namespace Tokki.Infrastructure.Data
                       .IsUnicode(true); 
             });
 
-            modelBuilder.Entity<Topic>(entity =>
-            {
-                entity.Property(e => e.TopicName).IsRequired().IsUnicode(true).HasMaxLength(100);
-                entity.Property(e => e.Description).IsUnicode(true).HasMaxLength(255);
-                entity.Property(e => e.Status)
-                .HasConversion<int>();
 
-                entity.HasKey(e => e.TopicId); 
+            modelBuilder.Entity<Word>(entity =>
+            {
+                entity.HasKey(w => w.WordId);
+
+                // Index cho Text để tìm kiếm nhanh
+                entity.HasIndex(w => w.Text);
+
+                // Convert enum Status sang int
+                entity.Property(w => w.Status)
+                      .HasConversion<int>();
+
+                // Relationship: Word -> Meanings (One-to-Many)
+                entity.HasMany(w => w.Meanings)
+                      .WithOne(m => m.Word)
+                      .HasForeignKey(m => m.WordId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
 
-            modelBuilder.Entity<Vocabulary>(entity =>
+            // Meaning Configuration
+            modelBuilder.Entity<Meaning>(entity =>
             {
-                entity.Property(e => e.Word).IsRequired().IsUnicode(true).HasMaxLength(255);
-                entity.Property(e => e.Meaning).IsRequired().IsUnicode(true).HasMaxLength(1000); // Tăng giới hạn nếu cần
-                entity.Property(e => e.Pronunciation).IsUnicode(true).HasMaxLength(100);
-                entity.Property(e => e.ExampleSentence).IsUnicode(true).HasMaxLength(2000); // Tăng giới hạn nếu cần
+                entity.HasKey(m => m.MeaningId);
 
-                entity.HasOne(v => v.Topic)
-                      .WithMany(t => t.Vocabularies)
-                      .HasForeignKey(v => v.TopicId)
-                      .OnDelete(DeleteBehavior.Cascade); 
+                // Convert enum Status sang int
+                entity.Property(m => m.Status)
+                      .HasConversion<int>();
 
-                entity.HasKey(e => e.VocabId);
+                // Relationship với MeaningTopics
+                entity.HasMany(m => m.MeaningTopics)
+                      .WithOne(mt => mt.Meaning)
+                      .HasForeignKey(mt => mt.MeaningId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Topic Configuration
+            modelBuilder.Entity<Topic>(entity =>
+            {
+                entity.HasKey(t => t.TopicId);
+
+                // Index cho TopicName để tìm kiếm nhanh
+                entity.HasIndex(t => t.TopicName);
+
+                // Convert enum Status sang int
+                entity.Property(t => t.Status)
+                      .HasConversion<int>();
+
+                // Relationship với MeaningTopics
+                entity.HasMany(t => t.MeaningTopics)
+                      .WithOne(mt => mt.Topic)
+                      .HasForeignKey(mt => mt.TopicId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // MeaningTopic Configuration (Many-to-Many junction table)
+            modelBuilder.Entity<MeaningTopic>(entity =>
+            {
+                // Composite Primary Key
+                entity.HasKey(mt => new { mt.MeaningId, mt.TopicId });
+
+                // Convert enum Status sang int
+                entity.Property(mt => mt.Status)
+                      .HasConversion<int>();
+
+                // Relationship với Meaning
+                entity.HasOne(mt => mt.Meaning)
+                      .WithMany(m => m.MeaningTopics)
+                      .HasForeignKey(mt => mt.MeaningId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                // Relationship với Topic
+                entity.HasOne(mt => mt.Topic)
+                      .WithMany(t => t.MeaningTopics)
+                      .HasForeignKey(mt => mt.TopicId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+            modelBuilder.Entity<UserFavoriteWord>(entity =>
+            {
+                entity.HasKey(e => e.FavoriteWordId);
+
+                entity.HasOne(e => e.Word)
+                      .WithMany(w => w.UserFavorites)
+                      .HasForeignKey(e => e.WordId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.Meaning)
+                      .WithMany(m => m.UserFavorites)
+                      .HasForeignKey(e => e.MeaningId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                // Đảm bảo 1 user chỉ favorite 1 word 1 lần
+                entity.HasIndex(e => new { e.UserId, e.WordId })
+                      .IsUnique();
+            });
+
+            // UserFavoriteTopic
+            modelBuilder.Entity<UserFavoriteTopic>(entity =>
+            {
+                entity.HasKey(e => e.FavoriteTopicId);
+
+                entity.HasOne(e => e.Topic)
+                      .WithMany(t => t.UserFavorites)
+                      .HasForeignKey(e => e.TopicId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                // Đảm bảo 1 user chỉ favorite 1 topic 1 lần
+                entity.HasIndex(e => new { e.UserId, e.TopicId })
+                      .IsUnique();
             });
         }
     }

@@ -17,6 +17,5 @@ namespace Tokki.Application.UseCases.Topics.DTOs
         public string? UpdateBy { get; set; }
         public DateTime? UpdateDate { get; set; }
         public TopicStatus Status { get; set; }
-        public int VocabularyCount { get; set; }
     }
 }
