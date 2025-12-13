@@ -149,6 +149,31 @@ namespace Tokki.Application.Common.Models
         // ============================================
         public static readonly Error QuestionOptionNotFound = new("QuestionOption.NotFound", "Đáp án không tồn tại.");
         public static readonly Error QuestionOptionInvalidKeyOption = new("QuestionOption.InvalidKeyOption", "KeyOption phải là '1', '2', '3' hoặc '4'.");
+        // ============================================
+        // EXAM TEMPLATE ERRORS
+        // ============================================
+        public static readonly Error ExamTemplateNotFound = new("ExamTemplate.NotFound", "Mẫu đề thi không tồn tại.");
+        public static readonly Error ExamTemplateNameDuplicated = new("ExamTemplate.NameDuplicated", "Tên mẫu đề thi đã tồn tại.");
+        public static readonly Error ExamTemplateInUse = new("ExamTemplate.InUse", "Mẫu đề thi đang được sử dụng, không thể xóa.");
+        public static readonly Error ExamTemplateNoParts = new("ExamTemplate.NoParts", "Mẫu đề thi phải có ít nhất một phần.");
+
+        // ============================================
+        // TEMPLATE PART ERRORS
+        // ============================================
+        public static readonly Error TemplatePartNotFound = new("TemplatePart.NotFound", "Phần thi không tồn tại.");
+        public static readonly Error TemplatePartInvalidRange = new("TemplatePart.InvalidRange", "QuestionFrom phải nhỏ hơn hoặc bằng QuestionTo.");
+        public static readonly Error TemplatePartRangeOverlap = new("TemplatePart.RangeOverlap", "Khoảng câu hỏi bị trùng với phần khác trong mẫu đề.");
+        public static readonly Error TemplatePartQuestionRangeInvalid = new("TemplatePart.QuestionRangeInvalid", "Khoảng câu hỏi phải lớn hơn 0.");
+
+        // ============================================
+        // EXAM ERRORS
+        // ============================================
+        public static readonly Error ExamNotFound = new("Exam.NotFound", "Đề thi không tồn tại.");
+        public static readonly Error ExamTitleDuplicated = new("Exam.TitleDuplicated", "Tiêu đề đề thi đã tồn tại.");
+        public static readonly Error ExamQuestionNotInPart = new("Exam.QuestionNotInPart", "Câu hỏi không nằm trong khoảng của bất kỳ phần nào trong mẫu đề.");
+        public static readonly Error ExamQuestionSkillMismatch = new("Exam.QuestionSkillMismatch", "Kỹ năng của câu hỏi không khớp với kỹ năng của phần.");
+        public static readonly Error ExamQuestionNoDuplicated = new("Exam.QuestionNoDuplicated", "Số thứ tự câu hỏi đã tồn tại trong đề thi.");
+        public static readonly Error ExamQuestionBankNotFound = new("Exam.QuestionBankNotFound", "Câu hỏi trong ngân hàng không tồn tại.");
 
     }
 }

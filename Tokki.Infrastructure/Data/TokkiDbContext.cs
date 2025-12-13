@@ -43,6 +43,11 @@ namespace Tokki.Infrastructure.Data
         public DbSet<QuestionBank> QuestionBank { get; set; }
         public DbSet<QuestionOption> QuestionOptions { get; set; }
 
+
+        public DbSet<ExamTemplate> ExamTemplates { get; set; }
+        public DbSet<TemplatePart> TemplateParts { get; set; }
+        public DbSet<Exam> Exams { get; set; }
+        public DbSet<ExamQuestion> ExamQuestions { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -452,6 +457,123 @@ namespace Tokki.Infrastructure.Data
                       .WithMany(qb => qb.QuestionOptions)
                       .HasForeignKey(qo => qo.QuestionBankId)
                       .OnDelete(DeleteBehavior.Cascade);
+            });
+            // ExamTemplate Configuration
+            modelBuilder.Entity<ExamTemplate>(entity =>
+            {
+                entity.HasKey(et => et.ExamTemplateId);
+
+                // Index cho Name để tìm kiếm nhanh
+                entity.HasIndex(et => et.Name);
+
+                // Convert enum Status sang int
+                entity.Property(et => et.Status)
+                      .HasConversion<int>();
+
+                // Default value cho Status và CreatedAt
+                entity.Property(et => et.Status)
+                      .HasDefaultValue(ExamTemplateStatus.Draft);
+
+                entity.Property(et => et.CreatedAt)
+                      .HasDefaultValueSql("GETUTCDATE()");
+
+                // Relationship với TemplateParts
+                entity.HasMany(et => et.TemplateParts)
+                      .WithOne(tp => tp.ExamTemplate)
+                      .HasForeignKey(tp => tp.ExamTemplateId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                // Relationship với Exams
+                entity.HasMany(et => et.Exams)
+                      .WithOne(e => e.ExamTemplate)
+                      .HasForeignKey(e => e.ExamTemplateId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // TemplatePart Configuration
+            modelBuilder.Entity<TemplatePart>(entity =>
+            {
+                entity.HasKey(tp => tp.TemplatePartId);
+
+                // Convert enum Skill sang int
+                entity.Property(tp => tp.Skill)
+                      .HasConversion<int>();
+
+                // Convert enum ExampleType sang int
+                entity.Property(tp => tp.ExampleType)
+                      .HasConversion<int>();
+
+                // Default value cho ExampleType
+                entity.Property(tp => tp.ExampleType)
+                      .HasDefaultValue(ExampleType.None);
+
+                // Relationship với ExamTemplate
+                entity.HasOne(tp => tp.ExamTemplate)
+                      .WithMany(et => et.TemplateParts)
+                      .HasForeignKey(tp => tp.ExamTemplateId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Exam Configuration
+            modelBuilder.Entity<Exam>(entity =>
+            {
+                entity.HasKey(e => e.ExamId);
+
+                // Index cho Title để tìm kiếm nhanh
+                entity.HasIndex(e => e.Title);
+
+                // Convert enum Type sang int
+                entity.Property(e => e.Type)
+                      .HasConversion<int>();
+
+                // Convert enum Status sang int
+                entity.Property(e => e.Status)
+                      .HasConversion<int>();
+
+                // Default values
+                entity.Property(e => e.Status)
+                      .HasDefaultValue(ExamStatus.Draft);
+
+                entity.Property(e => e.CreatedAt)
+                      .HasDefaultValueSql("GETUTCDATE()");
+
+                // Relationship với ExamTemplate
+                entity.HasOne(e => e.ExamTemplate)
+                      .WithMany(et => et.Exams)
+                      .HasForeignKey(e => e.ExamTemplateId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                // Relationship với ExamQuestions
+                entity.HasMany(e => e.ExamQuestions)
+                      .WithOne(eq => eq.Exam)
+                      .HasForeignKey(eq => eq.ExamId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // ExamQuestion Configuration
+            modelBuilder.Entity<ExamQuestion>(entity =>
+            {
+                entity.HasKey(eq => eq.ExamQuestionId);
+
+                // Unique constraint: 1 đề không thể có 2 câu cùng số thứ tự
+                entity.HasIndex(eq => new { eq.ExamId, eq.QuestionNo })
+                      .IsUnique();
+
+                // Default value cho Score
+                entity.Property(eq => eq.Score)
+                      .HasDefaultValue(2);
+
+                // Relationship với Exam
+                entity.HasOne(eq => eq.Exam)
+                      .WithMany(e => e.ExamQuestions)
+                      .HasForeignKey(eq => eq.ExamId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                // Relationship với QuestionBank
+                entity.HasOne(eq => eq.QuestionBank)
+                      .WithMany()
+                      .HasForeignKey(eq => eq.QuestionBankId)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }

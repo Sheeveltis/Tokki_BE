@@ -42,8 +42,10 @@ namespace Tokki.Infrastructure
             services.AddScoped<IPassageRepository, PassageRepository>();
             services.AddScoped<IQuestionBankRepository, QuestionBankRepository>();
             services.AddScoped<IQuestionOptionRepository, QuestionOptionRepository>();
-
-
+            services.AddScoped<IExamTemplateRepository, ExamTemplateRepository>();
+            services.AddScoped<ITemplatePartRepository, TemplatePartRepository>();
+            services.AddScoped<IExamRepository, ExamRepository>();
+            services.AddScoped<IExamQuestionRepository, ExamQuestionRepository>();
             // Bạn cũng cần kiểm tra và đăng ký các Repository khác mà Command Handler đang yêu cầu:
             services.AddScoped<IMeaningRepository, MeaningRepository>();
             services.AddScoped<IMeaningTopicRepository, MeaningTopicRepository>();            // 3. Đăng ký các Services khác (IdGenerator, Email, Storage...)

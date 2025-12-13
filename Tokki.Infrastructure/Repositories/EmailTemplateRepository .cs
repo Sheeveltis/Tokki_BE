@@ -1,5 +1,4 @@
-﻿// Tokki.Infrastructure/Repositories/EmailTemplateRepository.cs
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Tokki.Application.IRepositories;
 using Tokki.Domain.Entities;
 using Tokki.Infrastructure.Data;
