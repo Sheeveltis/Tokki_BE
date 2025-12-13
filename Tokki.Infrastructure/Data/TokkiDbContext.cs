@@ -36,6 +36,8 @@ namespace Tokki.Infrastructure.Data
         public DbSet<MeaningTopic> MeaningTopic { get; set; }
         public DbSet<UserFavoriteWord> UserFavoriteWords { get; set; }
         public DbSet<UserFavoriteTopic> UserFavoriteTopics { get; set; }
+        public DbSet<Vocabulary> Vocabulary { get; set; }
+        public DbSet<Comment> Comments { get; set; }
 
         // --- QUESTION BANK DbSets ---
         public DbSet<QuestionType> QuestionTypes { get; set; }
@@ -573,6 +575,23 @@ namespace Tokki.Infrastructure.Data
                 entity.HasOne(eq => eq.QuestionBank)
                       .WithMany()
                       .HasForeignKey(eq => eq.QuestionBankId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+            modelBuilder.Entity<Comment>(entity =>
+            {
+                entity.HasOne(c => c.Blog)
+                      .WithMany(b => b.Comments) 
+                      .HasForeignKey(c => c.BlogId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(c => c.User)
+                      .WithMany()
+                      .HasForeignKey(c => c.UserId)
+                      .OnDelete(DeleteBehavior.Restrict); 
+
+                entity.HasOne(c => c.ParentComment)
+                      .WithMany(c => c.Replies)
+                      .HasForeignKey(c => c.ParentId)
                       .OnDelete(DeleteBehavior.Restrict);
             });
         }

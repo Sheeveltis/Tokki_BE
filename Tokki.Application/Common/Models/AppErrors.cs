@@ -175,6 +175,9 @@ namespace Tokki.Application.Common.Models
         public static readonly Error ExamQuestionNoDuplicated = new("Exam.QuestionNoDuplicated", "Số thứ tự câu hỏi đã tồn tại trong đề thi.");
         public static readonly Error ExamQuestionBankNotFound = new("Exam.QuestionBankNotFound", "Câu hỏi trong ngân hàng không tồn tại.");
 
+        //Comment
+        public static readonly Error CommentNotFound = new("Comment.NotFound", OperationMessages.NotFound("bình luận"));
+        public static readonly Error Forbidden = new("Comment.Forbidden", "Bạn không có quyền thực hiện thao tác này trên bình luận.");
     }
 }
 

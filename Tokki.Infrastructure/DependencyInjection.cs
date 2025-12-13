@@ -60,6 +60,8 @@ namespace Tokki.Infrastructure
             services.AddScoped<ITextToSpeechService, TextToSpeechService>();
             //Cloudinary 
             services.AddScoped<ICloudinaryService, CloudinaryService>();
+            //Comment
+            services.AddScoped<ICommentRepository, CommentRepository>();
             return services;
         }
     }

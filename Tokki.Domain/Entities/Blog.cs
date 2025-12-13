@@ -26,7 +26,6 @@ namespace Tokki.Domain.Entities
 
         public int ViewCount { get; set; } = 0;
 
-        // 4. Thông tin chi tiết (Nội dung HTML từ Rich Editor)
         public string Content { get; set; } = string.Empty;
 
         [MaxLength(500)]
@@ -45,5 +44,6 @@ namespace Tokki.Domain.Entities
         public virtual Category? Category { get; set; }
 
         public virtual ICollection<Tag> Tags { get; set; } = new List<Tag>();
+        public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
     }
 }
