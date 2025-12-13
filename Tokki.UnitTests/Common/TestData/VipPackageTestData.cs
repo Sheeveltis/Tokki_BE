@@ -38,7 +38,6 @@ namespace Tokki.UnitTests.Common.TestData
                 Price = 50000,
                 DurationDays = 30,
                 IsActive = isActive,
-                IsDeleted = false,
                 Description = "Mô tả gốc"
             };
         }
