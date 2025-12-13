@@ -11,9 +11,12 @@ namespace Tokki.Application.UseCases.Accounts.Commands.CreateEmailCampaign
 {
     public class CreateEmailCampaignByGroupCommand : IRequest<OperationResult<string>>
     {
-        public string Subject { get; set; }
-        public string Body { get; set; }
-        public UserTargetGroup TargetGroup { get; set; } 
-        public DateTime? ScheduledTime { get; set; } // Null = Gửi ngay
+        public string Subject { get; set; } = string.Empty;
+        public string Body { get; set; } = string.Empty;
+        public UserTargetGroup TargetGroup { get; set; }
+
+        public List<string>? SpecificEmails { get; set; }
+
+        public DateTime? ScheduledTime { get; set; }
     }
 }

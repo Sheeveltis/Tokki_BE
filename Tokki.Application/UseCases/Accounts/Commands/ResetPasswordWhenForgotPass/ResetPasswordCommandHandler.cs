@@ -1,42 +1,41 @@
-﻿using MediatR;
-using Tokki.Application.Common.Models; 
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using FluentValidation;
+using MediatR;
+using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 
-namespace Tokki.Application.UseCases.Accounts.Commands.ChangePassword
+namespace Tokki.Application.UseCases.Accounts.Commands.ResetPassword
 {
-    public class ChangePasswordCommandHandler : IRequestHandler<ChangePasswordCommand, OperationResult<string>>
+    public class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommand, OperationResult<string>>
     {
         private readonly IAccountRepository _accountRepository;
 
-        public ChangePasswordCommandHandler(IAccountRepository accountRepository)
+        public ResetPasswordCommandHandler(IAccountRepository accountRepository, IValidator<ResetPasswordCommand> validator)
         {
             _accountRepository = accountRepository;
         }
 
-        public async Task<OperationResult<string>> Handle(ChangePasswordCommand request, CancellationToken cancellationToken)
+        public async Task<OperationResult<string>> Handle(ResetPasswordCommand request, CancellationToken cancellationToken)
         {
+            // 1. Tìm User
             var user = await _accountRepository.GetByEmailAsync(request.Email);
             if (user == null)
             {
                 return OperationResult<string>.Failure(new List<Error> { AppErrors.UserNotFound });
             }
 
-              bool isPasswordCorrect = BCrypt.Net.BCrypt.Verify(request.OldPassword, user.PasswordHash);
-
-            if (!isPasswordCorrect)
-            {
-                return OperationResult<string>.Failure(new List<Error> { AppErrors.InvalidCredentials });
-            
-            }
-
-            // 3. Hash mật khẩu mới
+            // 2. Đổi mật khẩu
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
 
-            // (Tùy chọn) Reset các biến khóa tài khoản nếu đổi pass thành công (giống mẫu của bạn)
+            // Reset các biến khóa
             user.FailedLoginCount = 0;
             user.LockedUntil = null;
 
-            // 4. Lưu DB
+            // 3. Lưu DB
             await _accountRepository.UpdateUserAsync(user);
             await _accountRepository.SaveChangesAsync(cancellationToken);
 

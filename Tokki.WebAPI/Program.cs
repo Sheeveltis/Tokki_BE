@@ -89,12 +89,15 @@ ValidatorOptions.Global.LanguageManager.Culture = new CultureInfo("vi");
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddApplication();
 
+// AutomationWorker
 builder.Services.AddSingleton<Tokki.Infrastructure.BackgroundJobs.AutomationWorker>();
 builder.Services.AddHostedService(provider =>
     provider.GetRequiredService<Tokki.Infrastructure.BackgroundJobs.AutomationWorker>());
 
-// CampaignWorker (chỉ chạy background, không cần inject)
-builder.Services.AddHostedService<Tokki.Infrastructure.BackgroundJobs.CampaignWorker>();
+// CampaignWorker ✅ SỬA LẠI GIỐNG AutomationWorker
+builder.Services.AddSingleton<Tokki.Infrastructure.BackgroundJobs.CampaignWorker>();
+builder.Services.AddHostedService(provider =>
+    provider.GetRequiredService<Tokki.Infrastructure.BackgroundJobs.CampaignWorker>());
 
 builder.Services.AddCors(options =>
 {
