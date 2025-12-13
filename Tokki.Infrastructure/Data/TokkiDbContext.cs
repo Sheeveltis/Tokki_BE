@@ -36,7 +36,7 @@ namespace Tokki.Infrastructure.Data
         public DbSet<MeaningTopic> MeaningTopic { get; set; }
         public DbSet<UserFavoriteWord> UserFavoriteWords { get; set; }
         public DbSet<UserFavoriteTopic> UserFavoriteTopics { get; set; }
-        public DbSet<Vocabulary> Vocabulary { get; set; }
+   
         public DbSet<Comment> Comments { get; set; }
 
         // --- QUESTION BANK DbSets ---
