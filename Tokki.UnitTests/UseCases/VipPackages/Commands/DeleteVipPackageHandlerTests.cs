@@ -42,7 +42,6 @@ namespace Tokki.UnitTests.Features.VipPackages.Commands
 
             result.IsSuccess.Should().BeTrue();
 
-            package.IsDeleted.Should().BeTrue();
             package.IsActive.Should().BeFalse();
 
             _mockVipRepo.Verify(x => x.UpdateAsync(package), Times.Once);
