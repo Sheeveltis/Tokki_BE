@@ -31,12 +31,10 @@ namespace Tokki.Infrastructure.Data
         public DbSet<AccountTitle> AccountTitles { get; set; }
         public DbSet<UserXpHistory> UserXpHistories { get; set; }
         public DbSet<Topic> Topics { get; set; }
-        public DbSet<Word> Word { get; set; }
-        public DbSet<Meaning> Meaning { get; set; }
-        public DbSet<MeaningTopic> MeaningTopic { get; set; }
-        public DbSet<UserFavoriteWord> UserFavoriteWords { get; set; }
-        public DbSet<UserFavoriteTopic> UserFavoriteTopics { get; set; }
-   
+        public DbSet<Vocabulary> Vocabularies { get; set; }
+        public DbSet<VocabularyTopic> VocabularyTopics { get; set; }
+        public DbSet<UserFavoriteVocabulary> UserFavoriteVocabularies { get; set; }
+
         public DbSet<Comment> Comments { get; set; }
 
         // --- QUESTION BANK DbSets ---
@@ -45,11 +43,11 @@ namespace Tokki.Infrastructure.Data
         public DbSet<QuestionBank> QuestionBank { get; set; }
         public DbSet<QuestionOption> QuestionOptions { get; set; }
 
-
         public DbSet<ExamTemplate> ExamTemplates { get; set; }
         public DbSet<TemplatePart> TemplateParts { get; set; }
         public DbSet<Exam> Exams { get; set; }
         public DbSet<ExamQuestion> ExamQuestions { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -85,11 +83,11 @@ namespace Tokki.Infrastructure.Data
                 .HasConversion<int>();
 
             modelBuilder.Entity<Report>()
-            .Property(r => r.Status)
-            .HasConversion<int>();
+                .Property(r => r.Status)
+                .HasConversion<int>();
 
             modelBuilder.Entity<AccountTitle>()
-            .HasKey(at => new { at.UserId, at.TitleId });
+                .HasKey(at => new { at.UserId, at.TitleId });
 
             modelBuilder.Entity<AccountTitle>()
                 .HasOne(at => at.Account)
@@ -102,11 +100,12 @@ namespace Tokki.Infrastructure.Data
                 .WithMany()
                 .HasForeignKey(at => at.TitleId)
                 .OnDelete(DeleteBehavior.Cascade);
+
             modelBuilder.Entity<Account>()
-            .HasOne(a => a.CurrentTitle)
-            .WithMany()
-            .HasForeignKey(a => a.CurrentTitleId)
-            .OnDelete(DeleteBehavior.SetNull);
+                .HasOne(a => a.CurrentTitle)
+                .WithMany()
+                .HasForeignKey(a => a.CurrentTitleId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             // =========================================================
             // 2. CONFIG ACCOUNT
@@ -114,9 +113,7 @@ namespace Tokki.Infrastructure.Data
 
             modelBuilder.Entity<Account>(entity =>
             {
-                // Khóa chính
                 entity.HasKey(e => e.UserId);
-
                 entity.HasIndex(e => e.Email).IsUnique();
 
                 entity.Property(e => e.Role)
@@ -135,13 +132,10 @@ namespace Tokki.Infrastructure.Data
             // 3. CONFIG SOCIAL LOGIN
             // =========================================================
 
-            // SỬA LỖI: Đổi ProviderKey -> ProviderUserId
-            // Ràng buộc 1: (Provider + ProviderUserId) phải duy nhất toàn hệ thống
             modelBuilder.Entity<SocialLogin>()
                 .HasIndex(e => new { e.Provider, e.ProviderUserId })
                 .IsUnique();
 
-            // Ràng buộc 2: (UserId + Provider) phải duy nhất (1 user chỉ link 1 GG, 1 FB)
             modelBuilder.Entity<SocialLogin>()
                 .HasIndex(e => new { e.UserId, e.Provider })
                 .IsUnique();
@@ -154,7 +148,7 @@ namespace Tokki.Infrastructure.Data
                 .HasOne(us => us.Account)
                 .WithMany(a => a.Sessions)
                 .HasForeignKey(us => us.UserId)
-                .OnDelete(DeleteBehavior.Cascade); // Xóa user -> Xóa hết session
+                .OnDelete(DeleteBehavior.Cascade);
 
             // =========================================================
             // 5. CONFIG OTP
@@ -162,7 +156,6 @@ namespace Tokki.Infrastructure.Data
 
             modelBuilder.Entity<Otp>(entity =>
             {
-                // Khóa ngoại
                 entity.HasOne(o => o.Account)
                       .WithMany()
                       .HasForeignKey(o => o.UserId)
@@ -180,17 +173,13 @@ namespace Tokki.Infrastructure.Data
             // =========================================================
             // 6. CONFIG SYSTEM CONFIG
             // =========================================================
+
             modelBuilder.Entity<SystemConfig>(entity =>
             {
-                entity.ToTable("SystemConfigs"); // Đặt tên bảng
-
-                // Khóa chính
+                entity.ToTable("SystemConfigs");
                 entity.HasKey(e => e.SystemConfigID);
-
-                // QUAN TRỌNG: Cột Key phải là duy nhất (không được trùng tên cấu hình)
                 entity.HasIndex(e => e.Key).IsUnique();
 
-                // Cấu hình độ dài và bắt buộc (khớp với Data Annotation bên Entity)
                 entity.Property(e => e.Key)
                       .IsRequired()
                       .HasMaxLength(100);
@@ -201,11 +190,9 @@ namespace Tokki.Infrastructure.Data
                 entity.Property(e => e.DataType)
                       .HasMaxLength(50);
 
-                // Giá trị mặc định cho IsActive
                 entity.Property(e => e.IsActive)
                       .HasDefaultValue(true);
             });
-
 
             modelBuilder.Entity<EmailJob>()
                 .Property(j => j.Status)
@@ -215,26 +202,24 @@ namespace Tokki.Infrastructure.Data
                 .Property(j => j.TargetGroup)
                 .HasConversion<int>();
 
-
             // =========================================================
             // CONFIG EMAIL HISTORY
             // =========================================================
+
             modelBuilder.Entity<EmailHistory>(entity =>
             {
-                // Unique constraint: 1 user chỉ nhận 1 email cho mỗi template
                 entity.HasIndex(e => new { e.UserId, e.TemplateKey })
                       .IsUnique();
 
-                // Foreign key
                 entity.HasOne(e => e.Account)
                       .WithMany()
                       .HasForeignKey(e => e.UserId)
                       .OnDelete(DeleteBehavior.Cascade);
             });
+
             modelBuilder.Entity<EmailTemplate>(entity =>
             {
                 entity.HasKey(e => e.TemplateId);
-
                 entity.HasIndex(e => e.TemplateKey).IsUnique();
 
                 entity.Property(e => e.Subject)
@@ -251,154 +236,96 @@ namespace Tokki.Infrastructure.Data
                       .IsUnicode(true);
             });
 
-
-            modelBuilder.Entity<Word>(entity =>
-            {
-                entity.HasKey(w => w.WordId);
-
-                // Index cho Text để tìm kiếm nhanh
-                entity.HasIndex(w => w.Text);
-
-                // Convert enum Status sang int
-                entity.Property(w => w.Status)
-                      .HasConversion<int>();
-
-                // Relationship: Word -> Meanings (One-to-Many)
-                entity.HasMany(w => w.Meanings)
-                      .WithOne(m => m.Word)
-                      .HasForeignKey(m => m.WordId)
-                      .OnDelete(DeleteBehavior.Cascade);
-            });
-
-            // Meaning Configuration
-            modelBuilder.Entity<Meaning>(entity =>
-            {
-                entity.HasKey(m => m.MeaningId);
-
-                // Convert enum Status sang int
-                entity.Property(m => m.Status)
-                      .HasConversion<int>();
-
-                // Relationship với MeaningTopics
-                entity.HasMany(m => m.MeaningTopics)
-                      .WithOne(mt => mt.Meaning)
-                      .HasForeignKey(mt => mt.MeaningId)
-                      .OnDelete(DeleteBehavior.Cascade);
-            });
+            // =========================================================
+            // CONFIG VOCABULARY MODULE
+            // =========================================================
 
             // Topic Configuration
             modelBuilder.Entity<Topic>(entity =>
             {
                 entity.HasKey(t => t.TopicId);
-
-                // Index cho TopicName để tìm kiếm nhanh
                 entity.HasIndex(t => t.TopicName);
 
-                // Convert enum Status sang int
                 entity.Property(t => t.Status)
                       .HasConversion<int>();
 
-                // Relationship với MeaningTopics
-                entity.HasMany(t => t.MeaningTopics)
-                      .WithOne(mt => mt.Topic)
-                      .HasForeignKey(mt => mt.TopicId)
+                // Relationship với VocabularyTopics
+                entity.HasMany(t => t.VocabularyTopics)
+                      .WithOne(vt => vt.Topic)
+                      .HasForeignKey(vt => vt.TopicId)
                       .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // MeaningTopic Configuration (Many-to-Many junction table)
-            modelBuilder.Entity<MeaningTopic>(entity =>
+            // Vocabulary Configuration
+            modelBuilder.Entity<Vocabulary>(entity =>
             {
-                // Composite Primary Key
-                entity.HasKey(mt => new { mt.MeaningId, mt.TopicId });
+                entity.HasKey(v => v.VocabularyId);
 
-                // Convert enum Status sang int
-                entity.Property(mt => mt.Status)
+                entity.Property(v => v.Status)
                       .HasConversion<int>();
 
-                // Relationship với Meaning
-                entity.HasOne(mt => mt.Meaning)
-                      .WithMany(m => m.MeaningTopics)
-                      .HasForeignKey(mt => mt.MeaningId)
+                // Relationship với VocabularyTopics
+                entity.HasMany(v => v.VocabularyTopics)
+                      .WithOne(vt => vt.Vocabulary)
+                      .HasForeignKey(vt => vt.VocabularyId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                // Relationship với UserFavorites
+                entity.HasMany(v => v.UserFavorites)
+                      .WithOne(uf => uf.Vocabulary)
+                      .HasForeignKey(uf => uf.VocabularyId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // VocabularyTopic Configuration
+            modelBuilder.Entity<VocabularyTopic>(entity =>
+            {
+                // Composite Primary Key
+                entity.HasKey(vt => new { vt.VocabularyId, vt.TopicId });
+
+                entity.Property(vt => vt.Status)
+                      .HasConversion<int>();
+
+                // Relationship với Vocabulary
+                entity.HasOne(vt => vt.Vocabulary)
+                      .WithMany(v => v.VocabularyTopics)
+                      .HasForeignKey(vt => vt.VocabularyId)
                       .OnDelete(DeleteBehavior.Cascade);
 
                 // Relationship với Topic
-                entity.HasOne(mt => mt.Topic)
-                      .WithMany(t => t.MeaningTopics)
-                      .HasForeignKey(mt => mt.TopicId)
+                entity.HasOne(vt => vt.Topic)
+                      .WithMany(t => t.VocabularyTopics)
+                      .HasForeignKey(vt => vt.TopicId)
                       .OnDelete(DeleteBehavior.Cascade);
-            });
-            modelBuilder.Entity<UserFavoriteWord>(entity =>
-            {
-                entity.HasKey(e => e.FavoriteWordId);
-
-                entity.HasOne(e => e.Word)
-                      .WithMany(w => w.UserFavorites)
-                      .HasForeignKey(e => e.WordId)
-                      .OnDelete(DeleteBehavior.Restrict);
-
-                entity.HasOne(e => e.Meaning)
-                      .WithMany(m => m.UserFavorites)
-                      .HasForeignKey(e => e.MeaningId)
-                      .OnDelete(DeleteBehavior.Restrict);
-
-                // Đảm bảo 1 user chỉ favorite 1 word 1 lần
-                entity.HasIndex(e => new { e.UserId, e.WordId })
-                      .IsUnique();
-            });
-
-            // UserFavoriteTopic
-            modelBuilder.Entity<UserFavoriteTopic>(entity =>
-            {
-                entity.HasKey(e => e.FavoriteTopicId);
-
-                entity.HasOne(e => e.Topic)
-                      .WithMany(t => t.UserFavorites)
-                      .HasForeignKey(e => e.TopicId)
-                      .OnDelete(DeleteBehavior.Restrict);
-
-                // Đảm bảo 1 user chỉ favorite 1 topic 1 lần
-                entity.HasIndex(e => new { e.UserId, e.TopicId })
-                      .IsUnique();
             });
 
             // =========================================================
             // 7. CONFIG QUESTION BANK
             // =========================================================
 
-            // QuestionType Configuration
             modelBuilder.Entity<QuestionType>(entity =>
             {
                 entity.HasKey(qt => qt.QuestionTypeId);
-
-                // Index cho Code để tìm kiếm nhanh
                 entity.HasIndex(qt => qt.Code);
 
-                // Convert enum Skill sang int
                 entity.Property(qt => qt.Skill)
                       .HasConversion<int>();
 
-                // Default value cho IsActive
                 entity.Property(qt => qt.IsActive)
                       .HasDefaultValue(true);
             });
 
-            // Passage Configuration
             modelBuilder.Entity<Passage>(entity =>
             {
                 entity.HasKey(p => p.PassageId);
-
-                // Index cho Title để tìm kiếm nhanh
                 entity.HasIndex(p => p.Title);
 
-                // Convert enum Status sang int
                 entity.Property(p => p.Status)
                       .HasConversion<int>();
 
-                // Convert enum MediaType sang int
                 entity.Property(p => p.MediaType)
                       .HasConversion<int>();
 
-                // Default values
                 entity.Property(p => p.Status)
                       .HasDefaultValue(PassageStatus.Active);
 
@@ -406,188 +333,163 @@ namespace Tokki.Infrastructure.Data
                       .HasDefaultValue(PassageMediaType.Text);
             });
 
-            // QuestionBank Configuration
             modelBuilder.Entity<QuestionBank>(entity =>
             {
                 entity.HasKey(qb => qb.QuestionBankId);
 
-                // Convert enum Skill sang int
                 entity.Property(qb => qb.Skill)
                       .HasConversion<int>();
 
-                // Convert enum DifficultyLevel sang int
                 entity.Property(qb => qb.DifficultyLevel)
                       .HasConversion<int>();
 
-                // Default values
                 entity.Property(qb => qb.DifficultyLevel)
                       .HasDefaultValue(DifficultyLevel.Medium);
 
                 entity.Property(qb => qb.IsActive)
                       .HasDefaultValue(true);
 
-                // Relationship với Passage (Optional)
                 entity.HasOne(qb => qb.Passage)
                       .WithMany(p => p.QuestionBank)
                       .HasForeignKey(qb => qb.PassageId)
                       .OnDelete(DeleteBehavior.Restrict);
 
-                // Relationship với QuestionType (Optional)
                 entity.HasOne(qb => qb.QuestionType)
                       .WithMany(qt => qt.QuestionBank)
                       .HasForeignKey(qb => qb.QuestionTypeId)
                       .OnDelete(DeleteBehavior.Restrict);
 
-                // Relationship với QuestionOptions (One-to-Many)
                 entity.HasMany(qb => qb.QuestionOptions)
                       .WithOne(qo => qo.QuestionBank)
                       .HasForeignKey(qo => qo.QuestionBankId)
                       .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // QuestionOption Configuration
             modelBuilder.Entity<QuestionOption>(entity =>
             {
                 entity.HasKey(qo => qo.OptionId);
 
-                // Default value cho IsCorrect
                 entity.Property(qo => qo.IsCorrect)
                       .HasDefaultValue(false);
 
-                // Relationship với QuestionBank
                 entity.HasOne(qo => qo.QuestionBank)
                       .WithMany(qb => qb.QuestionOptions)
                       .HasForeignKey(qo => qo.QuestionBankId)
                       .OnDelete(DeleteBehavior.Cascade);
             });
-            // ExamTemplate Configuration
+
+            // =========================================================
+            // 8. CONFIG EXAM
+            // =========================================================
+
             modelBuilder.Entity<ExamTemplate>(entity =>
             {
                 entity.HasKey(et => et.ExamTemplateId);
-
-                // Index cho Name để tìm kiếm nhanh
                 entity.HasIndex(et => et.Name);
 
-                // Convert enum Status sang int
                 entity.Property(et => et.Status)
                       .HasConversion<int>();
 
-                // Default value cho Status và CreatedAt
                 entity.Property(et => et.Status)
                       .HasDefaultValue(ExamTemplateStatus.Draft);
 
                 entity.Property(et => et.CreatedAt)
                       .HasDefaultValueSql("GETUTCDATE()");
 
-                // Relationship với TemplateParts
                 entity.HasMany(et => et.TemplateParts)
                       .WithOne(tp => tp.ExamTemplate)
                       .HasForeignKey(tp => tp.ExamTemplateId)
                       .OnDelete(DeleteBehavior.Cascade);
 
-                // Relationship với Exams
                 entity.HasMany(et => et.Exams)
                       .WithOne(e => e.ExamTemplate)
                       .HasForeignKey(e => e.ExamTemplateId)
                       .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // TemplatePart Configuration
             modelBuilder.Entity<TemplatePart>(entity =>
             {
                 entity.HasKey(tp => tp.TemplatePartId);
 
-                // Convert enum Skill sang int
                 entity.Property(tp => tp.Skill)
                       .HasConversion<int>();
 
-                // Convert enum ExampleType sang int
                 entity.Property(tp => tp.ExampleType)
                       .HasConversion<int>();
 
-                // Default value cho ExampleType
                 entity.Property(tp => tp.ExampleType)
                       .HasDefaultValue(ExampleType.None);
 
-                // Relationship với ExamTemplate
                 entity.HasOne(tp => tp.ExamTemplate)
                       .WithMany(et => et.TemplateParts)
                       .HasForeignKey(tp => tp.ExamTemplateId)
                       .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // Exam Configuration
             modelBuilder.Entity<Exam>(entity =>
             {
                 entity.HasKey(e => e.ExamId);
-
-                // Index cho Title để tìm kiếm nhanh
                 entity.HasIndex(e => e.Title);
 
-                // Convert enum Type sang int
                 entity.Property(e => e.Type)
                       .HasConversion<int>();
 
-                // Convert enum Status sang int
                 entity.Property(e => e.Status)
                       .HasConversion<int>();
 
-                // Default values
                 entity.Property(e => e.Status)
                       .HasDefaultValue(ExamStatus.Draft);
 
                 entity.Property(e => e.CreatedAt)
                       .HasDefaultValueSql("GETUTCDATE()");
 
-                // Relationship với ExamTemplate
                 entity.HasOne(e => e.ExamTemplate)
                       .WithMany(et => et.Exams)
                       .HasForeignKey(e => e.ExamTemplateId)
                       .OnDelete(DeleteBehavior.Restrict);
 
-                // Relationship với ExamQuestions
                 entity.HasMany(e => e.ExamQuestions)
                       .WithOne(eq => eq.Exam)
                       .HasForeignKey(eq => eq.ExamId)
                       .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // ExamQuestion Configuration
             modelBuilder.Entity<ExamQuestion>(entity =>
             {
                 entity.HasKey(eq => eq.ExamQuestionId);
 
-                // Unique constraint: 1 đề không thể có 2 câu cùng số thứ tự
                 entity.HasIndex(eq => new { eq.ExamId, eq.QuestionNo })
                       .IsUnique();
 
-                // Default value cho Score
                 entity.Property(eq => eq.Score)
                       .HasDefaultValue(2);
 
-                // Relationship với Exam
                 entity.HasOne(eq => eq.Exam)
                       .WithMany(e => e.ExamQuestions)
                       .HasForeignKey(eq => eq.ExamId)
                       .OnDelete(DeleteBehavior.Cascade);
 
-                // Relationship với QuestionBank
                 entity.HasOne(eq => eq.QuestionBank)
                       .WithMany()
                       .HasForeignKey(eq => eq.QuestionBankId)
                       .OnDelete(DeleteBehavior.Restrict);
             });
+
+            // =========================================================
+            // 9. CONFIG COMMENT
+            // =========================================================
+
             modelBuilder.Entity<Comment>(entity =>
             {
                 entity.HasOne(c => c.Blog)
-                      .WithMany(b => b.Comments) 
+                      .WithMany(b => b.Comments)
                       .HasForeignKey(c => c.BlogId)
                       .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasOne(c => c.User)
                       .WithMany()
                       .HasForeignKey(c => c.UserId)
-                      .OnDelete(DeleteBehavior.Restrict); 
+                      .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(c => c.ParentComment)
                       .WithMany(c => c.Replies)

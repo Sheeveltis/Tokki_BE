@@ -1,4 +1,7 @@
 ﻿using MediatR;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.Topics.DTOs;
@@ -21,11 +24,14 @@ namespace Tokki.Application.UseCases.Topics.Queries.GetById
             if (topic == null)
             {
                 return OperationResult<TopicDto>.Failure(
-                    new List<Error> { AppErrors.TopicNotFound },
+                    new List<Tokki.Application.Common.Models.Error> { AppErrors.TopicNotFound },
                     404,
                     AppErrors.TopicNotFound.Description
                 );
             }
+
+            // Đếm số vocabularies trong topic (ĐÃ CẬP NHẬT)
+            var vocabularyCount = await _repository.CountVocabulariesInTopicAsync(topic.TopicId);
 
             var dto = new TopicDto
             {
@@ -36,7 +42,8 @@ namespace Tokki.Application.UseCases.Topics.Queries.GetById
                 CreateDate = topic.CreateDate,
                 UpdateBy = topic.UpdateBy,
                 UpdateDate = topic.UpdateDate,
-                Status = topic.Status
+                Status = topic.Status,
+                VocabularyCount = vocabularyCount
             };
 
             return OperationResult<TopicDto>.Success(

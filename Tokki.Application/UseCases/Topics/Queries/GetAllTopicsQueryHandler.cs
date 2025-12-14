@@ -1,4 +1,7 @@
 ﻿using MediatR;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.Topics.DTOs;
@@ -24,17 +27,26 @@ namespace Tokki.Application.UseCases.Topics.Queries
                 request.Status
             );
 
-            var dtos = items.Select(t => new TopicDto
+            var dtos = new List<TopicDto>();
+
+            foreach (var topic in items)
             {
-                TopicId = t.TopicId,
-                TopicName = t.TopicName,
-                Description = t.Description,
-                CreateBy = t.CreateBy,
-                CreateDate = t.CreateDate,
-                UpdateBy = t.UpdateBy,
-                UpdateDate = t.UpdateDate,
-                Status = t.Status,
-            }).ToList();
+                // Đếm số vocabularies trong topic (ĐÃ CẬP NHẬT)
+                var vocabularyCount = await _repository.CountVocabulariesInTopicAsync(topic.TopicId);
+
+                dtos.Add(new TopicDto
+                {
+                    TopicId = topic.TopicId,
+                    TopicName = topic.TopicName,
+                    Description = topic.Description,
+                    CreateBy = topic.CreateBy,
+                    CreateDate = topic.CreateDate,
+                    UpdateBy = topic.UpdateBy,
+                    UpdateDate = topic.UpdateDate,
+                    Status = topic.Status,
+                    VocabularyCount = vocabularyCount
+                });
+            }
 
             var pagedResult = PagedResult<TopicDto>.Create(
                 dtos,

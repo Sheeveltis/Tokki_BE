@@ -35,9 +35,6 @@ namespace Tokki.Infrastructure
             services.AddScoped<ITitleRepository, TitleRepository>();
             services.AddScoped<IGamificationService, GamificationService>();
             services.AddScoped<ITopicRepository, TopicRepository>();
-            services.AddScoped<IWordRepository, WordRepository>();
-            services.AddScoped<IUserFavoriteWordRepository, UserFavoriteWordRepository>();
-            services.AddScoped<IUserFavoriteTopicRepository, UserFavoriteTopicRepository>();
             services.AddScoped<IQuestionTypeRepository, QuestionTypeRepository>();
             services.AddScoped<IPassageRepository, PassageRepository>();
             services.AddScoped<IQuestionBankRepository, QuestionBankRepository>();
@@ -46,9 +43,9 @@ namespace Tokki.Infrastructure
             services.AddScoped<ITemplatePartRepository, TemplatePartRepository>();
             services.AddScoped<IExamRepository, ExamRepository>();
             services.AddScoped<IExamQuestionRepository, ExamQuestionRepository>();
+            services.AddScoped<IVocabularyRepository, VocabularyRepository>();
+            services.AddScoped<IVocabularyTopicRepository, VocabularyTopicRepository>();
             // Bạn cũng cần kiểm tra và đăng ký các Repository khác mà Command Handler đang yêu cầu:
-            services.AddScoped<IMeaningRepository, MeaningRepository>();
-            services.AddScoped<IMeaningTopicRepository, MeaningTopicRepository>();            // 3. Đăng ký các Services khác (IdGenerator, Email, Storage...)
             services.AddSingleton<IIdGeneratorService, IdGeneratorService>();
             services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
             services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();

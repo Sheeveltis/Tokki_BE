@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MediatR;
+﻿using MediatR;
 using Microsoft.Extensions.Logging;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Topics.Commands.UpdateTopic
 {
@@ -27,9 +23,9 @@ namespace Tokki.Application.UseCases.Topics.Commands.UpdateTopic
         {
             try
             {
-                // Check if topic exists
                 var existingTopic = await _topicRepository.GetByIdAsync(request.TopicId);
-                if (existingTopic == null)
+
+                if (existingTopic == null || existingTopic.Status == TopicStatus.Deleted)
                 {
                     return OperationResult<bool>.Failure(
                         new List<Error> { AppErrors.TopicNotFound },
@@ -38,26 +34,34 @@ namespace Tokki.Application.UseCases.Topics.Commands.UpdateTopic
                     );
                 }
 
-                // Check if new topic name already exists (excluding current topic)
-                bool topicNameExists = await _topicRepository.IsTopicNameExistsAsync(
-                    request.TopicName,
-                    request.TopicId
-                );
-
-                if (topicNameExists)
+                if (!string.IsNullOrEmpty(request.TopicName) && request.TopicName != existingTopic.TopicName)
                 {
-                    return OperationResult<bool>.Failure(
-                        new List<Error> { AppErrors.TopicNameDuplicated },
-                        409,
-                        AppErrors.TopicNameDuplicated.Description
+                    bool topicNameExists = await _topicRepository.IsTopicNameExistsAsync(
+                        request.TopicName,
+                        request.TopicId
                     );
+
+                    if (topicNameExists)
+                    {
+                        return OperationResult<bool>.Failure(
+                            new List<Error> { AppErrors.TopicNameDuplicated },
+                            409,
+                            AppErrors.TopicNameDuplicated.Description
+                        );
+                    }
+
+                    existingTopic.TopicName = request.TopicName;
                 }
 
-                // Update topic properties
-                existingTopic.TopicName = request.TopicName;
-                existingTopic.Description = request.Description;
-                existingTopic.Status = request.Status;
+             
+                if (request.Description != null)
+                {
+                    existingTopic.Description = request.Description;
+                }
+
+
                 existingTopic.UpdateBy = request.UpdatedBy;
+
                 existingTopic.UpdateDate = DateTime.UtcNow.AddHours(7);
 
                 await _topicRepository.UpdateAsync(existingTopic);
@@ -71,7 +75,6 @@ namespace Tokki.Application.UseCases.Topics.Commands.UpdateTopic
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Lỗi khi cập nhật chủ đề: {TopicId}", request.TopicId);
                 return OperationResult<bool>.Failure(
                     new List<Error> { AppErrors.ServerError },
                     500,

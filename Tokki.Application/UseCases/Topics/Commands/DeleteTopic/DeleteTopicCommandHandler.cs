@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MediatR;
+﻿using MediatR;
 using Microsoft.Extensions.Logging;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Topics.Commands.DeleteTopic
 {
@@ -27,8 +23,9 @@ namespace Tokki.Application.UseCases.Topics.Commands.DeleteTopic
         {
             try
             {
-                // Check if topic exists
+                // 1. Kiểm tra xem topic có tồn tại không
                 var existingTopic = await _topicRepository.GetByIdAsync(request.TopicId);
+
                 if (existingTopic == null)
                 {
                     return OperationResult<bool>.Failure(
@@ -38,19 +35,34 @@ namespace Tokki.Application.UseCases.Topics.Commands.DeleteTopic
                     );
                 }
 
-                // Check if topic has associated meanings
-                bool hasMeanings = await _topicRepository.HasMeaningsAsync(request.TopicId);
-                if (hasMeanings)
+                // 2. Kiểm tra xem topic đã bị xóa mềm trước đó chưa
+                if (existingTopic.Status == TopicStatus.Deleted)
                 {
                     return OperationResult<bool>.Failure(
-                        new List<Error> { new Error("Topic.HasMeanings", "Không thể xóa chủ đề đang có từ vựng") },
+                        new List<Error> { AppErrors.TopicAlreadyDeleted },
                         400,
-                        "Không thể xóa chủ đề đang có từ vựng"
+                        AppErrors.TopicAlreadyDeleted.Description
                     );
                 }
 
-                await _topicRepository.DeleteAsync(existingTopic);
+                // 3. Kiểm tra xem topic có đang chứa từ vựng không (Business Rule)
+                int numOfWord = await _topicRepository.CountVocabulariesInTopicAsync(request.TopicId);
+                if (numOfWord > 0)
+                {
+                    return OperationResult<bool>.Failure(
+                        new List<Error> { AppErrors.TopicHasVocabularies },
+                        400,
+                        AppErrors.TopicHasVocabularies.Description
+                    );
+                }
+
+                // 4. Thực hiện xóa mềm (Soft Delete)
+                existingTopic.Status = TopicStatus.Deleted;
+
+                // 5. Cập nhật vào database
+                await _topicRepository.UpdateAsync(existingTopic);
                 await _topicRepository.SaveChangesAsync(cancellationToken);
+
 
                 return OperationResult<bool>.Success(
                     true,
@@ -60,7 +72,6 @@ namespace Tokki.Application.UseCases.Topics.Commands.DeleteTopic
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Lỗi khi xóa chủ đề: {TopicId}", request.TopicId);
                 return OperationResult<bool>.Failure(
                     new List<Error> { AppErrors.ServerError },
                     500,

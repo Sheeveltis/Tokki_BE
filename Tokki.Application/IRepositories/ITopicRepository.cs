@@ -1,4 +1,7 @@
-﻿using Tokki.Domain.Entities;
+﻿using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 
 namespace Tokki.Application.IRepositories
@@ -14,10 +17,10 @@ namespace Tokki.Application.IRepositories
             string? searchTerm = null,
             TopicStatus? status = null);
         Task<bool> IsTopicNameExistsAsync(string topicName, string? excludeTopicId = null);
+        Task<int> CountVocabulariesInTopicAsync(string topicId);
         Task AddAsync(Topic topic);
         Task UpdateAsync(Topic topic);
         Task DeleteAsync(Topic topic);
-        Task<bool> HasMeaningsAsync(string topicId);
         Task SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }

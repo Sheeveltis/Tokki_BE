@@ -1,4 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Tokki.Application.IRepositories;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
@@ -18,9 +22,8 @@ namespace Tokki.Infrastructure.Repositories
         public async Task<Topic?> GetByIdAsync(string topicId)
         {
             return await _context.Topics
-                .Include(t => t.MeaningTopics)
-                    .ThenInclude(mt => mt.Meaning)
-                        .ThenInclude(m => m.Word)
+                .Include(t => t.VocabularyTopics)
+                    .ThenInclude(vt => vt.Vocabulary)
                 .FirstOrDefaultAsync(t => t.TopicId == topicId);
         }
 
@@ -44,10 +47,9 @@ namespace Tokki.Infrastructure.Repositories
             TopicStatus? status = null)
         {
             var query = _context.Topics
-                .Include(t => t.MeaningTopics)
+                .Include(t => t.VocabularyTopics)
                 .AsQueryable();
 
-            // Filter by search term
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 query = query.Where(t =>
@@ -56,16 +58,17 @@ namespace Tokki.Infrastructure.Repositories
                 );
             }
 
-            // Filter by status
             if (status.HasValue)
             {
                 query = query.Where(t => t.Status == status.Value);
             }
+            else
+            {
+                query = query.Where(t => t.Status != TopicStatus.Deleted);
+            }
 
-            // Get total count
             int totalCount = await query.CountAsync();
 
-            // Apply pagination
             var items = await query
                 .OrderByDescending(t => t.CreateDate)
                 .Skip((pageNumber - 1) * pageSize)
@@ -87,6 +90,15 @@ namespace Tokki.Infrastructure.Repositories
             return await query.AnyAsync();
         }
 
+        public async Task<int> CountVocabulariesInTopicAsync(string topicId)
+        {
+            return await _context.VocabularyTopics
+                .Where(vt => vt.TopicId == topicId && vt.Status == VocabularyTopicStatus.Active)
+                .Select(vt => vt.VocabularyId)
+                .Distinct()
+                .CountAsync();
+        }
+
         public async Task AddAsync(Topic topic)
         {
             await _context.Topics.AddAsync(topic);
@@ -102,12 +114,6 @@ namespace Tokki.Infrastructure.Repositories
         {
             _context.Topics.Remove(topic);
             await Task.CompletedTask;
-        }
-
-        public async Task<bool> HasMeaningsAsync(string topicId)
-        {
-            return await _context.MeaningTopic
-                .AnyAsync(mt => mt.TopicId == topicId);
         }
 
         public async Task SaveChangesAsync(CancellationToken cancellationToken = default)

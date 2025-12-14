@@ -4,6 +4,7 @@ using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Domain.Entities;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Topics.Commands.CreateTopic
 {
@@ -25,20 +26,21 @@ namespace Tokki.Application.UseCases.Topics.Commands.CreateTopic
 
         public async Task<OperationResult<string>> Handle(CreateTopicCommand request, CancellationToken cancellationToken)
         {
-            bool topicNameExists = await _topicRepository.IsTopicNameExistsAsync(request.TopicName);
-            if (topicNameExists)
-            {
-                return OperationResult<string>.Failure(
-                    new List<Error> { AppErrors.TopicNameDuplicated },
-                    409,
-                    AppErrors.TopicNameDuplicated.Description
-                );
-            }
-
             try
             {
-                string newId = _idGeneratorService.GenerateCustom(15);
+                // 1. Kiểm tra tên topic đã tồn tại chưa
+                bool topicNameExists = await _topicRepository.IsTopicNameExistsAsync(request.TopicName);
+                if (topicNameExists)
+                {
+                    return OperationResult<string>.Failure(
+                        new List<Error> { AppErrors.TopicNameDuplicated },
+                        409,
+                        AppErrors.TopicNameDuplicated.Description
+                    );
+                }
 
+                // 2. Tạo topic mới
+                string newId = _idGeneratorService.GenerateCustom(15);
                 var topic = new Topic
                 {
                     TopicId = newId,
@@ -46,11 +48,12 @@ namespace Tokki.Application.UseCases.Topics.Commands.CreateTopic
                     Description = request.Description,
                     CreateBy = request.CreateBy,
                     CreateDate = DateTime.UtcNow.AddHours(7),
-                    Status = 0
+                    Status = TopicStatus.Active // Sử dụng enum thay vì hardcode số 0
                 };
 
                 await _topicRepository.AddAsync(topic);
                 await _topicRepository.SaveChangesAsync(cancellationToken);
+
 
                 return OperationResult<string>.Success(
                     topic.TopicId,

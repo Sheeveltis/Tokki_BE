@@ -10,10 +10,7 @@ namespace Tokki.Domain.Enums
         [Description("Đang hoạt động")]
         Active = 1,
 
-        [Description("Ngưng hoạt động")]
-        Inactive = 2,
-
         [Description("Đã xóa")]
-        Deleted = 3
+        Deleted = 2
     }
 }
