@@ -6,6 +6,7 @@ using Tokki.Application.UseCases.Accounts.Commands.CreateStaffAccount;
 using Tokki.Application.UseCases.Accounts.Commands.Login;
 using Tokki.Application.UseCases.Accounts.Commands.ResetPassword;
 using Tokki.Application.UseCases.Accounts.Commands.UpdateProfile;
+using Tokki.Application.UseCases.Accounts.Queries.GetAccount;
 using Tokki.Application.UseCases.Accounts.Queries.GetUserProfile;
 using Tokki.Application.UseCases.Blogs.Commands.CreateBlog;
 using Tokki.Application.UseCases.Blogs.Commands.DeleteBlog;
@@ -24,7 +25,27 @@ namespace Tokki.WebAPI.Controllers
         {
             _sender = sender;
         }
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllAccounts(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var query = new GetAllAccountsQuery
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
 
+            var result = await _sender.Send(query);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+
+            return StatusCode(result.StatusCode, result);
+        }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginCommand command)

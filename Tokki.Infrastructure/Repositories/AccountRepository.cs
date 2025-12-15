@@ -213,5 +213,43 @@ namespace Tokki.Infrastructure.Repositories
             }
             return result;
         }
+        public async Task<(IEnumerable<Account> items, int totalCount)> GetPagedAsync(
+           int pageNumber,
+           int pageSize)
+        {
+            var query = _context.Accounts
+                .Include(a => a.CurrentTitle)
+                .AsQueryable();
+
+            // Get total count
+            var totalCount = await query.CountAsync();
+
+            // Apply pagination and get items
+            var items = await query
+                .OrderByDescending(a => a.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
+
+        public async Task<int> CountUnlockedTitlesAsync(string userId)
+        {
+            return await _context.AccountTitles
+                .CountAsync(at => at.UserId == userId);
+        }
+
+        public async Task<int> CountSessionsAsync(string userId)
+        {
+            return await _context.Session
+                .CountAsync(s => s.UserId == userId);
+        }
+
+        public async Task<int> CountSocialLoginsAsync(string userId)
+        {
+            return await _context.SocialLogins
+                .CountAsync(sl => sl.UserId == userId);
+        }
     }
 }

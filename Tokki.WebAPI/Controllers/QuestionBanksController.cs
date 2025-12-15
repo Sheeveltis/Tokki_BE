@@ -40,7 +40,7 @@ namespace Tokki.Api.Controllers
         /// <summary>
         /// Cập nhật thông tin câu hỏi
         /// </summary>
-        [HttpPut("Update")]
+        [HttpPut("update")]
         public async Task<IActionResult> UpdateQuestionBank([FromBody] UpdateQuestionBankCommand command)
         {
             var result = await _mediator.Send(command);
