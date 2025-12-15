@@ -39,5 +39,13 @@ namespace Tokki.Infrastructure.Repositories
             await _context.Transactions.AddAsync(transaction);
             await _context.SaveChangesAsync();
         }
+        public async Task<List<Payment>> GetByUserIdAsync(string userId)
+        {
+            return await _context.Payments
+                .Include(p => p.Transaction) 
+                .Where(p => p.UserId == userId)
+                .OrderByDescending(p => p.CreatedAt) 
+                .ToListAsync();
+        }
     }
 }
