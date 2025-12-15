@@ -35,7 +35,6 @@ namespace Tokki.Domain.Entities
         public OtpType Type { get; set; } = OtpType.VerifyEmail;
         // ---------------------
 
-        [Column(TypeName = "nvarchar(50)")]
         public OtpStatus Status { get; set; } = OtpStatus.Active;
 
         public DateTime? UsedAt { get; set; }

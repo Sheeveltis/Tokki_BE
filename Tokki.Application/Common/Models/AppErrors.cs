@@ -78,12 +78,17 @@ namespace Tokki.Application.Common.Models
         public static readonly Error OtpExpired = new("Otp.Expired", "OTP đã hết hạn.");
         public static readonly Error OtpUsed = new("Otp.Used", "OTP đã được sử dụng.");
         public static readonly Error OtpNotFound = new("Otp.NotFound", "Mã xác thực không tồn tại hoặc đã hết hạn.");
-        public static readonly Error OtpRateLimitExceeded = new("Otp.RateLimitExceeded", "Vui lòng đợi trước khi gửi lại OTP.");
         public static readonly Error OtpMaxRetryExceeded = new("Otp.MaxRetryExceeded", "Bạn đã nhập sai quá số lần quy định. Mã xác thực đã bị hủy.");
         public static readonly Error OtpRevoked = new("Otp.Revoked", "Mã xác thực đã bị khóa do nhập sai quá nhiều lần.");
         public static readonly Error EmailServiceError = new("Otp.EmailServiceError", "Hệ thống gửi mail đang gặp sự cố. Vui lòng thử lại sau.");
         public static readonly Error EmailAlreadyExists = new("Account.EmailAlreadyExists","Email này đã được đăng ký tài khoản.");
         public static readonly Error AccountUnavailable = new("Account.AccountUnavailable", "Tài khoản liên kết với email này đã bị khóa hoặc xóa. Vui lòng liên hệ quản trị viên.");
+        public static Error OtpRateLimitExceeded(int remainingSeconds)
+  => new(
+      "Otp.RateLimitExceeded",
+      $"Vui lòng đợi {remainingSeconds} giây trước khi gửi lại OTP."
+  );
+
         // ============================================
         // NHÓM 9: EMAIL TEMPLATE
         // ============================================
@@ -108,7 +113,7 @@ namespace Tokki.Application.Common.Models
         public static readonly Error TopicUnauthorized = new("Topic.Unauthorized", "Bạn không có quyền thao tác với chủ đề này.");
         public static readonly Error TopicHasVocabularies = new("Topic.HasVocabularies", "Không thể xóa chủ đề đang có từ vựng.");
         public static readonly Error TopicAlreadyDeleted = new("Topic.AlreadyDeleted", "Chủ đề đã bị xóa trước đó.");
-
+      
         // ============================================
         // NHÓM 12: VOCABULARY (Từ vựng)
         // ============================================
