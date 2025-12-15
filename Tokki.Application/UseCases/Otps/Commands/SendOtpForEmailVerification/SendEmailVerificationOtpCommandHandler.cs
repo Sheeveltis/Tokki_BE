@@ -12,27 +12,50 @@ namespace Tokki.Application.UseCases.Accounts.Commands.SendEmailVerificationOtp
     public class SendGeneralOtpCommandHandler : IRequestHandler<SendEmailVerificationOtpCommand, OperationResult<string>>
     {
         private readonly IOtpRepository _otpRepository;
+        private readonly IAccountRepository _accountRepository; // 1. Thêm Repository Account
         private readonly IEmailService _emailService;
         private readonly IValidator<SendEmailVerificationOtpCommand> _validator;
         private readonly ISystemConfigRepository _systemConfigRepository;
-        private readonly IIdGeneratorService _idGenerator; 
+        private readonly IIdGeneratorService _idGenerator;
 
         public SendGeneralOtpCommandHandler(
             IOtpRepository otpRepository,
+            IAccountRepository accountRepository, // 2. Inject vào Constructor
             IEmailService emailService,
             IValidator<SendEmailVerificationOtpCommand> validator,
             ISystemConfigRepository systemConfigRepository,
-            IIdGeneratorService idGenerator) 
+            IIdGeneratorService idGenerator)
         {
             _otpRepository = otpRepository;
+            _accountRepository = accountRepository;
             _emailService = emailService;
             _validator = validator;
             _systemConfigRepository = systemConfigRepository;
-            _idGenerator = idGenerator; 
+            _idGenerator = idGenerator;
         }
 
         public async Task<OperationResult<string>> Handle(SendEmailVerificationOtpCommand request, CancellationToken cancellationToken)
         {
+          
+            var existingAccount = await _accountRepository.GetByEmailAsync(request.Email);
+
+            if (existingAccount != null)
+            {
+                bool isBannedOrDeleted = existingAccount.Status == AccountStatus.Inactive ||
+                                         existingAccount.Status == AccountStatus.Banned; // Ví dụ enum Banned
+
+                if (isBannedOrDeleted)
+                {
+                    // Trường hợp bị xóa hoặc ban -> Báo lỗi liên hệ quản trị viên
+                    return OperationResult<string>.Failure(AppErrors.AccountUnavailable, 400, "Gửi OTP thất bại.");
+                }
+
+                // Trường hợp tài khoản đang hoạt động bình thường -> Báo lỗi đã đăng ký
+                return OperationResult<string>.Failure(AppErrors.EmailAlreadyExists, 400, "Gửi OTP thất bại.");
+            }
+
+            // ---------------------------------------------
+
             // Rate Limit Check
             var existingOtp = await _otpRepository.GetLatestValidOtpAsync(request.Email, OtpType.VerifyEmail);
             if (existingOtp != null)
@@ -58,7 +81,7 @@ namespace Tokki.Application.UseCases.Accounts.Commands.SendEmailVerificationOtp
 
             var newOtp = new Otp
             {
-                OtpId = _idGenerator.Generate(15), 
+                OtpId = _idGenerator.Generate(15),
                 Email = request.Email,
                 OtpCode = otpCode,
                 Type = OtpType.VerifyEmail,
@@ -86,7 +109,8 @@ namespace Tokki.Application.UseCases.Accounts.Commands.SendEmailVerificationOtp
             }
             catch (Exception)
             {
-                return OperationResult<string>.Failure(new List<Error> { AppErrors.EmailServiceError });
+                // Nếu gửi mail lỗi, có thể bạn muốn xóa record OTP vừa tạo để tránh rác DB (tùy chọn)
+                return OperationResult<string>.Failure(new List<Error> { AppErrors.EmailServiceError },400,"Gửi OTP thất bại.");
             }
 
             return OperationResult<string>.Success("Mã OTP đã được gửi đến email của bạn.", 200);
