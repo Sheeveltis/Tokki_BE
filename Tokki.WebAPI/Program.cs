@@ -10,6 +10,7 @@ using Tokki.Application;
 using Tokki.Application.Common.Helpers;
 using Tokki.Infrastructure;
 using Tokki.Infrastructure.BackgroundJobs; // Nơi chứa class JwtSettings
+using Tokki.WebAPI.Hubs;
 using Tokki.WebAPI.Middlewares;
 var builder = WebApplication.CreateBuilder(args);
 
@@ -119,13 +120,17 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins("http://localhost:3000") // Cho phép đúng cái Frontend của bạn
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
-
+//SignalR
+builder.Services.AddSignalR();
 // ==========================================
 
 var app = builder.Build();
+//ChatHub
+app.MapHub<ChatHub>("/chatHub");
 app.UseMiddleware<GlobalExceptionMiddleware>();
 // ==========================================
 var supportedCultures = new[] { "vi" };
