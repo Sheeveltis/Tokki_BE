@@ -25,7 +25,7 @@ namespace Tokki.Application.Common.Models
         public static readonly Error InvalidCredentials = new("Auth.InvalidCredentials", "Mật khẩu cũ không chính xác.");
         public static readonly Error AccountBanned = new("Auth.AccountBanned", "Tài khoản của bạn đã bị khóa vĩnh viễn.");
         public static readonly Error AccountLocked = new("Auth.AccountLocked", "Tài khoản đang bị tạm khóa do đăng nhập sai nhiều lần.");
-
+        public static readonly Error AccountNotFound = new("Account.NotFound", "Không tìm thấy tài khoản.");
         // ============================================
         // NHÓM 3: BLOG/POST
         // ============================================

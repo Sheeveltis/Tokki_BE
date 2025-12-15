@@ -20,7 +20,7 @@ namespace Tokki.Application.UseCases.Accounts.Queries.GetAccount
             GetAllAccountsQuery request,
             CancellationToken cancellationToken)
         {
-            // Lấy dữ liệu phân trang
+            // Lấy dữ liệu phân trang (đã được sắp xếp theo CreatedAt trong repository)
             var (items, totalCount) = await _repository.GetPagedAsync(
                 request.PageNumber,
                 request.PageSize
@@ -30,11 +30,6 @@ namespace Tokki.Application.UseCases.Accounts.Queries.GetAccount
 
             foreach (var account in items)
             {
-                // Đếm các thông tin liên quan
-                var unlockedTitlesCount = await _repository.CountUnlockedTitlesAsync(account.UserId);
-                var sessionsCount = await _repository.CountSessionsAsync(account.UserId);
-                var socialLoginsCount = await _repository.CountSocialLoginsAsync(account.UserId);
-
                 dtos.Add(new AccountDto
                 {
                     UserId = account.UserId,
@@ -45,22 +40,7 @@ namespace Tokki.Application.UseCases.Accounts.Queries.GetAccount
                     AvatarUrl = account.AvatarUrl,
                     Role = account.Role,
                     Status = account.Status,
-                    VipExpirationDate = account.VipExpirationDate,
-                    TotalXP = account.TotalXP,
-                    CurrentStreak = account.CurrentStreak,
-                    MaxStreak = account.MaxStreak,
-                    LastStreakDate = account.LastStreakDate,
-                    DailyStudySeconds = account.DailyStudySeconds,
-                    CurrentTitleId = account.CurrentTitleId,
-                    CurrentTitleName = account.CurrentTitle?.Name,
-                    FailedLoginCount = account.FailedLoginCount,
-                    LockedUntil = account.LockedUntil,
-                    LastLoginAt = account.LastLoginAt,
-                    CreatedAt = account.CreatedAt,
-                    UpdatedAt = account.UpdatedAt,
-                    UnlockedTitlesCount = unlockedTitlesCount,
-                    SessionsCount = sessionsCount,
-                    SocialLoginsCount = socialLoginsCount
+                    VipExpirationDate = account.VipExpirationDate
                 });
             }
 
