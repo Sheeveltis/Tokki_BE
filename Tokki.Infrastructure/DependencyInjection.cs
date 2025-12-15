@@ -62,6 +62,9 @@ namespace Tokki.Infrastructure
             services.AddScoped<ICloudinaryService, CloudinaryService>();
             //Comment
             services.AddScoped<ICommentRepository, CommentRepository>();
+            //Live Chat
+            services.AddSingleton<IChatService, ChatService>();
+            services.AddScoped<IChatRoomRepository, ChatRoomRepository>();
             return services;
         }
     }
