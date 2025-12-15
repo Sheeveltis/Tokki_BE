@@ -4,7 +4,7 @@ using Tokki.Application.UseCases.Topics.DTOs;
 
 namespace Tokki.Application.UseCases.Topics.Queries.GetById
 {
-    public class GetTopicByIdQuery : IRequest<OperationResult<TopicDto>>
+    public class GetTopicDetailByIdQuery : IRequest<OperationResult<TopicDetailDto>>
     {
         public string TopicId { get; set; } = string.Empty;
     }

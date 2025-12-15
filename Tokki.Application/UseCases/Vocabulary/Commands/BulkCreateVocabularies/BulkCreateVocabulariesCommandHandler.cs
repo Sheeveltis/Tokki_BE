@@ -175,7 +175,6 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies
                         VocabularyId = _idGenerator.Generate(15),
                         Text = vocabDto.Text,
                         Pronunciation = vocabDto.Pronunciation,
-                        AudioURL = audioUrl,
                         Definition = vocabDto.Definition,
                         ExampleSentence = vocabDto.ExampleSentence,
                         ImgURL = vocabDto.ImgURL,

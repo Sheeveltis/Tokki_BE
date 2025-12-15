@@ -36,7 +36,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Queries.GetVocabulariesByTopic
             if (topic == null)
             {
                 return OperationResult<PagedResult<VocabularyDto>>.Failure(
-                    new List<Tokki.Application.Common.Models.Error >{ new Error("TOPIC_NOT_FOUND", "Không tìm thấy topic.") },
+                    new List<Tokki.Application.Common.Models.Error> { new Error("TOPIC_NOT_FOUND", "Không tìm thấy topic.") },
                     404
                 );
             }
@@ -78,7 +78,6 @@ namespace Tokki.Application.UseCases.Vocabulary.Queries.GetVocabulariesByTopic
                     VocabularyId = vocab.VocabularyId,
                     Text = vocab.Text,
                     Pronunciation = vocab.Pronunciation,
-                    AudioURL = vocab.AudioURL,
                     Definition = vocab.Definition,
                     ExampleSentence = vocab.ExampleSentence,
                     ImgURL = vocab.ImgURL,

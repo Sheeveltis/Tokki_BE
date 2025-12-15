@@ -1,9 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.CognitiveServices.Speech.Diagnostics.Logging;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Tokki.Application.IRepositories;
+using Tokki.Application.UseCases.Topics.DTOs;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 using Tokki.Infrastructure.Data;
@@ -41,10 +43,11 @@ namespace Tokki.Infrastructure.Repositories
         }
 
         public async Task<(List<Topic> Items, int TotalCount)> GetPagedAsync(
-            int pageNumber,
-            int pageSize,
-            string? searchTerm = null,
-            TopicStatus? status = null)
+      int pageNumber,
+      int pageSize,
+      string? searchTerm = null,
+      TopicStatus? status = null,
+      TopicLevel? level = null)
         {
             var query = _context.Topics
                 .Include(t => t.VocabularyTopics)
@@ -65,6 +68,11 @@ namespace Tokki.Infrastructure.Repositories
             else
             {
                 query = query.Where(t => t.Status != TopicStatus.Deleted);
+            }
+
+            if (level.HasValue)
+            {
+                query = query.Where(t => t.Level == level.Value);
             }
 
             int totalCount = await query.CountAsync();

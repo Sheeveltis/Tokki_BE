@@ -21,11 +21,12 @@ namespace Tokki.Application.UseCases.Topics.Queries
         {
             // Lấy dữ liệu phân trang
             var (items, totalCount) = await _repository.GetPagedAsync(
-                request.PageNumber,
-                request.PageSize,
-                request.SearchTerm,
-                request.Status
-            );
+                  request.PageNumber,
+                  request.PageSize,
+                  request.SearchTerm,
+                  request.Status,
+                  request.Level
+              );
 
             var dtos = new List<TopicDto>();
 
@@ -38,12 +39,9 @@ namespace Tokki.Application.UseCases.Topics.Queries
                 {
                     TopicId = topic.TopicId,
                     TopicName = topic.TopicName,
-                    Description = topic.Description,
-                    CreateBy = topic.CreateBy,
-                    CreateDate = topic.CreateDate,
-                    UpdateBy = topic.UpdateBy,
-                    UpdateDate = topic.UpdateDate,
-                    Status = topic.Status,
+                    Description = topic.Description,                  
+                    Level=topic.Level,
+                    ImgUrl=topic.ImgUrl,
                     VocabularyCount = vocabularyCount
                 });
             }

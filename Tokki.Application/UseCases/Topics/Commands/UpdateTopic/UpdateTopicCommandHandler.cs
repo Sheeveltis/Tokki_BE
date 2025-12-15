@@ -58,8 +58,14 @@ namespace Tokki.Application.UseCases.Topics.Commands.UpdateTopic
                 {
                     existingTopic.Description = request.Description;
                 }
-
-
+                if (request.ImgUrl != null)
+                {
+                    existingTopic.ImgUrl = request.ImgUrl;
+                }
+                if (request.Level != null)
+                {
+                    existingTopic.Level = request.Level;
+                }
                 existingTopic.UpdateBy = request.UpdatedBy;
 
                 existingTopic.UpdateDate = DateTime.UtcNow.AddHours(7);
