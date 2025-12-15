@@ -35,7 +35,7 @@ namespace Tokki.Application.UseCases.Otps.Commands.SendGeneralOtp
             // Tạo Entity OTP (Type = General)
             var otpEntity = new Otp
             {
-                OtpId = _idGenerator.Generate(15), // ✅ Thêm dòng này - Tạo NanoID 15 ký tự
+                OtpId = _idGenerator.Generate(15), 
                 Email = request.Email,
                 OtpCode = otpCode,
                 Type = OtpType.General,
