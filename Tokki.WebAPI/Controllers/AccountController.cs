@@ -6,6 +6,8 @@ using Tokki.Application.UseCases.Accounts.Commands.CreateStaffAccount;
 using Tokki.Application.UseCases.Accounts.Commands.Login;
 using Tokki.Application.UseCases.Accounts.Commands.ResetPassword;
 using Tokki.Application.UseCases.Accounts.Commands.UpdateProfile;
+using Tokki.Application.UseCases.Accounts.Queries.GetAccount;
+using Tokki.Application.UseCases.Accounts.Queries.GetAccountDetailById;
 using Tokki.Application.UseCases.Accounts.Queries.GetUserProfile;
 using Tokki.Application.UseCases.Blogs.Commands.CreateBlog;
 using Tokki.Application.UseCases.Blogs.Commands.DeleteBlog;
@@ -24,8 +26,49 @@ namespace Tokki.WebAPI.Controllers
         {
             _sender = sender;
         }
+        [HttpGet("get-all")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> GetAllAccounts(
+          [FromQuery] int pageNumber = 1,
+          [FromQuery] int pageSize = 10)
+        {
+            var query = new GetAllAccountsQuery
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
 
+            var result = await _sender.Send(query);
 
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+
+            return StatusCode(result.StatusCode, result);
+        }
+
+        /// <summary>
+        /// Lấy thông tin chi tiết đầy đủ tài khoản theo UserId (dành cho Admin và Staff)
+        /// </summary>
+        [HttpGet("detail/{userId}")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> GetAccountDetailById(string userId)
+        {
+            var query = new GetAccountDetailByIdQuery
+            {
+                UserId = userId
+            };
+
+            var result = await _sender.Send(query);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+
+            return StatusCode(result.StatusCode, result);
+        }
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginCommand command)
         {

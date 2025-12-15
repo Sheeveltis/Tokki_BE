@@ -22,5 +22,13 @@ namespace Tokki.Application.IRepositories
         Task<bool> HasTitleAsync(string userId, string titleId);
         Task AddAccountTitleAsync(AccountTitle accountTitle);
         Task<List<LeaderboardItemDto>> GetLeaderboardAsync(LeaderboardTimeFrame timeFrame, int top);
+        Task<(IEnumerable<Account> items, int totalCount)> GetPagedAsync(
+              int pageNumber,
+              int pageSize
+          );
+
+        Task<int> CountUnlockedTitlesAsync(string userId);
+        Task<int> CountSessionsAsync(string userId);
+        Task<int> CountSocialLoginsAsync(string userId);
     }
 }
