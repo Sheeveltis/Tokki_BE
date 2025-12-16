@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
-using Tokki.Application.IServices;
 using Tokki.Application.UseCases.Vocabulary.DTOs;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
@@ -20,23 +19,17 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.UpdateVocabulary
         private readonly IVocabularyRepository _vocabularyRepository;
         private readonly ITopicRepository _topicRepository;
         private readonly IVocabularyTopicRepository _vocabularyTopicRepository;
-        private readonly ITextToSpeechService _ttsService;
-        private readonly ICloudinaryService _cloudinaryService;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public UpdateVocabularyCommandHandler(
             IVocabularyRepository vocabularyRepository,
             ITopicRepository topicRepository,
             IVocabularyTopicRepository vocabularyTopicRepository,
-            ITextToSpeechService ttsService,
-            ICloudinaryService cloudinaryService,
             IHttpContextAccessor httpContextAccessor)
         {
             _vocabularyRepository = vocabularyRepository;
             _topicRepository = topicRepository;
             _vocabularyTopicRepository = vocabularyTopicRepository;
-            _ttsService = ttsService;
-            _cloudinaryService = cloudinaryService;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -64,34 +57,11 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.UpdateVocabulary
                 );
             }
 
-            // 3. CẬP NHẬT TEXT VÀ TẠO LẠI AUDIO (NẾU TEXT THAY ĐỔI)
-            bool textChanged = false;
+            // 3. CẬP NHẬT TEXT
             if (!string.IsNullOrWhiteSpace(request.UpdateData.Text) &&
                 request.UpdateData.Text != vocabulary.Text)
             {
                 vocabulary.Text = request.UpdateData.Text;
-                textChanged = true;
-
-                // Tự động tạo lại audio cho text mới
-                try
-                {
-                    var audioBytes = await _ttsService.SynthesizeKoreanAudioAsync(request.UpdateData.Text);
-                    string folderName = "tokki/vocab-audio"; // KHÔNG ĐƯỢC THAY ĐỔI
-                    string fileName = $"VOCAB_{Guid.NewGuid()}";
-                    var newAudioUrl = await _cloudinaryService.UploadAudioAsync(audioBytes, fileName, folderName);
-
-                    vocabulary.AudioURL = newAudioUrl;
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Warning: Failed to generate audio for updated text '{request.UpdateData.Text}': {ex.Message}");
-
-                    // Trả về lỗi nếu việc tạo audio thất bại
-                    return OperationResult<VocabularyResponseDto>.Failure(
-                        new List<Error> { AppErrors.AudioGenerationFailed },
-                        500
-                    );
-                }
             }
 
             // 4. CẬP NHẬT CÁC TRƯỜNG CƠ BẢN
@@ -159,7 +129,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.UpdateVocabulary
                             VocabularyId = vocabulary.VocabularyId,
                             TopicId = topicId,
                             CreateBy = currentUserId,
-                            CreateDate = DateTime.UtcNow,
+                            CreateDate = DateTime.UtcNow.AddHours(7),
                             Status = VocabularyTopicStatus.Active
                         };
                         await _vocabularyTopicRepository.AddAsync(vocabTopic);
@@ -169,7 +139,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.UpdateVocabulary
 
             // 6. CẬP NHẬT AUDIT FIELDS
             vocabulary.UpdateBy = currentUserId;
-            vocabulary.UpdateDate = DateTime.UtcNow;
+            vocabulary.UpdateDate = DateTime.UtcNow.AddHours(7);
 
             try
             {
@@ -191,18 +161,13 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.UpdateVocabulary
                 VocabularyId = vocabulary.VocabularyId,
                 Text = vocabulary.Text,
                 Definition = vocabulary.Definition,
-                Pronunciation = vocabulary.Pronunciation,
-                AudioURL = vocabulary.AudioURL
+                Pronunciation = vocabulary.Pronunciation
             };
-
-            var message = textChanged
-                ? $"Cập nhật vocabulary '{vocabulary.Text}' thành công (đã tạo lại audio)."
-                : $"Cập nhật vocabulary '{vocabulary.Text}' thành công.";
 
             return OperationResult<VocabularyResponseDto>.Success(
                 response,
                 200,
-                message
+                $"Cập nhật vocabulary '{vocabulary.Text}' thành công."
             );
         }
     }

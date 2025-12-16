@@ -17,8 +17,6 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies
         private readonly ITopicRepository _topicRepository;
         private readonly IVocabularyTopicRepository _vocabularyTopicRepository;
         private readonly IIdGeneratorService _idGenerator;
-        private readonly ITextToSpeechService _ttsService;
-        private readonly ICloudinaryService _cloudinaryService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<BulkCreateVocabulariesCommandHandler> _logger;
 
@@ -27,8 +25,6 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies
             ITopicRepository topicRepository,
             IVocabularyTopicRepository vocabularyTopicRepository,
             IIdGeneratorService idGenerator,
-            ITextToSpeechService ttsService,
-            ICloudinaryService cloudinaryService,
             IHttpContextAccessor httpContextAccessor,
             ILogger<BulkCreateVocabulariesCommandHandler> logger)
         {
@@ -36,8 +32,6 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies
             _topicRepository = topicRepository;
             _vocabularyTopicRepository = vocabularyTopicRepository;
             _idGenerator = idGenerator;
-            _ttsService = ttsService;
-            _cloudinaryService = cloudinaryService;
             _httpContextAccessor = httpContextAccessor;
             _logger = logger;
         }
@@ -66,7 +60,6 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies
             {
                 try
                 {
-                    // 2. Validate tất cả topics tồn tại (nếu có)
                     if (vocabDto.TopicIds != null && vocabDto.TopicIds.Any())
                     {
                         var invalidTopics = new List<string>();
@@ -74,7 +67,6 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies
                         {
                             var topic = await _topicRepository.GetByIdAsync(topicId);
 
-                            // Kiểm tra topic tồn tại VÀ chưa bị xóa
                             if (topic == null || topic.Status == TopicStatus.Deleted)
                             {
                                 invalidTopics.Add(topicId);
@@ -88,7 +80,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies
                                 Text = vocabDto.Text,
                                 Definition = vocabDto.Definition,
                                 IsSuccess = false,
-                                ErrorMessage = $"Topic không tồn tại hoặc đã bị xóa: {string.Join(", ", invalidTopics)}"
+                                Errors = new List<Tokki.Application.Common.Models.Error> { AppErrors.VocabularyAlreadyDeleted }
                             });
                             response.FailedCount++;
                             continue;
@@ -111,7 +103,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies
                                 Text = vocabDto.Text,
                                 Definition = vocabDto.Definition,
                                 IsSuccess = false,
-                                ErrorMessage = "Vocabulary đã tồn tại nhưng đang ở trạng thái đã xóa."
+                                Errors = new List<Error> { AppErrors.VocabularyAlreadyDeleted }
                             });
                             response.FailedCount++;
                             continue;
@@ -157,25 +149,12 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies
                         continue;
                     }
 
-                    string? audioUrl = null;
-                    try
-                    {
-                        var audioBytes = await _ttsService.SynthesizeKoreanAudioAsync(vocabDto.Text);
-                        string folderName = "tokki/vocab-audio";
-                        string fileName = $"VOCAB_{Guid.NewGuid()}";
-                        audioUrl = await _cloudinaryService.UploadAudioAsync(audioBytes, fileName, folderName);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogWarning(ex, "Không thể tạo audio cho vocabulary: {Text}", vocabDto.Text);
-                    }
-
+                    // 4. Tạo vocabulary mới
                     var vocabulary = new Tokki.Domain.Entities.Vocabulary
                     {
                         VocabularyId = _idGenerator.Generate(15),
                         Text = vocabDto.Text,
                         Pronunciation = vocabDto.Pronunciation,
-                        AudioURL = audioUrl,
                         Definition = vocabDto.Definition,
                         ExampleSentence = vocabDto.ExampleSentence,
                         ImgURL = vocabDto.ImgURL,
@@ -212,19 +191,19 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies
                         Definition = vocabDto.Definition,
                         IsSuccess = true,
                         VocabularyId = vocabulary.VocabularyId,
-                        AudioURL = audioUrl,
                         Message = successMessage
                     });
                     response.SuccessCount++;
                 }
                 catch (Exception ex)
                 {
+                    _logger.LogError(ex, "Lỗi khi tạo vocabulary: {Text}", vocabDto.Text);
                     response.Results.Add(new VocabularyCreationResult
                     {
                         Text = vocabDto.Text,
                         Definition = vocabDto.Definition,
                         IsSuccess = false,
-                        ErrorMessage = $"Lỗi hệ thống: {ex.Message}"
+                        Errors = new List<Error> { AppErrors.ServerError }
                     });
                     response.FailedCount++;
                 }

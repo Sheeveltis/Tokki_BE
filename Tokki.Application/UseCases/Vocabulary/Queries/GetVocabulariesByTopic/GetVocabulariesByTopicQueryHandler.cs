@@ -78,7 +78,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Queries.GetVocabulariesByTopic
                     VocabularyId = vocab.VocabularyId,
                     Text = vocab.Text,
                     Pronunciation = vocab.Pronunciation,
-                    AudioURL = vocab.AudioURL,
+                  //  AudioURL = vocab.AudioURL,
                     Definition = vocab.Definition,
                     ExampleSentence = vocab.ExampleSentence,
                     ImgURL = vocab.ImgURL,

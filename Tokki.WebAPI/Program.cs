@@ -94,10 +94,16 @@ builder.Services.AddSingleton<Tokki.Infrastructure.BackgroundJobs.AutomationWork
 builder.Services.AddHostedService(provider =>
     provider.GetRequiredService<Tokki.Infrastructure.BackgroundJobs.AutomationWorker>());
 
-// CampaignWorker ✅ SỬA LẠI GIỐNG AutomationWorker
 builder.Services.AddSingleton<Tokki.Infrastructure.BackgroundJobs.CampaignWorker>();
 builder.Services.AddHostedService(provider =>
     provider.GetRequiredService<Tokki.Infrastructure.BackgroundJobs.CampaignWorker>());
+
+
+builder.Services.AddMemoryCache(options =>
+{
+    //options.SizeLimit = 1024; // Giới hạn 1024 entries
+    options.CompactionPercentage = 0.25; // Khi đầy, xóa 25% entries cũ nhất
+});
 
 builder.Services.AddCors(options =>
 {

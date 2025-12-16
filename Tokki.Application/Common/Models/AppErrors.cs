@@ -118,15 +118,10 @@ namespace Tokki.Application.Common.Models
         // ============================================
         // NHÓM 13: WORD
         // ============================================
-        public static readonly Error WordNotFound = new("Word.NotFound", "Từ vựng không tồn tại.");
-        public static readonly Error WordDuplicated = new("Word.Duplicated", "Từ vựng đã tồn tại.");
-        public static readonly Error WordInUse = new("Word.InUse", "Từ vựng đang được sử dụng, không thể xóa.");
 
         // ============================================
-        // NHÓM 14: MEANING & AUDIO
+        // NHÓM 14: AUDIO
         // ============================================
-        public static readonly Error MeaningNotFound = new("Meaning.NotFound", "Nghĩa của từ không tồn tại.");
-        public static readonly Error MeaningInvalidWord = new("Meaning.InvalidWord", "Nghĩa không thuộc về từ vựng này.");
         public static readonly Error AudioGenerationFailed = new("Audio.GenerationFailed", "Không thể tạo file âm thanh.");
         public static readonly Error AudioUploadFailed = new("Audio.UploadFailed", "Không thể tải file âm thanh lên cloud.");
 

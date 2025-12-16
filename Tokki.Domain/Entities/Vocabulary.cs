@@ -14,9 +14,6 @@ namespace Tokki.Domain.Entities
         // Phát âm
         public string? Pronunciation { get; set; }
 
-        // Audio URL
-        public string? AudioURL { get; set; }
-
         // Nghĩa (ví dụ: "ngân hàng" hoặc "quả ngân hạnh")
         public string Definition { get; set; } = string.Empty;
 

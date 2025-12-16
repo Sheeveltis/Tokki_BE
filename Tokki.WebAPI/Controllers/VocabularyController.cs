@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies;
 using Tokki.Application.UseCases.Vocabulary.Commands.DeleteVocabulary;
@@ -9,13 +10,14 @@ using Tokki.Application.UseCases.Vocabulary.Commands.UpdateVocabulary;
 using Tokki.Application.UseCases.Vocabulary.DTOs;
 using Tokki.Application.UseCases.Vocabulary.Queries;
 using Tokki.Application.UseCases.Vocabulary.Queries.GetVocabulariesByTopic;
+using Tokki.Application.UseCases.Vocabulary.Queries.SearchVocabulary;
 using Tokki.Domain.Enums;
 
 namespace Tokki.WebAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+   // [Authorize]
     public class VocabularyController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -23,6 +25,42 @@ namespace Tokki.WebAPI.Controllers
         public VocabularyController(IMediator mediator)
         {
             _mediator = mediator;
+        }
+
+        // Test Controller hoặc Unit Test
+        [HttpGet("test-cache")]
+        public async Task<IActionResult> TestCache()
+        {
+            var sw = Stopwatch.StartNew();
+
+            // Lần 1: Query DB
+            var result1 = await _mediator.Send(new SearchVocabularyQuery
+            {
+                SearchTerm = "운",
+                PageNumber = 1,
+                PageSize = 20
+            });
+            sw.Stop();
+            var time1 = sw.ElapsedMilliseconds;
+
+            sw.Restart();
+
+            // Lần 2: Get from cache
+            var result2 = await _mediator.Send(new SearchVocabularyQuery
+            {
+                SearchTerm = "은행",
+                PageNumber = 1,
+                PageSize = 20
+            });
+            sw.Stop();
+            var time2 = sw.ElapsedMilliseconds;
+
+            return Ok(new
+            {
+                FirstQuery = $"{time1}ms (DB)",
+                SecondQuery = $"{time2}ms (Cache)",
+                Improvement = $"{(time1 - time2)}ms faster"
+            });
         }
 
         /// <summary>
@@ -63,6 +101,31 @@ namespace Tokki.WebAPI.Controllers
             if (!result.IsSuccess)
             {
                 return StatusCode(result.StatusCode, result);
+            }
+
+            return StatusCode(result.StatusCode, result);
+        }
+
+
+        [HttpGet("search-for-user")]
+        [AllowAnonymous] // Cho phép search không cần đăng nhập
+        public async Task<IActionResult> SearchVocabulary(
+           [FromQuery] string searchTerm,
+           [FromQuery] int pageNumber = 1,
+           [FromQuery] int pageSize = 20)
+        {
+            var query = new SearchVocabularyQuery
+            {
+                SearchTerm = searchTerm,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+
+            var result = await _mediator.Send(query);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result);
             }
 
             return StatusCode(result.StatusCode, result);
