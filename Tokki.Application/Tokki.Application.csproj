@@ -28,8 +28,6 @@
 	  <Folder Include="UseCases\Otps\DTOs\" />
 	  <Folder Include="UseCases\Otps\Queries\" />
 	  <Folder Include="UseCases\Vocabulary\Commands\" />
-	  <Folder Include="UseCases\Vocabulary\DTOs\" />
-	  <Folder Include="UseCases\Vocabulary\Queries\" />
 	</ItemGroup>
 
 </Project>
