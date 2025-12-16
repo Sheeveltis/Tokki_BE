@@ -18,6 +18,11 @@ namespace Tokki.Application.IRepositories
         string? searchTerm = null,
         TopicStatus? status = null,
         TopicLevel? level = null);
+        Task<(List<Topic> Items, int TotalCount)> GetPagedForUserAsync(
+       int pageNumber,
+       int pageSize,
+       string? searchTerm = null,
+       TopicLevel? level = null);
 
         Task<bool> IsTopicNameExistsAsync(string topicName, string? excludeTopicId = null);
         Task<int> CountVocabulariesInTopicAsync(string topicId);

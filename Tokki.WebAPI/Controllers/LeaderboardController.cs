@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tokki.Application.UseCases.Leaderboard.Queries;
 using Tokki.Domain.Enums;
@@ -7,6 +8,7 @@ namespace Tokki.WebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class LeaderboardController : ControllerBase
     {
         private readonly ISender _sender;

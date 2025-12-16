@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Tokki.Application.IServices;
 using Tokki.Application.UseCases.Accounts.DTOs;
 
@@ -6,7 +7,7 @@ namespace Tokki.WebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    // [Authorize]
+    [Authorize] 
     public class GamificationController : ControllerBase
     {
         private readonly IGamificationService _gamificationService;
@@ -19,10 +20,7 @@ namespace Tokki.WebAPI.Controllers
         [HttpPost("heartbeat")]
         public async Task<IActionResult> TrackStudyTime([FromBody] HeartbeatRequest request)
         {
-            if (string.IsNullOrEmpty(request.UserId))
-            {
-                return BadRequest("Vui lòng nhập UserId để test.");
-            }
+            if (string.IsNullOrEmpty(request.UserId)) return BadRequest("Vui lòng nhập UserId để test.");
 
             bool isStreakCompleted = await _gamificationService.TrackStudyTimeAsync(request.UserId, request.DurationInSeconds);
 
@@ -34,5 +32,5 @@ namespace Tokki.WebAPI.Controllers
                 IsStreakCompletedJustNow = isStreakCompleted
             });
         }
-    }  
+    }
 }

@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tokki.Application.UseCases.Titles.Commands.CreateTitle;
 using Tokki.Application.UseCases.Titles.Commands.DeleteTitle;
@@ -10,7 +11,7 @@ namespace Tokki.WebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    // [Authorize(Roles = "Admin")] 
+    [Authorize] 
     public class TitleController : ControllerBase
     {
         private readonly ISender _sender;
@@ -21,15 +22,11 @@ namespace Tokki.WebAPI.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")] 
         public async Task<IActionResult> Create([FromBody] CreateTitleCommand command)
         {
             var result = await _sender.Send(command);
-
-            if (!result.IsSuccess)
-            {
-                return StatusCode(result.StatusCode, result);
-            }
-
+            if (!result.IsSuccess) return StatusCode(result.StatusCode, result);
             return StatusCode(201, result);
         }
 
@@ -37,12 +34,7 @@ namespace Tokki.WebAPI.Controllers
         public async Task<IActionResult> GetAll()
         {
             var result = await _sender.Send(new GetAllTitlesQuery());
-
-            if (!result.IsSuccess)
-            {
-                return StatusCode(result.StatusCode, result);
-            }
-
+            if (!result.IsSuccess) return StatusCode(result.StatusCode, result);
             return Ok(result);
         }
 
@@ -50,43 +42,26 @@ namespace Tokki.WebAPI.Controllers
         public async Task<IActionResult> GetById(string id)
         {
             var result = await _sender.Send(new GetTitleByIdQuery(id));
-
-            if (!result.IsSuccess)
-            {
-                return StatusCode(result.StatusCode, result);
-            }
-
+            if (!result.IsSuccess) return StatusCode(result.StatusCode, result);
             return Ok(result);
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")] 
         public async Task<IActionResult> Update(string id, [FromBody] UpdateTitleCommand command)
         {
-            if (id != command.TitleId)
-            {
-                command.TitleId = id;
-            }
-
+            if (id != command.TitleId) command.TitleId = id;
             var result = await _sender.Send(command);
-
-            if (!result.IsSuccess)
-            {
-                return StatusCode(result.StatusCode, result);
-            }
-
+            if (!result.IsSuccess) return StatusCode(result.StatusCode, result);
             return Ok(result);
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")] 
         public async Task<IActionResult> Delete(string id)
         {
             var result = await _sender.Send(new DeleteTitleCommand(id));
-
-            if (!result.IsSuccess)
-            {
-                return StatusCode(result.StatusCode, result);
-            }
-
+            if (!result.IsSuccess) return StatusCode(result.StatusCode, result);
             return Ok(result);
         }
     }

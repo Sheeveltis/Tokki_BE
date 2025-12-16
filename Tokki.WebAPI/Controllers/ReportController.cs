@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tokki.Application.UseCases.Reports.Commands.CreateReport;
 using Tokki.Application.UseCases.Reports.Commands.DeleteReport;
@@ -13,6 +14,7 @@ namespace Tokki.WebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ReportController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -30,6 +32,7 @@ namespace Tokki.WebAPI.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin")] 
         public async Task<IActionResult> GetAll([FromQuery] ReportStatus? status)
         {
             var query = new GetAllReportsQuery { Status = status };
@@ -41,10 +44,8 @@ namespace Tokki.WebAPI.Controllers
         public async Task<IActionResult> GetNotifications([FromQuery] string userId)
         {
             if (string.IsNullOrEmpty(userId)) return BadRequest("Vui lòng nhập userId");
-
             var query = new GetReportNotificationsQuery { UserId = userId };
             var result = await _mediator.Send(query);
-
             return StatusCode(result.StatusCode, result);
         }
 
@@ -52,18 +53,16 @@ namespace Tokki.WebAPI.Controllers
         public async Task<IActionResult> MarkRead(string id, [FromQuery] string userId)
         {
             if (string.IsNullOrEmpty(userId)) return BadRequest("Vui lòng nhập userId");
-
             var command = new MarkReportReadCommand { ReportId = id, UserId = userId };
             var result = await _mediator.Send(command);
-
             return StatusCode(result.StatusCode, result);
         }
 
         [HttpPut("{id}/status")]
+        [Authorize(Roles = "Admin")] 
         public async Task<IActionResult> UpdateStatus(string id, [FromBody] UpdateReportStatusCommand command)
         {
             command.ReportId = id;
-
             var result = await _mediator.Send(command);
             return StatusCode(result.StatusCode, result);
         }
@@ -72,14 +71,12 @@ namespace Tokki.WebAPI.Controllers
         public async Task<IActionResult> Delete(string id, [FromQuery] string userId)
         {
             if (string.IsNullOrEmpty(userId)) return BadRequest("Vui lòng nhập userId");
-
             var command = new DeleteReportCommand
             {
                 ReportId = id,
                 UserId = userId,
-                IsAdmin = false 
+                IsAdmin = User.IsInRole("Admin") 
             };
-
             var result = await _mediator.Send(command);
             return StatusCode(result.StatusCode, result);
         }

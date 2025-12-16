@@ -40,7 +40,6 @@ namespace Tokki.WebAPI.Controllers
                 PageNumber = pageNumber,
                 PageSize = pageSize,
                 SearchTerm = searchTerm,
-                Status = status,
                 Level = level
             };
 
@@ -55,15 +54,13 @@ namespace Tokki.WebAPI.Controllers
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10,
             [FromQuery] string? searchTerm = null,
-            [FromQuery] TopicStatus? status = null,
             [FromQuery] TopicLevel? level = null)
         {
-            var query = new GetAllTopicsQuery
+            var query = new GetAllTopicsForUserQuery
             {
                 PageNumber = pageNumber,
                 PageSize = pageSize,
                 SearchTerm = searchTerm,
-                Status = status,
                 Level = level
             };
 
