@@ -19,10 +19,11 @@ namespace Tokki.Domain.Entities
         public string Definition { get; set; } = string.Empty;
 
         // Câu ví dụ
-        public string? ExampleSentence { get; set; }
+       // public string? ExampleSentence { get; set; }
 
         // Hình ảnh minh họa
         public string? ImgURL { get; set; }
+        public string? AudioURL { get; set; }
 
         // Audit Fields
         public string CreateBy { get; set; } = string.Empty;

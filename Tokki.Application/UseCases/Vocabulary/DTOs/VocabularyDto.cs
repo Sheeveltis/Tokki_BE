@@ -14,7 +14,7 @@ namespace Tokki.Application.UseCases.Vocabulary.DTOs
         public string? Pronunciation { get; set; }
         public string? AudioURL { get; set; }
         public string Definition { get; set; } = string.Empty;
-        public string? ExampleSentence { get; set; }
+      //  public string? ExampleSentence { get; set; }
         public string? ImgURL { get; set; }
         
         /// <summary>
