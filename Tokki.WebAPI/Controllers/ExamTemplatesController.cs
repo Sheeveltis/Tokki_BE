@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tokki.Application.UseCases.ExamTemplates.Commands.CreateExamTemplate;
 using Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate;
+using Tokki.Application.UseCases.ExamTemplates.Queries.GetAdminExamTemplates;
 using Tokki.Application.UseCases.ExamTemplates.Queries.GetExamTemplateById;
 using Tokki.Application.UseCases.ExamTemplates.Queries.GetExamTemplates;
 
@@ -77,6 +78,15 @@ namespace Tokki.WebAPI.Controllers
         {
             // TODO: Implement DeleteExamTemplateCommand
             return NoContent();
+        }
+
+        //Trang Anh
+        [HttpGet("admin")]
+        [Authorize(Roles = "Admin")] 
+        public async Task<IActionResult> GetAdminExamTemplates([FromQuery] GetAdminExamTemplatesQuery query)
+        {
+            var result = await _mediator.Send(query);
+            return StatusCode(result.StatusCode, result);
         }
     }
 }
