@@ -212,5 +212,8 @@ namespace Tokki.Application.Common.Models
         // ============================================
         public static readonly Error CommentNotFound = new("Comment.NotFound", OperationMessages.NotFound("bình luận"));
         public static readonly Error Forbidden = new("Comment.Forbidden", "Bạn không có quyền thực hiện thao tác này trên bình luận.");
+        //LiveChat
+        public static readonly Error ChatRoomNotFound = new("ChatRoom.NotFound", "Phòng chat không tồn tại.");
+        public static readonly Error ChatRoomAlreadySupported = new("ChatRoom.AlreadySupported", "Phòng chat đã có nhân viên hỗ trợ.");
     }
 }
