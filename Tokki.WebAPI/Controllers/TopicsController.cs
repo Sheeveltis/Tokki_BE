@@ -29,7 +29,6 @@ namespace Tokki.WebAPI.Controllers
 
 
         [HttpGet("admin/get-all")]
-        [AllowAnonymous]
         public async Task<IActionResult> GetAllTopics(
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10,
