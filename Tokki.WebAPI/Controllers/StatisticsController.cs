@@ -1,15 +1,16 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tokki.Application.UseCases.Statistics.Queries;
-namespace Tokki.WebAPI.Controllers
 
+namespace Tokki.WebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin")]
     public class StatisticsController : ControllerBase
     {
         private readonly ISender _sender;
-
         public StatisticsController(ISender sender)
         {
             _sender = sender;
