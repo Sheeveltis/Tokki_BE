@@ -1,4 +1,5 @@
 ﻿using Tokki.Application.Common.Models;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.Common.Models
 {
@@ -174,7 +175,11 @@ namespace Tokki.Application.Common.Models
         public static readonly Error QuestionBankMultipleCorrectAnswers = new("QuestionBank.MultipleCorrectAnswers", "Câu hỏi chỉ được có một đáp án đúng.");
         public static readonly Error QuestionBankInvalidKeyOption = new("QuestionBank.InvalidKeyOption", "Đáp án phải có KeyOption từ '1' đến '4'.");
         public static readonly Error QuestionBankDuplicateKeyOption = new("QuestionBank.DuplicateKeyOption", "Không được trùng KeyOption trong các đáp án.");
-
+        public static Error PassageMediaTypeMismatch(PassageMediaType mediaType, QuestionSkill skill) => new(
+        "Passage.MediaTypeMismatch",
+        $"Loại media '{mediaType}' của bài đọc không phù hợp với kỹ năng '{skill}'."
+        );
+        public static readonly Error WritingNoOptions = new("QuestionBank.WritingNoOptions","Câu hỏi tự luận (Writing) không được có đáp án trắc nghiệm");
         // ============================================
         // NHÓM 20: QUESTION OPTION
         // ============================================

@@ -17,6 +17,9 @@ namespace Tokki.Application.IRepositories
         Task UpdateAsync(QuestionOption questionOption);
         Task DeleteAsync(QuestionOption questionOption);
         Task DeleteRangeAsync(IEnumerable<QuestionOption> questionOptions);
+        Task SoftDeleteAsync(QuestionOption option);
+        Task SoftDeleteRangeAsync(List<QuestionOption> options); 
+
         Task<bool> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }
