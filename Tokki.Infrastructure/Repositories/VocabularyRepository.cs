@@ -157,5 +157,45 @@ namespace Tokki.Infrastructure.Repositories
                 .Where(v => vocabularyIds.Contains(v.VocabularyId))
                 .ToListAsync();
         }
+        // Tokki.Infrastructure.Repositories.VocabularyRepository.cs
+
+        public async Task<(IEnumerable<Vocabulary> Items, int TotalCount)> GetPagedVocabulariesForManagerAsync(
+            int pageNumber,
+            int pageSize,
+            string? topicId,
+            VocabularyStatus? status,
+            string? searchText)
+        {
+            var query = _context.Vocabularies.AsNoTracking().AsQueryable();
+            if (!string.IsNullOrWhiteSpace(topicId))
+            {
+                query = query.Where(v => v.VocabularyTopics.Any(vt => vt.TopicId == topicId));
+            }
+
+            if (status.HasValue)
+            {
+                query = query.Where(v => v.Status == status.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                var text = searchText.ToLower().Trim();
+                query = query.Where(v =>
+                    v.Text.ToLower().Contains(text) ||
+                    v.Definition.ToLower().Contains(text) ||
+                    (v.Pronunciation != null && v.Pronunciation.ToLower().Contains(text))
+                );
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderByDescending(v => v.CreateDate)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
     }
 }

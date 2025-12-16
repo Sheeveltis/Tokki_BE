@@ -7,8 +7,9 @@ using Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies;
 using Tokki.Application.UseCases.Vocabulary.Commands.DeleteVocabulary;
 using Tokki.Application.UseCases.Vocabulary.Commands.UpdateVocabulary;
 using Tokki.Application.UseCases.Vocabulary.DTOs;
-using Tokki.Application.UseCases.Vocabulary.Queries;
+using Tokki.Application.UseCases.Vocabulary.Queries; // Namespace chứa GetVocabularyByTextQuery (nếu có)
 using Tokki.Application.UseCases.Vocabulary.Queries.FlashCard;
+using Tokki.Application.UseCases.Vocabulary.Queries.GetAllForManager; // <--- THÊM DÒNG NÀY
 using Tokki.Application.UseCases.Vocabulary.Queries.GetVocabulariesByTopic;
 using Tokki.Domain.Enums;
 
@@ -27,32 +28,43 @@ namespace Tokki.WebAPI.Controllers
         }
 
         /// <summary>
-        /// Tạo hàng loạt vocabulary
+        /// Lấy danh sách vocabulary cho Manager (có filter, search, paging)
         /// </summary>
         /// <remarks>
-        /// Sample request:
-        /// 
-        ///     POST /api/vocabulary/bulk
-        ///     {
-        ///         "vocabularies": [
-        ///             {
-        ///                 "text": "은행",
-        ///                 "pronunciation": "eunhaeng",
-        ///                 "definition": "ngân hàng",
-        ///                 "exampleSentence": "은행에 가서 돈을 찾았어요.",
-        ///                 "topicIds": ["topic_ngan_hang", "topic_dia_diem"]
-        ///             },
-        ///             {
-        ///                 "text": "은행",
-        ///                 "pronunciation": "eunhaeng",
-        ///                 "definition": "quả ngân hạnh",
-        ///                 "exampleSentence": "은행은 건강에 좋아요.",
-        ///                 "topicIds": ["topic_thuc_vat"]
-        ///             }
-        ///         ]
-        ///     }
-        /// 
+        /// API này dùng cho trang quản lý, cho phép lọc theo status, topic, tìm kiếm.
         /// </remarks>
+        [HttpGet("admin/get-all")]
+         [Authorize(Roles = "Manager,Admin")] // Bạn có thể mở comment này nếu muốn chặn user thường
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAllForManager(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] VocabularyStatus? status = null,
+            [FromQuery] string? topicId = null,
+            [FromQuery] string? searchText = null)
+        {
+            var query = new GetAllForManagerQuery
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                Status = status,
+                TopicId = topicId,
+                SearchText = searchText
+            };
+
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess)
+            {
+                return StatusCode(result.StatusCode, result);
+            }
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Tạo hàng loạt vocabulary
+        /// </summary>
         [HttpPost("bulk")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -79,28 +91,18 @@ namespace Tokki.WebAPI.Controllers
                 return StatusCode(result.StatusCode, result);
             }
             return StatusCode(result.StatusCode, result);
-        }  /// <summary>
-           /// Cập nhật vocabulary
-           /// </summary>
-           /// <remarks>
-           /// Sample request:
-           /// 
-           ///     PUT /api/vocabulary/{vocabularyId}
-           ///     {
-           ///         "pronunciation": "eunhaeng",
-           ///         "definition": "ngân hàng (cập nhật)",
-           ///         "exampleSentence": "새로운 예문",
-           ///         "topicIds": ["topic_ngan_hang", "topic_dia_diem", "topic_doi_song"]
-           ///     }
-           /// 
-           /// </remarks>
+        }
+
+        /// <summary>
+        /// Cập nhật vocabulary
+        /// </summary>
         [HttpPut("{vocabularyId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> UpdateVocabulary(
-            string vocabularyId, 
+            string vocabularyId,
             [FromBody] VocabularyUpdateDto updateData)
         {
             var command = new UpdateVocabularyCommand
@@ -146,11 +148,6 @@ namespace Tokki.WebAPI.Controllers
         /// <summary>
         /// Lấy tất cả nghĩa của một từ
         /// </summary>
-        /// <remarks>
-        /// Ví dụ: GET /api/vocabulary/by-text?text=은행 sẽ trả về:
-        /// - 은행 - ngân hàng (với topics: Ngân hàng, Địa điểm, Đời sống)
-        /// - 은행 - quả ngân hạnh (với topics: Thực vật)
-        /// </remarks>
         [HttpGet("by-text")]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -162,6 +159,9 @@ namespace Tokki.WebAPI.Controllers
             [FromQuery] string? topicId = null,
             [FromQuery] VocabularyStatus? status = null)
         {
+            // Giả định bạn đã có class GetVocabularyByTextQuery
+            // Nếu chưa có class này, bạn cần tạo nó hoặc dùng GetAllForManagerQuery thay thế
+            // Tạm thời comment code nếu class chưa tồn tại để tránh lỗi build
             var query = new GetVocabularyByTextQuery
             {
                 Text = text,
@@ -184,9 +184,6 @@ namespace Tokki.WebAPI.Controllers
         /// <summary>
         /// Lấy vocabularies theo topic
         /// </summary>
-        /// <remarks>
-        /// Lấy tất cả vocabularies thuộc một topic cụ thể
-        /// </remarks>
         [HttpGet("by-topic/{topicId}")]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -220,9 +217,6 @@ namespace Tokki.WebAPI.Controllers
         /// <summary>
         /// Search vocabularies (tìm kiếm từ vựng)
         /// </summary>
-        /// <remarks>
-        /// Tìm kiếm vocabularies theo text hoặc definition
-        /// </remarks>
         [HttpGet("search")]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -238,7 +232,7 @@ namespace Tokki.WebAPI.Controllers
                 return BadRequest(new { message = "Vui lòng nhập từ khóa tìm kiếm" });
             }
 
-            // Sử dụng GetVocabulariesByTopic với searchText
+            // Tận dụng GetVocabulariesByTopicQuery hoặc GetAllForManagerQuery đều được
             var query = new GetVocabulariesByTopicQuery
             {
                 TopicId = topicId ?? string.Empty,

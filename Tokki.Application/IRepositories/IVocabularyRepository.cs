@@ -69,5 +69,13 @@ namespace Tokki.Application.IRepositories
         );
         Task<List<Vocabulary>> GetByIdsAsync(List<string> vocabularyIds);
 
+        Task<(IEnumerable<Vocabulary> Items, int TotalCount)> GetPagedVocabulariesForManagerAsync(
+        int pageNumber,
+        int pageSize,
+        string? topicId,       // Cho phép null để lấy tất cả
+        VocabularyStatus? status,
+        string? searchText);
+
     }
+
 }
