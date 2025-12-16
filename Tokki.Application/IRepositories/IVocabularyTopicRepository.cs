@@ -50,5 +50,13 @@ namespace Tokki.Application.IRepositories
            List<Vocabulary> vocabularies,
            string? currentUserId,
            CancellationToken cancellationToken = default);
+        Task<(bool success, int removedCount, List<string> failedItems)>
+      SoftRemoveVocabulariesFromTopicAsync(
+          string topicId,
+          List<string> vocabularyIds,
+          string? removedBy,
+          CancellationToken cancellationToken);
+        Task<bool> HasActiveTopicAsync(string vocabularyId, CancellationToken cancellationToken);
+
     }
 }

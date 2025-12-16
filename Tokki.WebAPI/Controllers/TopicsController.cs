@@ -11,6 +11,7 @@ using Tokki.Application.UseCases.Topics.DTOs;
 using Tokki.Application.UseCases.Topics.Queries;
 using Tokki.Domain.Enums;
 using Tokki.Application.UseCases.Topics.Commands.AddVocabulariesToTopic;
+using Tokki.Application.UseCases.Topics.Commands.RemoveVocabulariesFromTopic;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -155,6 +156,26 @@ namespace Tokki.WebAPI.Controllers
             var result = await _mediator.Send(command);
 
             return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpDelete("admin/vocabularies")]
+        [Authorize]
+        public async Task<IActionResult> RemoveVocabulariesFromTopic(
+    [FromBody] RemoveVocabulariesFromTopicCommand command)
+        {
+            if (command == null)
+            {
+                return BadRequest("Dữ liệu không được để trống.");
+            }
+
+            var result = await _mediator.Send(command);
+
+            if (!result.IsSuccess)
+            {
+                return StatusCode(result.StatusCode, result);
+            }
+
+            return Ok(result);
         }
     }
 

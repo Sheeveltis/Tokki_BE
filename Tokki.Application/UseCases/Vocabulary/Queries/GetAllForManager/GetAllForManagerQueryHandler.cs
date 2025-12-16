@@ -35,7 +35,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Queries.GetAllForManager
             var (vocabularies, totalCount) = await _vocabularyRepository.GetPagedVocabulariesForManagerAsync(
                     request.PageNumber,
                     request.PageSize,
-                    request.TopicId,
+                    request.VocabId,
                     request.Status,
                     request.SearchText
                 );

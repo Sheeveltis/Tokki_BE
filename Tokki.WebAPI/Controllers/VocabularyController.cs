@@ -10,6 +10,7 @@ using Tokki.Application.UseCases.Vocabulary.DTOs;
 using Tokki.Application.UseCases.Vocabulary.Queries; // Namespace chứa GetVocabularyByTextQuery (nếu có)
 using Tokki.Application.UseCases.Vocabulary.Queries.FlashCard;
 using Tokki.Application.UseCases.Vocabulary.Queries.GetAllForManager; // <--- THÊM DÒNG NÀY
+using Tokki.Application.UseCases.Vocabulary.Queries.GetById;
 using Tokki.Application.UseCases.Vocabulary.Queries.GetVocabulariesByTopic;
 using Tokki.Domain.Enums;
 
@@ -27,6 +28,18 @@ namespace Tokki.WebAPI.Controllers
             _mediator = mediator;
         }
 
+        [HttpGet("user/get-detail/{vocabularyId}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetVocabularyDetail(string vocabularyId)
+        {
+            var query = new GetVocabularyDetailByIdQuery
+            {
+                VocabularyId = vocabularyId
+            };
+
+            var result = await _mediator.Send(query);
+            return StatusCode(result.StatusCode, result);
+        }
         /// <summary>
         /// Lấy danh sách vocabulary cho Manager (có filter, search, paging)
         /// </summary>
@@ -40,7 +53,7 @@ namespace Tokki.WebAPI.Controllers
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 20,
             [FromQuery] VocabularyStatus? status = null,
-            [FromQuery] string? topicId = null,
+            [FromQuery] string? vocabId = null,
             [FromQuery] string? searchText = null)
         {
             var query = new GetAllForManagerQuery
@@ -48,7 +61,7 @@ namespace Tokki.WebAPI.Controllers
                 PageNumber = pageNumber,
                 PageSize = pageSize,
                 Status = status,
-                TopicId = topicId,
+                VocabId = vocabId,
                 SearchText = searchText
             };
 

@@ -158,18 +158,19 @@ namespace Tokki.Infrastructure.Repositories
                 .ToListAsync();
         }
         // Tokki.Infrastructure.Repositories.VocabularyRepository.cs
-
         public async Task<(IEnumerable<Vocabulary> Items, int TotalCount)> GetPagedVocabulariesForManagerAsync(
             int pageNumber,
             int pageSize,
-            string? topicId,
+            string? vocabId,
             VocabularyStatus? status,
             string? searchText)
         {
             var query = _context.Vocabularies.AsNoTracking().AsQueryable();
-            if (!string.IsNullOrWhiteSpace(topicId))
+
+            // Lọc theo VocabId (thay cho TopicId)
+            if (!string.IsNullOrWhiteSpace(vocabId))
             {
-                query = query.Where(v => v.VocabularyTopics.Any(vt => vt.TopicId == topicId));
+                query = query.Where(v => v.VocabularyId == vocabId);
             }
 
             if (status.HasValue)
@@ -197,5 +198,6 @@ namespace Tokki.Infrastructure.Repositories
 
             return (items, totalCount);
         }
+
     }
 }

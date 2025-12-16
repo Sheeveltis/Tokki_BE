@@ -13,8 +13,8 @@ namespace Tokki.Application.UseCases.Vocabulary.Queries.GetAllForManager
         // Filter chính
         public VocabularyStatus? Status { get; set; }
 
-        // Filter theo Topic (Manager có thể muốn lọc từ vựng thuộc 1 topic cụ thể)
-        public string? TopicId { get; set; }
+        public string? VocabId { get; set; }
+
 
         // Search chung (tìm trong Text, Definition, Pronunciation)
         public string? SearchText { get; set; }

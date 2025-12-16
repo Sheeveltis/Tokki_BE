@@ -165,5 +165,67 @@ namespace Tokki.Infrastructure.Repositories
                 return (false, 0, failedItems);
             }
         }
+        public async Task<(bool success, int removedCount, List<string> failedItems)>
+            SoftRemoveVocabulariesFromTopicAsync(
+                string topicId,
+                List<string> vocabularyIds,
+                string? removedBy,
+                CancellationToken cancellationToken)
+        {
+            using var transaction =
+                await _context.Database.BeginTransactionAsync(cancellationToken);
+
+            var failedItems = new List<string>();
+
+            try
+            {
+                // 1. Lấy các mapping còn ACTIVE
+                var vocabTopicRecords = await _context.VocabularyTopics
+                    .AsTracking()
+                    .Where(vt =>
+                        vt.TopicId == topicId &&
+                        vocabularyIds.Contains(vt.VocabularyId) &&
+                        vt.Status == VocabularyTopicStatus.Active)
+                    .ToListAsync(cancellationToken);
+
+                if (!vocabTopicRecords.Any())
+                {
+                    return (true, 0, failedItems);
+                }
+
+                // 2. Soft delete
+                foreach (var item in vocabTopicRecords)
+                {
+                    item.Status = VocabularyTopicStatus.Deleted;
+                    item.UpdateBy = removedBy;
+                    item.UpdateDate = DateTime.UtcNow.AddHours(7);
+                }
+
+                _context.VocabularyTopics.UpdateRange(vocabTopicRecords);
+
+                var removedCount = await _context.SaveChangesAsync(cancellationToken);
+
+                await transaction.CommitAsync(cancellationToken);
+
+                return (true, removedCount, failedItems);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                failedItems.Add(ex.Message);
+                return (false, 0, failedItems);
+            }
+        }
+        public async Task<bool> HasActiveTopicAsync(
+    string vocabularyId,
+    CancellationToken cancellationToken)
+        {
+            return await _context.VocabularyTopics
+                .AnyAsync(vt =>
+                    vt.VocabularyId == vocabularyId &&
+                    vt.Status == VocabularyTopicStatus.Active,
+                    cancellationToken);
+        }
+
     }
 }

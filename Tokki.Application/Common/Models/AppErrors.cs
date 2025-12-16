@@ -126,8 +126,10 @@ namespace Tokki.Application.Common.Models
         public static readonly Error VocabularyDeleted = new("Vocabulary.Deleted", "Từ vựng đã bị xóa, không thể thêm vào chủ đề.");
         public static readonly Error VocabularyInactive = new("Vocabulary.Inactive", "Từ vựng đang không hoạt động, không thể thêm vào chủ đề.");
         public static readonly Error VocabularyAddFailed = new("Vocabulary.AddFailed", "Không thể thêm từ vựng vào chủ đề.");
-        public static readonly Error VocabularyTransactionFailed = new("Vocabulary.TransactionFailed", "Giao dịch thất bại. Không có từ vựng nào được thêm vào chủ đề.");
+        public static readonly Error VocabularyTransactionFailed = new("Vocabulary.TransactionFailed", "Thực hiện thất bại. Không có từ vựng nào được thêm vào chủ đề.");
+        public static readonly Error VocabularyInUse = new("Vocabulary.VocabularyInUse", "Từ vựng này đang được sử dụng trong 1 chủ đề.");
 
+        
         public static Error VocabularyWithIdNotFound(List<string> vocabularyIds)
             => new("Vocabulary.IdsNotFound", $"Các từ vựng sau không tồn tại: {string.Join(", ", vocabularyIds)}");
 
