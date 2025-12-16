@@ -27,6 +27,7 @@ namespace Tokki.WebAPI.Controllers
 
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAllTopics(
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10,
@@ -50,6 +51,7 @@ namespace Tokki.WebAPI.Controllers
 
 
         [HttpGet("{topicId}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetTopicById(string topicId)
         {
             var query = new GetTopicDetailByIdQuery
