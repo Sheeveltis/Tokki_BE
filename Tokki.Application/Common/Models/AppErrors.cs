@@ -121,6 +121,20 @@ namespace Tokki.Application.Common.Models
         public static readonly Error VocabularyNotFound = new("Vocabulary.NotFound", "Từ vựng không tồn tại.");
         public static readonly Error VocabularyDuplicated = new("Vocabulary.Duplicated", "Từ vựng đã tồn tại trong chủ đề này.");
         public static readonly Error VocabularyAlreadyDeleted = new("Vocabulary.AlreadyDeleted", "Từ vựng đã bị xóa trước đó.");
+        public static readonly Error VocabularyListEmpty = new("Vocabulary.ListEmpty", "Danh sách từ vựng rỗng hoặc không hợp lệ.");
+        public static readonly Error NoValidVocabulariesFound = new("Vocabulary.NoValidFound", "Không tìm thấy từ vựng nào hợp lệ trong danh sách gửi lên.");
+        public static readonly Error VocabularyDeleted = new("Vocabulary.Deleted", "Từ vựng đã bị xóa, không thể thêm vào chủ đề.");
+        public static readonly Error VocabularyInactive = new("Vocabulary.Inactive", "Từ vựng đang không hoạt động, không thể thêm vào chủ đề.");
+        public static readonly Error VocabularyAddFailed = new("Vocabulary.AddFailed", "Không thể thêm từ vựng vào chủ đề.");
+        public static readonly Error VocabularyTransactionFailed = new("Vocabulary.TransactionFailed", "Giao dịch thất bại. Không có từ vựng nào được thêm vào chủ đề.");
+
+        public static Error VocabularyWithIdNotFound(List<string> vocabularyIds)
+            => new("Vocabulary.IdsNotFound", $"Các từ vựng sau không tồn tại: {string.Join(", ", vocabularyIds)}");
+
+        public static Error VocabularyStatusInvalid(string text, string vocabularyId, string status)
+            => new("Vocabulary.StatusInvalid", $"{text} (ID: {vocabularyId}) - {status}");
+
+        // ========
 
         // ============================================
         // NHÓM 13: WORD

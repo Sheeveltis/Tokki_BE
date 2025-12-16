@@ -10,6 +10,7 @@ using Tokki.Application.UseCases.Topics.Queries.GetById;
 using Tokki.Application.UseCases.Topics.DTOs;
 using Tokki.Application.UseCases.Topics.Queries;
 using Tokki.Domain.Enums;
+using Tokki.Application.UseCases.Topics.Commands.AddVocabulariesToTopic;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -83,7 +84,28 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
+        // Sửa lại URL template, bỏ {topicId} ra khỏi path
+        [HttpPost("vocabularies")]
+        [Authorize]
+        // Nhận toàn bộ Command từ Body. ASP.NET Core sẽ tự động gán dữ liệu.
+        public async Task<IActionResult> AddVocabulariesToTopic([FromBody] AddVocabulariesToTopicCommand command)
+        {
+            
+            // Kiểm tra Command có null không (tùy chọn)
+            if (command == null)
+            {
+                return BadRequest("Dữ liệu không được để trống.");
+            }
 
+            var result = await _mediator.Send(command);
+
+            if (!result.IsSuccess)
+            {
+                return StatusCode(result.StatusCode, result);
+            }
+
+            return Ok(result);
+        }
         [HttpPost]
         public async Task<IActionResult> CreateTopic([FromBody] CreateTopicCommand request)
         {
