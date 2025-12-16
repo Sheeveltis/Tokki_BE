@@ -151,5 +151,11 @@ namespace Tokki.Infrastructure.Repositories
 
             return (items, totalCount);
         }
+        public async Task<List<Vocabulary>> GetByIdsAsync(List<string> vocabularyIds)
+        {
+            return await _context.Vocabularies
+                .Where(v => vocabularyIds.Contains(v.VocabularyId))
+                .ToListAsync();
+        }
     }
 }

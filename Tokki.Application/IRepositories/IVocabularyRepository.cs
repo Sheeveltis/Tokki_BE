@@ -67,5 +67,7 @@ namespace Tokki.Application.IRepositories
             string? topicId = null,
             VocabularyStatus? status = null
         );
+        Task<List<Vocabulary>> GetByIdsAsync(List<string> vocabularyIds);
+
     }
 }
