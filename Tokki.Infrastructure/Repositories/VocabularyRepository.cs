@@ -147,12 +147,11 @@ namespace Tokki.Infrastructure.Repositories
 
             return (items, totalCount);
         }
-
         public async Task<(List<VocabularySearchResultDto> Items, int TotalCount)>
-      SearchVocabulariesAsync(
-          string searchTerm,
-          int pageNumber,
-          int pageSize)
+            SearchVocabulariesAsync(
+                string searchTerm,
+                int pageNumber,
+                int pageSize)
         {
             var query = _context.Vocabularies
                 .AsNoTracking()
@@ -160,11 +159,11 @@ namespace Tokki.Infrastructure.Repositories
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                var term = searchTerm.Trim();
+                var term = searchTerm.Trim().ToLower(); // ← FIX 1: Thêm .ToLower()
 
                 query = query.Where(v =>
-                    v.Text.StartsWith(term) ||
-                    v.Definition.StartsWith(term)
+                    v.Text.ToLower().StartsWith(term) ||        // ← FIX 2: Case-insensitive
+                    v.Definition.ToLower().Contains(term)       // ← FIX 3: Contains thay vì StartsWith cho Definition
                 );
             }
 
@@ -185,7 +184,5 @@ namespace Tokki.Infrastructure.Repositories
 
             return (items, totalCount);
         }
-
-
     }
 }
