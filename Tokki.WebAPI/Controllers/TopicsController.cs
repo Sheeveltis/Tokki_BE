@@ -26,7 +26,7 @@ namespace Tokki.WebAPI.Controllers
         }
 
 
-        [HttpGet]
+        [HttpGet("admin/get-all")]
         [AllowAnonymous]
         public async Task<IActionResult> GetAllTopics(
             [FromQuery] int pageNumber = 1,
@@ -49,6 +49,28 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
+        [HttpGet("user/get-all")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAllTopicsForUser(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? searchTerm = null,
+            [FromQuery] TopicStatus? status = null,
+            [FromQuery] TopicLevel? level = null)
+        {
+            var query = new GetAllTopicsQuery
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                SearchTerm = searchTerm,
+                Status = status,
+                Level = level
+            };
+
+            var result = await _mediator.Send(query);
+
+            return StatusCode(result.StatusCode, result);
+        }
 
         [HttpGet("{topicId}")]
         [AllowAnonymous]
@@ -84,7 +106,7 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
-        [HttpPut("Update")]
+        [HttpPut("update")]
         public async Task<IActionResult> UpdateTopic([FromBody] UpdateTopicCommand command)
         {
             // Lấy UserId từ JWT token
