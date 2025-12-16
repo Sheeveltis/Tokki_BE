@@ -14,8 +14,6 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies
     public class BulkCreateVocabulariesCommandHandler : IRequestHandler<BulkCreateVocabulariesCommand, OperationResult<BulkCreateVocabulariesResponse>>
     {
         private readonly IVocabularyRepository _vocabularyRepository;
-        private readonly ITopicRepository _topicRepository;
-        private readonly IVocabularyTopicRepository _vocabularyTopicRepository;
         private readonly IIdGeneratorService _idGenerator;
         private readonly ITextToSpeechService _ttsService;
         private readonly ICloudinaryService _cloudinaryService;
@@ -24,8 +22,6 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies
 
         public BulkCreateVocabulariesCommandHandler(
             IVocabularyRepository vocabularyRepository,
-            ITopicRepository topicRepository,
-            IVocabularyTopicRepository vocabularyTopicRepository,
             IIdGeneratorService idGenerator,
             ITextToSpeechService ttsService,
             ICloudinaryService cloudinaryService,
@@ -33,8 +29,6 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies
             ILogger<BulkCreateVocabulariesCommandHandler> logger)
         {
             _vocabularyRepository = vocabularyRepository;
-            _topicRepository = topicRepository;
-            _vocabularyTopicRepository = vocabularyTopicRepository;
             _idGenerator = idGenerator;
             _ttsService = ttsService;
             _cloudinaryService = cloudinaryService;
@@ -66,36 +60,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies
             {
                 try
                 {
-                    // 2. Validate tất cả topics tồn tại (nếu có)
-                    if (vocabDto.TopicIds != null && vocabDto.TopicIds.Any())
-                    {
-                        var invalidTopics = new List<string>();
-                        foreach (var topicId in vocabDto.TopicIds)
-                        {
-                            var topic = await _topicRepository.GetByIdAsync(topicId);
-
-                            // Kiểm tra topic tồn tại VÀ chưa bị xóa
-                            if (topic == null || topic.Status == TopicStatus.Deleted)
-                            {
-                                invalidTopics.Add(topicId);
-                            }
-                        }
-
-                        if (invalidTopics.Any())
-                        {
-                            response.Results.Add(new VocabularyCreationResult
-                            {
-                                Text = vocabDto.Text,
-                                Definition = vocabDto.Definition,
-                                IsSuccess = false,
-                                ErrorMessage = $"Topic không tồn tại hoặc đã bị xóa: {string.Join(", ", invalidTopics)}"
-                            });
-                            response.FailedCount++;
-                            continue;
-                        }
-                    }
-
-                    // 3. Kiểm tra vocabulary đã tồn tại chưa
+                    // 2. Kiểm tra vocabulary đã tồn tại chưa
                     var existingVocab = await _vocabularyRepository.GetByTextAndDefinitionAsync(
                         vocabDto.Text,
                         vocabDto.Definition
@@ -117,46 +82,19 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies
                             continue;
                         }
 
-                        int addedTopicsCount = 0;
-                        if (vocabDto.TopicIds != null && vocabDto.TopicIds.Any())
-                        {
-                            foreach (var topicId in vocabDto.TopicIds)
-                            {
-                                var existingVocabTopic = await _vocabularyTopicRepository
-                                    .GetByVocabularyAndTopicAsync(existingVocab.VocabularyId, topicId);
-
-                                if (existingVocabTopic == null)
-                                {
-                                    var vocabTopic = new VocabularyTopic
-                                    {
-                                        VocabularyId = existingVocab.VocabularyId,
-                                        TopicId = topicId,
-                                        CreateBy = currentUserId,
-                                        CreateDate = DateTime.UtcNow.AddHours(7),
-                                        Status = VocabularyTopicStatus.Active
-                                    };
-                                    await _vocabularyTopicRepository.AddAsync(vocabTopic);
-                                    addedTopicsCount++;
-                                }
-                            }
-                        }
-
-                        var existMessage = vocabDto.TopicIds != null && vocabDto.TopicIds.Any()
-                            ? $"Vocabulary đã tồn tại. Đã thêm vào {addedTopicsCount} topic mới."
-                            : "Vocabulary đã tồn tại (không có topic nào được thêm).";
-
                         response.Results.Add(new VocabularyCreationResult
                         {
                             Text = vocabDto.Text,
                             Definition = vocabDto.Definition,
                             IsSuccess = true,
                             VocabularyId = existingVocab.VocabularyId,
-                            Message = existMessage
+                            Message = "Vocabulary đã tồn tại."
                         });
                         response.SuccessCount++;
                         continue;
                     }
 
+                    // 3. Tạo audio URL
                     string? audioUrl = null;
                     try
                     {
@@ -170,40 +108,21 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies
                         _logger.LogWarning(ex, "Không thể tạo audio cho vocabulary: {Text}", vocabDto.Text);
                     }
 
+                    // 4. Tạo vocabulary mới
                     var vocabulary = new Tokki.Domain.Entities.Vocabulary
                     {
                         VocabularyId = _idGenerator.Generate(15),
                         Text = vocabDto.Text,
                         Pronunciation = vocabDto.Pronunciation,
                         Definition = vocabDto.Definition,
-                        ExampleSentence = vocabDto.ExampleSentence,
                         ImgURL = vocabDto.ImgURL,
+                        AudioURL = audioUrl,
                         CreateBy = currentUserId,
                         CreateDate = DateTime.UtcNow.AddHours(7),
                         Status = VocabularyStatus.Active
                     };
 
                     await _vocabularyRepository.AddAsync(vocabulary);
-
-                    if (vocabDto.TopicIds != null && vocabDto.TopicIds.Any())
-                    {
-                        foreach (var topicId in vocabDto.TopicIds)
-                        {
-                            var vocabTopic = new VocabularyTopic
-                            {
-                                VocabularyId = vocabulary.VocabularyId,
-                                TopicId = topicId,
-                                CreateBy = currentUserId,
-                                CreateDate = DateTime.UtcNow.AddHours(7),
-                                Status = VocabularyTopicStatus.Active
-                            };
-                            await _vocabularyTopicRepository.AddAsync(vocabTopic);
-                        }
-                    }
-
-                    var successMessage = vocabDto.TopicIds != null && vocabDto.TopicIds.Any()
-                        ? $"Tạo vocabulary thành công và thêm vào {vocabDto.TopicIds.Count} topic."
-                        : "Tạo vocabulary thành công (chưa thuộc topic nào).";
 
                     response.Results.Add(new VocabularyCreationResult
                     {
@@ -212,12 +131,13 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies
                         IsSuccess = true,
                         VocabularyId = vocabulary.VocabularyId,
                         AudioURL = audioUrl,
-                        Message = successMessage
+                        Message = "Tạo vocabulary thành công."
                     });
                     response.SuccessCount++;
                 }
                 catch (Exception ex)
                 {
+                    _logger.LogError(ex, "Lỗi khi tạo vocabulary: {Text}", vocabDto.Text);
                     response.Results.Add(new VocabularyCreationResult
                     {
                         Text = vocabDto.Text,
