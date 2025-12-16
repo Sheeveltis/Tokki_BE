@@ -15,6 +15,9 @@ namespace Tokki.Application.UseCases.Topics.Commands.CreateTopic
                 .MaximumLength(255)
                 .When(x => !string.IsNullOrEmpty(x.Description))
                 .WithName("Mô tả");
+            RuleFor(x => x.Level)
+                .IsInEnum().WithMessage("Cấp độ không hợp lệ.")
+                .WithName("Cấp độ");
 
         }
     }

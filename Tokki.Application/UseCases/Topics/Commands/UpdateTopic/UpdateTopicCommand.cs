@@ -9,6 +9,8 @@ namespace Tokki.Application.UseCases.Topics.Commands.UpdateTopic
         public string TopicId { get; set; } = string.Empty;
         public string TopicName { get; set; } = string.Empty;
         public string? Description { get; set; }
+        public TopicLevel Level { get; set; }
+        public string? ImgUrl { get; set; }
         public string UpdatedBy { get; set; } = string.Empty;
     }
 }

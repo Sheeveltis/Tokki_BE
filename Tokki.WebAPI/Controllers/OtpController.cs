@@ -25,8 +25,8 @@ namespace Tokki.API.Controllers
         /// </summary>
         /// <param name="command">Chứa email người dùng gửi lên</param>
         /// <returns>Kết quả gửi thành công hoặc thông báo lỗi</returns>
-        [HttpPost("send-login-verification")]
-        public async Task<IActionResult> SendLoginVerificationOtp([FromBody] SendEmailVerificationOtpCommand command)
+        [HttpPost("send-otp-for-email-verification")]
+        public async Task<IActionResult> SendOTPForEmailVerificationOtp([FromBody] SendEmailVerificationOtpCommand command)
         {
             // Gọi sang Handler thông qua MediatR
             var result = await _mediator.Send(command);
@@ -66,7 +66,6 @@ namespace Tokki.API.Controllers
 
             return StatusCode(result.StatusCode, result);
         }
-        // 1. Gửi OTP
         [HttpPost("forgot-password/send-otp")]
         public async Task<IActionResult> SendForgotOtp([FromBody] SendForgotPasswordOtpCommand command)
         {
@@ -74,7 +73,6 @@ namespace Tokki.API.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
-        // 2. Verify OTP -> Nhận về Token reset
         [HttpPost("forgot-password/verify")]
         public async Task<IActionResult> VerifyForgotOtp([FromBody] VerifyForgotPasswordOtpCommand command)
         {

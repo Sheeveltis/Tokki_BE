@@ -45,10 +45,12 @@ namespace Tokki.Application.UseCases.Topics.Commands.CreateTopic
                 {
                     TopicId = newId,
                     TopicName = request.TopicName,
+                    ImgUrl=request.ImgUrl,
+                    Level=request.Level,
                     Description = request.Description,
                     CreateBy = request.CreateBy,
                     CreateDate = DateTime.UtcNow.AddHours(7),
-                    Status = TopicStatus.Active // Sử dụng enum thay vì hardcode số 0
+                    Status = TopicStatus.Active 
                 };
 
                 await _topicRepository.AddAsync(topic);

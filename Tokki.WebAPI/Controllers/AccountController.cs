@@ -29,14 +29,9 @@ namespace Tokki.WebAPI.Controllers
         [HttpGet("get-all")]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> GetAllAccounts(
-          [FromQuery] int pageNumber = 1,
-          [FromQuery] int pageSize = 10)
+          [FromQuery] GetAllAccountsQuery query)
         {
-            var query = new GetAllAccountsQuery
-            {
-                PageNumber = pageNumber,
-                PageSize = pageSize
-            };
+           
 
             var result = await _sender.Send(query);
 

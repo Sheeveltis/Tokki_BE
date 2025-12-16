@@ -9,6 +9,7 @@ using Tokki.Application.UseCases.Vocabulary.Commands.DeleteVocabulary;
 using Tokki.Application.UseCases.Vocabulary.Commands.UpdateVocabulary;
 using Tokki.Application.UseCases.Vocabulary.DTOs;
 using Tokki.Application.UseCases.Vocabulary.Queries;
+using Tokki.Application.UseCases.Vocabulary.Queries.FlashCard;
 using Tokki.Application.UseCases.Vocabulary.Queries.GetVocabulariesByTopic;
 using Tokki.Application.UseCases.Vocabulary.Queries.SearchVocabulary;
 using Tokki.Domain.Enums;
@@ -146,6 +147,31 @@ namespace Tokki.WebAPI.Controllers
         ///     }
         /// 
         /// </remarks>
+        [HttpGet("flash-card")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetFlashCardByTopic([FromQuery] FlashCardQuery command)
+        {
+            var result = await _mediator.Send(command);
+            if (!result.IsSuccess)
+            {
+                return StatusCode(result.StatusCode, result);
+            }
+            return StatusCode(result.StatusCode, result);
+        }  /// <summary>
+           /// Cập nhật vocabulary
+           /// </summary>
+           /// <remarks>
+           /// Sample request:
+           /// 
+           ///     PUT /api/vocabulary/{vocabularyId}
+           ///     {
+           ///         "pronunciation": "eunhaeng",
+           ///         "definition": "ngân hàng (cập nhật)",
+           ///         "exampleSentence": "새로운 예문",
+           ///         "topicIds": ["topic_ngan_hang", "topic_dia_diem", "topic_doi_song"]
+           ///     }
+           /// 
+           /// </remarks>
         [HttpPut("{vocabularyId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

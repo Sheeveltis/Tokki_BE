@@ -31,14 +31,16 @@ namespace Tokki.WebAPI.Controllers
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10,
             [FromQuery] string? searchTerm = null,
-            [FromQuery] TopicStatus? status = null)
+            [FromQuery] TopicStatus? status = null,
+            [FromQuery] TopicLevel? level = null)
         {
             var query = new GetAllTopicsQuery
             {
                 PageNumber = pageNumber,
                 PageSize = pageSize,
                 SearchTerm = searchTerm,
-                Status = status
+                Status = status,
+                Level = level
             };
 
             var result = await _mediator.Send(query);
@@ -50,7 +52,7 @@ namespace Tokki.WebAPI.Controllers
         [HttpGet("{topicId}")]
         public async Task<IActionResult> GetTopicById(string topicId)
         {
-            var query = new GetTopicByIdQuery
+            var query = new GetTopicDetailByIdQuery
             {
                 TopicId = topicId
             };

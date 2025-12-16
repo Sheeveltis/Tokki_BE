@@ -35,7 +35,7 @@ namespace Tokki.Application.UseCases.Otps.Commands.SendGeneralOtp
             // Tạo Entity OTP (Type = General)
             var otpEntity = new Otp
             {
-                OtpId = _idGenerator.Generate(15), // ✅ Thêm dòng này - Tạo NanoID 15 ký tự
+                OtpId = _idGenerator.Generate(15), 
                 Email = request.Email,
                 OtpCode = otpCode,
                 Type = OtpType.General,
@@ -49,7 +49,7 @@ namespace Tokki.Application.UseCases.Otps.Commands.SendGeneralOtp
             await _otpRepository.SaveChangesAsync(cancellationToken);
 
             // Gửi email 
-            string subject = "Mã xác thực (General)";
+            string subject = "Mã xác thực ";
             string body =
                 $"<h3>Mã xác thực của bạn là: " +
                 $"<b style='color:blue; font-size:20px;'>{otpCode}</b></h3>" +
@@ -57,7 +57,7 @@ namespace Tokki.Application.UseCases.Otps.Commands.SendGeneralOtp
 
             await _emailService.SendEmailAsync(request.Email, subject, body);
 
-            return OperationResult<string>.Success("Đã gửi OTP thành công (General).", 200);
+            return OperationResult<string>.Success("Đã gửi OTP thành công.", 200);
         }
     }
 }

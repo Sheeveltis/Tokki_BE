@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Tokki.Application.UseCases.Topics.DTOs;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 
@@ -12,10 +13,12 @@ namespace Tokki.Application.IRepositories
         Task<Topic?> GetByNameAsync(string topicName);
         Task<List<Topic>> GetByIdsAsync(List<string> topicIds);
         Task<(List<Topic> Items, int TotalCount)> GetPagedAsync(
-            int pageNumber,
-            int pageSize,
-            string? searchTerm = null,
-            TopicStatus? status = null);
+        int pageNumber,
+        int pageSize,
+        string? searchTerm = null,
+        TopicStatus? status = null,
+        TopicLevel? level = null);
+
         Task<bool> IsTopicNameExistsAsync(string topicName, string? excludeTopicId = null);
         Task<int> CountVocabulariesInTopicAsync(string topicId);
         Task AddAsync(Topic topic);

@@ -12,6 +12,8 @@ namespace Tokki.Application.UseCases.Accounts.DTOs
         public DateTime DateOfBirth { get; set; }
         public string FullName { get; set; } = string.Empty;
         public string? AvatarUrl { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow.AddHours(7);
+
         public AccountRole Role { get; set; }
         public AccountStatus Status { get; set; }
         public DateTimeOffset? VipExpirationDate { get; set; }
