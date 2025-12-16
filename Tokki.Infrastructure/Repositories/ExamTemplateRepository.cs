@@ -95,5 +95,36 @@ namespace Tokki.Infrastructure.Repositories
         {
             return await _context.SaveChangesAsync(cancellationToken) > 0;
         }
+
+        //Trang Anh
+        public async Task<(IEnumerable<ExamTemplate> items, int totalCount)> GetPagedSummaryAsync(
+                int pageNumber,
+                int pageSize,
+                string? searchTerm = null,
+                ExamTemplateStatus? status = null,
+                CancellationToken cancellationToken = default)
+        {
+            var query = _context.ExamTemplates.AsQueryable(); 
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                query = query.Where(et => et.Name.Contains(searchTerm) || et.Description!.Contains(searchTerm));
+            }
+
+            if (status.HasValue)
+            {
+                query = query.Where(et => et.Status == status.Value);
+            }
+
+            var totalCount = await query.CountAsync(cancellationToken);
+
+            var items = await query
+                .OrderByDescending(et => et.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+
+            return (items, totalCount);
+        }
     }
 }
