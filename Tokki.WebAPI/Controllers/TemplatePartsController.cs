@@ -27,7 +27,7 @@ namespace Tokki.API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(string id, [FromBody] UpdateTemplatePartCommand command)
         {
-            if (id != command.TemplatePartId) return BadRequest("Mismatched ID");
+            command.TemplatePartId = id;
             var result = await _mediator.Send(command);
             return result.IsSuccess ? Ok(result) : StatusCode(result.StatusCode, result);
         }
