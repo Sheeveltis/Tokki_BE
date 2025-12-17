@@ -66,6 +66,7 @@ namespace Tokki.Infrastructure
             //Live Chat
             services.AddSingleton<IChatService, ChatService>();
             services.AddScoped<IChatRoomRepository, ChatRoomRepository>();
+            services.AddScoped<IUserVocabProgressRepository, UserVocabProgressRepository>();
             return services;
         }
     }
