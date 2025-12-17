@@ -21,6 +21,7 @@ namespace Tokki.Infrastructure.Repositories
         public async Task<TemplatePart?> GetByIdAsync(string templatePartId, CancellationToken cancellationToken = default)
         {
             return await _context.TemplateParts
+                .Include(tp => tp.QuestionType)
                 .FirstOrDefaultAsync(tp => tp.TemplatePartId == templatePartId, cancellationToken);
         }
 

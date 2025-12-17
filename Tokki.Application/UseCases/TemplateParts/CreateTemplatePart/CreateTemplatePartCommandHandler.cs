@@ -35,17 +35,20 @@ namespace Tokki.Application.UseCases.TemplateParts.CreateTemplatePart
             if (request.QuestionFrom > request.QuestionTo || request.QuestionFrom <= 0)
                 return OperationResult<string>.Failure(new List<Error> { AppErrors.TemplatePartInvalidRange }, 400, "Dải câu hỏi không hợp lệ");
 
-            var existingParts = await _templatePartRepository.GetByExamTemplateIdAsync(request.ExamTemplateId, cancellationToken);
-            foreach (var part in existingParts)
+            bool isOverlap = await _templatePartRepository.IsQuestionRangeOverlapAsync(
+                request.ExamTemplateId,
+                request.QuestionFrom,
+                request.QuestionTo,
+                excludePartId: null
+            );
+
+            if (isOverlap)
             {
-                if (request.QuestionFrom <= part.QuestionTo && request.QuestionTo >= part.QuestionFrom)
-                {
-                    return OperationResult<string>.Failure(
-                        new List<Error> { AppErrors.TemplatePartRangeOverlap },
-                        409,
-                        $"Dải câu hỏi trùng với phần '{part.PartTitle}'"
-                    );
-                }
+                return OperationResult<string>.Failure(
+                    new List<Error> { AppErrors.TemplatePartRangeOverlap },
+                    409,
+                    $"Dải câu hỏi ({request.QuestionFrom}-{request.QuestionTo}) bị trùng với phần khác trong đề thi."
+                );
             }
 
             try
@@ -55,7 +58,7 @@ namespace Tokki.Application.UseCases.TemplateParts.CreateTemplatePart
                     TemplatePartId = _idGeneratorService.GenerateCustom(10),
                     ExamTemplateId = request.ExamTemplateId,
                     PartTitle = request.PartTitle,
-                    Skill = request.Skill,
+                    Skill = request.Skill, 
                     QuestionFrom = request.QuestionFrom,
                     QuestionTo = request.QuestionTo,
                     Instruction = request.Instruction,

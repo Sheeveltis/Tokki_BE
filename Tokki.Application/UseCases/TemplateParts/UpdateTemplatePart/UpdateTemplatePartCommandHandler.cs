@@ -26,21 +26,26 @@ namespace Tokki.Application.UseCases.TemplateParts.Commands.UpdateTemplatePart
             if (request.QuestionFrom > request.QuestionTo || request.QuestionFrom <= 0)
                 return OperationResult<string>.Failure(new List<Error> { AppErrors.TemplatePartInvalidRange }, 400, "Dải câu hỏi không hợp lệ");
 
-            var otherParts = await _templatePartRepository.GetByExamTemplateIdAsync(part.ExamTemplateId, cancellationToken);
-            foreach (var p in otherParts)
-            {
-                if (p.TemplatePartId == request.TemplatePartId) continue;
+            bool isOverlap = await _templatePartRepository.IsQuestionRangeOverlapAsync(
+                part.ExamTemplateId,
+                request.QuestionFrom,
+                request.QuestionTo,
+                excludePartId: part.TemplatePartId
+            );
 
-                if (request.QuestionFrom <= p.QuestionTo && request.QuestionTo >= p.QuestionFrom)
-                {
-                    return OperationResult<string>.Failure(new List<Error> { AppErrors.TemplatePartRangeOverlap }, 409, $"Dải câu hỏi trùng với phần '{p.PartTitle}'");
-                }
+            if (isOverlap)
+            {
+                return OperationResult<string>.Failure(
+                    new List<Error> { AppErrors.TemplatePartRangeOverlap },
+                    409,
+                    "Dải câu hỏi bị trùng với phần khác trong đề thi."
+                );
             }
 
             try
             {
                 part.PartTitle = request.PartTitle;
-                part.Skill = request.Skill;
+                part.Skill = request.Skill; 
                 part.QuestionFrom = request.QuestionFrom;
                 part.QuestionTo = request.QuestionTo;
                 part.Instruction = request.Instruction;
