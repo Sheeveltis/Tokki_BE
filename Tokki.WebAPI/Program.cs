@@ -124,7 +124,9 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
     {
-        policy.WithOrigins("http://localhost:3000") // Cho phép đúng cái Frontend của bạn
+        policy.WithOrigins("http://localhost:3000",
+               "https://localhost:7000",          // API itself (cho SignalR)
+                  "https://localhost:7178") // Cho phép đúng cái Frontend của bạn
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -137,6 +139,7 @@ builder.Services.AddSignalR();
 var app = builder.Build();
 //ChatHub
 app.MapHub<ChatHub>("/chatHub");
+app.MapHub<VocabularyHub>("/vocabularyHub");
 app.UseMiddleware<GlobalExceptionMiddleware>();
 // ==========================================
 var supportedCultures = new[] { "vi" };

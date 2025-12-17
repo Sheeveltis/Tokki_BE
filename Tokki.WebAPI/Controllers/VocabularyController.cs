@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Tokki.Application.Common.Models;
 using Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies;
 using Tokki.Application.UseCases.Vocabulary.Commands.DeleteVocabulary;
 using Tokki.Application.UseCases.Vocabulary.Commands.UpdateVocabulary;
@@ -18,7 +19,7 @@ namespace Tokki.WebAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-   // [Authorize]
+    // [Authorize]
     public class VocabularyController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -28,69 +29,13 @@ namespace Tokki.WebAPI.Controllers
             _mediator = mediator;
         }
 
-        // Test Controller hoặc Unit Test
-        [HttpGet("test-cache")]
-        public async Task<IActionResult> TestCache()
-        {
-            var sw = Stopwatch.StartNew();
-
-            // Lần 1: Query DB
-            var result1 = await _mediator.Send(new SearchVocabularyQuery
-            {
-                SearchTerm = "운",
-                PageNumber = 1,
-                PageSize = 20
-            });
-            sw.Stop();
-            var time1 = sw.ElapsedMilliseconds;
-
-            sw.Restart();
-
-            // Lần 2: Get from cache
-            var result2 = await _mediator.Send(new SearchVocabularyQuery
-            {
-                SearchTerm = "은행",
-                PageNumber = 1,
-                PageSize = 20
-            });
-            sw.Stop();
-            var time2 = sw.ElapsedMilliseconds;
-
-            return Ok(new
-            {
-                FirstQuery = $"{time1}ms (DB)",
-                SecondQuery = $"{time2}ms (Cache)",
-                Improvement = $"{(time1 - time2)}ms faster"
-            });
-        }
+        // ==========================================
+        // EXISTING ENDPOINTS (GIỮ NGUYÊN)
+        // ==========================================
 
         /// <summary>
         /// Tạo hàng loạt vocabulary
         /// </summary>
-        /// <remarks>
-        /// Sample request:
-        /// 
-        ///     POST /api/vocabulary/bulk
-        ///     {
-        ///         "vocabularies": [
-        ///             {
-        ///                 "text": "은행",
-        ///                 "pronunciation": "eunhaeng",
-        ///                 "definition": "ngân hàng",
-        ///                 "exampleSentence": "은행에 가서 돈을 찾았어요.",
-        ///                 "topicIds": ["topic_ngan_hang", "topic_dia_diem"]
-        ///             },
-        ///             {
-        ///                 "text": "은행",
-        ///                 "pronunciation": "eunhaeng",
-        ///                 "definition": "quả ngân hạnh",
-        ///                 "exampleSentence": "은행은 건강에 좋아요.",
-        ///                 "topicIds": ["topic_thuc_vat"]
-        ///             }
-        ///         ]
-        ///     }
-        /// 
-        /// </remarks>
         [HttpPost("bulk")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -107,9 +52,11 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
-
+        /// <summary>
+        /// Search vocabulary for user (OLD - giữ để backward compatibility)
+        /// </summary>
         [HttpGet("search-for-user")]
-        [AllowAnonymous] // Cho phép search không cần đăng nhập
+        [AllowAnonymous]
         public async Task<IActionResult> SearchVocabulary(
            [FromQuery] string searchTerm,
            [FromQuery] int pageNumber = 1,
@@ -133,20 +80,8 @@ namespace Tokki.WebAPI.Controllers
         }
 
         /// <summary>
-        /// Cập nhật vocabulary
+        /// Get flash card by topic
         /// </summary>
-        /// <remarks>
-        /// Sample request:
-        /// 
-        ///     PUT /api/vocabulary/{vocabularyId}
-        ///     {
-        ///         "pronunciation": "eunhaeng",
-        ///         "definition": "ngân hàng (cập nhật)",
-        ///         "exampleSentence": "새로운 예문",
-        ///         "topicIds": ["topic_ngan_hang", "topic_dia_diem", "topic_doi_song"]
-        ///     }
-        /// 
-        /// </remarks>
         [HttpGet("flash-card")]
         [AllowAnonymous]
         public async Task<IActionResult> GetFlashCardByTopic([FromQuery] FlashCardQuery command)
@@ -157,28 +92,18 @@ namespace Tokki.WebAPI.Controllers
                 return StatusCode(result.StatusCode, result);
             }
             return StatusCode(result.StatusCode, result);
-        }  /// <summary>
-           /// Cập nhật vocabulary
-           /// </summary>
-           /// <remarks>
-           /// Sample request:
-           /// 
-           ///     PUT /api/vocabulary/{vocabularyId}
-           ///     {
-           ///         "pronunciation": "eunhaeng",
-           ///         "definition": "ngân hàng (cập nhật)",
-           ///         "exampleSentence": "새로운 예문",
-           ///         "topicIds": ["topic_ngan_hang", "topic_dia_diem", "topic_doi_song"]
-           ///     }
-           /// 
-           /// </remarks>
+        }
+
+        /// <summary>
+        /// Cập nhật vocabulary
+        /// </summary>
         [HttpPut("{vocabularyId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> UpdateVocabulary(
-            string vocabularyId, 
+            string vocabularyId,
             [FromBody] VocabularyUpdateDto updateData)
         {
             var command = new UpdateVocabularyCommand
@@ -224,11 +149,6 @@ namespace Tokki.WebAPI.Controllers
         /// <summary>
         /// Lấy tất cả nghĩa của một từ
         /// </summary>
-        /// <remarks>
-        /// Ví dụ: GET /api/vocabulary/by-text?text=은행 sẽ trả về:
-        /// - 은행 - ngân hàng (với topics: Ngân hàng, Địa điểm, Đời sống)
-        /// - 은행 - quả ngân hạnh (với topics: Thực vật)
-        /// </remarks>
         [HttpGet("by-text")]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -262,9 +182,6 @@ namespace Tokki.WebAPI.Controllers
         /// <summary>
         /// Lấy vocabularies theo topic
         /// </summary>
-        /// <remarks>
-        /// Lấy tất cả vocabularies thuộc một topic cụ thể
-        /// </remarks>
         [HttpGet("by-topic/{topicId}")]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -298,9 +215,6 @@ namespace Tokki.WebAPI.Controllers
         /// <summary>
         /// Search vocabularies (tìm kiếm từ vựng)
         /// </summary>
-        /// <remarks>
-        /// Tìm kiếm vocabularies theo text hoặc definition
-        /// </remarks>
         [HttpGet("search")]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -316,7 +230,6 @@ namespace Tokki.WebAPI.Controllers
                 return BadRequest(new { message = "Vui lòng nhập từ khóa tìm kiếm" });
             }
 
-            // Sử dụng GetVocabulariesByTopic với searchText
             var query = new GetVocabulariesByTopicQuery
             {
                 TopicId = topicId ?? string.Empty,
@@ -329,6 +242,201 @@ namespace Tokki.WebAPI.Controllers
             var result = await _mediator.Send(query);
 
             return Ok(result);
+        }
+
+        // ==========================================
+        // 🔥 SIGNALR TESTING ENDPOINTS (ĐÁNH DẤU ĐẶC BIỆT)
+        // ==========================================
+
+        /// <summary>
+        /// 🔥 [SIGNALR-TEST] Search vocabulary - Optimized for realtime (dùng chung handler với SignalR Hub)
+        /// </summary>
+        /// <remarks>
+        /// **Endpoint này dùng để:**
+        /// - Test SignalR Hub logic trên Swagger
+        /// - Share cùng business logic với VocabularyHub
+        /// - Test cache performance, rate limiting
+        /// 
+        /// **Khác với `/search`:**
+        /// - `/search`: General search với complex filters
+        /// - `/signalr-test/search`: Optimized cho realtime, có cache
+        /// </remarks>
+        /// <param name="searchTerm">Từ khóa tìm kiếm (VD: 은행, 학교)</param>
+        /// <param name="pageNumber">Trang số (mặc định: 1)</param>
+        /// <param name="pageSize">Số lượng kết quả mỗi trang (mặc định: 20, tối đa: 50)</param>
+        [HttpGet("signalr-test/search")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(OperationResult<PagedResult<VocabularySearchResultDto>>), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        public async Task<IActionResult> SignalRTestSearch(
+            [FromQuery] string searchTerm,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 20)
+        {
+            // ===== GỌI CÙNG HANDLER VỚI SIGNALR HUB =====
+            var query = new SearchVocabularyQuery
+            {
+                SearchTerm = searchTerm,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+
+            var result = await _mediator.Send(query);
+
+            // ===== TRẢ VỀ HTTP STATUS CODE TƯƠNG ỨNG =====
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+
+            return StatusCode(result.StatusCode, result);
+        }
+
+        /// <summary>
+        /// 🔥 [SIGNALR-TEST] Get vocabulary by ID
+        /// </summary>
+        [HttpGet("signalr-test/{id}")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(VocabularySearchResultDto), 200)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> SignalRTestGetById(int id)
+        {
+            // TODO: Implement GetVocabularyByIdQuery nếu cần
+            return Ok(new { message = "Coming soon...", id });
+        }
+
+        /// <summary>
+        /// 🔥 [SIGNALR-TEST] Test cache performance - So sánh tốc độ DB vs Cache
+        /// </summary>
+        /// <remarks>
+        /// **Mục đích:**
+        /// - Test xem cache có hoạt động không
+        /// - Đo performance improvement
+        /// - Verify cache hit/miss
+        /// 
+        /// **Cách test:**
+        /// 1. Gọi endpoint với searchTerm="은행"
+        /// 2. Xem firstCallMs (query DB) vs secondCallMs (from cache)
+        /// 3. Cache nhanh hơn 10-30x là bình thường
+        /// </remarks>
+        [HttpGet("signalr-test/cache-performance")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(object), 200)]
+        public async Task<IActionResult> SignalRTestCachePerformance(
+            [FromQuery] string searchTerm = "은행")
+        {
+            var sw = Stopwatch.StartNew();
+
+            // First call (from DB)
+            var query1 = new SearchVocabularyQuery
+            {
+                SearchTerm = searchTerm,
+                PageNumber = 1,
+                PageSize = 20
+            };
+            await _mediator.Send(query1);
+            sw.Stop();
+            var firstCallMs = sw.ElapsedMilliseconds;
+
+            // Second call (from cache)
+            sw.Restart();
+            var query2 = new SearchVocabularyQuery
+            {
+                SearchTerm = searchTerm,
+                PageNumber = 1,
+                PageSize = 20
+            };
+            var result = await _mediator.Send(query2);
+            sw.Stop();
+            var secondCallMs = sw.ElapsedMilliseconds;
+
+            return Ok(new
+            {
+                testType = "Cache Performance Test",
+                searchTerm,
+                firstCallMs,
+                secondCallMs,
+                speedImprovement = firstCallMs > 0
+                    ? $"{firstCallMs / (double)Math.Max(secondCallMs, 1):F2}x faster"
+                    : "N/A",
+                interpretation = secondCallMs < 5
+                    ? "✅ Cache is working perfectly!"
+                    : "⚠️ Cache might not be working",
+                result
+            });
+        }
+
+        /// <summary>
+        /// 🔥 [SIGNALR-TEST] Clear vocabulary search cache
+        /// </summary>
+        /// <remarks>
+        /// **Chức năng:**
+        /// - Xóa toàn bộ cache của vocabulary search
+        /// - Dùng khi cần test cache từ đầu
+        /// 
+        /// **Lưu ý:** 
+        /// - Feature này chưa implement
+        /// - Cần inject IMemoryCache và xóa cache keys
+        /// </remarks>
+        [HttpDelete("signalr-test/cache")]
+        [AllowAnonymous]
+        [ProducesResponseType(200)]
+        public IActionResult SignalRTestClearCache()
+        {
+            // TODO: Implement cache clearing
+            // Cần inject IMemoryCache vào constructor
+            // Và xóa các keys có prefix "vocab_search:"
+            return Ok(new
+            {
+                message = "⚠️ Cache clearing not implemented yet",
+                howToImplement = "Inject IMemoryCache and remove keys with prefix 'vocab_search:'"
+            });
+        }
+
+        // ==========================================
+        // 🧪 LEGACY TEST ENDPOINT (Có thể xóa sau)
+        // ==========================================
+
+        /// <summary>
+        /// 🧪 [DEPRECATED] Test cache - Dùng signalr-test/cache-performance thay thế
+        /// </summary>
+        [HttpGet("test-cache")]
+        [AllowAnonymous]
+        [ApiExplorerSettings(IgnoreApi = true)] // Ẩn khỏi Swagger UI
+        public async Task<IActionResult> TestCache()
+        {
+            var sw = Stopwatch.StartNew();
+
+            // Lần 1: Query DB
+            var result1 = await _mediator.Send(new SearchVocabularyQuery
+            {
+                SearchTerm = "운",
+                PageNumber = 1,
+                PageSize = 20
+            });
+            sw.Stop();
+            var time1 = sw.ElapsedMilliseconds;
+
+            sw.Restart();
+
+            // Lần 2: Get from cache
+            var result2 = await _mediator.Send(new SearchVocabularyQuery
+            {
+                SearchTerm = "은행",
+                PageNumber = 1,
+                PageSize = 20
+            });
+            sw.Stop();
+            var time2 = sw.ElapsedMilliseconds;
+
+            return Ok(new
+            {
+                deprecationNotice = "⚠️ Use /signalr-test/cache-performance instead",
+                FirstQuery = $"{time1}ms (DB)",
+                SecondQuery = $"{time2}ms (Cache)",
+                Improvement = $"{(time1 - time2)}ms faster"
+            });
         }
     }
 }
