@@ -5,7 +5,7 @@ using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Domain.Entities;
 
-namespace Tokki.Application.UseCases.TemplateParts.Commands.CreateTemplatePart
+namespace Tokki.Application.UseCases.TemplateParts.CreateTemplatePart
 {
     public class CreateTemplatePartCommandHandler : IRequestHandler<CreateTemplatePartCommand, OperationResult<string>>
     {
