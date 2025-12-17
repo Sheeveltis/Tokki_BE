@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tokki.Application.UseCases.VipPackages.Commands.CreateVipPackage;
 using Tokki.Application.UseCases.VipPackages.Commands.DeleteVipPackage;
@@ -9,6 +10,7 @@ namespace Tokki.WebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class VipPackageController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -19,6 +21,7 @@ namespace Tokki.WebAPI.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")] 
         public async Task<IActionResult> Create([FromBody] CreateVipPackageCommand command)
         {
             var result = await _mediator.Send(command);
@@ -26,6 +29,7 @@ namespace Tokki.WebAPI.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous] 
         public async Task<IActionResult> GetAllForUser()
         {
             var query = new GetAllVipPackagesQuery { IsAdmin = false };
@@ -34,6 +38,7 @@ namespace Tokki.WebAPI.Controllers
         }
 
         [HttpGet("admin")]
+        [Authorize(Roles = "Admin")] 
         public async Task<IActionResult> GetAllForAdmin()
         {
             var query = new GetAllVipPackagesQuery { IsAdmin = true };
@@ -42,15 +47,16 @@ namespace Tokki.WebAPI.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update(string id, [FromBody] UpdateVipPackageCommand command)
         {
             command.Id = id;
-
             var result = await _mediator.Send(command);
             return StatusCode(result.StatusCode, result);
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")] 
         public async Task<IActionResult> Delete(string id)
         {
             var command = new DeleteVipPackageCommand { Id = id };

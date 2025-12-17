@@ -34,6 +34,7 @@ namespace Tokki.Infrastructure.Data
         public DbSet<Vocabulary> Vocabularies { get; set; }
         public DbSet<VocabularyTopic> VocabularyTopics { get; set; }
         public DbSet<UserFavoriteVocabulary> UserFavoriteVocabularies { get; set; }
+        public DbSet<VocabularyExample> VocabularyExamples { get; set; }
 
         public DbSet<Comment> Comments { get; set; }
 
@@ -50,6 +51,8 @@ namespace Tokki.Infrastructure.Data
         //Live chat
         public DbSet<ChatRoom> ChatRooms { get; set; }
         public DbSet<ChatRoomMember> ChatRoomMembers { get; set; }
+        
+        public DbSet<UserVocabProgress> UserVocabProgresses { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

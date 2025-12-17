@@ -7,7 +7,9 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.DeleteVocabulary
         public DeleteVocabularyCommandValidator()
         {
             RuleFor(x => x.VocabularyId)
-                .NotEmpty().WithMessage("VocabularyId không được để trống.");
+                .NotEmpty()
+                .WithName("VocabularyId ");
+
         }
     }
 }

@@ -2,7 +2,10 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Tokki.Application.UseCases.Accounts.Commands.AdminUpdateUser;
 using Tokki.Application.UseCases.Accounts.Commands.CreateStaffAccount;
+using Tokki.Application.UseCases.Accounts.Commands.FacebookLogin;
+using Tokki.Application.UseCases.Accounts.Commands.GoogleLogin;
 using Tokki.Application.UseCases.Accounts.Commands.Login;
 using Tokki.Application.UseCases.Accounts.Commands.ResetPassword;
 using Tokki.Application.UseCases.Accounts.Commands.UpdateProfile;
@@ -64,6 +67,26 @@ namespace Tokki.WebAPI.Controllers
 
             return StatusCode(result.StatusCode, result);
         }
+        [HttpPost("google-login")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GoogleLogin(
+       [FromBody] GoogleLoginCommand command)
+        {
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+        [HttpPost("facebook-login")]
+        public async Task<IActionResult> FacebookLogin([FromBody] FacebookLoginCommand command)
+        {
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+        [HttpPost("facebook-complete-registration")]
+        public async Task<IActionResult> FacebookCompleteRegistration([FromBody] FacebookCompleteRegistrationCommand command)
+        {
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginCommand command)
         {
@@ -113,9 +136,9 @@ namespace Tokki.WebAPI.Controllers
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
         }
-        [HttpPost("staff")]
-        [Authorize(Roles = "Admin")] // Chỉ Admin mới được gọi
-        public async Task<IActionResult> CreateStaffAccount([FromBody] CreateStaffAccountCommand command)
+        [HttpPost("create-account")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> CreateAccount([FromBody] CreateAccountByAdminCommand command)
         {
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
@@ -136,6 +159,22 @@ namespace Tokki.WebAPI.Controllers
             var result = await _sender.Send(query);
 
             return StatusCode(result.StatusCode, result);
+        }
+        [HttpPut("update-user")]
+        public async Task<IActionResult> AdminUpdate([FromBody] AdminUpdateUserCommand command)
+        {
+            // Lấy AdminId từ Token (Claim NameIdentifier)
+            var adminId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                         ?? User.FindFirst("sub")?.Value;
+            if (string.IsNullOrEmpty(adminId))
+            {
+                return Unauthorized("Không tìm thấy định danh Admin.");
+            }
+
+            command.AdminId = adminId;
+
+            var result = await _sender.Send(command);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
         [HttpPut("profile")]
         [Authorize] 

@@ -49,7 +49,7 @@ namespace Tokki.Application.UseCases.Topics.Queries.GetById
                     Text = vt.Vocabulary.Text,
                     Pronunciation = vt.Vocabulary.Pronunciation,
                     Definition = vt.Vocabulary.Definition,
-                    ExampleSentence = vt.Vocabulary.ExampleSentence,
+                   // ExampleSentence = vt.Vocabulary.ExampleSentence,
                     ImgURL = vt.Vocabulary.ImgURL,
                     Status = vt.Vocabulary.Status
                 })

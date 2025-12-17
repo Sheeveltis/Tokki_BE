@@ -11,12 +11,14 @@
 		<PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
 		<PackageReference Include="FluentValidation" Version="12.1.0" />
 		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.0" />
+		<PackageReference Include="Google.Apis.Auth" Version="1.73.0" />
 		<PackageReference Include="MediatR" Version="13.1.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
 		<PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.0" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.22" />
 		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Http" Version="10.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
 		<PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.15.0" />
 		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
@@ -29,6 +31,7 @@
 	<ItemGroup>
 	  <Folder Include="UseCases\Otps\DTOs\" />
 	  <Folder Include="UseCases\Otps\Queries\" />
+	  <Folder Include="UseCases\VocabSpacedRepetition\Queries\" />
 	  <Folder Include="UseCases\Vocabulary\Commands\" />
 	  <Folder Include="UseCases\Vocabulary\DTOs\" />
 	  <Folder Include="UseCases\Vocabulary\Queries\SearchVocabulary\" />

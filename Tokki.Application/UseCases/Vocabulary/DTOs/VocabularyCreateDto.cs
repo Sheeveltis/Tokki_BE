@@ -1,9 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Tokki.Application.UseCases.Vocabulary.DTOs
 {
     /// <summary>
@@ -28,18 +22,13 @@ namespace Tokki.Application.UseCases.Vocabulary.DTOs
         public string Definition { get; set; } = string.Empty;
 
         /// <summary>
-        /// Câu ví dụ sử dụng từ này
+        /// Danh sách câu ví dụ sử dụng từ này
         /// </summary>
-        public string? ExampleSentence { get; set; }
+        public List<VocabularyExampleDto>? Examples { get; set; }
 
         /// <summary>
         /// URL hình ảnh minh họa
         /// </summary>
         public string? ImgURL { get; set; }
-
-        /// <summary>
-        /// Danh sách TopicId mà vocabulary này thuộc về
-        /// </summary>
-        public List<string> TopicIds { get; set; } = new();
     }
 }

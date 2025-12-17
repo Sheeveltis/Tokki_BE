@@ -147,11 +147,58 @@ namespace Tokki.Infrastructure.Repositories
 
             return (items, totalCount);
         }
+        public async Task<List<Vocabulary>> GetByIdsAsync(List<string> vocabularyIds)
+        {
+            return await _context.Vocabularies
+                .Where(v => vocabularyIds.Contains(v.VocabularyId))
+                .ToListAsync();
+        }
+        // Tokki.Infrastructure.Repositories.VocabularyRepository.cs
+        public async Task<(IEnumerable<Vocabulary> Items, int TotalCount)> GetPagedVocabulariesForManagerAsync(
+            int pageNumber,
+            int pageSize,
+            string? vocabId,
+            VocabularyStatus? status,
+            string? searchText)
+        {
+            var query = _context.Vocabularies.AsNoTracking().AsQueryable();
+
+            // Lọc theo VocabId (thay cho TopicId)
+            if (!string.IsNullOrWhiteSpace(vocabId))
+            {
+                query = query.Where(v => v.VocabularyId == vocabId);
+            }
+
+            if (status.HasValue)
+            {
+                query = query.Where(v => v.Status == status.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                var text = searchText.ToLower().Trim();
+                query = query.Where(v =>
+                    v.Text.ToLower().Contains(text) ||
+                    v.Definition.ToLower().Contains(text) ||
+                    (v.Pronunciation != null && v.Pronunciation.ToLower().Contains(text))
+                );
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderByDescending(v => v.CreateDate)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
         public async Task<(List<VocabularySearchResultDto> Items, int TotalCount)>
-            SearchVocabulariesAsync(
-                string searchTerm,
-                int pageNumber,
-                int pageSize)
+       SearchVocabulariesAsync(
+           string searchTerm,
+           int pageNumber,
+           int pageSize)
         {
             var query = _context.Vocabularies
                 .AsNoTracking()
@@ -159,18 +206,22 @@ namespace Tokki.Infrastructure.Repositories
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                var term = searchTerm.Trim().ToLower(); // ← FIX 1: Thêm .ToLower()
+                var term = searchTerm.Trim().ToLower();
 
+                // ✅ TÌM KIẾM HAI CHIỀU: Text ↔ Definition
                 query = query.Where(v =>
-                    v.Text.ToLower().StartsWith(term) ||        // ← FIX 2: Case-insensitive
-                    v.Definition.ToLower().Contains(term)       // ← FIX 3: Contains thay vì StartsWith cho Definition
+                    v.Text.ToLower().Contains(term) ||           // Tìm trong Text (VD: 안녕)
+                    v.Definition.ToLower().Contains(term) ||     // Tìm trong Definition (VD: Xin chào)
+                    (v.Pronunciation != null &&
+                     v.Pronunciation.ToLower().Contains(term))   // Tìm trong Pronunciation (VD: annyeong)
                 );
             }
 
             var totalCount = await query.CountAsync();
 
             var items = await query
-                .OrderBy(v => v.Text)
+                .OrderBy(v => v.Text.ToLower().StartsWith(searchTerm.ToLower()) ? 0 : 1) // Ưu tiên kết quả bắt đầu bằng search term
+                .ThenBy(v => v.Text)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .Select(v => new VocabularySearchResultDto

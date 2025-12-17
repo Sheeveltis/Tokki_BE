@@ -13,7 +13,7 @@ namespace Tokki.Application.UseCases.Vocabulary.DTOs
         public string Text { get; set; } = string.Empty;
         public string? Pronunciation { get; set; }
         public string Definition { get; set; } = string.Empty;
-        public string? ExampleSentence { get; set; }
+      //  public string? ExampleSentence { get; set; }
         public string? ImgURL { get; set; }
         
         /// <summary>

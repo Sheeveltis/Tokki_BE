@@ -6,7 +6,6 @@ namespace Tokki.Domain.Entities
     // Bảng trung gian: phân loại vocabulary vào các topic
     public class VocabularyTopic
     {
-        [Key]
         public string VocabularyId { get; set; } = string.Empty;
         public string TopicId { get; set; } = string.Empty;
 

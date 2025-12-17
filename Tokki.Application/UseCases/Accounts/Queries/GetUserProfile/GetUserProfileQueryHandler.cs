@@ -39,7 +39,7 @@ namespace Tokki.Application.UseCases.Accounts.Queries.GetUserProfile
                 FullName = user.FullName,
                 PhoneNumber = user.PhoneNumber,
                 AvatarUrl = user.AvatarUrl,
-                DateOfBirth = DateOnly.FromDateTime(user.DateOfBirth),
+                DateOfBirth = DateOnly.FromDateTime( user.DateOfBirth ?? new DateTime(2000, 1, 1)), 
                 Role = user.Role,
                 Status = user.Status,
                 TotalXP = user.TotalXP

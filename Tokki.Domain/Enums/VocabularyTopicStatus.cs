@@ -10,6 +10,6 @@ namespace Tokki.Domain.Enums
     {
         Active = 1,
         Inactive = 0,
-        Deleted = 3
+        Deleted = 2
     }
 }

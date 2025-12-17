@@ -35,7 +35,7 @@ namespace Tokki.Application.UseCases.Accounts.Queries.GetAccountDetailById
                     UserId = account.UserId,
                     Email = account.Email,
                     PhoneNumber = account.PhoneNumber,
-                    DateOfBirth = account.DateOfBirth,
+                    DateOfBirth = account.DateOfBirth ?? new DateTime(2000, 1, 1),
                     PasswordHash = account.PasswordHash,
                     FullName = account.FullName,
                     AvatarUrl = account.AvatarUrl,

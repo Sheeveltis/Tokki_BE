@@ -7,9 +7,10 @@ using Tokki.Application.UseCases.Topics.Commands.CreateTopic;
 using Tokki.Application.UseCases.Topics.Commands.UpdateTopic;
 using Tokki.Application.UseCases.Topics.Commands.DeleteTopic;
 using Tokki.Application.UseCases.Topics.Queries.GetById;
-using Tokki.Application.UseCases.Topics.DTOs;
 using Tokki.Application.UseCases.Topics.Queries;
 using Tokki.Domain.Enums;
+using Tokki.Application.UseCases.Topics.Commands.AddVocabulariesToTopic;
+using Tokki.Application.UseCases.Topics.Commands.RemoveVocabulariesFromTopic;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -26,7 +27,7 @@ namespace Tokki.WebAPI.Controllers
         }
 
 
-        [HttpGet]
+        [HttpGet("admin/get-all")]
         public async Task<IActionResult> GetAllTopics(
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10,
@@ -39,7 +40,6 @@ namespace Tokki.WebAPI.Controllers
                 PageNumber = pageNumber,
                 PageSize = pageSize,
                 SearchTerm = searchTerm,
-                Status = status,
                 Level = level
             };
 
@@ -48,8 +48,29 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
+        [HttpGet("user/get-all")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAllTopicsForUser(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? searchTerm = null,
+            [FromQuery] TopicLevel? level = null)
+        {
+            var query = new GetAllTopicsForUserQuery
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                SearchTerm = searchTerm,
+                Level = level
+            };
+
+            var result = await _mediator.Send(query);
+
+            return StatusCode(result.StatusCode, result);
+        }
 
         [HttpGet("{topicId}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetTopicById(string topicId)
         {
             var query = new GetTopicDetailByIdQuery
@@ -62,7 +83,28 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
+        // Sửa lại URL template, bỏ {topicId} ra khỏi path
+        [HttpPost("vocabularies")]
+        [Authorize]
+        // Nhận toàn bộ Command từ Body. ASP.NET Core sẽ tự động gán dữ liệu.
+        public async Task<IActionResult> AddVocabulariesToTopic([FromBody] AddVocabulariesToTopicCommand command)
+        {
+            
+            // Kiểm tra Command có null không (tùy chọn)
+            if (command == null)
+            {
+                return BadRequest("Dữ liệu không được để trống.");
+            }
 
+            var result = await _mediator.Send(command);
+
+            if (!result.IsSuccess)
+            {
+                return StatusCode(result.StatusCode, result);
+            }
+
+            return Ok(result);
+        }
         [HttpPost]
         public async Task<IActionResult> CreateTopic([FromBody] CreateTopicCommand request)
         {
@@ -82,7 +124,7 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
-        [HttpPut("Update")]
+        [HttpPut("update")]
         public async Task<IActionResult> UpdateTopic([FromBody] UpdateTopicCommand command)
         {
             // Lấy UserId từ JWT token
@@ -112,6 +154,26 @@ namespace Tokki.WebAPI.Controllers
             var result = await _mediator.Send(command);
 
             return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpDelete("admin/vocabularies")]
+        [Authorize]
+        public async Task<IActionResult> RemoveVocabulariesFromTopic(
+    [FromBody] RemoveVocabulariesFromTopicCommand command)
+        {
+            if (command == null)
+            {
+                return BadRequest("Dữ liệu không được để trống.");
+            }
+
+            var result = await _mediator.Send(command);
+
+            if (!result.IsSuccess)
+            {
+                return StatusCode(result.StatusCode, result);
+            }
+
+            return Ok(result);
         }
     }
 
