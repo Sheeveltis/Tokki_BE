@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Tokki.Domain.Enums;
 
 namespace Tokki.Domain.Entities
@@ -20,25 +15,31 @@ namespace Tokki.Domain.Entities
         public string ExamTemplateId { get; set; } = string.Empty;
 
         [Required]
-        public QuestionSkill Skill { get; set; }
+        public QuestionSkill Skill { get; set; } 
 
-        [Required]
         public int QuestionFrom { get; set; }
-
-        [Required]
         public int QuestionTo { get; set; }
 
-        [MaxLength(255)]
-        public string? PartTitle { get; set; }
+        [Required]
+        [MaxLength(150)]
+        public string PartTitle { get; set; } = string.Empty;
 
         public string? Instruction { get; set; }
 
-        public ExampleType ExampleType { get; set; } = ExampleType.None;
+        [Required]
+        public DifficultyLevel DifficultyLevel { get; set; } 
 
+        [Required]
+        [MaxLength(10)]
+        public string QuestionTypeId { get; set; } = string.Empty;
+
+        public ExampleType ExampleType { get; set; } = ExampleType.None;
         public string? ExampleData { get; set; }
 
-        // Navigation
         [ForeignKey(nameof(ExamTemplateId))]
         public virtual ExamTemplate ExamTemplate { get; set; } = null!;
+
+        [ForeignKey(nameof(QuestionTypeId))]
+        public virtual QuestionType QuestionType { get; set; } = null!;
     }
 }
