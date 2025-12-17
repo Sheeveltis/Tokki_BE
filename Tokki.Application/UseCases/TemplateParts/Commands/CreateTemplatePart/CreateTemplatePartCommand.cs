@@ -2,7 +2,7 @@
 using Tokki.Application.Common.Models;
 using Tokki.Domain.Enums;
 
-namespace Tokki.Application.UseCases.TemplateParts.CreateTemplatePart
+namespace Tokki.Application.UseCases.TemplateParts.Commands.CreateTemplatePart
 {
     public class CreateTemplatePartCommand : IRequest<OperationResult<string>>
     {
