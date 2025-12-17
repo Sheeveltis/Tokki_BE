@@ -51,6 +51,8 @@ namespace Tokki.Infrastructure.Data
         //Live chat
         public DbSet<ChatRoom> ChatRooms { get; set; }
         public DbSet<ChatRoomMember> ChatRoomMembers { get; set; }
+        
+        public DbSet<UserVocabProgress> UserVocabProgresses { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
