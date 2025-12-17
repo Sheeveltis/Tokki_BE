@@ -173,7 +173,7 @@ namespace Tokki.WebAPI.Controllers
 
             command.AdminId = adminId;
 
-            var result = await _mediator.Send(command);
+            var result = await _sender.Send(command);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
         [HttpPut("profile")]
