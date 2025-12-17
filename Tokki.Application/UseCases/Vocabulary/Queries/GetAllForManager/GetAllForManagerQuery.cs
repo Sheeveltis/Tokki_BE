@@ -5,7 +5,7 @@ using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Vocabulary.Queries.GetAllForManager
 {
-    public class GetAllForManagerQuery : IRequest<OperationResult<PagedResult<VocabularyDto>>>
+    public class GetAllForManagerQuery : IRequest<OperationResult<PagedResult<VocabularyForGetAll>>>
     {
         public int PageNumber { get; set; } = 1;
         public int PageSize { get; set; } = 20;

@@ -10,7 +10,7 @@ using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Vocabulary.Queries.GetAllForManager
 {
-    public class GetAllForManagerQueryHandler : IRequestHandler<GetAllForManagerQuery, OperationResult<PagedResult<VocabularyDto>>>
+    public class GetAllForManagerQueryHandler : IRequestHandler<GetAllForManagerQuery, OperationResult<PagedResult<VocabularyForGetAll>>>
     {
         private readonly IVocabularyRepository _vocabularyRepository;
         private readonly ITopicRepository _topicRepository;
@@ -26,7 +26,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Queries.GetAllForManager
             _vocabularyTopicRepository = vocabularyTopicRepository;
         }
 
-        public async Task<OperationResult<PagedResult<VocabularyDto>>> Handle(
+        public async Task<OperationResult<PagedResult<VocabularyForGetAll>>> Handle(
             GetAllForManagerQuery request,
             CancellationToken cancellationToken)
         {
@@ -41,7 +41,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Queries.GetAllForManager
                 );
 
             // --- PHẦN MAP DTO GIỮ NGUYÊN ---
-            var vocabularyDtos = new List<VocabularyDto>();
+            var vocabularyDtos = new List<VocabularyForGetAll>();
 
             foreach (var vocab in vocabularies)
             {
@@ -63,32 +63,25 @@ namespace Tokki.Application.UseCases.Vocabulary.Queries.GetAllForManager
                     }
                 }
 
-                vocabularyDtos.Add(new VocabularyDto
+                vocabularyDtos.Add(new VocabularyForGetAll
                 {
                     VocabularyId = vocab.VocabularyId,
                     Text = vocab.Text,
                     Pronunciation = vocab.Pronunciation,
                     Definition = vocab.Definition,
-                    // ExampleSentence = vocab.ExampleSentence,
-                    ImgURL = vocab.ImgURL,
                     AudioURL = vocab.AudioURL,
-                    Topics = topics,
-                    CreateDate = vocab.CreateDate,
-                    CreateBy = vocab.CreateBy,
-                    UpdateDate = vocab.UpdateDate,
-                    UpdateBy = vocab.UpdateBy,
                     Status = vocab.Status
                 });
             }
 
-            var pagedResult = PagedResult<VocabularyDto>.Create(
+            var pagedResult = PagedResult<VocabularyForGetAll>.Create(
                 vocabularyDtos,
                 totalCount,
                 request.PageNumber,
                 request.PageSize
             );
 
-            return OperationResult<PagedResult<VocabularyDto>>.Success(
+            return OperationResult<PagedResult<VocabularyForGetAll>>.Success(
                 pagedResult,
                 200,
                 "Lấy danh sách từ vựng thành công"
