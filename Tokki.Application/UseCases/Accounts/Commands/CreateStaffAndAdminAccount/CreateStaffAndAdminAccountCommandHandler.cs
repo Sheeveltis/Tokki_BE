@@ -6,25 +6,24 @@ using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 using BCrypt.Net;
 using Microsoft.Extensions.Logging;
-using FluentValidation;
 using Tokki.Application.UseCases.Accounts.Commands.CreateStaffAccount;
 
 namespace Tokki.Application.UseCases.Accounts.Commands.CreateStaff
 {
-    public class CreateStaffAccountCommandHandler : IRequestHandler<CreateStaffAccountCommand, OperationResult<string>>
+    public class CreateStaffAndAdminAccountCommandHandler : IRequestHandler<CreateStaffAndAdminAccountCommand, OperationResult<string>>
     {
         private readonly IAccountRepository _accountRepository;
         private readonly ISystemConfigRepository _systemConfigRepository;
         private readonly IIdGeneratorService _idGeneratorService;
         private readonly IEmailService _emailService;
-        private readonly ILogger<CreateStaffAccountCommandHandler> _logger; // Thêm logger để ghi lại lỗi gửi email
+        private readonly ILogger<CreateStaffAndAdminAccountCommandHandler> _logger;
 
-        public CreateStaffAccountCommandHandler(
+        public CreateStaffAndAdminAccountCommandHandler(
             IAccountRepository accountRepository,
             ISystemConfigRepository systemConfigRepository,
             IIdGeneratorService idGeneratorService,
             IEmailService emailService,
-            ILogger<CreateStaffAccountCommandHandler> logger)
+            ILogger<CreateStaffAndAdminAccountCommandHandler> logger)
         {
             _accountRepository = accountRepository;
             _systemConfigRepository = systemConfigRepository;
@@ -33,8 +32,20 @@ namespace Tokki.Application.UseCases.Accounts.Commands.CreateStaff
             _logger = logger;
         }
 
-        public async Task<OperationResult<string>> Handle(CreateStaffAccountCommand request, CancellationToken cancellationToken)
+        public async Task<OperationResult<string>> Handle(CreateStaffAndAdminAccountCommand request, CancellationToken cancellationToken)
         {
+            // 0. Validate Role (chỉ cho phép tạo Staff hoặc Admin)
+            if (request.Role != AccountRole.Staff && request.Role != AccountRole.Admin)
+            {
+                return OperationResult<string>.Failure(
+                    new List<Error> {
+                        new Error("INVALID_ROLE", "Chỉ được phép tạo tài khoản Staff hoặc Admin.")
+                    },
+                    400,
+                    "Vai trò không hợp lệ."
+                );
+            }
+
             // 1. Kiểm tra Email tồn tại
             if (await _accountRepository.IsEmailExistsAsync(request.Email))
             {
@@ -55,9 +66,18 @@ namespace Tokki.Application.UseCases.Accounts.Commands.CreateStaff
                 );
             }
 
-            // 3. Lấy Password mặc định từ SystemConfig
-            const string configKey = "DEFALUT_PASSWORD_FOR_STAFF";
+            // 3. Lấy Password mặc định từ SystemConfig (có thể khác nhau cho Admin và Staff)
+            string configKey = request.Role == AccountRole.Admin
+                ? "DEFAULT_PASSWORD_FOR_ADMIN"
+                : "DEFALUT_PASSWORD_FOR_STAFF";
+
             string? defaultPassword = await _systemConfigRepository.GetValueByKeyAsync(configKey);
+
+            // Fallback: nếu không có config riêng cho Admin, dùng config của Staff
+            if (string.IsNullOrEmpty(defaultPassword) && request.Role == AccountRole.Admin)
+            {
+                defaultPassword = await _systemConfigRepository.GetValueByKeyAsync("DEFALUT_PASSWORD_FOR_STAFF");
+            }
 
             if (string.IsNullOrEmpty(defaultPassword))
             {
@@ -65,7 +85,7 @@ namespace Tokki.Application.UseCases.Accounts.Commands.CreateStaff
                 return OperationResult<string>.Failure(
                     new List<Error> { AppErrors.ServerError },
                     500,
-                    "Cấu hình mật khẩu mặc định cho nhân viên chưa được thiết lập."
+                    $"Cấu hình mật khẩu mặc định cho {request.Role} chưa được thiết lập."
                 );
             }
 
@@ -75,23 +95,22 @@ namespace Tokki.Application.UseCases.Accounts.Commands.CreateStaff
                 string passwordHash = BCrypt.Net.BCrypt.HashPassword(defaultPassword);
                 string newId = _idGeneratorService.GenerateCustom(10);
 
-                var staffAccount = new Account
+                var account = new Account
                 {
                     UserId = newId,
                     Email = request.Email,
                     PasswordHash = passwordHash,
                     FullName = request.FullName,
                     PhoneNumber = request.PhoneNumber,
-                    // Chuyển DateOnly sang DateTime (chỉ lấy ngày)
                     DateOfBirth = request.DateOfBirth.ToDateTime(TimeOnly.MinValue),
                     CreatedAt = DateTime.UtcNow.AddHours(7),
                     Status = AccountStatus.Active,
-                    Role = AccountRole.Staff, // Đặt vai trò là Staff
+                    Role = request.Role, // Sử dụng Role từ request
                     AvatarUrl = null
                 };
 
                 // 5. Lưu vào Database
-                await _accountRepository.AddAsync(staffAccount);
+                await _accountRepository.AddAsync(account);
                 await _accountRepository.SaveChangesAsync(cancellationToken);
 
                 // 6. Gửi Email thông báo tài khoản
@@ -101,25 +120,25 @@ namespace Tokki.Application.UseCases.Accounts.Commands.CreateStaff
                         request.Email,
                         request.FullName,
                         request.Email,
-                        defaultPassword // Gửi mật khẩu thô để nhân viên đăng nhập
+                        defaultPassword
                     );
                 }
                 catch (Exception ex)
                 {
-                    // Ghi log lỗi gửi email, nhưng vẫn trả về thành công việc tạo tài khoản
-                    _logger.LogError(ex, $"Tạo tài khoản Staff thành công ({staffAccount.UserId}) nhưng gửi email thất bại.");
+                    _logger.LogError(ex, $"Tạo tài khoản {request.Role} thành công ({account.UserId}) nhưng gửi email thất bại.");
                 }
 
                 // 7. Trả về kết quả thành công
+                string roleText = request.Role == AccountRole.Admin ? "Admin" : "Staff";
                 return OperationResult<string>.Success(
-                    staffAccount.UserId,
+                    account.UserId,
                     201,
-                    "Tạo tài khoản và gửi email thông tin đăng nhập thành công."
+                    $"Tạo tài khoản {roleText} và gửi email thông tin đăng nhập thành công."
                 );
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Lỗi xảy ra trong quá trình tạo tài khoản Staff.");
+                _logger.LogError(ex, $"Lỗi xảy ra trong quá trình tạo tài khoản {request.Role}.");
                 return OperationResult<string>.Failure(
                     new List<Error> { AppErrors.ServerError },
                     500,

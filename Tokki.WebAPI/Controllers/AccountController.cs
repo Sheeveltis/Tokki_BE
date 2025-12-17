@@ -135,9 +135,9 @@ namespace Tokki.WebAPI.Controllers
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
         }
-        [HttpPost("staff")]
-        [Authorize(Roles = "Admin")] // Chỉ Admin mới được gọi
-        public async Task<IActionResult> CreateStaffAccount([FromBody] CreateStaffAccountCommand command)
+        [HttpPost("create-account")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> CreateAccount([FromBody] CreateStaffAndAdminAccountCommand command)
         {
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);

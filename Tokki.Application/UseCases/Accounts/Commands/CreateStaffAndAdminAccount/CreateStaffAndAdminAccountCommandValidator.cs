@@ -1,12 +1,13 @@
 ﻿using System;
 using FluentValidation;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Accounts.Commands.CreateStaffAccount
 {
-    public class CreateStaffAccountCommandValidator
-        : AbstractValidator<CreateStaffAccountCommand>
+    public class CreateStaffAndAdminAccountCommandValidator
+        : AbstractValidator<CreateStaffAndAdminAccountCommand>
     {
-        public CreateStaffAccountCommandValidator()
+        public CreateStaffAndAdminAccountCommandValidator()
         {
             RuleFor(x => x.Email)
                 .NotEmpty()
@@ -24,6 +25,14 @@ namespace Tokki.Application.UseCases.Accounts.Commands.CreateStaffAccount
 
             RuleFor(x => x.DateOfBirth)
                 .LessThan(DateOnly.FromDateTime(DateTime.Now));
+            RuleFor(x => x.Role)
+              .NotEmpty().WithMessage("Vai trò là bắt buộc.")
+              .Must(BeValidRole).WithMessage("Vai trò chỉ có thể là Staff hoặc Admin.");
+        
+        }
+        private bool BeValidRole(AccountRole role)
+        {
+            return role == AccountRole.Staff || role == AccountRole.Admin;
         }
     }
 }
