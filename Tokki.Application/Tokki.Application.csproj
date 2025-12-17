@@ -30,7 +30,6 @@
 	<ItemGroup>
 	  <Folder Include="UseCases\Otps\DTOs\" />
 	  <Folder Include="UseCases\Otps\Queries\" />
-	  <Folder Include="UseCases\Vocabulary\Commands\" />
 	</ItemGroup>
 
 </Project>

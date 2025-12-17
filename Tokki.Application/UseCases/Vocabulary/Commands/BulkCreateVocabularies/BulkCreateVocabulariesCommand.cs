@@ -1,5 +1,4 @@
 using MediatR;
-using System.Collections.Generic;
 using Tokki.Application.Common.Models;
 using Tokki.Application.UseCases.Vocabulary.DTOs;
 

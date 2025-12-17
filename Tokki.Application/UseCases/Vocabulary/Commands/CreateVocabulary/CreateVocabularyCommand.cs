@@ -1,10 +1,10 @@
-namespace Tokki.Application.UseCases.Vocabulary.DTOs
+﻿using MediatR;
+using Tokki.Application.Common.Models;
+using Tokki.Application.UseCases.Vocabulary.DTOs;
+
+namespace Tokki.Application.UseCases.Vocabulary.Commands.CreateVocabulary
 {
-    /// <summary>
-    /// DTO để tạo vocabulary mới
-    /// Bao gồm từ, phát âm, nghĩa, và các thông tin liên quan
-    /// </summary>
-    public class VocabularyCreateDto
+    public class CreateVocabularyCommand : IRequest<OperationResult<VocabularyResponse>>
     {
         /// <summary>
         /// Từ gốc (ví dụ: "은행")
