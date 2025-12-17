@@ -10,20 +10,20 @@ using Tokki.Application.UseCases.Accounts.Commands.CreateStaffAccount;
 
 namespace Tokki.Application.UseCases.Accounts.Commands.CreateStaff
 {
-    public class CreateStaffAndAdminAccountCommandHandler : IRequestHandler<CreateStaffAndAdminAccountCommand, OperationResult<string>>
+    public class CreateAccountByAdminCommandHandler : IRequestHandler<CreateAccountByAdminCommand, OperationResult<string>>
     {
         private readonly IAccountRepository _accountRepository;
         private readonly ISystemConfigRepository _systemConfigRepository;
         private readonly IIdGeneratorService _idGeneratorService;
         private readonly IEmailService _emailService;
-        private readonly ILogger<CreateStaffAndAdminAccountCommandHandler> _logger;
+        private readonly ILogger<CreateAccountByAdminCommandHandler> _logger;
 
-        public CreateStaffAndAdminAccountCommandHandler(
+        public CreateAccountByAdminCommandHandler(
             IAccountRepository accountRepository,
             ISystemConfigRepository systemConfigRepository,
             IIdGeneratorService idGeneratorService,
             IEmailService emailService,
-            ILogger<CreateStaffAndAdminAccountCommandHandler> logger)
+            ILogger<CreateAccountByAdminCommandHandler> logger)
         {
             _accountRepository = accountRepository;
             _systemConfigRepository = systemConfigRepository;
@@ -32,14 +32,16 @@ namespace Tokki.Application.UseCases.Accounts.Commands.CreateStaff
             _logger = logger;
         }
 
-        public async Task<OperationResult<string>> Handle(CreateStaffAndAdminAccountCommand request, CancellationToken cancellationToken)
+        public async Task<OperationResult<string>> Handle(CreateAccountByAdminCommand request, CancellationToken cancellationToken)
         {
-            // 0. Validate Role (chỉ cho phép tạo Staff hoặc Admin)
-            if (request.Role != AccountRole.Staff && request.Role != AccountRole.Admin)
+            // 0. Validate Role (cho phép tạo Staff, Admin hoặc User)
+            if (request.Role != AccountRole.Staff &&
+                request.Role != AccountRole.Admin &&
+                request.Role != AccountRole.User)
             {
                 return OperationResult<string>.Failure(
                     new List<Error> {
-                        new Error("INVALID_ROLE", "Chỉ được phép tạo tài khoản Staff hoặc Admin.")
+                        new Error("INVALID_ROLE", "Chỉ được phép tạo tài khoản Staff, Admin hoặc User.")
                     },
                     400,
                     "Vai trò không hợp lệ."
@@ -66,17 +68,22 @@ namespace Tokki.Application.UseCases.Accounts.Commands.CreateStaff
                 );
             }
 
-            // 3. Lấy Password mặc định từ SystemConfig (có thể khác nhau cho Admin và Staff)
-            string configKey = request.Role == AccountRole.Admin
-                ? "DEFAULT_PASSWORD_FOR_ADMIN"
-                : "DEFALUT_PASSWORD_FOR_STAFF";
+            // 3. Lấy Password mặc định từ SystemConfig dựa theo Role
+            string configKey = request.Role switch
+            {
+                AccountRole.Admin => "DEFAULT_PASSWORD_FOR_ADMIN",
+                AccountRole.Staff => "DEFAULT_PASSWORD_FOR_STAFF",
+                AccountRole.User => "DEFAULT_PASSWORD_FOR_USER",
+                _ => "DEFAULT_PASSWORD_FOR_STAFF"
+            };
 
             string? defaultPassword = await _systemConfigRepository.GetValueByKeyAsync(configKey);
 
-            // Fallback: nếu không có config riêng cho Admin, dùng config của Staff
-            if (string.IsNullOrEmpty(defaultPassword) && request.Role == AccountRole.Admin)
+            // Fallback: nếu không tìm thấy config cho role cụ thể, thử dùng config chung
+            if (string.IsNullOrEmpty(defaultPassword))
             {
-                defaultPassword = await _systemConfigRepository.GetValueByKeyAsync("DEFALUT_PASSWORD_FOR_STAFF");
+                _logger.LogWarning($"Không tìm thấy cấu hình {configKey}, thử sử dụng DEFAULT_PASSWORD_FOR_STAFF.");
+                defaultPassword = await _systemConfigRepository.GetValueByKeyAsync("DEFAULT_PASSWORD_FOR_STAFF");
             }
 
             if (string.IsNullOrEmpty(defaultPassword))
@@ -105,7 +112,7 @@ namespace Tokki.Application.UseCases.Accounts.Commands.CreateStaff
                     DateOfBirth = request.DateOfBirth.ToDateTime(TimeOnly.MinValue),
                     CreatedAt = DateTime.UtcNow.AddHours(7),
                     Status = AccountStatus.Active,
-                    Role = request.Role, // Sử dụng Role từ request
+                    Role = request.Role,
                     AvatarUrl = null
                 };
 
@@ -129,7 +136,14 @@ namespace Tokki.Application.UseCases.Accounts.Commands.CreateStaff
                 }
 
                 // 7. Trả về kết quả thành công
-                string roleText = request.Role == AccountRole.Admin ? "Admin" : "Staff";
+                string roleText = request.Role switch
+                {
+                    AccountRole.Admin => "Admin",
+                    AccountRole.Staff => "Staff",
+                    AccountRole.User => "User",
+                    _ => request.Role.ToString()
+                };
+
                 return OperationResult<string>.Success(
                     account.UserId,
                     201,

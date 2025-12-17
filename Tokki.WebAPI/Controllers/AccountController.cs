@@ -138,7 +138,7 @@ namespace Tokki.WebAPI.Controllers
         }
         [HttpPost("create-account")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> CreateAccount([FromBody] CreateStaffAndAdminAccountCommand command)
+        public async Task<IActionResult> CreateAccount([FromBody] CreateAccountByAdminCommand command)
         {
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);

@@ -9,7 +9,7 @@ using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Accounts.Commands.CreateStaffAccount
 {
-    public class CreateStaffAndAdminAccountCommand : IRequest<OperationResult<string>>
+    public class CreateAccountByAdminCommand : IRequest<OperationResult<string>>
     {
         public string Email { get; set; } = string.Empty;
         public string FullName { get; set; } = string.Empty;
