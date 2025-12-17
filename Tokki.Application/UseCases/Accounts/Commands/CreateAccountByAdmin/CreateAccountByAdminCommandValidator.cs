@@ -34,7 +34,6 @@ namespace Tokki.Application.UseCases.Accounts.Commands.CreateStaffAccount
         private bool BeValidRole(AccountRole role)
         {
             return role == AccountRole.Staff ||
-                   role == AccountRole.Admin ||
                    role == AccountRole.User;
         }
     }

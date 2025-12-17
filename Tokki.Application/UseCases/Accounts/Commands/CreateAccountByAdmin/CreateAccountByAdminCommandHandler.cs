@@ -34,19 +34,7 @@ namespace Tokki.Application.UseCases.Accounts.Commands.CreateStaff
 
         public async Task<OperationResult<string>> Handle(CreateAccountByAdminCommand request, CancellationToken cancellationToken)
         {
-            // 0. Validate Role (cho phép tạo Staff, Admin hoặc User)
-            if (request.Role != AccountRole.Staff &&
-                request.Role != AccountRole.Admin &&
-                request.Role != AccountRole.User)
-            {
-                return OperationResult<string>.Failure(
-                    new List<Error> {
-                        new Error("INVALID_ROLE", "Chỉ được phép tạo tài khoản Staff, Admin hoặc User.")
-                    },
-                    400,
-                    "Vai trò không hợp lệ."
-                );
-            }
+   
 
             // 1. Kiểm tra Email tồn tại
             if (await _accountRepository.IsEmailExistsAsync(request.Email))
