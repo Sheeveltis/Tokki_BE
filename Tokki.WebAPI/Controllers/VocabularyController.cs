@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies;
+using Tokki.Application.UseCases.Vocabulary.Commands.CreateVocabulary;
 using Tokki.Application.UseCases.Vocabulary.Commands.DeleteVocabulary;
 using Tokki.Application.UseCases.Vocabulary.Commands.UpdateVocabulary;
 using Tokki.Application.UseCases.Vocabulary.DTOs;
@@ -83,6 +84,22 @@ namespace Tokki.WebAPI.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> BulkCreateVocabularies([FromBody] BulkCreateVocabulariesCommand command)
+        {
+            var result = await _mediator.Send(command);
+
+            if (!result.IsSuccess)
+            {
+                return StatusCode(result.StatusCode, result);
+            }
+
+            return StatusCode(result.StatusCode, result);
+        }
+        /// </summary>
+        [HttpPost("admin/create-a-vocabulary")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> CreateVocabularies([FromBody] CreateVocabularyCommand command)
         {
             var result = await _mediator.Send(command);
 

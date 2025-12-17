@@ -14,6 +14,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies
     public class BulkCreateVocabulariesCommandHandler : IRequestHandler<BulkCreateVocabulariesCommand, OperationResult<BulkCreateVocabulariesResponse>>
     {
         private readonly IVocabularyRepository _vocabularyRepository;
+        private readonly IVocabularyExampleRepository _vocabularyExampleRepository;
         private readonly IIdGeneratorService _idGenerator;
         private readonly ITextToSpeechService _ttsService;
         private readonly ICloudinaryService _cloudinaryService;
@@ -22,6 +23,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies
 
         public BulkCreateVocabulariesCommandHandler(
             IVocabularyRepository vocabularyRepository,
+            IVocabularyExampleRepository vocabularyExampleRepository,
             IIdGeneratorService idGenerator,
             ITextToSpeechService ttsService,
             ICloudinaryService cloudinaryService,
@@ -29,6 +31,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies
             ILogger<BulkCreateVocabulariesCommandHandler> logger)
         {
             _vocabularyRepository = vocabularyRepository;
+            _vocabularyExampleRepository = vocabularyExampleRepository;
             _idGenerator = idGenerator;
             _ttsService = ttsService;
             _cloudinaryService = cloudinaryService;
@@ -45,7 +48,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies
             if (string.IsNullOrEmpty(currentUserId))
             {
                 return OperationResult<BulkCreateVocabulariesResponse>.Failure(
-                    new List<Error> { AppErrors.UserUnauthorized },
+                    new List<Tokki.Application.Common.Models.Error> { AppErrors.UserUnauthorized },
                     401,
                     AppErrors.UserUnauthorized.Description
                 );
@@ -56,45 +59,43 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies
                 TotalVocabularies = request.Vocabularies.Count
             };
 
+            // 2. Validate trùng lặp TRƯỚC KHI bắt đầu transaction
+            var duplicateErrors = new List<string>();
+
             foreach (var vocabDto in request.Vocabularies)
             {
-                try
+                var existingVocab = await _vocabularyRepository.GetByTextAndDefinitionAsync(
+                    vocabDto.Text,
+                    vocabDto.Definition
+                );
+
+                if (existingVocab != null)
                 {
-                    // 2. Kiểm tra vocabulary đã tồn tại chưa
-                    var existingVocab = await _vocabularyRepository.GetByTextAndDefinitionAsync(
-                        vocabDto.Text,
-                        vocabDto.Definition
-                    );
+                    duplicateErrors.Add($"Từ '{vocabDto.Text}' với nghĩa '{vocabDto.Definition}'");
+                }
+            }
 
-                    if (existingVocab != null)
-                    {
-                        // Vocabulary đã tồn tại
-                        if (existingVocab.Status == VocabularyStatus.Deleted)
-                        {
-                            response.Results.Add(new VocabularyCreationResult
-                            {
-                                Text = vocabDto.Text,
-                                Definition = vocabDto.Definition,
-                                IsSuccess = false,
-                                ErrorMessage = "Vocabulary đã tồn tại nhưng đang ở trạng thái đã xóa."
-                            });
-                            response.FailedCount++;
-                            continue;
-                        }
+            // Nếu có bất kỳ trùng lặp nào -> Reject toàn bộ
+            if (duplicateErrors.Any())
+            {
+                var errorMessage = $"Phát hiện {duplicateErrors.Count} từ vựng bị trùng lặp (Text + Definition):\n" +
+                                   string.Join("\n", duplicateErrors.Select((e, i) => $"{i + 1}. {e}"));
 
-                        response.Results.Add(new VocabularyCreationResult
-                        {
-                            Text = vocabDto.Text,
-                            Definition = vocabDto.Definition,
-                            IsSuccess = true,
-                            VocabularyId = existingVocab.VocabularyId,
-                            Message = "Vocabulary đã tồn tại."
-                        });
-                        response.SuccessCount++;
-                        continue;
-                    }
+                return OperationResult<BulkCreateVocabulariesResponse>.Failure(
+                    new List<Tokki.Application.Common.Models.Error> { new Error("VOCABULARY_DUPLICATE", errorMessage) },
+                    400,
+                    $"Không thể tạo vocabulary. {errorMessage}"
+                );
+            }
 
-                    // 3. Tạo audio URL
+            // 3. Bắt đầu Transaction - All or Nothing
+            await using var transaction = await _vocabularyExampleRepository.BeginTransactionAsync(cancellationToken);
+
+            try
+            {
+                foreach (var vocabDto in request.Vocabularies)
+                {
+                    // 4. Tạo audio URL
                     string? audioUrl = null;
                     try
                     {
@@ -108,7 +109,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies
                         _logger.LogWarning(ex, "Không thể tạo audio cho vocabulary: {Text}", vocabDto.Text);
                     }
 
-                    // 4. Tạo vocabulary mới
+                    // 5. Tạo vocabulary mới
                     var vocabulary = new Tokki.Domain.Entities.Vocabulary
                     {
                         VocabularyId = _idGenerator.Generate(15),
@@ -124,6 +125,49 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies
 
                     await _vocabularyRepository.AddAsync(vocabulary);
 
+                    // 6. Tạo các câu ví dụ nếu có (check trùng lặp câu mẫu trong cùng vocabulary)
+                    int addedExamplesCount = 0;
+                    int skippedExamplesCount = 0;
+                    var seenSentences = new HashSet<string>();
+
+                    if (vocabDto.Examples != null && vocabDto.Examples.Any())
+                    {
+                        foreach (var exampleDto in vocabDto.Examples)
+                        {
+                            // Check trùng lặp trong cùng request
+                            if (seenSentences.Contains(exampleDto.Sentence))
+                            {
+                                skippedExamplesCount++;
+                                _logger.LogInformation(
+                                    "Bỏ qua câu ví dụ trùng lặp trong request: {Sentence}",
+                                    exampleDto.Sentence
+                                );
+                                continue;
+                            }
+
+                            var example = new VocabularyExample
+                            {
+                                ExampleId = _idGenerator.Generate(15),
+                                VocabularyId = vocabulary.VocabularyId,
+                                Sentence = exampleDto.Sentence,
+                                Translation = exampleDto.Translation,
+                                CreateBy = currentUserId,
+                                CreateAt = DateTime.UtcNow.AddHours(7),
+                                Status = VocabularyExampleStatus.Active
+                            };
+
+                            await _vocabularyExampleRepository.AddAsync(example);
+                            seenSentences.Add(exampleDto.Sentence);
+                            addedExamplesCount++;
+                        }
+                    }
+
+                    var resultMessage = "Tạo vocabulary thành công.";
+                    if (skippedExamplesCount > 0)
+                    {
+                        resultMessage += $" Đã bỏ qua {skippedExamplesCount} câu ví dụ trùng lặp.";
+                    }
+
                     response.Results.Add(new VocabularyCreationResult
                     {
                         Text = vocabDto.Text,
@@ -131,44 +175,39 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies
                         IsSuccess = true,
                         VocabularyId = vocabulary.VocabularyId,
                         AudioURL = audioUrl,
-                        Message = "Tạo vocabulary thành công."
+                        Message = resultMessage
                     });
                     response.SuccessCount++;
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Lỗi khi tạo vocabulary: {Text}", vocabDto.Text);
-                    response.Results.Add(new VocabularyCreationResult
-                    {
-                        Text = vocabDto.Text,
-                        Definition = vocabDto.Definition,
-                        IsSuccess = false,
-                        ErrorMessage = $"Lỗi hệ thống: {ex.Message}"
-                    });
-                    response.FailedCount++;
-                }
-            }
 
-            await _vocabularyRepository.SaveChangesAsync(cancellationToken);
+                // 7. Lưu tất cả thay đổi
+                await _vocabularyRepository.SaveChangesAsync(cancellationToken);
+                await _vocabularyExampleRepository.SaveChangesAsync(cancellationToken);
 
-            if (response.SuccessCount == 0)
-            {
-                return OperationResult<BulkCreateVocabulariesResponse>.Failure(
-                    new List<Error> { AppErrors.ServerError },
-                    500,
-                    "Không thể tạo vocabulary nào."
+                // 8. Commit transaction
+                await transaction.CommitAsync(cancellationToken);
+
+                var message = $"Tạo thành công tất cả {response.SuccessCount} từ vựng.";
+
+                return OperationResult<BulkCreateVocabulariesResponse>.Success(
+                    response,
+                    201,
+                    message
                 );
             }
+            catch (Exception ex)
+            {
+                // 9. Rollback nếu có lỗi
+                await transaction.RollbackAsync(cancellationToken);
 
-            var message = response.FailedCount > 0
-                ? $"Xử lý thành công {response.SuccessCount}/{response.TotalVocabularies} từ vựng. {response.FailedCount} từ thất bại."
-                : $"Xử lý thành công tất cả {response.SuccessCount} từ vựng.";
+                _logger.LogError(ex, "Lỗi khi bulk create vocabularies. Transaction đã được rollback.");
 
-            return OperationResult<BulkCreateVocabulariesResponse>.Success(
-                response,
-                201,
-                message
-            );
+                return OperationResult<BulkCreateVocabulariesResponse>.Failure(
+                    new List<Tokki.Application.Common.Models.Error> { AppErrors.ServerError },
+                    500,
+                    $"Lỗi hệ thống: {ex.Message}. Không có vocabulary nào được tạo."
+                );
+            }
         }
     }
 }

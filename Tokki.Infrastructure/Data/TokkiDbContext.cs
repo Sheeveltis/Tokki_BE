@@ -34,6 +34,7 @@ namespace Tokki.Infrastructure.Data
         public DbSet<Vocabulary> Vocabularies { get; set; }
         public DbSet<VocabularyTopic> VocabularyTopics { get; set; }
         public DbSet<UserFavoriteVocabulary> UserFavoriteVocabularies { get; set; }
+        public DbSet<VocabularyExample> VocabularyExamples { get; set; }
 
         public DbSet<Comment> Comments { get; set; }
 
