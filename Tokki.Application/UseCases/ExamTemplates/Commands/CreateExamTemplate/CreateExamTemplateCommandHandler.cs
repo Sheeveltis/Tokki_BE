@@ -110,11 +110,13 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.CreateExamTemplate
                 {
                     TemplatePartId = _idGeneratorService.GenerateCustom(10),
                     ExamTemplateId = examTemplateId,
-                    Skill = p.Skill,
+                    Skill = p.Skill,             
                     QuestionFrom = p.QuestionFrom,
                     QuestionTo = p.QuestionTo,
-                    PartTitle = p.PartTitle,
+                    PartTitle = p.PartTitle ?? string.Empty,
                     Instruction = p.Instruction,
+                    DifficultyLevel = p.DifficultyLevel,
+                    QuestionTypeId = p.QuestionTypeId,
                     ExampleType = p.ExampleType,
                     ExampleData = p.ExampleData
                 }).ToList();
