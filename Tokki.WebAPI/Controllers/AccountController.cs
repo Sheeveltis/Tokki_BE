@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tokki.Application.UseCases.Accounts.Commands.CreateStaffAccount;
+using Tokki.Application.UseCases.Accounts.Commands.FacebookLogin;
 using Tokki.Application.UseCases.Accounts.Commands.GoogleLogin;
 using Tokki.Application.UseCases.Accounts.Commands.Login;
 using Tokki.Application.UseCases.Accounts.Commands.ResetPassword;
@@ -73,7 +74,18 @@ namespace Tokki.WebAPI.Controllers
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
         }
-
+        [HttpPost("facebook-login")]
+        public async Task<IActionResult> FacebookLogin([FromBody] FacebookLoginCommand command)
+        {
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+        [HttpPost("facebook-complete-registration")]
+        public async Task<IActionResult> FacebookCompleteRegistration([FromBody] FacebookCompleteRegistrationCommand command)
+        {
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginCommand command)
         {

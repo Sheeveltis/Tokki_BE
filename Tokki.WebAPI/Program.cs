@@ -104,6 +104,9 @@ ValidatorOptions.Global.LanguageManager.Culture = new CultureInfo("vi");
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddApplication();
 
+builder.Services.AddHttpClient();
+builder.Services.Configure<FacebookAuthSettings>(
+    builder.Configuration.GetSection("FacebookAuth"));
 // AutomationWorker
 builder.Services.AddSingleton<Tokki.Infrastructure.BackgroundJobs.AutomationWorker>();
 builder.Services.AddHostedService(provider =>
