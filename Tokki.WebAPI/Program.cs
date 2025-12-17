@@ -113,6 +113,11 @@ builder.Services.AddHostedService(provider =>
 builder.Services.AddSingleton<Tokki.Infrastructure.BackgroundJobs.CampaignWorker>();
 builder.Services.AddHostedService(provider =>
     provider.GetRequiredService<Tokki.Infrastructure.BackgroundJobs.CampaignWorker>());
+builder.Services.Configure<GoogleAuthSettings>(
+    builder.Configuration.GetSection("Authentication:Google"));
+
+
+
 
 builder.Services.AddCors(options =>
 {

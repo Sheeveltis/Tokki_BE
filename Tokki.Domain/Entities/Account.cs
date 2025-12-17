@@ -23,7 +23,7 @@ namespace Tokki.Domain.Entities
         public string? PhoneNumber { get; set; } // Optional: Không bắt buộc
 
         [Column(TypeName = "date")]
-        public DateTime DateOfBirth { get; set; }
+        public DateTime? DateOfBirth { get; set; }
         // PasswordHash vẫn phải để NULLABLE để hỗ trợ Login Google/Facebook
         [MaxLength(255)]
         public string? PasswordHash { get; set; }

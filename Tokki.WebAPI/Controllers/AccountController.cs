@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tokki.Application.UseCases.Accounts.Commands.CreateStaffAccount;
+using Tokki.Application.UseCases.Accounts.Commands.GoogleLogin;
 using Tokki.Application.UseCases.Accounts.Commands.Login;
 using Tokki.Application.UseCases.Accounts.Commands.ResetPassword;
 using Tokki.Application.UseCases.Accounts.Commands.UpdateProfile;
@@ -64,6 +65,15 @@ namespace Tokki.WebAPI.Controllers
 
             return StatusCode(result.StatusCode, result);
         }
+        [HttpPost("google-login")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GoogleLogin(
+       [FromBody] GoogleLoginCommand command)
+        {
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginCommand command)
         {

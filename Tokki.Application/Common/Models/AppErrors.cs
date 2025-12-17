@@ -27,6 +27,10 @@ namespace Tokki.Application.Common.Models
         public static readonly Error AccountBanned = new("Auth.AccountBanned", "Tài khoản của bạn đã bị khóa vĩnh viễn.");
         public static readonly Error AccountLocked = new("Auth.AccountLocked", "Tài khoản đang bị tạm khóa do đăng nhập sai nhiều lần.");
         public static readonly Error AccountNotFound = new("Account.NotFound", "Không tìm thấy tài khoản.");
+        public static readonly Error AccountInActive = new("Account.AccountInActive", "Tài khoảng không hoạt động.");
+        public static readonly Error MergeAccountRequered = new("Account.MergeAccountRequered", "Email đã được đăng ký vui lòng đồng ý tích hợp.");
+
+        
         // ============================================
         // NHÓM 3: BLOG/POST
         // ============================================

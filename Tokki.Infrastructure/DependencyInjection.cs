@@ -45,6 +45,8 @@ namespace Tokki.Infrastructure
             services.AddScoped<IExamQuestionRepository, ExamQuestionRepository>();
             services.AddScoped<IVocabularyRepository, VocabularyRepository>();
             services.AddScoped<IVocabularyTopicRepository, VocabularyTopicRepository>();
+            services.AddScoped<ISocialLoginRepository, SocialLoginRepository>();
+
             // Bạn cũng cần kiểm tra và đăng ký các Repository khác mà Command Handler đang yêu cầu:
             services.AddSingleton<IIdGeneratorService, IdGeneratorService>();
             services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
