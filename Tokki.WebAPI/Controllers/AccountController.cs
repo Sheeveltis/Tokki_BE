@@ -206,5 +206,20 @@ namespace Tokki.WebAPI.Controllers
             var result = await _sender.Send(command);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
+        [HttpDelete("{userId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> SoftDeleteUserAccount([FromRoute] string userId)
+        {
+            var adminId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var command = new AdminSoftDeleteAccountCommand
+            {
+                TargetUserId = userId,
+                AdminUserId = adminId
+            };
+
+            var result = await _sender.Send(command);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
     }
 }
