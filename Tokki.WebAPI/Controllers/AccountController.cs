@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Tokki.Application.UseCases.Accounts.Commands.AdminSoftDeleteAccount;
 using Tokki.Application.UseCases.Accounts.Commands.AdminUpdateUser;
 using Tokki.Application.UseCases.Accounts.Commands.CreateStaffAccount;
 using Tokki.Application.UseCases.Accounts.Commands.DeleteAccount;

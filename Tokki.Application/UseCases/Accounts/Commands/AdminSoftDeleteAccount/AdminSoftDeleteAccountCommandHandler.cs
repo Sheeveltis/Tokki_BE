@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MediatR;
+using Tokki.Application.Common.Models;
+using Tokki.Application.IRepositories;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Accounts.Commands.AdminSoftDeleteAccount
 {
