@@ -29,8 +29,13 @@ namespace Tokki.Application.Common.Models
         public static readonly Error AccountNotFound = new("Account.NotFound", "Không tìm thấy tài khoản.");
         public static readonly Error AccountInActive = new("Account.AccountInActive", "Tài khoảng không hoạt động.");
         public static readonly Error MergeAccountRequered = new("Account.MergeAccountRequered", "Email đã được đăng ký vui lòng đồng ý tích hợp.");
+        public static readonly Error AccountAlreadyDeleted = new("Account.AlreadyDeleted", "Tài khoản đã bị xóa trước đó.");
+        public static readonly Error InvalidGoogleToken = new("Auth.InvalidGoogleToken", "Google token không hợp lệ.");
+        public static readonly Error InvalidFacebookToken = new("Auth.InvalidFacebookToken", "Facebook token không hợp lệ.");
+        public static readonly Error FacebookAlreadyLinked = new("Account.FacebookAlreadyLinked", "Tài khoản Facebook này đã được liên kết.");
+        public static readonly Error FacebookEmailRequired = new("Auth.FacebookEmailRequired", "Vui lòng cấp quyền truy cập email từ Facebook.");
 
-        
+
         // ============================================
         // NHÓM 3: BLOG/POST
         // ============================================

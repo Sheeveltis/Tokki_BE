@@ -49,7 +49,6 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
             DateTime utcNow = DateTime.UtcNow;
             DateTime vietnamTimeNow = utcNow.AddHours(7);
         
-             // 2. Kiểm tra Banned
             if (user.Status == AccountStatus.Inactive)
             {
                 return OperationResult<LoginResponse>.Failure(new List<Error> { AppErrors.AccountInActive }, 403, "Tài khoản của bạn không hoạt động.");
