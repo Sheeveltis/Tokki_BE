@@ -17,13 +17,13 @@ namespace Tokki.Infrastructure.Repositories
 
         public async Task<List<Vocabulary>> GetRandomVocabulariesByTopicAsync(string topicId, int quantity, CancellationToken cancellationToken)
         {
-
-            return await _context.VocabularyTopics
+            return await _context.VocabularyTopics 
                 .AsNoTracking()
-                .Where(vt => vt.TopicId == topicId)
-                .Select(vt => vt.Vocabulary) 
-                .Where(v => v.Status == Domain.Enums.VocabularyStatus.Active) 
-                .OrderBy(v => Guid.NewGuid()) 
+                .Where(vt => vt.TopicId == topicId &&
+                             vt.Status == Domain.Enums.VocabularyTopicStatus.Active)
+                .Select(vt => vt.Vocabulary)
+                .Where(v => v.Status == Domain.Enums.VocabularyStatus.Active)
+                .OrderBy(v => Guid.NewGuid())
                 .Take(quantity)
                 .ToListAsync(cancellationToken);
         }
