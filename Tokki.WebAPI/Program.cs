@@ -112,7 +112,6 @@ builder.Services.AddSingleton<Tokki.Infrastructure.BackgroundJobs.AutomationWork
 builder.Services.AddHostedService(provider =>
     provider.GetRequiredService<Tokki.Infrastructure.BackgroundJobs.AutomationWorker>());
 
-// CampaignWorker ✅ SỬA LẠI GIỐNG AutomationWorker
 builder.Services.AddSingleton<Tokki.Infrastructure.BackgroundJobs.CampaignWorker>();
 builder.Services.AddHostedService(provider =>
     provider.GetRequiredService<Tokki.Infrastructure.BackgroundJobs.CampaignWorker>());
@@ -122,11 +121,20 @@ builder.Services.Configure<GoogleAuthSettings>(
 
 
 
+
+builder.Services.AddMemoryCache(options =>
+{
+    //options.SizeLimit = 1024; // Giới hạn 1024 entries
+    options.CompactionPercentage = 0.25; // Khi đầy, xóa 25% entries cũ nhất
+});
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
     {
-        policy.WithOrigins("http://localhost:3000") // Cho phép đúng cái Frontend của bạn
+        policy.WithOrigins("http://localhost:3000",
+               "https://localhost:7000",          // API itself (cho SignalR)
+                  "https://localhost:7178") // Cho phép đúng cái Frontend của bạn
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -139,6 +147,7 @@ builder.Services.AddSignalR();
 var app = builder.Build();
 //ChatHub
 app.MapHub<ChatHub>("/chatHub");
+app.MapHub<VocabularyHub>("/vocabularyHub");
 app.UseMiddleware<GlobalExceptionMiddleware>();
 // ==========================================
 var supportedCultures = new[] { "vi" };

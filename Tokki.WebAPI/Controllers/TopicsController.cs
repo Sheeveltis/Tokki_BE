@@ -7,7 +7,6 @@ using Tokki.Application.UseCases.Topics.Commands.CreateTopic;
 using Tokki.Application.UseCases.Topics.Commands.UpdateTopic;
 using Tokki.Application.UseCases.Topics.Commands.DeleteTopic;
 using Tokki.Application.UseCases.Topics.Queries.GetById;
-using Tokki.Application.UseCases.Topics.DTOs;
 using Tokki.Application.UseCases.Topics.Queries;
 using Tokki.Domain.Enums;
 using Tokki.Application.UseCases.Topics.Commands.AddVocabulariesToTopic;

@@ -2,8 +2,10 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Tokki.Application.UseCases.Accounts.Commands.AdminSoftDeleteAccount;
 using Tokki.Application.UseCases.Accounts.Commands.AdminUpdateUser;
 using Tokki.Application.UseCases.Accounts.Commands.CreateStaffAccount;
+using Tokki.Application.UseCases.Accounts.Commands.DeleteAccount;
 using Tokki.Application.UseCases.Accounts.Commands.FacebookLogin;
 using Tokki.Application.UseCases.Accounts.Commands.GoogleLogin;
 using Tokki.Application.UseCases.Accounts.Commands.Login;
@@ -195,6 +197,30 @@ namespace Tokki.WebAPI.Controllers
             var result = await _sender.Send(command);
 
             return StatusCode(result.StatusCode, result);
+        }
+        [HttpDelete]
+        [Authorize]
+        public async Task<IActionResult> DeleteAccount()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var command = new DeleteAccountCommand { UserId = userId };
+            var result = await _sender.Send(command);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+        [HttpDelete("{userId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> SoftDeleteUserAccount([FromRoute] string userId)
+        {
+            var adminId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var command = new AdminSoftDeleteAccountCommand
+            {
+                TargetUserId = userId,
+                AdminUserId = adminId
+            };
+
+            var result = await _sender.Send(command);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
     }
 }

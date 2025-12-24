@@ -1,10 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Tokki.Application.IRepositories;
+using Tokki.Application.UseCases.Vocabulary.DTOs;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 using Tokki.Infrastructure.Data;
@@ -75,8 +71,8 @@ namespace Tokki.Infrastructure.Repositories
             var query = _context.Vocabularies
                 .Include(v => v.VocabularyTopics)
                     .ThenInclude(vt => vt.Topic)
-                .Where(v => v.VocabularyTopics.Any(vt => 
-                    vt.TopicId == topicId && 
+                .Where(v => v.VocabularyTopics.Any(vt =>
+                    vt.TopicId == topicId &&
                     vt.Status == VocabularyTopicStatus.Active));
 
             // Filter by status
@@ -93,8 +89,8 @@ namespace Tokki.Infrastructure.Repositories
             // Search by text or definition
             if (!string.IsNullOrWhiteSpace(searchText))
             {
-                query = query.Where(v => 
-                    v.Text.Contains(searchText) || 
+                query = query.Where(v =>
+                    v.Text.Contains(searchText) ||
                     v.Definition.Contains(searchText));
             }
 
@@ -136,8 +132,8 @@ namespace Tokki.Infrastructure.Repositories
             // Filter by topic if provided
             if (!string.IsNullOrWhiteSpace(topicId))
             {
-                query = query.Where(v => v.VocabularyTopics.Any(vt => 
-                    vt.TopicId == topicId && 
+                query = query.Where(v => v.VocabularyTopics.Any(vt =>
+                    vt.TopicId == topicId &&
                     vt.Status == VocabularyTopicStatus.Active));
             }
 
@@ -198,6 +194,46 @@ namespace Tokki.Infrastructure.Repositories
 
             return (items, totalCount);
         }
+        public async Task<(List<VocabularySearchResultDto> Items, int TotalCount)>
+       SearchVocabulariesAsync(
+           string searchTerm,
+           int pageNumber,
+           int pageSize)
+        {
+            var query = _context.Vocabularies
+                .AsNoTracking()
+                .Where(v => v.Status == VocabularyStatus.Active);
 
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var term = searchTerm.Trim().ToLower();
+
+                // ✅ TÌM KIẾM HAI CHIỀU: Text ↔ Definition
+                query = query.Where(v =>
+                    v.Text.ToLower().Contains(term) ||           // Tìm trong Text (VD: 안녕)
+                    v.Definition.ToLower().Contains(term) ||     // Tìm trong Definition (VD: Xin chào)
+                    (v.Pronunciation != null &&
+                     v.Pronunciation.ToLower().Contains(term))   // Tìm trong Pronunciation (VD: annyeong)
+                );
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderBy(v => v.Text.ToLower().StartsWith(searchTerm.ToLower()) ? 0 : 1) // Ưu tiên kết quả bắt đầu bằng search term
+                .ThenBy(v => v.Text)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(v => new VocabularySearchResultDto
+                {
+                    VocabularyId = v.VocabularyId,
+                    Text = v.Text,
+                    Definition = v.Definition,
+                    Pronunciation = v.Pronunciation
+                })
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
     }
 }

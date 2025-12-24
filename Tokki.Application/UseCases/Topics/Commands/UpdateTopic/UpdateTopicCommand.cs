@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using System.Text.Json.Serialization;
+using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Domain.Enums;
 
@@ -11,6 +12,7 @@ namespace Tokki.Application.UseCases.Topics.Commands.UpdateTopic
         public string? Description { get; set; }
         public TopicLevel Level { get; set; }
         public string? ImgUrl { get; set; }
+        [JsonIgnore]
         public string UpdatedBy { get; set; } = string.Empty;
     }
 }

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MediatR;
+﻿using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.UseCases.Accounts.DTOs;
 
@@ -13,7 +8,13 @@ namespace Tokki.Application.UseCases.Accounts.Commands.FacebookLogin
     {
         public string FacebookId { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
+
+        // Lấy lại từ lần đầu login (không có email)
         public string Name { get; set; } = string.Empty;
-        public string? AvatarUrl { get; set; }
+        public string? Birthday { get; set; }
+        public string? Gender { get; set; }
+
+        // Chỉ dùng khi email đã tồn tại và cần merge
+        public bool IsComfirmToMergeAcc { get; set; } = false;
     }
 }

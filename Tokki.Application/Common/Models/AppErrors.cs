@@ -32,6 +32,11 @@ namespace Tokki.Application.Common.Models
         public static readonly Error Unauthorized =   new("Auth.Unauthorized", "Bạn cần đăng nhập để thực hiện thao tác này.");
         public static readonly Error FavoriteVocabularyAddFailed = new("FavoriteVocabulary.AddFailed", "Không thể thêm từ vựng vào danh sách yêu thích.");
         public static readonly Error FavoriteVocabularyRemoveFailed =  new("FavoriteVocabulary.RemoveFailed", "Không thể gỡ từ vựng khỏi danh sách yêu thích.");
+        public static readonly Error AccountAlreadyDeleted = new("Account.AlreadyDeleted", "Tài khoản đã bị xóa trước đó.");
+        public static readonly Error InvalidGoogleToken = new("Auth.InvalidGoogleToken", "Google token không hợp lệ.");
+        public static readonly Error InvalidFacebookToken = new("Auth.InvalidFacebookToken", "Facebook token không hợp lệ.");
+        public static readonly Error FacebookAlreadyLinked = new("Account.FacebookAlreadyLinked", "Tài khoản Facebook này đã được liên kết.");
+        public static readonly Error FacebookEmailRequired = new("Auth.FacebookEmailRequired", "Vui lòng cấp quyền truy cập email từ Facebook.");
 
 
         // ============================================
@@ -148,15 +153,10 @@ namespace Tokki.Application.Common.Models
         // ============================================
         // NHÓM 13: WORD
         // ============================================
-        public static readonly Error WordNotFound = new("Word.NotFound", "Từ vựng không tồn tại.");
-        public static readonly Error WordDuplicated = new("Word.Duplicated", "Từ vựng đã tồn tại.");
-        public static readonly Error WordInUse = new("Word.InUse", "Từ vựng đang được sử dụng, không thể xóa.");
 
         // ============================================
-        // NHÓM 14: MEANING & AUDIO
+        // NHÓM 14: AUDIO
         // ============================================
-        public static readonly Error MeaningNotFound = new("Meaning.NotFound", "Nghĩa của từ không tồn tại.");
-        public static readonly Error MeaningInvalidWord = new("Meaning.InvalidWord", "Nghĩa không thuộc về từ vựng này.");
         public static readonly Error AudioGenerationFailed = new("Audio.GenerationFailed", "Không thể tạo file âm thanh.");
         public static readonly Error AudioUploadFailed = new("Audio.UploadFailed", "Không thể tải file âm thanh lên cloud.");
 
@@ -243,5 +243,9 @@ namespace Tokki.Application.Common.Models
         //LiveChat
         public static readonly Error ChatRoomNotFound = new("ChatRoom.NotFound", "Phòng chat không tồn tại.");
         public static readonly Error ChatRoomAlreadySupported = new("ChatRoom.AlreadySupported", "Phòng chat đã có nhân viên hỗ trợ.");
+        //Mini-game
+        public static readonly Error MiniGameNotFound = new("MiniGame.NotFound", "Trò chơi không tồn tại.");
+        public static readonly Error MiniGameInvalidParameters = new("MiniGame.InvalidParameters", "Tham số trò chơi không hợp lệ.");
+        public static readonly Error MiniGameMatchingVocabNotFound = new ("MiniGame.MatchingVocabNotFound", "Không tìm thấy từ vựng để tạo thẻ ghép.");
     }
 }

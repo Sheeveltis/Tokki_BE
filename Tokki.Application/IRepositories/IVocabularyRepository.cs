@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Tokki.Application.UseCases.Vocabulary.DTOs;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 
@@ -67,6 +68,10 @@ namespace Tokki.Application.IRepositories
             string? topicId = null,
             VocabularyStatus? status = null
         );
+        Task<(List<VocabularySearchResultDto> Items, int TotalCount)>  SearchVocabulariesAsync(
+         string searchTerm,
+         int pageNumber,
+         int pageSize);
         Task<List<Vocabulary>> GetByIdsAsync(List<string> vocabularyIds);
 
         Task<(IEnumerable<Vocabulary> Items, int TotalCount)> GetPagedVocabulariesForManagerAsync(

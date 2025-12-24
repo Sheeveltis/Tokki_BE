@@ -12,6 +12,7 @@ using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Application.UseCases.Accounts.DTOs;
 using Tokki.Domain.Entities;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Accounts.Commands.GoogleLogin
 {
@@ -71,6 +72,36 @@ namespace Tokki.Application.UseCases.Accounts.Commands.GoogleLogin
             {
                 // Đã có SocialLogin -> login bình thường
                 user = await _accountRepo.GetByIdAsync(socialLogin.UserId);
+
+                if (user == null)
+                {
+                    return OperationResult<LoginResponse>.Failure(
+                        new List<Error> { AppErrors.UserNotFoundById },
+                        404,
+                        "Tài khoản không tồn tại.");
+                }
+
+                // ✅ Kiểm tra tài khoản có bị khóa không
+                if (user.LockedUntil.HasValue && user.LockedUntil.Value > DateTime.UtcNow.AddHours(7))
+                {
+                    return OperationResult<LoginResponse>.Failure(
+                        new List<Error> {
+                            new Error("Account.Locked", $"Tài khoản bị khóa đến {user.LockedUntil.Value:dd/MM/yyyy HH:mm}")
+                        },
+                        403,
+                        "Tài khoản của bạn đang bị khóa.");
+                }
+
+                // ✅ Kiểm tra trạng thái tài khoản
+                if (user.Status == AccountStatus.Inactive)
+                {
+                    return OperationResult<LoginResponse>.Failure(
+                        new List<Error> { AppErrors.AccountInActive },
+                        403,
+                        "Tài khoản của bạn không hoạt động.");
+                }
+
+                
             }
             else
             {
@@ -86,7 +117,9 @@ namespace Tokki.Application.UseCases.Accounts.Commands.GoogleLogin
                         Email = payload.Email,
                         FullName = payload.Name ?? payload.Email,
                         AvatarUrl = payload.Picture,
-                        CreatedAt = DateTime.UtcNow.AddHours(7)
+                        Status = AccountStatus.Active,
+                        CreatedAt = DateTime.UtcNow.AddHours(7),
+                        UpdatedAt = DateTime.UtcNow.AddHours(7)
                     };
 
                     await _accountRepo.AddAsync(user);
@@ -104,12 +137,34 @@ namespace Tokki.Application.UseCases.Accounts.Commands.GoogleLogin
                 }
                 else
                 {
+                    // ✅ Email đã tồn tại -> kiểm tra tài khoản có bị khóa không
+                    if (user.LockedUntil.HasValue && user.LockedUntil.Value > DateTime.UtcNow.AddHours(7))
+                    {
+                        return OperationResult<LoginResponse>.Failure(
+                            new List<Error> {
+                                new Error("Account.Locked", $"Tài khoản bị khóa đến {user.LockedUntil.Value:dd/MM/yyyy HH:mm}")
+                            },
+                            403,
+                            "Tài khoản của bạn đang bị khóa.");
+                    }
+
+                    // ✅ Kiểm tra trạng thái tài khoản
+                    if (user.Status == AccountStatus.Inactive)
+                    {
+                        return OperationResult<LoginResponse>.Failure(
+                            new List<Error> { AppErrors.AccountInActive },
+                            403,
+                            "Tài khoản của bạn không hoạt động.");
+                    }
+
+                  
+
                     // Email đã tồn tại -> cần xác nhận merge
                     if (!request.IsComfirmToMergeAcc)
                     {
                         // Người dùng chưa xác nhận merge
                         return OperationResult<LoginResponse>.Failure(
-                            new List<Error> {AppErrors.MergeAccountRequered },
+                            new List<Error> { AppErrors.MergeAccountRequered },
                             409,
                             "Account merge confirmation required");
                     }
@@ -127,6 +182,9 @@ namespace Tokki.Application.UseCases.Accounts.Commands.GoogleLogin
                 }
             }
 
+            // ✅ Cập nhật LastLoginAt
+            user.LastLoginAt = DateTime.UtcNow.AddHours(7);
+            await _accountRepo.UpdateUserAsync(user);
             await _accountRepo.SaveChangesAsync(cancellationToken);
 
             // Generate JWT token

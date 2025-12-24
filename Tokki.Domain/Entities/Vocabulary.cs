@@ -12,6 +12,7 @@ namespace Tokki.Domain.Entities
 
         public string? Pronunciation { get; set; }
 
+        // Nghĩa (ví dụ: "ngân hàng" hoặc "quả ngân hạnh")
         public string Definition { get; set; } = string.Empty;
 
         public string? ImgURL { get; set; }

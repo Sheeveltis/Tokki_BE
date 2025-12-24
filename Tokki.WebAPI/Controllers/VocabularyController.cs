@@ -2,7 +2,9 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 using System.Threading.Tasks;
+using Tokki.Application.Common.Models;
 using Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies;
 using Tokki.Application.UseCases.Vocabulary.Commands.CreateVocabulary;
 using Tokki.Application.UseCases.Vocabulary.Commands.DeleteVocabulary;
@@ -13,13 +15,14 @@ using Tokki.Application.UseCases.Vocabulary.Queries.FlashCard;
 using Tokki.Application.UseCases.Vocabulary.Queries.GetAllForManager; // <--- THÊM DÒNG NÀY
 using Tokki.Application.UseCases.Vocabulary.Queries.GetById;
 using Tokki.Application.UseCases.Vocabulary.Queries.GetVocabulariesByTopic;
+using Tokki.Application.UseCases.Vocabulary.Queries.SearchVocabulary;
 using Tokki.Domain.Enums;
 
 namespace Tokki.WebAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    // [Authorize]
     public class VocabularyController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -48,7 +51,7 @@ namespace Tokki.WebAPI.Controllers
         /// API này dùng cho trang quản lý, cho phép lọc theo status, topic, tìm kiếm.
         /// </remarks>
         [HttpGet("admin/get-all")]
-         [Authorize(Roles = "Manager,Admin")] // Bạn có thể mở comment này nếu muốn chặn user thường
+        [Authorize(Roles = "Manager,Admin")] // Bạn có thể mở comment này nếu muốn chặn user thường
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllForManager(
             [FromQuery] int pageNumber = 1,
@@ -111,6 +114,36 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
+        /// <summary>
+        /// Search vocabulary for user (OLD - giữ để backward compatibility)
+        /// </summary>
+        [HttpGet("search-for-user")]
+        [AllowAnonymous]
+        public async Task<IActionResult> SearchVocabulary(
+           [FromQuery] string searchTerm,
+           [FromQuery] int pageNumber = 1,
+           [FromQuery] int pageSize = 20)
+        {
+            var query = new SearchVocabularyQuery
+            {
+                SearchTerm = searchTerm,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+
+            var result = await _mediator.Send(query);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+
+            return StatusCode(result.StatusCode, result);
+        }
+
+        /// <summary>
+        /// Get flash card by topic
+        /// </summary>
         [HttpGet("flash-card")]
         [AllowAnonymous]
         public async Task<IActionResult> GetFlashCardByTopic([FromQuery] FlashCardQuery command)
@@ -247,7 +280,7 @@ namespace Tokki.WebAPI.Controllers
         /// <summary>
         /// Search vocabularies (tìm kiếm từ vựng)
         /// </summary>
-        [HttpGet("search")]
+        [HttpGet("search-by-topic")]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> SearchVocabularies(
@@ -262,7 +295,6 @@ namespace Tokki.WebAPI.Controllers
                 return BadRequest(new { message = "Vui lòng nhập từ khóa tìm kiếm" });
             }
 
-            // Tận dụng GetVocabulariesByTopicQuery hoặc GetAllForManagerQuery đều được
             var query = new GetVocabulariesByTopicQuery
             {
                 TopicId = topicId ?? string.Empty,
@@ -276,5 +308,9 @@ namespace Tokki.WebAPI.Controllers
 
             return Ok(result);
         }
+
     }
+     
+
+       
 }

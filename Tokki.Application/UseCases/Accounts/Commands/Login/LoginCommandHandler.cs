@@ -49,7 +49,6 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
             DateTime utcNow = DateTime.UtcNow;
             DateTime vietnamTimeNow = utcNow.AddHours(7);
         
-             // 2. Kiểm tra Banned
             if (user.Status == AccountStatus.Inactive)
             {
                 return OperationResult<LoginResponse>.Failure(new List<Error> { AppErrors.AccountInActive }, 403, "Tài khoản của bạn không hoạt động.");
@@ -73,7 +72,7 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
             if (!isPasswordValid)
             {
                 await HandleFailedLoginAsync(user, vietnamTimeNow, cancellationToken);
-                return OperationResult<LoginResponse>.Failure(new List<Error> { AppErrors.WrongPassword }, 400, "Mật khẩu không chính xác.");
+                return OperationResult<LoginResponse>.Failure(new List<Error> { AppErrors.WrongPassword }, 400, AppErrors.WrongPassword.Description);
             }
             string? defaultPassword = await _systemConfigRepository.GetValueByKeyAsync("DEFALUT_PASSWORD_FOR_STAFF");
 
