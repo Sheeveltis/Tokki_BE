@@ -29,6 +29,9 @@ namespace Tokki.Application.Common.Models
         public static readonly Error AccountNotFound = new("Account.NotFound", "Không tìm thấy tài khoản.");
         public static readonly Error AccountInActive = new("Account.AccountInActive", "Tài khoảng không hoạt động.");
         public static readonly Error MergeAccountRequered = new("Account.MergeAccountRequered", "Email đã được đăng ký vui lòng đồng ý tích hợp.");
+        public static readonly Error Unauthorized =   new("Auth.Unauthorized", "Bạn cần đăng nhập để thực hiện thao tác này.");
+        public static readonly Error FavoriteVocabularyAddFailed = new("FavoriteVocabulary.AddFailed", "Không thể thêm từ vựng vào danh sách yêu thích.");
+        public static readonly Error FavoriteVocabularyRemoveFailed =  new("FavoriteVocabulary.RemoveFailed", "Không thể gỡ từ vựng khỏi danh sách yêu thích.");
         public static readonly Error AccountAlreadyDeleted = new("Account.AlreadyDeleted", "Tài khoản đã bị xóa trước đó.");
         public static readonly Error InvalidGoogleToken = new("Auth.InvalidGoogleToken", "Google token không hợp lệ.");
         public static readonly Error InvalidFacebookToken = new("Auth.InvalidFacebookToken", "Facebook token không hợp lệ.");
