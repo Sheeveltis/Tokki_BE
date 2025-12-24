@@ -54,37 +54,32 @@ namespace Tokki.Application.UseCases.Accounts.Commands.FacebookLogin
             FacebookLoginCommand request,
             CancellationToken cancellationToken)
         {
-            // Validate Facebook Access Token
+            var nowLocal = DateTime.UtcNow.AddHours(7);
+
+            // 1) Validate token + lấy userData (id luôn phải có; email/birthday/gender có thể null)
             FacebookUserData? userData;
             try
             {
-                userData = await ValidateFacebookTokenAsync(request.AccessToken);
+                userData = await ValidateFacebookTokenAsync(request.AccessToken, cancellationToken);
 
-                if (userData == null)
+                if (userData == null || string.IsNullOrEmpty(userData.Id))
                 {
                     return OperationResult<LoginResponse>.Failure(
                         new List<Error> { AppErrors.InvalidFacebookToken },
                         401,
                         "Facebook token không hợp lệ");
                 }
-
-                // Kiểm tra xem có nhận được email từ Facebook không
-                if (string.IsNullOrEmpty(userData.Email))
-                {
-                    return OperationResult<LoginResponse>.Failure(
-                        new List<Error> { AppErrors.FacebookEmailRequired },
-                        400,
-                        "Vui lòng cấp quyền truy cập email từ Facebook để tiếp tục");
-                }
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Facebook authentication failed.");
                 return OperationResult<LoginResponse>.Failure(
                     new List<Error> { AppErrors.InvalidFacebookToken },
                     401,
                     "Facebook authentication failed");
             }
 
+            // 2) Ưu tiên check liên kết theo Facebook ID trước (KHÔNG cần email)
             var socialLogin = await _socialLoginRepo.GetByProviderAsync("facebook", userData.Id);
 
             Account user;
@@ -97,7 +92,7 @@ namespace Tokki.Application.UseCases.Accounts.Commands.FacebookLogin
 
             if (socialLogin != null)
             {
-                // Đã có SocialLogin -> login bình thường
+                // Đã có SocialLogin -> login bình thường (không phụ thuộc email từ Facebook)
                 user = await _accountRepo.GetByIdAsync(socialLogin.UserId);
 
                 if (user == null)
@@ -109,9 +104,9 @@ namespace Tokki.Application.UseCases.Accounts.Commands.FacebookLogin
                 }
 
                 // Kiểm tra tài khoản có bị khóa không
-                if (user.LockedUntil.HasValue && user.LockedUntil.Value > DateTime.UtcNow.AddHours(7))
+                if (user.LockedUntil.HasValue && user.LockedUntil.Value > nowLocal)
                 {
-                    var remainingMinutes = (int)(user.LockedUntil.Value - DateTime.UtcNow.AddHours(7)).TotalMinutes;
+                    var remainingMinutes = (int)(user.LockedUntil.Value - nowLocal).TotalMinutes;
                     return OperationResult<LoginResponse>.Failure(
                         new List<Error> { AppErrors.AccountLocked },
                         403,
@@ -126,10 +121,38 @@ namespace Tokki.Application.UseCases.Accounts.Commands.FacebookLogin
                         403,
                         "Tài khoản của bạn không hoạt động.");
                 }
+
+               
             }
             else
             {
-                // Chưa có SocialLogin -> kiểm tra xem email đã tồn tại chưa
+                // 3) Chưa có SocialLogin
+                // Nếu thiếu email -> trả về info để bạn chạy flow "đăng ký tài khoản Facebook" (bổ sung email)
+                if (string.IsNullOrWhiteSpace(userData.Email))
+                {
+                    var preRegisterResponse = new LoginResponse
+                    {
+                        Token = string.Empty, // chưa phát JWT
+                        FullName = userData.Name ?? string.Empty,
+                        Role = string.Empty,
+                        AvatarUrl = null,
+
+                        // Thông tin bạn cần để làm hàm đăng ký
+                        FacebookId = userData.Id,
+                        Name = userData.Name ?? string.Empty,
+                        Birthday = userData.Birthday ?? string.Empty,
+                        Gender = userData.Gender ?? string.Empty,
+
+                        RequireFacebookRegister = true
+                    };
+
+                    return OperationResult<LoginResponse>.Success(
+                        preRegisterResponse,
+                        200,
+                        "Không lấy được email từ Facebook. Vui lòng đăng ký/bổ sung email để hoàn tất.");
+                }
+
+                // Có email -> xử lý tạo mới / merge như cũ
                 user = await _accountRepo.GetByEmailAsync(userData.Email);
 
                 if (user == null)
@@ -157,10 +180,10 @@ namespace Tokki.Application.UseCases.Accounts.Commands.FacebookLogin
                             FullName = userData.Name ?? userData.Email,
                             PasswordHash = passwordHash,
                             Role = AccountRole.User,
-                            AvatarUrl = userData.Picture?.Data?.Url,
+                            AvatarUrl = null, // không lấy từ Facebook nữa
                             Status = AccountStatus.Active,
-                            CreatedAt = DateTime.UtcNow.AddHours(7),
-                            UpdatedAt = DateTime.UtcNow.AddHours(7)
+                            CreatedAt = nowLocal,
+                            UpdatedAt = nowLocal
                         };
 
                         await _accountRepo.AddAsync(user);
@@ -194,9 +217,9 @@ namespace Tokki.Application.UseCases.Accounts.Commands.FacebookLogin
                 else
                 {
                     // Email đã tồn tại -> kiểm tra tài khoản có bị khóa không
-                    if (user.LockedUntil.HasValue && user.LockedUntil.Value > DateTime.UtcNow.AddHours(7))
+                    if (user.LockedUntil.HasValue && user.LockedUntil.Value > nowLocal)
                     {
-                        var remainingMinutes = (int)(user.LockedUntil.Value - DateTime.UtcNow.AddHours(7)).TotalMinutes;
+                        var remainingMinutes = (int)(user.LockedUntil.Value - nowLocal).TotalMinutes;
                         return OperationResult<LoginResponse>.Failure(
                             new List<Error> { AppErrors.AccountLocked },
                             403,
@@ -234,14 +257,16 @@ namespace Tokki.Application.UseCases.Accounts.Commands.FacebookLogin
                 }
             }
 
-            // Cập nhật LastLoginAt
-            user.LastLoginAt = DateTime.UtcNow.AddHours(7);
+            // 4) Cập nhật LastLoginAt
+            user.LastLoginAt = nowLocal;
+            user.UpdatedAt = nowLocal;
+
             await _accountRepo.UpdateUserAsync(user);
 
             // Commit DB trước khi gửi email (nếu có)
             await _accountRepo.SaveChangesAsync(cancellationToken);
 
-            // Gửi Email thông báo tài khoản mới (CHỈ sau khi SaveChanges thành công)
+            // 5) Gửi Email thông báo tài khoản mới (CHỈ sau khi SaveChanges thành công)
             if (isNewAccount &&
                 !string.IsNullOrEmpty(defaultPasswordToEmail) &&
                 !string.IsNullOrEmpty(emailToNotify))
@@ -261,7 +286,7 @@ namespace Tokki.Application.UseCases.Accounts.Commands.FacebookLogin
                 }
             }
 
-            // Generate JWT token
+            // 6) Generate JWT token
             var token = _jwtGenerator.GenerateToken(user, DateTime.UtcNow.AddMinutes(60));
 
             string successMessage = isNewAccount
@@ -273,21 +298,32 @@ namespace Tokki.Application.UseCases.Accounts.Commands.FacebookLogin
                 Token = token,
                 FullName = user.FullName,
                 Role = user.Role.ToString(),
-                AvatarUrl = user.AvatarUrl
+                AvatarUrl = user.AvatarUrl,
+
+                RequireFacebookRegister = false,
+                FacebookId = string.Empty,
+                Name = string.Empty,
+                Birthday = string.Empty,
+                Gender = string.Empty
             }, 200, successMessage);
         }
 
-        private async Task<FacebookUserData?> ValidateFacebookTokenAsync(string accessToken)
+        private async Task<FacebookUserData?> ValidateFacebookTokenAsync(string accessToken, CancellationToken cancellationToken)
         {
-            // 1) Verify token với Facebook Graph API (debug_token) và parse body để check is_valid + app_id
+            // Encode để tránh lỗi query string với token có ký tự đặc biệt
+            var inputToken = Uri.EscapeDataString(accessToken);
+            var appAccessToken = Uri.EscapeDataString($"{_facebookSettings.AppId}|{_facebookSettings.AppSecret}");
+
+            // 1) Verify token với debug_token
             var verifyUrl =
-                $"https://graph.facebook.com/debug_token?input_token={accessToken}&access_token={_facebookSettings.AppId}|{_facebookSettings.AppSecret}";
-            var verifyResponse = await _httpClient.GetAsync(verifyUrl);
+                $"https://graph.facebook.com/debug_token?input_token={inputToken}&access_token={appAccessToken}";
+
+            var verifyResponse = await _httpClient.GetAsync(verifyUrl, cancellationToken);
 
             if (!verifyResponse.IsSuccessStatusCode)
                 throw new Exception("Failed to verify Facebook token (debug_token).");
 
-            var verifyJson = await verifyResponse.Content.ReadAsStringAsync();
+            var verifyJson = await verifyResponse.Content.ReadAsStringAsync(cancellationToken);
             var debugToken = JsonSerializer.Deserialize<FacebookDebugTokenResponse>(
                 verifyJson,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
@@ -300,20 +336,21 @@ namespace Tokki.Application.UseCases.Accounts.Commands.FacebookLogin
             if (!string.Equals(debugToken.Data.AppId, _facebookSettings.AppId, StringComparison.Ordinal))
                 return null;
 
-            // 2) Get user data từ Facebook (/me)
+            // 2) Get user data từ Facebook (/me) - KHÔNG lấy picture nữa
             var userDataUrl =
-                $"https://graph.facebook.com/me?fields=id,email,name,picture.type(large)&access_token={accessToken}";
-            var userDataResponse = await _httpClient.GetAsync(userDataUrl);
+                $"https://graph.facebook.com/me?fields=id,email,name,birthday,gender&access_token={inputToken}";
+
+            var userDataResponse = await _httpClient.GetAsync(userDataUrl, cancellationToken);
 
             if (!userDataResponse.IsSuccessStatusCode)
                 throw new Exception("Failed to get user data from Facebook (/me).");
 
-            var json = await userDataResponse.Content.ReadAsStringAsync();
+            var json = await userDataResponse.Content.ReadAsStringAsync(cancellationToken);
             var userData = JsonSerializer.Deserialize<FacebookUserData>(
                 json,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-            if (userData == null)
+            if (userData == null || string.IsNullOrEmpty(userData.Id))
                 return null;
 
             // Ensure user_id từ debug_token khớp id từ /me (tăng độ chắc chắn)
