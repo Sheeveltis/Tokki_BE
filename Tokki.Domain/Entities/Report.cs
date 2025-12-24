@@ -1,4 +1,6 @@
-﻿namespace Tokki.Domain.Entities
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Tokki.Domain.Entities
 {
     public class Report
     {
@@ -14,5 +16,14 @@
         public DateTime? ResolvedAt { get; set; }
         public bool IsDeleted { get; set; } = false;
         public DateTime? DeletedAt { get; set; }
+        public string ReportType { get; set; } = string.Empty;
+        public string? QuestionBankId { get; set; }
+        public string? VocabularyId { get; set; }
+
+        [ForeignKey(nameof(QuestionBankId))]
+        public virtual QuestionBank? QuestionBank { get; set; }
+
+        [ForeignKey(nameof(VocabularyId))]
+        public virtual Vocabulary? Vocabulary { get; set; }
     }
 }
