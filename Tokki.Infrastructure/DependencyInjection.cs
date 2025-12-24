@@ -47,6 +47,7 @@ namespace Tokki.Infrastructure
             services.AddScoped<IVocabularyTopicRepository, VocabularyTopicRepository>();
             services.AddScoped<ISocialLoginRepository, SocialLoginRepository>();
             services.AddScoped<IVocabularyExampleRepository, VocabularyExampleRepository>();
+            services.AddScoped<IUserFavoriteVocabularyRepository, UserFavoriteVocabularyRepository>();
 
 
             // Bạn cũng cần kiểm tra và đăng ký các Repository khác mà Command Handler đang yêu cầu:
