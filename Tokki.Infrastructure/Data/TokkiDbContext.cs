@@ -88,9 +88,32 @@ namespace Tokki.Infrastructure.Data
                 .Property(b => b.Status)
                 .HasConversion<int>();
 
-            modelBuilder.Entity<Report>()
-                .Property(r => r.Status)
-                .HasConversion<int>();
+            modelBuilder.Entity<Report>(entity =>
+            {
+                entity.HasKey(r => r.Id);
+
+                entity.Property(r => r.Status)
+                      .HasConversion<int>();
+
+                entity.Property(r => r.QuestionBankId)
+                      .HasColumnType("varchar(10)");
+
+                entity.Property(r => r.VocabularyId)
+                      .HasColumnType("varchar(15)");
+
+                entity.Property(r => r.ReportType)
+                      .HasMaxLength(50);
+
+                entity.HasOne(r => r.QuestionBank)
+                      .WithMany()
+                      .HasForeignKey(r => r.QuestionBankId)
+                      .OnDelete(DeleteBehavior.SetNull);
+
+                entity.HasOne(r => r.Vocabulary)
+                      .WithMany()
+                      .HasForeignKey(r => r.VocabularyId)
+                      .OnDelete(DeleteBehavior.SetNull);
+            });
 
             modelBuilder.Entity<AccountTitle>()
                 .HasKey(at => new { at.UserId, at.TitleId });
