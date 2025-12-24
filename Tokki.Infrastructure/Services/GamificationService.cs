@@ -97,6 +97,13 @@ namespace Tokki.Infrastructure.Services
 
                 var bestTitle = await _titleRepository.GetTitleByXpAsync(user.TotalXP);
 
+                if (bestTitle != null && user.CurrentTitleId == bestTitle.TitleId)
+                {
+                    await _accountRepository.UpdateUserAsync(user);
+                    await _accountRepository.SaveChangesAsync(default);
+                    return isStreakCompletedNow;
+                }
+
                 if (bestTitle != null)
                 {
                     await UnlockAndEquipTitleAsync(user, bestTitle);
