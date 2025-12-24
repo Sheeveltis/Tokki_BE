@@ -29,6 +29,9 @@ namespace Tokki.Application.UseCases.Reports.Commands.CreateReport
                     Description = request.Description,
                     ImageUrl = request.ImageUrl,
                     TargetUrl = request.TargetUrl,
+                    ReportType = request.ReportType,
+                    QuestionBankId = request.QuestionBankId,
+                    VocabularyId = request.VocabularyId,
                     Status = ReportStatus.Pending, 
                     UserHasRead = true, 
                     CreatedAt = DateTime.UtcNow

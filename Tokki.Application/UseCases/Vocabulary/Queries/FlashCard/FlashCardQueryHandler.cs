@@ -70,7 +70,9 @@ namespace Tokki.Application.UseCases.Vocabulary.Queries.FlashCard
                 {
                     Text = vocab.Text,
                     Definition = vocab.Definition,
-                    ImgURL = vocab.ImgURL
+                    ImgURL = vocab.ImgURL,
+                    AudioUrl = vocab.AudioURL
+                    
                 })
                 .ToList();
 
