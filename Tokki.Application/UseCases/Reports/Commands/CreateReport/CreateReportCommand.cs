@@ -9,5 +9,8 @@ namespace Tokki.Application.UseCases.Reports.Commands.CreateReport
         public string Description { get; set; }
         public string? ImageUrl { get; set; }
         public string? TargetUrl { get; set; }
+        public string ReportType { get; set; } 
+        public string? QuestionBankId { get; set; }
+        public string? VocabularyId { get; set; }
     }
 }
