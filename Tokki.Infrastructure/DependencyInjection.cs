@@ -65,7 +65,7 @@ namespace Tokki.Infrastructure
             //Comment
             services.AddScoped<ICommentRepository, CommentRepository>();
             //Live Chat
-            services.AddSingleton<IChatService, ChatService>();
+            services.AddScoped<IChatRepository, ChatRepository>();
             services.AddScoped<IChatRoomRepository, ChatRoomRepository>();
             services.AddScoped<IUserVocabProgressRepository, UserVocabProgressRepository>();
             //Mini game
