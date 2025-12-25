@@ -11,6 +11,5 @@ namespace Tokki.Application.UseCases.Accounts.DTOs
         public string? Name { get; set; }
 
         public string? Birthday { get; set; }
-        public string? Gender { get; set; }
     }
 }

@@ -56,6 +56,8 @@ namespace Tokki.Domain.Entities
         public virtual Title? CurrentTitle { get; set; }
         public virtual ICollection<AccountTitle> UnlockedTitles { get; set; } = new List<AccountTitle>();
 
+        public TopicLevel? Level { get; set; } = null;
+
         // --- MỚI THÊM LẠI (Bảo mật & Tracking) ---
 
         [Required]

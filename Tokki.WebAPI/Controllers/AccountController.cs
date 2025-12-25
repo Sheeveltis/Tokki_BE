@@ -163,6 +163,7 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
         [HttpPut("update-user")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AdminUpdate([FromBody] AdminUpdateUserCommand command)
         {
             // Lấy AdminId từ Token (Claim NameIdentifier)

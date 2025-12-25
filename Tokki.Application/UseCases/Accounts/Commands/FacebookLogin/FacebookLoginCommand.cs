@@ -9,7 +9,7 @@ using Tokki.Application.UseCases.Accounts.DTOs;
 
 namespace Tokki.Application.UseCases.Accounts.Commands.FacebookLogin
 {
-    public class FacebookLoginCommand : IRequest<OperationResult<LoginResponse>>
+    public class FacebookLoginCommand : IRequest<OperationResult<FacebookLoginResponse>>
     {
         public bool IsComfirmToMergeAcc { get; set; } = false;
         public string AccessToken { get; set; } = string.Empty;

@@ -37,6 +37,8 @@ namespace Tokki.Application.Common.Models
         public static readonly Error InvalidFacebookToken = new("Auth.InvalidFacebookToken", "Facebook token không hợp lệ.");
         public static readonly Error FacebookAlreadyLinked = new("Account.FacebookAlreadyLinked", "Tài khoản Facebook này đã được liên kết.");
         public static readonly Error FacebookEmailRequired = new("Auth.FacebookEmailRequired", "Vui lòng cấp quyền truy cập email từ Facebook.");
+        public static readonly Error FacebookIdMismatch =    new("Facebook.IdMismatch", "Facebook token không khớp với FacebookId.");
+        public static readonly Error FacebookEmailMismatch =    new("Facebook.EmailMismatch", "Email cung cấp không khớp với email từ Facebook token.");
 
 
         // ============================================
@@ -126,7 +128,8 @@ namespace Tokki.Application.Common.Models
         public static readonly Error TopicUnauthorized = new("Topic.Unauthorized", "Bạn không có quyền thao tác với chủ đề này.");
         public static readonly Error TopicHasVocabularies = new("Topic.HasVocabularies", "Không thể xóa chủ đề đang có từ vựng.");
         public static readonly Error TopicAlreadyDeleted = new("Topic.AlreadyDeleted", "Chủ đề đã bị xóa trước đó.");
-      
+        public static readonly Error TopicInvalidStatusTransition =  new("Topic.InvalidStatusTransition", "Không thể chuyển trạng thái chủ đề theo yêu cầu.");
+
         // ============================================
         // NHÓM 12: VOCABULARY (Từ vựng)
         // ============================================

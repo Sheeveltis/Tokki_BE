@@ -90,10 +90,16 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
             {
                 user.FailedLoginCount = 0;
                 user.LockedUntil = null;
-                await _accountRepository.UpdateUserAsync(user);
             }
 
+            // Cập nhật LastLoginAt / UpdatedAt (lưu giờ VN như bạn đang dùng)
+            user.LastLoginAt = vietnamTimeNow;
+            user.UpdatedAt = vietnamTimeNow;
+
+            await _accountRepository.UpdateUserAsync(user);
+
             await _gamificationService.CheckLoginGamificationAsync(user.UserId);
+
 
             // --- 5. TẠO TOKEN & SESSION ---
 
