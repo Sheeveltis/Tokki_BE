@@ -76,8 +76,24 @@ namespace Tokki.Infrastructure.Services
             if (user.DailyStudySeconds >= 900 && !completedToday)
             {
                 isStreakCompletedNow = true;
-                long bonusXP = 100; 
+                var yesterday = DateTime.UtcNow.AddHours(7).Date.AddDays(-1);
+                if (user.LastStreakDate.HasValue && user.LastStreakDate.Value.Date == yesterday)
+                {
+                    user.CurrentStreak++;
+                }
+                else
+                {
+                    user.CurrentStreak = 1;
+                }
 
+                if (user.CurrentStreak > user.MaxStreak)
+                { 
+                    user.MaxStreak = user.CurrentStreak; 
+                }
+
+                user.LastStreakDate = DateTime.UtcNow.AddHours(7).Date; 
+
+                long bonusXP = 100;
                 user.TotalXP += bonusXP;
 
                 var history = new UserXpHistory
