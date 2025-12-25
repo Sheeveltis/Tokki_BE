@@ -1,5 +1,7 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using System.Security.Claims;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
@@ -13,22 +15,36 @@ namespace Tokki.Application.UseCases.Topics.Commands.CreateTopic
         private readonly ITopicRepository _topicRepository;
         private readonly IIdGeneratorService _idGeneratorService;
         private readonly ILogger<CreateTopicCommandHandler> _logger;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public CreateTopicCommandHandler(
             ITopicRepository topicRepository,
             IIdGeneratorService idGeneratorService,
-            ILogger<CreateTopicCommandHandler> logger)
+            ILogger<CreateTopicCommandHandler> logger,
+            IHttpContextAccessor httpContextAccessor)
         {
             _topicRepository = topicRepository;
             _idGeneratorService = idGeneratorService;
             _logger = logger;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<OperationResult<string>> Handle(CreateTopicCommand request, CancellationToken cancellationToken)
         {
+            // USER (CreateBy from claims)
+            var currentUserId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrWhiteSpace(currentUserId))
+            {
+                return OperationResult<string>.Failure(
+                    new List<Error> { AppErrors.UserUnauthorized },
+                    401,
+                    AppErrors.UserUnauthorized.Description
+                );
+            }
+
             try
             {
-                // 1. Kiểm tra tên topic đã tồn tại chưa
+                // 1) Check duplicated topic name
                 bool topicNameExists = await _topicRepository.IsTopicNameExistsAsync(request.TopicName);
                 if (topicNameExists)
                 {
@@ -39,28 +55,27 @@ namespace Tokki.Application.UseCases.Topics.Commands.CreateTopic
                     );
                 }
 
-                // 2. Tạo topic mới
+                // 2) Create new topic (DEFAULT = Draft)
                 string newId = _idGeneratorService.GenerateCustom(15);
                 var topic = new Topic
                 {
                     TopicId = newId,
                     TopicName = request.TopicName,
-                    ImgUrl=request.ImgUrl,
-                    Level=request.Level,
+                    ImgUrl = request.ImgUrl,
+                    Level = request.Level,
                     Description = request.Description,
-                    CreateBy = request.CreateBy,
+                    CreateBy = currentUserId,
                     CreateDate = DateTime.UtcNow.AddHours(7),
-                    Status = TopicStatus.Active 
+                    Status = TopicStatus.Draft
                 };
 
                 await _topicRepository.AddAsync(topic);
                 await _topicRepository.SaveChangesAsync(cancellationToken);
 
-
                 return OperationResult<string>.Success(
                     topic.TopicId,
                     201,
-                    "Tạo chủ đề thành công"
+                    "Tạo chủ đề (bản nháp) thành công"
                 );
             }
             catch (Exception ex)

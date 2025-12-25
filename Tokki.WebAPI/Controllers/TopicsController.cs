@@ -11,6 +11,7 @@ using Tokki.Application.UseCases.Topics.Queries;
 using Tokki.Domain.Enums;
 using Tokki.Application.UseCases.Topics.Commands.AddVocabulariesToTopic;
 using Tokki.Application.UseCases.Topics.Commands.RemoveVocabulariesFromTopic;
+using Tokki.Application.UseCases.Topics.Commands.PublishTopic;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -139,6 +140,12 @@ namespace Tokki.WebAPI.Controllers
             }
             var result = await _mediator.Send(command);
 
+            return StatusCode(result.StatusCode, result);
+        }
+        [HttpPut("{topicId}/publish")]
+        public async Task<IActionResult> Publish(string topicId)
+        {
+            var result = await _mediator.Send(new PublishTopicCommand { TopicId = topicId });
             return StatusCode(result.StatusCode, result);
         }
 

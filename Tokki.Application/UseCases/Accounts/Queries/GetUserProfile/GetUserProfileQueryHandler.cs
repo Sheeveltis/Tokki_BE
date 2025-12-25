@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Tokki.Application.Common.Models;
@@ -39,10 +38,23 @@ namespace Tokki.Application.UseCases.Accounts.Queries.GetUserProfile
                 FullName = user.FullName,
                 PhoneNumber = user.PhoneNumber,
                 AvatarUrl = user.AvatarUrl,
-                DateOfBirth = DateOnly.FromDateTime( user.DateOfBirth ?? new DateTime(2000, 1, 1)), 
+
+                DateOfBirth = user.DateOfBirth.HasValue
+                    ? DateOnly.FromDateTime(user.DateOfBirth.Value)
+                    : null,
+
                 Role = user.Role,
                 Status = user.Status,
-                TotalXP = user.TotalXP
+
+                TotalXP = user.TotalXP,
+                CurrentStreak = user.CurrentStreak,
+                MaxStreak = user.MaxStreak,
+
+                // "CurrentTitle" hiện tại trả CurrentTitleId (nếu muốn trả tên title thì cần join Title table)
+                CurrentTitle = user.CurrentTitleId,
+
+                Level = user.Level,        // int? (nullable)
+                LastLoginAt = user.LastLoginAt
             };
 
             return OperationResult<UserProfileDto>.Success(userDto, 200);

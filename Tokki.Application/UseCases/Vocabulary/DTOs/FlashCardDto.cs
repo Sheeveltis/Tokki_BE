@@ -8,7 +8,8 @@ using Tokki.Domain.Enums;
 namespace Tokki.Application.UseCases.Vocabulary.DTOs
 {
     public class FlashCardDto
-    {         
+    {
+            public string VocabularyId { get; set; } = string.Empty;
             public string Text { get; set; } = string.Empty;
             public string Definition { get; set; } = string.Empty;
             public string? ImgURL { get; set; }
