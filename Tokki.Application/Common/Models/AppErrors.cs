@@ -39,6 +39,7 @@ namespace Tokki.Application.Common.Models
         public static readonly Error FacebookEmailRequired = new("Auth.FacebookEmailRequired", "Vui lòng cấp quyền truy cập email từ Facebook.");
         public static readonly Error FacebookIdMismatch =    new("Facebook.IdMismatch", "Facebook token không khớp với FacebookId.");
         public static readonly Error FacebookEmailMismatch =    new("Facebook.EmailMismatch", "Email cung cấp không khớp với email từ Facebook token.");
+        public static readonly Error GoogleEmailRequired = new("Google.GoogleEmailRequired", "Email là bắt buộc. Vui lòng cấp quyền email cho ứng dụng");
 
 
         // ============================================

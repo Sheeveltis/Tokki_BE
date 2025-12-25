@@ -266,8 +266,12 @@ namespace Tokki.Application.UseCases.Accounts.Commands.FacebookLogin
                     _logger.LogError(ex, $"Created Facebook account ({user.UserId}) but email sending failed.");
                 }
             }
+            // 6) Generate JWT (lấy thời gian hết hạn từ SystemConfig)
+            int tokenExpirationMinutes = await GetIntConfigAsync("TOKEN_EXPIRATION_MINUTES", 60);
+            DateTime tokenExpiresAtUtc = DateTime.UtcNow.AddMinutes(tokenExpirationMinutes);
 
-            var token = _jwtGenerator.GenerateToken(user, DateTime.UtcNow.AddMinutes(60));
+            var token = _jwtGenerator.GenerateToken(user, tokenExpiresAtUtc);
+
 
             var successMessage = isNewAccount
                 ? (emailSent
@@ -355,5 +359,15 @@ namespace Tokki.Application.UseCases.Accounts.Commands.FacebookLogin
             [JsonPropertyName("expires_at")]
             public long? ExpiresAt { get; set; }
         }
+        private async Task<int> GetIntConfigAsync(string key, int defaultValue)
+        {
+            var val = await _systemConfigRepository.GetValueByKeyAsync(key);
+            if (!string.IsNullOrWhiteSpace(val) && int.TryParse(val, out var result) && result > 0)
+            {
+                return result;
+            }
+            return defaultValue;
+        }
+
     }
 }
