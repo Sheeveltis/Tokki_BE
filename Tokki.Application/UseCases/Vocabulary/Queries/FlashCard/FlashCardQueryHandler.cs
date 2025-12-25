@@ -68,6 +68,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Queries.FlashCard
                 .Where(v => v.Status == VocabularyStatus.Active)
                 .Select(vocab => new FlashCardDto
                 {
+                    VocabularyId = vocab.VocabularyId,
                     Text = vocab.Text,
                     Definition = vocab.Definition,
                     ImgURL = vocab.ImgURL,
