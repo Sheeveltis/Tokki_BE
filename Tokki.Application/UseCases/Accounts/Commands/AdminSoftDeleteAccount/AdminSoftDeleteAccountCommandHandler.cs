@@ -48,7 +48,7 @@ namespace Tokki.Application.UseCases.Accounts.Commands.AdminSoftDeleteAccount
             {
                 return OperationResult<string>.Failure(new List<Error>
                 {
-                    new Error("Account.AlreadyDeleted", "Tài khoản đã bị xóa trước đó.")
+                    new Error("Account.AlreadyDeleted", "Tài khoản này đã bị vô hiệu hóa!")
                 });
             }
 
@@ -62,7 +62,7 @@ namespace Tokki.Application.UseCases.Accounts.Commands.AdminSoftDeleteAccount
             await _accountRepository.UpdateUserAsync(user);
             await _accountRepository.SaveChangesAsync(cancellationToken);
 
-            return OperationResult<string>.Success("Admin đã xóa mềm tài khoản thành công!", 200);
+            return OperationResult<string>.Success("Vô hiệu hóa tài khoản của người dùng thành công.", 200);
         }
     }
 }

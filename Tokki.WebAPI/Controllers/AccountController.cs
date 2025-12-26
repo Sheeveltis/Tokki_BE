@@ -170,7 +170,7 @@ namespace Tokki.WebAPI.Controllers
         {
             var adminId = GetUserId();
             if (string.IsNullOrEmpty(adminId))
-                return Unauthorized("Không tìm thấy định danh Admin.");
+                return Unauthorized("Không xác định được tài khoản quản trị!");
 
             command.AdminId = adminId;
 
@@ -230,7 +230,7 @@ namespace Tokki.WebAPI.Controllers
         {
             var adminId = GetUserId();
             if (string.IsNullOrEmpty(adminId))
-                return Unauthorized(new { message = "Không tìm thấy định danh Admin." });
+                return Unauthorized(new { message = "Không xác định được tài khoản quản trị!" });
 
             var command = new AdminSoftDeleteAccountCommand
             {
