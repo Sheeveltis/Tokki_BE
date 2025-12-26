@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http; // Cần cho IFormFile
 using Microsoft.AspNetCore.Mvc;
 using Tokki.Application.UseCases.Cloudinary.Commands.UploadVocabularyImage;
+using Tokki.Application.UseCases.Cloudinary.Commands.UploadVocabularyImageByUrl;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -17,7 +18,7 @@ namespace Tokki.WebAPI.Controllers
         }
 
         [HttpPost("vocabulary-image")]
-        [Consumes("multipart/form-data")] 
+        [Consumes("multipart/form-data")]
         public async Task<IActionResult> UploadVocabularyImage(IFormFile file)
         {
             var command = new UploadVocabularyImageCommand
@@ -26,6 +27,23 @@ namespace Tokki.WebAPI.Controllers
             };
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
+        }
+        [HttpPost("vocabulary-image/url")]
+        public async Task<IActionResult> TestUpload(string ImgUrl)
+        {
+            try
+            {
+                var command = new UploadVocabularyImageByUrlCommand
+                {
+                    ImageUrl = ImgUrl
+                };
+                var result = await _sender.Send(command);
+                return StatusCode(result.StatusCode, result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.ToString());
+            }
         }
     }
 }
