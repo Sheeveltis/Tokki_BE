@@ -235,5 +235,36 @@ namespace Tokki.Infrastructure.Repositories
 
             return (items, totalCount);
         }
+
+
+        //Hàm của Kho
+        //Check xem có bị trùng text vs definition khi add = excel
+        public async Task<List<Vocabulary>> GetExistingVocabEntitiesAsync(List<(string Text, string Definition)> inputs)
+        {
+            var inputTexts = inputs.Select(x => x.Text).Distinct().ToList();
+
+            var dbCandidates = await _context.Vocabularies
+                .Where(v => inputTexts.Contains(v.Text) && v.Status == VocabularyStatus.Active)
+                .ToListAsync();
+
+            var matches = new List<Vocabulary>();
+
+            foreach (var input in inputs)
+            {
+                var match = dbCandidates.FirstOrDefault(db =>
+                    db.Text.Equals(input.Text, StringComparison.OrdinalIgnoreCase) &&
+                    db.Definition.Equals(input.Definition, StringComparison.OrdinalIgnoreCase));
+
+                if (match != null) matches.Add(match);
+            }
+            return matches; 
+        }
+        //Hàm của Kho
+        //Add nhiều vocab 1 lần
+        public async Task AddRangeAsync(List<Vocabulary> vocabularies)
+        {
+            await _context.Vocabularies.AddRangeAsync(vocabularies);
+            await _context.SaveChangesAsync();
+        }
     }
 }

@@ -80,6 +80,14 @@ namespace Tokki.Application.IRepositories
            string? vocabId,
            VocabularyStatus? status,
            string? searchText);
+
+
+        //Hàm của Kho
+        //Check xem có bị trùng text vs definition khi add = excel
+        Task<List<Vocabulary>> GetExistingVocabEntitiesAsync(List<(string Text, string Definition)> inputs);
+        //Hàm của Kho
+        //Add nhiều vocab 1 lần
+        Task AddRangeAsync(List<Vocabulary> vocabularies);
     }
 
 }
