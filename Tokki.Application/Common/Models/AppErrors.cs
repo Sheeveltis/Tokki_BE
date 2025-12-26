@@ -251,5 +251,11 @@ namespace Tokki.Application.Common.Models
         public static readonly Error MiniGameNotFound = new("MiniGame.NotFound", "Trò chơi không tồn tại.");
         public static readonly Error MiniGameInvalidParameters = new("MiniGame.InvalidParameters", "Tham số trò chơi không hợp lệ.");
         public static readonly Error MiniGameMatchingVocabNotFound = new ("MiniGame.MatchingVocabNotFound", "Không tìm thấy từ vựng để tạo thẻ ghép.");
+        //Excel
+        public static readonly Error ExcelFileInvalidFormat = new("Excel.FileInvalidFormat", "Định dạng file Excel không hợp lệ.");
+        public static readonly Error ExcelFileReadError = new("Excel.FileReadError", "Lỗi khi đọc file Excel.");
+        public static readonly Error ExcelNoValidDataFound = new("Excel.NoValidDataFound", "Không tìm thấy dữ liệu hợp lệ trong file Excel.");
+        public static readonly Error ExcelDataValidationFailed = new("Excel.DataValidationFailed", "Dữ liệu trong file Excel không hợp lệ.");
+        public static readonly Error ExcelDataNull = new("Excel.DataNull", "Dữ liệu trong file Excel bị trống.");
     }
 }
