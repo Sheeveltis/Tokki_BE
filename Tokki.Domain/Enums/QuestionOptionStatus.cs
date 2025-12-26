@@ -8,7 +8,7 @@ namespace Tokki.Domain.Enums
 {
     public enum QuestionOptionStatus
     {
-        Deleted = 0,
+        Deleted = 2,
         Active = 1
     }
 }
