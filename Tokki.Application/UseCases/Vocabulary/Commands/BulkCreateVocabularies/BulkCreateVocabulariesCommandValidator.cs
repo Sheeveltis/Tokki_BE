@@ -24,15 +24,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies
                     .MaximumLength(500)
                     .WithName("Definition");
 
-                vocab.RuleFor(v => v.ExampleSentence)
-                    .MaximumLength(500)
-                    .WithName("ExampleSentence")
-                    .When(v => !string.IsNullOrEmpty(v.ExampleSentence));
-
-                vocab.RuleFor(v => v.TopicIds)
-                    .Must(x => x == null || x.Count <= 20)
-                    .WithMessage("Một vocabulary không thể thuộc quá 20 topics.") 
-                    .WithName("Danh sách chủ đề");
+               
             });
         }
     }

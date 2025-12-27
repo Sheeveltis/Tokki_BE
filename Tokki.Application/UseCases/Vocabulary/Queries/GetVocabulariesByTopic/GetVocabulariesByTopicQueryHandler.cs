@@ -79,7 +79,6 @@ namespace Tokki.Application.UseCases.Vocabulary.Queries.GetVocabulariesByTopic
                     Text = vocab.Text,
                     Pronunciation = vocab.Pronunciation,
                     Definition = vocab.Definition,
-                    ExampleSentence = vocab.ExampleSentence,
                     ImgURL = vocab.ImgURL,
                     Topics = topics,
                     CreateDate = vocab.CreateDate,

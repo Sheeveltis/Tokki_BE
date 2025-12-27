@@ -176,7 +176,6 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies
                         Text = vocabDto.Text,
                         Pronunciation = vocabDto.Pronunciation,
                         Definition = vocabDto.Definition,
-                        ExampleSentence = vocabDto.ExampleSentence,
                         ImgURL = vocabDto.ImgURL,
                         CreateBy = currentUserId,
                         CreateDate = DateTime.UtcNow.AddHours(7),

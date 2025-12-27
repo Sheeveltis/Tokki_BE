@@ -26,33 +26,6 @@ namespace Tokki.WebAPI.Controllers
             _mediator = mediator;
         }
 
-        /// <summary>
-        /// Tạo hàng loạt vocabulary
-        /// </summary>
-        /// <remarks>
-        /// Sample request:
-        /// 
-        ///     POST /api/vocabulary/bulk
-        ///     {
-        ///         "vocabularies": [
-        ///             {
-        ///                 "text": "은행",
-        ///                 "pronunciation": "eunhaeng",
-        ///                 "definition": "ngân hàng",
-        ///                 "exampleSentence": "은행에 가서 돈을 찾았어요.",
-        ///                 "topicIds": ["topic_ngan_hang", "topic_dia_diem"]
-        ///             },
-        ///             {
-        ///                 "text": "은행",
-        ///                 "pronunciation": "eunhaeng",
-        ///                 "definition": "quả ngân hạnh",
-        ///                 "exampleSentence": "은행은 건강에 좋아요.",
-        ///                 "topicIds": ["topic_thuc_vat"]
-        ///             }
-        ///         ]
-        ///     }
-        /// 
-        /// </remarks>
         [HttpPost("bulk")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -89,7 +62,6 @@ namespace Tokki.WebAPI.Controllers
            ///     {
            ///         "pronunciation": "eunhaeng",
            ///         "definition": "ngân hàng (cập nhật)",
-           ///         "exampleSentence": "새로운 예문",
            ///         "topicIds": ["topic_ngan_hang", "topic_dia_diem", "topic_doi_song"]
            ///     }
            /// 

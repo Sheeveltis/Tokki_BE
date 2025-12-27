@@ -20,22 +20,12 @@ namespace Tokki.Application.UseCases.Vocabulary.DTOs
         /// </summary>
         public string? Definition { get; set; }
 
-        /// <summary>
-        /// Câu ví dụ mới
-        /// </summary>
-        public string? ExampleSentence { get; set; }
 
         /// <summary>
         /// URL hình ảnh mới
         /// </summary>
         public string? ImgURL { get; set; }
 
-        /// <summary>
-        /// Danh sách TopicId mới (sẽ thay thế hoàn toàn danh sách cũ)
-        /// - Nếu null: không cập nhật topics (giữ nguyên)
-        /// - Nếu []: xóa tất cả topics (vocabulary không thuộc topic nào)
-        /// - Nếu ["id1", "id2"]: thay thế bằng danh sách mới
-        /// </summary>
-        public List<string>? TopicIds { get; set; }
+     
     }
 }

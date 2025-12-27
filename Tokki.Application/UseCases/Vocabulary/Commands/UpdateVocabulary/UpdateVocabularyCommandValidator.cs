@@ -15,10 +15,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.UpdateVocabulary
                 .WithName("Definition")
                 .When(x => x.UpdateData.Definition != null);
 
-            RuleFor(x => x.UpdateData.ExampleSentence)
-                .MaximumLength(500)
-                .WithName("ExampleSentence")
-                .When(x => x.UpdateData.ExampleSentence != null);
+           
         }
     }
 }

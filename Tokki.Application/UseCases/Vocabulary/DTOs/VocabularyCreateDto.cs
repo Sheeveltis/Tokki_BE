@@ -27,19 +27,13 @@ namespace Tokki.Application.UseCases.Vocabulary.DTOs
         /// </summary>
         public string Definition { get; set; } = string.Empty;
 
-        /// <summary>
-        /// Câu ví dụ sử dụng từ này
-        /// </summary>
-        public string? ExampleSentence { get; set; }
+     
 
         /// <summary>
         /// URL hình ảnh minh họa
         /// </summary>
         public string? ImgURL { get; set; }
 
-        /// <summary>
-        /// Danh sách TopicId mà vocabulary này thuộc về
-        /// </summary>
-        public List<string> TopicIds { get; set; } = new();
+       
     }
 }

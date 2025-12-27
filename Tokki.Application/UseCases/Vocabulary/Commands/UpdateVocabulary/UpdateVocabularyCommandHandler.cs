@@ -78,11 +78,6 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.UpdateVocabulary
                 vocabulary.Definition = request.UpdateData.Definition;
             }
 
-            if (request.UpdateData.ExampleSentence != null)
-            {
-                vocabulary.ExampleSentence = request.UpdateData.ExampleSentence;
-            }
-
             if (request.UpdateData.ImgURL != null)
             {
                 vocabulary.ImgURL = request.UpdateData.ImgURL;
