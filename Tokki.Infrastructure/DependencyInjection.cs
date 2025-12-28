@@ -1,12 +1,13 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Application.Services;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Tokki.Application.Common.Helpers;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Infrastructure.Data;
 using Tokki.Infrastructure.Repositories;
 using Tokki.Infrastructure.Services;
-using Microsoft.EntityFrameworkCore;
-using Tokki.Application.Common.Helpers;
 namespace Tokki.Infrastructure
 {
     public static class DependencyInjection
@@ -45,6 +46,11 @@ namespace Tokki.Infrastructure
             services.AddScoped<IExamQuestionRepository, ExamQuestionRepository>();
             services.AddScoped<IVocabularyRepository, VocabularyRepository>();
             services.AddScoped<IVocabularyTopicRepository, VocabularyTopicRepository>();
+            services.AddScoped<ISocialLoginRepository, SocialLoginRepository>();
+            services.AddScoped<IVocabularyExampleRepository, VocabularyExampleRepository>();
+            services.AddScoped<IUserFavoriteVocabularyRepository, UserFavoriteVocabularyRepository>();
+
+
             // Bạn cũng cần kiểm tra và đăng ký các Repository khác mà Command Handler đang yêu cầu:
             services.AddSingleton<IIdGeneratorService, IdGeneratorService>();
             services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
@@ -60,8 +66,13 @@ namespace Tokki.Infrastructure
             //Comment
             services.AddScoped<ICommentRepository, CommentRepository>();
             //Live Chat
-            services.AddSingleton<IChatService, ChatService>();
+            services.AddScoped<IChatRepository, ChatRepository>();
             services.AddScoped<IChatRoomRepository, ChatRoomRepository>();
+            services.AddScoped<IUserVocabProgressRepository, UserVocabProgressRepository>();
+            //Mini game
+            services.AddScoped<IMiniGameRepository, MiniGameRepository>();
+            //Excel
+            services.AddScoped<IExcelService, ExcelService>();
             return services;
         }
     }

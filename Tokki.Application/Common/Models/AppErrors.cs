@@ -1,4 +1,5 @@
 ﻿using Tokki.Application.Common.Models;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.Common.Models
 {
@@ -26,6 +27,21 @@ namespace Tokki.Application.Common.Models
         public static readonly Error AccountBanned = new("Auth.AccountBanned", "Tài khoản của bạn đã bị khóa vĩnh viễn.");
         public static readonly Error AccountLocked = new("Auth.AccountLocked", "Tài khoản đang bị tạm khóa do đăng nhập sai nhiều lần.");
         public static readonly Error AccountNotFound = new("Account.NotFound", "Không tìm thấy tài khoản.");
+        public static readonly Error AccountInActive = new("Account.AccountInActive", "Tài khoảng không hoạt động.");
+        public static readonly Error MergeAccountRequered = new("Account.MergeAccountRequered", "Email đã được đăng ký vui lòng đồng ý tích hợp.");
+        public static readonly Error Unauthorized =   new("Auth.Unauthorized", "Bạn cần đăng nhập để thực hiện thao tác này.");
+        public static readonly Error FavoriteVocabularyAddFailed = new("FavoriteVocabulary.AddFailed", "Không thể thêm từ vựng vào danh sách yêu thích.");
+        public static readonly Error FavoriteVocabularyRemoveFailed =  new("FavoriteVocabulary.RemoveFailed", "Không thể gỡ từ vựng khỏi danh sách yêu thích.");
+        public static readonly Error AccountAlreadyDeleted = new("Account.AlreadyDeleted", "Tài khoản đã bị xóa trước đó.");
+        public static readonly Error InvalidGoogleToken = new("Auth.InvalidGoogleToken", "Google token không hợp lệ.");
+        public static readonly Error InvalidFacebookToken = new("Auth.InvalidFacebookToken", "Facebook token không hợp lệ.");
+        public static readonly Error FacebookAlreadyLinked = new("Account.FacebookAlreadyLinked", "Tài khoản Facebook này đã được liên kết.");
+        public static readonly Error FacebookEmailRequired = new("Auth.FacebookEmailRequired", "Vui lòng cấp quyền truy cập email từ Facebook.");
+        public static readonly Error FacebookIdMismatch =    new("Facebook.IdMismatch", "Facebook token không khớp với FacebookId.");
+        public static readonly Error FacebookEmailMismatch =    new("Facebook.EmailMismatch", "Email cung cấp không khớp với email từ Facebook token.");
+        public static readonly Error GoogleEmailRequired = new("Google.GoogleEmailRequired", "Email là bắt buộc. Vui lòng cấp quyền email cho ứng dụng");
+
+
         // ============================================
         // NHÓM 3: BLOG/POST
         // ============================================
@@ -113,26 +129,38 @@ namespace Tokki.Application.Common.Models
         public static readonly Error TopicUnauthorized = new("Topic.Unauthorized", "Bạn không có quyền thao tác với chủ đề này.");
         public static readonly Error TopicHasVocabularies = new("Topic.HasVocabularies", "Không thể xóa chủ đề đang có từ vựng.");
         public static readonly Error TopicAlreadyDeleted = new("Topic.AlreadyDeleted", "Chủ đề đã bị xóa trước đó.");
-      
+        public static readonly Error TopicInvalidStatusTransition =  new("Topic.InvalidStatusTransition", "Không thể chuyển trạng thái chủ đề theo yêu cầu.");
+
         // ============================================
         // NHÓM 12: VOCABULARY (Từ vựng)
         // ============================================
         public static readonly Error VocabularyNotFound = new("Vocabulary.NotFound", "Từ vựng không tồn tại.");
         public static readonly Error VocabularyDuplicated = new("Vocabulary.Duplicated", "Từ vựng đã tồn tại trong chủ đề này.");
         public static readonly Error VocabularyAlreadyDeleted = new("Vocabulary.AlreadyDeleted", "Từ vựng đã bị xóa trước đó.");
+        public static readonly Error VocabularyListEmpty = new("Vocabulary.ListEmpty", "Danh sách từ vựng rỗng hoặc không hợp lệ.");
+        public static readonly Error NoValidVocabulariesFound = new("Vocabulary.NoValidFound", "Không tìm thấy từ vựng nào hợp lệ trong danh sách gửi lên.");
+        public static readonly Error VocabularyDeleted = new("Vocabulary.Deleted", "Từ vựng đã bị xóa, không thể thêm vào chủ đề.");
+        public static readonly Error VocabularyInactive = new("Vocabulary.Inactive", "Từ vựng đang không hoạt động, không thể thêm vào chủ đề.");
+        public static readonly Error VocabularyAddFailed = new("Vocabulary.AddFailed", "Không thể thêm từ vựng vào chủ đề.");
+        public static readonly Error VocabularyTransactionFailed = new("Vocabulary.TransactionFailed", "Thực hiện thất bại. Không có từ vựng nào được thêm vào chủ đề.");
+        public static readonly Error VocabularyInUse = new("Vocabulary.VocabularyInUse", "Từ vựng này đang được sử dụng trong 1 chủ đề.");
+
+        
+        public static Error VocabularyWithIdNotFound(List<string> vocabularyIds)
+            => new("Vocabulary.IdsNotFound", $"Các từ vựng sau không tồn tại: {string.Join(", ", vocabularyIds)}");
+
+        public static Error VocabularyStatusInvalid(string text, string vocabularyId, string status)
+            => new("Vocabulary.StatusInvalid", $"{text} (ID: {vocabularyId}) - {status}");
+
+        // ========
 
         // ============================================
         // NHÓM 13: WORD
         // ============================================
-        public static readonly Error WordNotFound = new("Word.NotFound", "Từ vựng không tồn tại.");
-        public static readonly Error WordDuplicated = new("Word.Duplicated", "Từ vựng đã tồn tại.");
-        public static readonly Error WordInUse = new("Word.InUse", "Từ vựng đang được sử dụng, không thể xóa.");
 
         // ============================================
-        // NHÓM 14: MEANING & AUDIO
+        // NHÓM 14: AUDIO
         // ============================================
-        public static readonly Error MeaningNotFound = new("Meaning.NotFound", "Nghĩa của từ không tồn tại.");
-        public static readonly Error MeaningInvalidWord = new("Meaning.InvalidWord", "Nghĩa không thuộc về từ vựng này.");
         public static readonly Error AudioGenerationFailed = new("Audio.GenerationFailed", "Không thể tạo file âm thanh.");
         public static readonly Error AudioUploadFailed = new("Audio.UploadFailed", "Không thể tải file âm thanh lên cloud.");
 
@@ -174,7 +202,11 @@ namespace Tokki.Application.Common.Models
         public static readonly Error QuestionBankMultipleCorrectAnswers = new("QuestionBank.MultipleCorrectAnswers", "Câu hỏi chỉ được có một đáp án đúng.");
         public static readonly Error QuestionBankInvalidKeyOption = new("QuestionBank.InvalidKeyOption", "Đáp án phải có KeyOption từ '1' đến '4'.");
         public static readonly Error QuestionBankDuplicateKeyOption = new("QuestionBank.DuplicateKeyOption", "Không được trùng KeyOption trong các đáp án.");
-
+        public static Error PassageMediaTypeMismatch(PassageMediaType mediaType, QuestionSkill skill) => new(
+        "Passage.MediaTypeMismatch",
+        $"Loại media '{mediaType}' của bài đọc không phù hợp với kỹ năng '{skill}'."
+        );
+        public static readonly Error WritingNoOptions = new("QuestionBank.WritingNoOptions","Câu hỏi tự luận (Writing) không được có đáp án trắc nghiệm");
         // ============================================
         // NHÓM 20: QUESTION OPTION
         // ============================================
@@ -215,5 +247,15 @@ namespace Tokki.Application.Common.Models
         //LiveChat
         public static readonly Error ChatRoomNotFound = new("ChatRoom.NotFound", "Phòng chat không tồn tại.");
         public static readonly Error ChatRoomAlreadySupported = new("ChatRoom.AlreadySupported", "Phòng chat đã có nhân viên hỗ trợ.");
+        //Mini-game
+        public static readonly Error MiniGameNotFound = new("MiniGame.NotFound", "Trò chơi không tồn tại.");
+        public static readonly Error MiniGameInvalidParameters = new("MiniGame.InvalidParameters", "Tham số trò chơi không hợp lệ.");
+        public static readonly Error MiniGameMatchingVocabNotFound = new ("MiniGame.MatchingVocabNotFound", "Không tìm thấy từ vựng để tạo thẻ ghép.");
+        //Excel
+        public static readonly Error ExcelFileInvalidFormat = new("Excel.FileInvalidFormat", "Định dạng file Excel không hợp lệ.");
+        public static readonly Error ExcelFileReadError = new("Excel.FileReadError", "Lỗi khi đọc file Excel.");
+        public static readonly Error ExcelNoValidDataFound = new("Excel.NoValidDataFound", "Không tìm thấy dữ liệu hợp lệ trong file Excel.");
+        public static readonly Error ExcelDataValidationFailed = new("Excel.DataValidationFailed", "Dữ liệu trong file Excel không hợp lệ.");
+        public static readonly Error ExcelDataNull = new("Excel.DataNull", "Dữ liệu trong file Excel bị trống.");
     }
 }

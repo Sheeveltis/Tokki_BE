@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Tokki.Application.UseCases.Vocabulary.DTOs;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 
@@ -67,5 +68,26 @@ namespace Tokki.Application.IRepositories
             string? topicId = null,
             VocabularyStatus? status = null
         );
+        Task<(List<VocabularySearchResultDto> Items, int TotalCount)>  SearchVocabulariesAsync(
+         string searchTerm,
+         int pageNumber,
+         int pageSize);
+        Task<List<Vocabulary>> GetByIdsAsync(List<string> vocabularyIds);
+
+        Task<(IEnumerable<Vocabulary> Items, int TotalCount)> GetPagedVocabulariesForManagerAsync(
+           int pageNumber,
+           int pageSize,
+           string? vocabId,
+           VocabularyStatus? status,
+           string? searchText);
+
+
+        //Hàm của Kho
+        //Check xem có bị trùng text vs definition khi add = excel
+        Task<List<Vocabulary>> GetExistingVocabEntitiesAsync(List<(string Text, string Definition)> inputs);
+        //Hàm của Kho
+        //Add nhiều vocab 1 lần
+        Task AddRangeAsync(List<Vocabulary> vocabularies);
     }
+
 }

@@ -9,7 +9,6 @@ namespace Tokki.Domain.Enums
     public enum VocabularyTopicStatus
     {
         Active = 1,
-        Inactive = 0,
-        Deleted = 3
+        Deleted = 2
     }
 }

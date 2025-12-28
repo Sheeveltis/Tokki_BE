@@ -128,5 +128,36 @@ namespace Tokki.Infrastructure.Repositories
         {
             await _context.SaveChangesAsync(cancellationToken);
         }
+
+        public async Task<(List<Topic> Items, int TotalCount)> GetPagedForUserAsync(int pageNumber, int pageSize, string? searchTerm = null, TopicLevel? level = null)
+        {
+            var query = _context.Topics
+                .Include(t => t.VocabularyTopics)
+                .Where(t => t.Status == TopicStatus.Active) // Chỉ lấy Status = 1 (Active)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                query = query.Where(t =>
+                    t.TopicName.Contains(searchTerm) ||
+                    (t.Description != null && t.Description.Contains(searchTerm))
+                );
+            }
+
+            if (level.HasValue)
+            {
+                query = query.Where(t => t.Level == level.Value);
+            }
+
+            int totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderByDescending(t => t.CreateDate)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
     }
 }

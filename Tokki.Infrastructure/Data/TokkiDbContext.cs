@@ -10,7 +10,6 @@ namespace Tokki.Infrastructure.Data
     {
         public TokkiDbContext(DbContextOptions<TokkiDbContext> options) : base(options) { }
 
-        // --- DbSets ---
         public DbSet<Blog> Blogs { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Tag> Tags { get; set; }
@@ -34,6 +33,7 @@ namespace Tokki.Infrastructure.Data
         public DbSet<Vocabulary> Vocabularies { get; set; }
         public DbSet<VocabularyTopic> VocabularyTopics { get; set; }
         public DbSet<UserFavoriteVocabulary> UserFavoriteVocabularies { get; set; }
+        public DbSet<VocabularyExample> VocabularyExamples { get; set; }
 
         public DbSet<Comment> Comments { get; set; }
 
@@ -50,6 +50,8 @@ namespace Tokki.Infrastructure.Data
         //Live chat
         public DbSet<ChatRoom> ChatRooms { get; set; }
         public DbSet<ChatRoomMember> ChatRoomMembers { get; set; }
+        public DbSet<ChatMessage> ChatMessages { get; set; }
+        public DbSet<UserVocabProgress> UserVocabProgresses { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -85,9 +87,32 @@ namespace Tokki.Infrastructure.Data
                 .Property(b => b.Status)
                 .HasConversion<int>();
 
-            modelBuilder.Entity<Report>()
-                .Property(r => r.Status)
-                .HasConversion<int>();
+            modelBuilder.Entity<Report>(entity =>
+            {
+                entity.HasKey(r => r.Id);
+
+                entity.Property(r => r.Status)
+                      .HasConversion<int>();
+
+                entity.Property(r => r.QuestionBankId)
+                      .HasColumnType("varchar(10)");
+
+                entity.Property(r => r.VocabularyId)
+                      .HasColumnType("varchar(15)");
+
+                entity.Property(r => r.ReportType)
+                      .HasMaxLength(50);
+
+                entity.HasOne(r => r.QuestionBank)
+                      .WithMany()
+                      .HasForeignKey(r => r.QuestionBankId)
+                      .OnDelete(DeleteBehavior.SetNull);
+
+                entity.HasOne(r => r.Vocabulary)
+                      .WithMany()
+                      .HasForeignKey(r => r.VocabularyId)
+                      .OnDelete(DeleteBehavior.SetNull);
+            });
 
             modelBuilder.Entity<AccountTitle>()
                 .HasKey(at => new { at.UserId, at.TitleId });

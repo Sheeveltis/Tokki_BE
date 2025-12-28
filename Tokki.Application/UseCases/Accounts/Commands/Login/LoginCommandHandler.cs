@@ -48,7 +48,11 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
             // Lấy thời gian hiện tại
             DateTime utcNow = DateTime.UtcNow;
             DateTime vietnamTimeNow = utcNow.AddHours(7);
-
+        
+            if (user.Status == AccountStatus.Inactive)
+            {
+                return OperationResult<LoginResponse>.Failure(new List<Error> { AppErrors.AccountInActive }, 403, "Tài khoản của bạn không hoạt động.");
+            }
             // 2. Kiểm tra Banned
             if (user.Status == AccountStatus.Banned)
             {
@@ -68,7 +72,7 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
             if (!isPasswordValid)
             {
                 await HandleFailedLoginAsync(user, vietnamTimeNow, cancellationToken);
-                return OperationResult<LoginResponse>.Failure(new List<Error> { AppErrors.WrongPassword }, 400, "Mật khẩu không chính xác.");
+                return OperationResult<LoginResponse>.Failure(new List<Error> { AppErrors.WrongPassword }, 400, AppErrors.WrongPassword.Description);
             }
             string? defaultPassword = await _systemConfigRepository.GetValueByKeyAsync("DEFALUT_PASSWORD_FOR_STAFF");
 
@@ -86,10 +90,16 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
             {
                 user.FailedLoginCount = 0;
                 user.LockedUntil = null;
-                await _accountRepository.UpdateUserAsync(user);
             }
 
+            // Cập nhật LastLoginAt / UpdatedAt (lưu giờ VN như bạn đang dùng)
+            user.LastLoginAt = vietnamTimeNow;
+            user.UpdatedAt = vietnamTimeNow;
+
+            await _accountRepository.UpdateUserAsync(user);
+
             await _gamificationService.CheckLoginGamificationAsync(user.UserId);
+
 
             // --- 5. TẠO TOKEN & SESSION ---
 

@@ -44,5 +44,19 @@ namespace Tokki.Application.IRepositories
         /// Lưu thay đổi vào database
         /// </summary>
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+
+        Task<(bool Success, int AddedCount, List<string> FailedItems)> AddVocabulariesToTopicWithTransactionAsync(
+           string topicId,
+           List<Vocabulary> vocabularies,
+           string? currentUserId,
+           CancellationToken cancellationToken = default);
+        Task<(bool success, int removedCount, List<string> failedItems)>
+      SoftRemoveVocabulariesFromTopicAsync(
+          string topicId,
+          List<string> vocabularyIds,
+          string? removedBy,
+          CancellationToken cancellationToken);
+        Task<bool> HasActiveTopicAsync(string vocabularyId, CancellationToken cancellationToken);
+
     }
 }

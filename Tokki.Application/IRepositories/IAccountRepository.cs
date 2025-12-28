@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using Tokki.Application.UseCases.Accounts.DTOs;
 using Tokki.Application.UseCases.Leaderboard.DTOs;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
@@ -30,5 +31,6 @@ namespace Tokki.Application.IRepositories
         Task<int> CountUnlockedTitlesAsync(string userId);
         Task<int> CountSessionsAsync(string userId);
         Task<int> CountSocialLoginsAsync(string userId);
+        Task<AccountBasicInfoDTO?> GetBasicInfoAsync(string userId);
     }
 }

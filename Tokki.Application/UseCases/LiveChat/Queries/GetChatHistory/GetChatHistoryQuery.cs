@@ -9,7 +9,7 @@ using Tokki.Domain.Entities;
 
 namespace Tokki.Application.UseCases.LiveChat.Queries.GetChatHistory
 {
-    public class GetChatHistoryQuery : IRequest<OperationResult<List<LiveChatMessage>>>
+    public class GetChatHistoryQuery : IRequest<OperationResult<List<ChatMessage>>>
     {
         public string RoomId { get; set; } = string.Empty;
     }

@@ -2,21 +2,27 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 using System.Threading.Tasks;
+using Tokki.Application.Common.Models;
 using Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies;
+using Tokki.Application.UseCases.Vocabulary.Commands.CreateVocabulary;
 using Tokki.Application.UseCases.Vocabulary.Commands.DeleteVocabulary;
 using Tokki.Application.UseCases.Vocabulary.Commands.UpdateVocabulary;
 using Tokki.Application.UseCases.Vocabulary.DTOs;
-using Tokki.Application.UseCases.Vocabulary.Queries;
+using Tokki.Application.UseCases.Vocabulary.Queries; // Namespace chứa GetVocabularyByTextQuery (nếu có)
 using Tokki.Application.UseCases.Vocabulary.Queries.FlashCard;
+using Tokki.Application.UseCases.Vocabulary.Queries.GetAllForManager; // <--- THÊM DÒNG NÀY
+using Tokki.Application.UseCases.Vocabulary.Queries.GetById;
 using Tokki.Application.UseCases.Vocabulary.Queries.GetVocabulariesByTopic;
+using Tokki.Application.UseCases.Vocabulary.Queries.SearchVocabulary;
 using Tokki.Domain.Enums;
 
 namespace Tokki.WebAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    // [Authorize]
     public class VocabularyController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -26,6 +32,59 @@ namespace Tokki.WebAPI.Controllers
             _mediator = mediator;
         }
 
+<<<<<<< HEAD
+=======
+        [HttpGet("user/get-detail/{vocabularyId}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetVocabularyDetail(string vocabularyId)
+        {
+            var query = new GetVocabularyDetailByIdQuery
+            {
+                VocabularyId = vocabularyId
+            };
+
+            var result = await _mediator.Send(query);
+            return StatusCode(result.StatusCode, result);
+        }
+        /// <summary>
+        /// Lấy danh sách vocabulary cho Manager (có filter, search, paging)
+        /// </summary>
+        /// <remarks>
+        /// API này dùng cho trang quản lý, cho phép lọc theo status, topic, tìm kiếm.
+        /// </remarks>
+        [HttpGet("admin/get-all")]
+        [Authorize(Roles = "Manager,Admin")] // Bạn có thể mở comment này nếu muốn chặn user thường
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAllForManager(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] VocabularyStatus? status = null,
+            [FromQuery] string? vocabId = null,
+            [FromQuery] string? searchText = null)
+        {
+            var query = new GetAllForManagerQuery
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                Status = status,
+                VocabId = vocabId,
+                SearchText = searchText
+            };
+
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess)
+            {
+                return StatusCode(result.StatusCode, result);
+            }
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Tạo hàng loạt vocabulary
+        /// </summary>
+>>>>>>> 519bc38f4c1de86d626062dd3e0674f2cf6e5803
         [HttpPost("bulk")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -41,7 +100,53 @@ namespace Tokki.WebAPI.Controllers
 
             return StatusCode(result.StatusCode, result);
         }
+        /// </summary>
+        [HttpPost("admin/create-a-vocabulary")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> CreateVocabularies([FromBody] CreateVocabularyCommand command)
+        {
+            var result = await _mediator.Send(command);
 
+            if (!result.IsSuccess)
+            {
+                return StatusCode(result.StatusCode, result);
+            }
+
+            return StatusCode(result.StatusCode, result);
+        }
+
+        /// <summary>
+        /// Search vocabulary for user (OLD - giữ để backward compatibility)
+        /// </summary>
+        [HttpGet("search-for-user")]
+        [AllowAnonymous]
+        public async Task<IActionResult> SearchVocabulary(
+           [FromQuery] string searchTerm,
+           [FromQuery] int pageNumber = 1,
+           [FromQuery] int pageSize = 20)
+        {
+            var query = new SearchVocabularyQuery
+            {
+                SearchTerm = searchTerm,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+
+            var result = await _mediator.Send(query);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+
+            return StatusCode(result.StatusCode, result);
+        }
+
+        /// <summary>
+        /// Get flash card by topic
+        /// </summary>
         [HttpGet("flash-card")]
         [AllowAnonymous]
         public async Task<IActionResult> GetFlashCardByTopic([FromQuery] FlashCardQuery command)
@@ -52,6 +157,7 @@ namespace Tokki.WebAPI.Controllers
                 return StatusCode(result.StatusCode, result);
             }
             return StatusCode(result.StatusCode, result);
+<<<<<<< HEAD
         }  /// <summary>
            /// Cập nhật vocabulary
            /// </summary>
@@ -66,13 +172,20 @@ namespace Tokki.WebAPI.Controllers
            ///     }
            /// 
            /// </remarks>
+=======
+        }
+
+        /// <summary>
+        /// Cập nhật vocabulary
+        /// </summary>
+>>>>>>> 519bc38f4c1de86d626062dd3e0674f2cf6e5803
         [HttpPut("{vocabularyId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> UpdateVocabulary(
-            string vocabularyId, 
+            string vocabularyId,
             [FromBody] VocabularyUpdateDto updateData)
         {
             var command = new UpdateVocabularyCommand
@@ -118,11 +231,6 @@ namespace Tokki.WebAPI.Controllers
         /// <summary>
         /// Lấy tất cả nghĩa của một từ
         /// </summary>
-        /// <remarks>
-        /// Ví dụ: GET /api/vocabulary/by-text?text=은행 sẽ trả về:
-        /// - 은행 - ngân hàng (với topics: Ngân hàng, Địa điểm, Đời sống)
-        /// - 은행 - quả ngân hạnh (với topics: Thực vật)
-        /// </remarks>
         [HttpGet("by-text")]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -134,6 +242,9 @@ namespace Tokki.WebAPI.Controllers
             [FromQuery] string? topicId = null,
             [FromQuery] VocabularyStatus? status = null)
         {
+            // Giả định bạn đã có class GetVocabularyByTextQuery
+            // Nếu chưa có class này, bạn cần tạo nó hoặc dùng GetAllForManagerQuery thay thế
+            // Tạm thời comment code nếu class chưa tồn tại để tránh lỗi build
             var query = new GetVocabularyByTextQuery
             {
                 Text = text,
@@ -156,9 +267,6 @@ namespace Tokki.WebAPI.Controllers
         /// <summary>
         /// Lấy vocabularies theo topic
         /// </summary>
-        /// <remarks>
-        /// Lấy tất cả vocabularies thuộc một topic cụ thể
-        /// </remarks>
         [HttpGet("by-topic/{topicId}")]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -192,10 +300,7 @@ namespace Tokki.WebAPI.Controllers
         /// <summary>
         /// Search vocabularies (tìm kiếm từ vựng)
         /// </summary>
-        /// <remarks>
-        /// Tìm kiếm vocabularies theo text hoặc definition
-        /// </remarks>
-        [HttpGet("search")]
+        [HttpGet("search-by-topic")]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> SearchVocabularies(
@@ -210,7 +315,6 @@ namespace Tokki.WebAPI.Controllers
                 return BadRequest(new { message = "Vui lòng nhập từ khóa tìm kiếm" });
             }
 
-            // Sử dụng GetVocabulariesByTopic với searchText
             var query = new GetVocabulariesByTopicQuery
             {
                 TopicId = topicId ?? string.Empty,
@@ -224,5 +328,9 @@ namespace Tokki.WebAPI.Controllers
 
             return Ok(result);
         }
+
     }
+     
+
+       
 }

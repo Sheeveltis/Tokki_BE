@@ -26,10 +26,7 @@ namespace Tokki.Application.UseCases.Topics.Commands.UpdateTopic
                 .When(x => !string.IsNullOrEmpty(x.Description))
                 .WithName("Mô tả");
 
-            RuleFor(x => x.UpdatedBy)
-                .NotEmpty()
-                .MaximumLength(15)
-                .WithName("Người cập nhật");
+          
             RuleFor(x => x.Level)
                 .IsInEnum().WithMessage("Cấp độ không hợp lệ.")
                 .WithName("Cấp độ");

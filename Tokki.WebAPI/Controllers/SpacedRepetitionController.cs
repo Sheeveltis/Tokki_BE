@@ -1,0 +1,65 @@
+﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using Tokki.Application.UseCases.VocabSpacedRepetition.Commands.SubmitReview;
+using Tokki.Application.UseCases.VocabSpacedRepetition.DTOs;
+
+namespace Tokki.WebAPI.Controllers
+{
+    [Route("api/spaced-repetition")]
+    [ApiController]
+    [Authorize]
+    public class SpacedRepetitionController : ControllerBase
+    {
+        private readonly ISender _sender;
+
+        public SpacedRepetitionController(ISender sender)
+        {
+            _sender = sender;
+        }
+
+        /// <summary>
+        /// Gửi kết quả học (Nhớ/Quên) cho 1 từ vựng
+        /// </summary>
+        [HttpPost("submit")]
+        public async Task<IActionResult> SubmitReview([FromBody] SubmitReviewCommand request)
+        {
+            var userId = User.FindFirst("UserId")?.Value
+                         ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("Không xác định được người dùng.");
+            }
+
+            var command = new SubmitReviewCommand
+            {
+                UserId = userId,
+                VocabularyId = request.VocabularyId,
+                Quality = request.Quality
+            };
+
+            var result = await _sender.Send(command);
+
+            return StatusCode(result.StatusCode, result);
+        }
+        [HttpGet("vocab-for-review")]
+        public async Task<IActionResult> GetNextVocabularyForReview(int limit = 100)
+        {
+            var userId = User.FindFirst("UserId")?.Value
+                         ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("Không xác định được người dùng.");
+            }
+            var query = new GetDueReviewsQuery
+            {
+                UserId = userId,
+                Limit = limit
+            };
+            var result = await _sender.Send(query);
+            return StatusCode(result.StatusCode, result);
+        }
+    }
+}

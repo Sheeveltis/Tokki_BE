@@ -1,7 +1,8 @@
-﻿using System.Threading;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Tokki.Application.IRepositories;
+using Tokki.Application.UseCases.Accounts.DTOs;
 using Tokki.Application.UseCases.Leaderboard.DTOs;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
@@ -250,6 +251,24 @@ namespace Tokki.Infrastructure.Repositories
         {
             return await _context.SocialLogins
                 .CountAsync(sl => sl.UserId == userId);
+        }
+        public async Task<AccountBasicInfoDTO?> GetBasicInfoAsync(string userId)
+        {
+            var query = from a in _context.Accounts
+                        where a.UserId == userId
+                        join t in _context.Titles
+                        on a.CurrentTitleId equals t.TitleId into userTitles
+                        from title in userTitles.DefaultIfEmpty()
+
+                        select new AccountBasicInfoDTO
+                        {
+                            FullName = a.FullName,
+                            AvatarUrl = a.AvatarUrl,
+                            CurrentTitleName = title != null ? title.Name : null,
+                            CurrentColorHexTitle = title != null ? title.ColorHex : null,
+                            TitleIconUrl = title != null ? title.IconUrl : null
+                        };
+            return await query.AsNoTracking().FirstOrDefaultAsync();
         }
     }
 }

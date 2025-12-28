@@ -23,7 +23,7 @@ namespace Tokki.Domain.Entities
         public string? PhoneNumber { get; set; } // Optional: Không bắt buộc
 
         [Column(TypeName = "date")]
-        public DateTime DateOfBirth { get; set; }
+        public DateTime? DateOfBirth { get; set; }
         // PasswordHash vẫn phải để NULLABLE để hỗ trợ Login Google/Facebook
         [MaxLength(255)]
         public string? PasswordHash { get; set; }
@@ -55,6 +55,8 @@ namespace Tokki.Domain.Entities
         [ForeignKey("CurrentTitleId")]
         public virtual Title? CurrentTitle { get; set; }
         public virtual ICollection<AccountTitle> UnlockedTitles { get; set; } = new List<AccountTitle>();
+
+        public TopicLevel? Level { get; set; } = null;
 
         // --- MỚI THÊM LẠI (Bảo mật & Tracking) ---
 

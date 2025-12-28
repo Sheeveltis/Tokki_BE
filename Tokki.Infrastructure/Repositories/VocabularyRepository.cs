@@ -1,10 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Tokki.Application.IRepositories;
+using Tokki.Application.UseCases.Vocabulary.DTOs;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 using Tokki.Infrastructure.Data;
@@ -75,8 +71,8 @@ namespace Tokki.Infrastructure.Repositories
             var query = _context.Vocabularies
                 .Include(v => v.VocabularyTopics)
                     .ThenInclude(vt => vt.Topic)
-                .Where(v => v.VocabularyTopics.Any(vt => 
-                    vt.TopicId == topicId && 
+                .Where(v => v.VocabularyTopics.Any(vt =>
+                    vt.TopicId == topicId &&
                     vt.Status == VocabularyTopicStatus.Active));
 
             // Filter by status
@@ -93,8 +89,8 @@ namespace Tokki.Infrastructure.Repositories
             // Search by text or definition
             if (!string.IsNullOrWhiteSpace(searchText))
             {
-                query = query.Where(v => 
-                    v.Text.Contains(searchText) || 
+                query = query.Where(v =>
+                    v.Text.Contains(searchText) ||
                     v.Definition.Contains(searchText));
             }
 
@@ -136,8 +132,8 @@ namespace Tokki.Infrastructure.Repositories
             // Filter by topic if provided
             if (!string.IsNullOrWhiteSpace(topicId))
             {
-                query = query.Where(v => v.VocabularyTopics.Any(vt => 
-                    vt.TopicId == topicId && 
+                query = query.Where(v => v.VocabularyTopics.Any(vt =>
+                    vt.TopicId == topicId &&
                     vt.Status == VocabularyTopicStatus.Active));
             }
 
@@ -150,6 +146,125 @@ namespace Tokki.Infrastructure.Repositories
                 .ToListAsync();
 
             return (items, totalCount);
+        }
+        public async Task<List<Vocabulary>> GetByIdsAsync(List<string> vocabularyIds)
+        {
+            return await _context.Vocabularies
+                .Where(v => vocabularyIds.Contains(v.VocabularyId))
+                .ToListAsync();
+        }
+        // Tokki.Infrastructure.Repositories.VocabularyRepository.cs
+        public async Task<(IEnumerable<Vocabulary> Items, int TotalCount)> GetPagedVocabulariesForManagerAsync(
+            int pageNumber,
+            int pageSize,
+            string? vocabId,
+            VocabularyStatus? status,
+            string? searchText)
+        {
+            var query = _context.Vocabularies.AsNoTracking().AsQueryable();
+
+            // Lọc theo VocabId (thay cho TopicId)
+            if (!string.IsNullOrWhiteSpace(vocabId))
+            {
+                query = query.Where(v => v.VocabularyId == vocabId);
+            }
+
+            if (status.HasValue)
+            {
+                query = query.Where(v => v.Status == status.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                var text = searchText.ToLower().Trim();
+                query = query.Where(v =>
+                    v.Text.ToLower().Contains(text) ||
+                    v.Definition.ToLower().Contains(text) ||
+                    (v.Pronunciation != null && v.Pronunciation.ToLower().Contains(text))
+                );
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderByDescending(v => v.CreateDate)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
+        public async Task<(List<VocabularySearchResultDto> Items, int TotalCount)>
+       SearchVocabulariesAsync(
+           string searchTerm,
+           int pageNumber,
+           int pageSize)
+        {
+            var query = _context.Vocabularies
+                .AsNoTracking()
+                .Where(v => v.Status == VocabularyStatus.Active);
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var term = searchTerm.Trim().ToLower();
+
+                // ✅ TÌM KIẾM HAI CHIỀU: Text ↔ Definition
+                query = query.Where(v =>
+                    v.Text.ToLower().Contains(term) ||           // Tìm trong Text (VD: 안녕)
+                    v.Definition.ToLower().Contains(term) ||     // Tìm trong Definition (VD: Xin chào)
+                    (v.Pronunciation != null &&
+                     v.Pronunciation.ToLower().Contains(term))   // Tìm trong Pronunciation (VD: annyeong)
+                );
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderBy(v => v.Text.ToLower().StartsWith(searchTerm.ToLower()) ? 0 : 1) // Ưu tiên kết quả bắt đầu bằng search term
+                .ThenBy(v => v.Text)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(v => new VocabularySearchResultDto
+                {
+                    VocabularyId = v.VocabularyId,
+                    Text = v.Text,
+                    Definition = v.Definition,
+                    Pronunciation = v.Pronunciation
+                })
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
+
+
+        //Hàm của Kho
+        //Check xem có bị trùng text vs definition khi add = excel
+        public async Task<List<Vocabulary>> GetExistingVocabEntitiesAsync(List<(string Text, string Definition)> inputs)
+        {
+            var inputTexts = inputs.Select(x => x.Text).Distinct().ToList();
+
+            var dbCandidates = await _context.Vocabularies
+                .Where(v => inputTexts.Contains(v.Text) && v.Status == VocabularyStatus.Active)
+                .ToListAsync();
+
+            var matches = new List<Vocabulary>();
+
+            foreach (var input in inputs)
+            {
+                var match = dbCandidates.FirstOrDefault(db =>
+                    db.Text.Equals(input.Text, StringComparison.OrdinalIgnoreCase) &&
+                    db.Definition.Equals(input.Definition, StringComparison.OrdinalIgnoreCase));
+
+                if (match != null) matches.Add(match);
+            }
+            return matches; 
+        }
+        //Hàm của Kho
+        //Add nhiều vocab 1 lần
+        public async Task AddRangeAsync(List<Vocabulary> vocabularies)
+        {
+            await _context.Vocabularies.AddRangeAsync(vocabularies);
+            await _context.SaveChangesAsync();
         }
     }
 }

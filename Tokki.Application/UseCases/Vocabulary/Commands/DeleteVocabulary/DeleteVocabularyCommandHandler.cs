@@ -32,12 +32,15 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.DeleteVocabulary
         }
 
         public async Task<OperationResult<bool>> Handle(
-            DeleteVocabularyCommand request,
-            CancellationToken cancellationToken)
+     DeleteVocabularyCommand request,
+     CancellationToken cancellationToken)
         {
             try
             {
-                var currentUserId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var currentUserId = _httpContextAccessor.HttpContext?
+                    .User?
+                    .FindFirst(ClaimTypes.NameIdentifier)?
+                    .Value;
 
                 if (string.IsNullOrEmpty(currentUserId))
                 {
@@ -48,7 +51,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.DeleteVocabulary
                     );
                 }
 
-                // 1. Kiểm tra vocabulary tồn tại
+                // 1. Check vocabulary tồn tại
                 var vocabulary = await _vocabularyRepository.GetByIdAsync(request.VocabularyId);
 
                 if (vocabulary == null)
@@ -60,7 +63,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.DeleteVocabulary
                     );
                 }
 
-                // 2. Kiểm tra đã bị xóa chưa
+                // 2. Đã bị xóa chưa
                 if (vocabulary.Status == VocabularyStatus.Deleted)
                 {
                     return OperationResult<bool>.Failure(
@@ -70,25 +73,29 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.DeleteVocabulary
                     );
                 }
 
-                // 3. Soft delete: đánh dấu status là Deleted
+                // 🔥 3. CHECK ĐANG THUỘC TOPIC KHÔNG
+                var isInAnyTopic = await _vocabularyTopicRepository
+                    .HasActiveTopicAsync(vocabulary.VocabularyId, cancellationToken);
+
+                if (isInAnyTopic)
+                {
+                    return OperationResult<bool>.Failure(
+                        new List<Error> { AppErrors.VocabularyInUse },
+                        400,
+                        "Thât bại."
+                    );
+                }
+
+                // 4. Soft delete vocabulary
                 vocabulary.Status = VocabularyStatus.Deleted;
                 vocabulary.UpdateBy = currentUserId;
                 vocabulary.UpdateDate = DateTime.UtcNow;
 
-                // 4. Đánh dấu xóa các relationships
-                var vocabTopics = await _vocabularyTopicRepository.GetByVocabularyIdAsync(vocabulary.VocabularyId);
-                foreach (var vt in vocabTopics)
-                {
-                    vt.Status = VocabularyTopicStatus.Deleted;
-                    vt.UpdateBy = currentUserId;
-                    vt.UpdateDate = DateTime.UtcNow;
-                    await _vocabularyTopicRepository.UpdateAsync(vt);
-                }
-
                 await _vocabularyRepository.UpdateAsync(vocabulary);
                 await _vocabularyRepository.SaveChangesAsync(cancellationToken);
 
-                _logger.LogInformation("Đã xóa vocabulary: {VocabularyId}", request.VocabularyId);
+                _logger.LogInformation(
+                    "Đã xóa vocabulary {VocabularyId}", request.VocabularyId);
 
                 return OperationResult<bool>.Success(
                     true,
@@ -98,7 +105,8 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.DeleteVocabulary
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Lỗi khi xóa vocabulary: {VocabularyId}", request.VocabularyId);
+                _logger.LogError(ex, "Lỗi khi xóa vocabulary {VocabularyId}", request.VocabularyId);
+
                 return OperationResult<bool>.Failure(
                     new List<Error> { AppErrors.ServerError },
                     500,
@@ -106,5 +114,6 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.DeleteVocabulary
                 );
             }
         }
+
     }
 }

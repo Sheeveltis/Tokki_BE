@@ -42,7 +42,9 @@ namespace Tokki.Application.UseCases.Topics.Queries
                     Description = topic.Description,                  
                     Level=topic.Level,
                     ImgUrl=topic.ImgUrl,
-                    VocabularyCount = vocabularyCount
+                    VocabularyCount = vocabularyCount,
+                    Status = topic.Status
+
                 });
             }
 

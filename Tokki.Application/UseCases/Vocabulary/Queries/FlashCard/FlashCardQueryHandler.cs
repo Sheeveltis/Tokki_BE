@@ -7,73 +7,81 @@ using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.Vocabulary.DTOs;
-using Tokki.Application.UseCases.Vocabulary.Queries.GetVocabulariesByTopic;
 using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Vocabulary.Queries.FlashCard
 {
-    public class FlashCardQueryHandler: IRequestHandler<FlashCardQuery, OperationResult<PagedResult<FlashCardDto>>>
+    public class FlashCardQueryHandler : IRequestHandler<FlashCardQuery, OperationResult<List<FlashCardDto>>>
+    {
+        private readonly IVocabularyRepository _vocabularyRepository;
+        private readonly ITopicRepository _topicRepository;
+        private readonly IVocabularyTopicRepository _vocabularyTopicRepository;
+
+        public FlashCardQueryHandler(
+            IVocabularyRepository vocabularyRepository,
+            ITopicRepository topicRepository,
+            IVocabularyTopicRepository vocabularyTopicRepository)
         {
-            private readonly IVocabularyRepository _vocabularyRepository;
-            private readonly ITopicRepository _topicRepository;
-            private readonly IVocabularyTopicRepository _vocabularyTopicRepository;
+            _vocabularyRepository = vocabularyRepository;
+            _topicRepository = topicRepository;
+            _vocabularyTopicRepository = vocabularyTopicRepository;
+        }
 
-            public FlashCardQueryHandler(
-                IVocabularyRepository vocabularyRepository,
-                ITopicRepository topicRepository,
-                IVocabularyTopicRepository vocabularyTopicRepository)
-            {
-                _vocabularyRepository = vocabularyRepository;
-                _topicRepository = topicRepository;
-                _vocabularyTopicRepository = vocabularyTopicRepository;
-            }
-
-
-        public async Task<OperationResult<PagedResult<FlashCardDto>>> Handle(FlashCardQuery request, CancellationToken cancellationToken)
+        public async Task<OperationResult<List<FlashCardDto>>> Handle(
+            FlashCardQuery request,
+            CancellationToken cancellationToken)
         {
             // Validate topic tồn tại
             var topic = await _topicRepository.GetByIdAsync(request.TopicId);
             if (topic == null)
             {
-                return OperationResult<PagedResult<FlashCardDto>>.Failure(
-                    new List<Tokki.Application.Common.Models.Error> { AppErrors.TopicNotFound },
-                    404, "Lấy từ vựng thất bại."
+                return OperationResult<List<FlashCardDto>>.Failure(
+                    new List<Error> { AppErrors.TopicNotFound },
+                    404,
+                    "Topic không tồn tại."
                 );
             }
 
-            // Lấy vocabularies theo topic với phân trang
-            var (vocabularies, totalCount) = await _vocabularyRepository.GetPagedVocabulariesByTopicAsync(
-                request.TopicId,
-                request.PageNumber,
-                request.PageSize
-            );
+            // Lấy tất cả VocabularyTopic relationships theo TopicId
+            var vocabularyTopics = await _vocabularyTopicRepository.GetByTopicIdAsync(request.TopicId);
 
-            // Build response
-            var flashCardDto = new List<FlashCardDto>();
+            // Lấy danh sách VocabularyId
+            var vocabularyIds = vocabularyTopics
+                .Where(vt => vt.Status == VocabularyTopicStatus.Active)
+                .Select(vt => vt.VocabularyId)
+                .ToList();
 
-            foreach (var vocab in vocabularies)
+            if (!vocabularyIds.Any())
             {
-                flashCardDto.Add(new FlashCardDto
-                {
-                    Text = vocab.Text,
-                    Definition = vocab.Definition,
-                    ImgURL = vocab.ImgURL
-                });
+                return OperationResult<List<FlashCardDto>>.Success(
+                    new List<FlashCardDto>(),
+                    200,
+                    "Topic này chưa có từ vựng nào."
+                );
             }
 
-            var pagedResult = PagedResult<FlashCardDto>.Create(
-                flashCardDto,
-                totalCount,
-                request.PageNumber,
-                request.PageSize
-            );
+            // Lấy vocabularies theo danh sách IDs
+            var vocabularies = await _vocabularyRepository.GetByIdsAsync(vocabularyIds);
 
-            return OperationResult<PagedResult<FlashCardDto>>.Success(
-                pagedResult,
+            // Build response
+            var flashCardDto = vocabularies
+                .Where(v => v.Status == VocabularyStatus.Active)
+                .Select(vocab => new FlashCardDto
+                {
+                    VocabularyId = vocab.VocabularyId,
+                    Text = vocab.Text,
+                    Definition = vocab.Definition,
+                    ImgURL = vocab.ImgURL,
+                    AudioUrl = vocab.AudioURL
+                    
+                })
+                .ToList();
+
+            return OperationResult<List<FlashCardDto>>.Success(
+                flashCardDto,
                 200,
-                "Lấy từ vựng thành công."  // ✅ Sửa từ ' thành "
+                $"Lấy {flashCardDto.Count} từ vựng thành công."
             );
         }
-
     }
 }

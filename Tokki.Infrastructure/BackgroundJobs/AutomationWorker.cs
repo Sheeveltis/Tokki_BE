@@ -58,6 +58,10 @@ namespace Tokki.Infrastructure.BackgroundJobs
                     await SendOfflineReminder(context, emailService, idGenerator, 90, "OFFLINE_90_DAYS");
                     await SendOfflineReminder(context, emailService, idGenerator, 180, "OFFLINE_180_DAYS");
 
+                    //TA
+                    await ResetDailyProgressAndCheckBreaks(context);
+                    await SendOfflineReminder(context, emailService, idGenerator, 30, "OFFLINE_30_DAYS");
+
                     // ========== VIP EXPIRING REMINDERS ==========
                     await SendVipExpiringReminder(context, emailService, idGenerator, 7, "VIP_EXPIRING_7_DAYS");
                     await SendVipExpiringReminder(context, emailService, idGenerator, 3, "VIP_EXPIRING_3_DAYS");
@@ -70,6 +74,29 @@ namespace Tokki.Infrastructure.BackgroundJobs
                     _logger.LogError(ex, "Lỗi khi chạy Daily Tasks");
                 }
             }
+        }
+        //TA
+        private async Task ResetDailyProgressAndCheckBreaks(TokkiDbContext context)
+        {
+            _logger.LogInformation("Bắt đầu reset DailyStudySeconds và kiểm tra đứt chuỗi streak...");
+
+            var yesterday = DateTime.UtcNow.AddHours(7).Date.AddDays(-1);
+
+            var usersToUpdate = await context.Accounts
+                .Where(u => u.DailyStudySeconds > 0 || (u.CurrentStreak > 0 && u.LastStreakDate < yesterday))
+                .ToListAsync();
+
+            foreach (var user in usersToUpdate)
+            {
+                user.DailyStudySeconds = 0;
+
+                if (user.LastStreakDate.HasValue && user.LastStreakDate.Value.Date < yesterday)
+                {
+                    user.CurrentStreak = 0;
+                }
+            }
+
+            await context.SaveChangesAsync();
         }
 
         // ========== HÀM GỬI EMAIL OFFLINE (ĐÃ SỬA) ==========

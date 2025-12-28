@@ -85,6 +85,10 @@ namespace Tokki.Application.UseCases.Vocabulary.Queries
                     Text = vocab.Text,
                     Pronunciation = vocab.Pronunciation,
                     Definition = vocab.Definition,
+<<<<<<< HEAD
+=======
+                   // ExampleSentence = vocab.ExampleSentence,
+>>>>>>> 519bc38f4c1de86d626062dd3e0674f2cf6e5803
                     ImgURL = vocab.ImgURL,
                     Topics = topics,
                     CreateDate = vocab.CreateDate,
