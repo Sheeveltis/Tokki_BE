@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Http; // Cần cho IFormFile
 using Microsoft.AspNetCore.Mvc;
+using Tokki.Application.UseCases.Cloudinary.Commands.UploadTopicImage;
 using Tokki.Application.UseCases.Cloudinary.Commands.UploadVocabularyImage;
 using Tokki.Application.UseCases.Cloudinary.Commands.UploadVocabularyImageByUrl;
 
@@ -28,6 +29,17 @@ namespace Tokki.WebAPI.Controllers
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
         }
+        [HttpPost("topic-image")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UploadTopicImage(IFormFile file)
+        {
+            var command = new UploadTopicImageCommand
+            {
+                File = file
+            };
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
         [HttpPost("vocabulary-image/url")]
         public async Task<IActionResult> TestUpload(string ImgUrl)
         {
@@ -45,5 +57,6 @@ namespace Tokki.WebAPI.Controllers
                 return StatusCode(500, ex.ToString());
             }
         }
+
     }
 }
