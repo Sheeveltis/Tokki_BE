@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage;
 using Tokki.Domain.Entities;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.IRepositories
 {
@@ -15,6 +16,9 @@ namespace Tokki.Application.IRepositories
         Task DeleteRangeAsync(List<VocabularyExample> examples);
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
         Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
-
+        Task<List<VocabularyExample>> GetByVocabularyIdAsync(
+       string vocabularyId,
+       VocabularyExampleStatus? status,
+       CancellationToken cancellationToken);
     }
 }

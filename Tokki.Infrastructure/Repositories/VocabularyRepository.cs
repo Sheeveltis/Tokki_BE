@@ -21,8 +21,11 @@ namespace Tokki.Infrastructure.Repositories
             return await _context.Vocabularies
                 .Include(v => v.VocabularyTopics)
                     .ThenInclude(vt => vt.Topic)
+                .Include(v => v.VocabularyExamples)
+                .AsSplitQuery()
                 .FirstOrDefaultAsync(v => v.VocabularyId == vocabularyId);
         }
+
 
         public async Task<Vocabulary?> GetByTextAndDefinitionAsync(string text, string definition)
         {
@@ -159,11 +162,11 @@ namespace Tokki.Infrastructure.Repositories
             int pageSize,
             string? vocabId,
             VocabularyStatus? status,
-            string? searchText)
+            string? searchText,
+            TopicLevel? levelTopic)
         {
             var query = _context.Vocabularies.AsNoTracking().AsQueryable();
 
-            // Lọc theo VocabId (thay cho TopicId)
             if (!string.IsNullOrWhiteSpace(vocabId))
             {
                 query = query.Where(v => v.VocabularyId == vocabId);
@@ -172,6 +175,20 @@ namespace Tokki.Infrastructure.Repositories
             if (status.HasValue)
             {
                 query = query.Where(v => v.Status == status.Value);
+            }
+
+            // Lọc theo Level của Topic
+            if (levelTopic.HasValue)
+            {
+                var level = levelTopic.Value;
+
+                query = query.Where(v =>
+                    v.VocabularyTopics.Any(vt =>
+                        vt.Topic.Level == level
+                        && vt.Status == VocabularyTopicStatus.Active
+                        && vt.Topic.Status == TopicStatus.Active
+                    )
+                );
             }
 
             if (!string.IsNullOrWhiteSpace(searchText))
@@ -194,6 +211,7 @@ namespace Tokki.Infrastructure.Repositories
 
             return (items, totalCount);
         }
+
         public async Task<(List<VocabularySearchResultDto> Items, int TotalCount)>
        SearchVocabulariesAsync(
            string searchTerm,
@@ -235,5 +253,45 @@ namespace Tokki.Infrastructure.Repositories
 
             return (items, totalCount);
         }
+
+
+        //Hàm của Kho
+        //Check xem có bị trùng text vs definition khi add = excel
+        public async Task<List<Vocabulary>> GetExistingVocabEntitiesAsync(List<(string Text, string Definition)> inputs)
+        {
+            var inputTexts = inputs.Select(x => x.Text).Distinct().ToList();
+
+            var dbCandidates = await _context.Vocabularies
+                .Where(v => inputTexts.Contains(v.Text) && v.Status == VocabularyStatus.Active)
+                .ToListAsync();
+
+            var matches = new List<Vocabulary>();
+
+            foreach (var input in inputs)
+            {
+                var match = dbCandidates.FirstOrDefault(db =>
+                    db.Text.Equals(input.Text, StringComparison.OrdinalIgnoreCase) &&
+                    db.Definition.Equals(input.Definition, StringComparison.OrdinalIgnoreCase));
+
+                if (match != null) matches.Add(match);
+            }
+            return matches; 
+        }
+        //Hàm của Kho
+        //Add nhiều vocab 1 lần
+        public async Task AddRangeAsync(List<Vocabulary> vocabularies)
+        {
+            await _context.Vocabularies.AddRangeAsync(vocabularies);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<Vocabulary?> GetByIdWithChildrenAsync(string vocabularyId)
+        {
+            return await _context.Vocabularies
+                .Include(v => v.VocabularyTopics)
+                .Include(v => v.VocabularyExamples)
+                .FirstOrDefaultAsync(v => v.VocabularyId == vocabularyId);
+        }
+
     }
 }

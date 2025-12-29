@@ -8,10 +8,12 @@ using System.Globalization;
 using System.Text;
 using Tokki.Application;
 using Tokki.Application.Common.Helpers;
+using Tokki.Application.IServices;
 using Tokki.Infrastructure;
 using Tokki.Infrastructure.BackgroundJobs; // Nơi chứa class JwtSettings
 using Tokki.WebAPI.Hubs;
 using Tokki.WebAPI.Middlewares;
+using Tokki.WebAPI.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // ==========================================
@@ -20,6 +22,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+//Phần cho mấy mớ services thuộc webAPI 
+builder.Services.AddSingleton<IChatNotificationService, ChatNotificationService>();
 
 // 2. SỬA CẤU HÌNH SWAGGER (Để hiện nút ổ khóa)
 builder.Services.AddSwaggerGen(option =>

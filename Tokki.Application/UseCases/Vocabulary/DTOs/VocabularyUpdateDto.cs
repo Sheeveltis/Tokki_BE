@@ -1,5 +1,7 @@
 
 
+using Tokki.Domain.Enums;
+
 namespace Tokki.Application.UseCases.Vocabulary.DTOs
 {
     public class VocabularyUpdateDto
@@ -21,17 +23,14 @@ namespace Tokki.Application.UseCases.Vocabulary.DTOs
         /// </summary>
         public string? Definition { get; set; }
 
-        /// <summary>
-        /// Câu ví dụ mới
-        /// </summary>
-       // public string? ExampleSentence { get; set; }
 
         /// <summary>
         /// URL hình ảnh mới
         /// </summary>
         public string? ImgURL { get; set; }
+        public VocabularyStatus? Status { get; set; }
 
-     
-     
+
+
     }
 }

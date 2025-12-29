@@ -21,6 +21,7 @@ namespace Tokki.Application.UseCases.Vocabulary.DTOs
         /// </summary>
         public string Definition { get; set; } = string.Empty;
 
+
         /// <summary>
         /// Danh sách câu ví dụ sử dụng từ này
         /// </summary>
@@ -30,5 +31,6 @@ namespace Tokki.Application.UseCases.Vocabulary.DTOs
         /// URL hình ảnh minh họa
         /// </summary>
         public string? ImgURL { get; set; }
+
     }
 }

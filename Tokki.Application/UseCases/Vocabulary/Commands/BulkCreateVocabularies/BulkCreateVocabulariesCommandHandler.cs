@@ -145,7 +145,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies
                                 continue;
                             }
 
-                            var example = new VocabularyExample
+                            var example = new Domain.Entities.VocabularyExample
                             {
                                 ExampleId = _idGenerator.Generate(15),
                                 VocabularyId = vocabulary.VocabularyId,

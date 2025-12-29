@@ -1,10 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using Tokki.Application.Common.Models;
 using Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies;
 using Tokki.Application.UseCases.Vocabulary.Commands.CreateVocabulary;
 using Tokki.Application.UseCases.Vocabulary.Commands.DeleteVocabulary;
@@ -32,6 +28,7 @@ namespace Tokki.WebAPI.Controllers
             _mediator = mediator;
         }
 
+
         [HttpGet("user/get-detail/{vocabularyId}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetVocabularyDetail(string vocabularyId)
@@ -58,7 +55,8 @@ namespace Tokki.WebAPI.Controllers
             [FromQuery] int pageSize = 20,
             [FromQuery] VocabularyStatus? status = null,
             [FromQuery] string? vocabId = null,
-            [FromQuery] string? searchText = null)
+            [FromQuery] string? searchText = null,
+            [FromQuery] TopicLevel? topicLevel =null)
         {
             var query = new GetAllForManagerQuery
             {
@@ -66,7 +64,9 @@ namespace Tokki.WebAPI.Controllers
                 PageSize = pageSize,
                 Status = status,
                 VocabId = vocabId,
-                SearchText = searchText
+                SearchText = searchText,
+                LevelTopic = topicLevel
+
             };
 
             var result = await _mediator.Send(query);
@@ -154,16 +154,21 @@ namespace Tokki.WebAPI.Controllers
                 return StatusCode(result.StatusCode, result);
             }
             return StatusCode(result.StatusCode, result);
-        }
-
-        /// <summary>
-        /// Cập nhật vocabulary
-        /// </summary>
+        }  /// <summary>
+           /// Cập nhật vocabulary
+           /// </summary>
+           /// <remarks>
+           /// Sample request:
+           /// 
+           ///     PUT /api/vocabulary/{vocabularyId}
+           ///     {
+           ///         "pronunciation": "eunhaeng",
+           ///         "definition": "ngân hàng (cập nhật)",
+           ///         "topicIds": ["topic_ngan_hang", "topic_dia_diem", "topic_doi_song"]
+           ///     }
+           /// 
+           /// </remarks>
         [HttpPut("{vocabularyId}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> UpdateVocabulary(
             string vocabularyId,
             [FromBody] VocabularyUpdateDto updateData)
@@ -308,7 +313,7 @@ namespace Tokki.WebAPI.Controllers
 
             return Ok(result);
         }
-
+        
     }
      
 

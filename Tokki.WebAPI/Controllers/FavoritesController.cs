@@ -10,7 +10,7 @@ namespace Tokki.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-   
+    [Authorize]
     public class FavoritesController : ControllerBase
     {
         private readonly IMediator _mediator;

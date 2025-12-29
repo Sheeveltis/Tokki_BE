@@ -151,6 +151,24 @@ namespace Tokki.Application.Common.Models
 
         public static Error VocabularyStatusInvalid(string text, string vocabularyId, string status)
             => new("Vocabulary.StatusInvalid", $"{text} (ID: {vocabularyId}) - {status}");
+        public static readonly Error ExampleIdEmpty =
+        new("VocabularyExample.ExampleIdEmpty", "ExampleId không được rỗng.");
+
+        public static readonly Error ExampleNotFound =
+            new("VocabularyExample.ExampleNotFound", "Không tìm thấy câu ví dụ.");
+        public static readonly Error VocabularyIdEmpty =
+    new("Vocabulary.VocabularyIdEmpty", "VocabularyId không được rỗng.");
+
+        public static readonly Error ExamplesEmpty =
+            new("VocabularyExample.ExamplesEmpty", "Danh sách câu ví dụ không được rỗng.");
+
+        public static readonly Error ExampleSentenceEmpty =
+            new("VocabularyExample.SentenceEmpty", "Sentence không được rỗng.");
+        public static readonly Error ExampleDuplicate =
+          new("VocabularyExample.ExampleDuplicate", "Câu ví dụ trông được trùng.");
+
+        public static readonly Error VocabularyDeletedCannotUpdate =
+    new("Vocabulary.DeletedCannotUpdate", "Vocabulary đã bị xóa, không thể cập nhật hoặc khôi phục.");
 
         // ========
 
@@ -251,5 +269,11 @@ namespace Tokki.Application.Common.Models
         public static readonly Error MiniGameNotFound = new("MiniGame.NotFound", "Trò chơi không tồn tại.");
         public static readonly Error MiniGameInvalidParameters = new("MiniGame.InvalidParameters", "Tham số trò chơi không hợp lệ.");
         public static readonly Error MiniGameMatchingVocabNotFound = new ("MiniGame.MatchingVocabNotFound", "Không tìm thấy từ vựng để tạo thẻ ghép.");
+        //Excel
+        public static readonly Error ExcelFileInvalidFormat = new("Excel.FileInvalidFormat", "Định dạng file Excel không hợp lệ.");
+        public static readonly Error ExcelFileReadError = new("Excel.FileReadError", "Lỗi khi đọc file Excel.");
+        public static readonly Error ExcelNoValidDataFound = new("Excel.NoValidDataFound", "Không tìm thấy dữ liệu hợp lệ trong file Excel.");
+        public static readonly Error ExcelDataValidationFailed = new("Excel.DataValidationFailed", "Dữ liệu trong file Excel không hợp lệ.");
+        public static readonly Error ExcelDataNull = new("Excel.DataNull", "Dữ liệu trong file Excel bị trống.");
     }
 }

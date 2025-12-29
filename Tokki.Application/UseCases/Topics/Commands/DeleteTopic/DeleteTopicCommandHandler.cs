@@ -1,5 +1,7 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using System.Security.Claims;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Domain.Enums;
@@ -9,13 +11,19 @@ namespace Tokki.Application.UseCases.Topics.Commands.DeleteTopic
     public class DeleteTopicCommandHandler : IRequestHandler<DeleteTopicCommand, OperationResult<bool>>
     {
         private readonly ITopicRepository _topicRepository;
+        private readonly IVocabularyTopicRepository _vocabularyTopicRepository;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<DeleteTopicCommandHandler> _logger;
 
         public DeleteTopicCommandHandler(
             ITopicRepository topicRepository,
+            IVocabularyTopicRepository vocabularyTopicRepository,
+            IHttpContextAccessor httpContextAccessor,
             ILogger<DeleteTopicCommandHandler> logger)
         {
             _topicRepository = topicRepository;
+            _vocabularyTopicRepository = vocabularyTopicRepository;
+            _httpContextAccessor = httpContextAccessor;
             _logger = logger;
         }
 
@@ -23,9 +31,20 @@ namespace Tokki.Application.UseCases.Topics.Commands.DeleteTopic
         {
             try
             {
-                // 1. Kiểm tra xem topic có tồn tại không
-                var existingTopic = await _topicRepository.GetByIdAsync(request.TopicId);
+                var currentUserId = _httpContextAccessor.HttpContext?.User?
+                    .FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
+                if (string.IsNullOrEmpty(currentUserId))
+                {
+                    return OperationResult<bool>.Failure(
+                        new List<Error> { AppErrors.UserUnauthorized },
+                        401,
+                        AppErrors.UserUnauthorized.Description
+                    );
+                }
+
+                // 1) Check topic tồn tại
+                var existingTopic = await _topicRepository.GetByIdAsync(request.TopicId);
                 if (existingTopic == null)
                 {
                     return OperationResult<bool>.Failure(
@@ -35,7 +54,7 @@ namespace Tokki.Application.UseCases.Topics.Commands.DeleteTopic
                     );
                 }
 
-                // 2. Kiểm tra xem topic đã bị xóa mềm trước đó chưa
+                // 2) Nếu topic đã Deleted thì báo
                 if (existingTopic.Status == TopicStatus.Deleted)
                 {
                     return OperationResult<bool>.Failure(
@@ -45,33 +64,43 @@ namespace Tokki.Application.UseCases.Topics.Commands.DeleteTopic
                     );
                 }
 
-                // 3. Kiểm tra xem topic có đang chứa từ vựng không (Business Rule)
-                int numOfWord = await _topicRepository.CountVocabulariesInTopicAsync(request.TopicId);
-                if (numOfWord > 0)
+                // 3) Soft delete topic
+                existingTopic.Status = TopicStatus.Deleted;
+                existingTopic.UpdateBy = currentUserId;
+                existingTopic.UpdateDate = DateTime.UtcNow.AddHours(7);
+
+                await _topicRepository.UpdateAsync(existingTopic);
+
+                // 4) Soft delete toàn bộ mapping VocabularyTopic của topic này
+                var mappings = await _vocabularyTopicRepository.GetByTopicIdAsync(request.TopicId);
+
+                if (mappings != null && mappings.Count > 0)
                 {
-                    return OperationResult<bool>.Failure(
-                        new List<Error> { AppErrors.TopicHasVocabularies },
-                        400,
-                        AppErrors.TopicHasVocabularies.Description
-                    );
+                    foreach (var vt in mappings)
+                    {
+                        // Soft delete mapping
+                        vt.Status = VocabularyTopicStatus.Deleted;
+                        vt.UpdateBy = currentUserId;
+                        vt.UpdateDate = DateTime.UtcNow.AddHours(7);
+
+                        await _vocabularyTopicRepository.UpdateAsync(vt);
+                    }
                 }
 
-                // 4. Thực hiện xóa mềm (Soft Delete)
-                existingTopic.Status = TopicStatus.Deleted;
-
-                // 5. Cập nhật vào database
-                await _topicRepository.UpdateAsync(existingTopic);
+                // 5) Save changes
+                // Nếu các repo dùng chung DbContext thì chỉ cần 1 lần SaveChanges,
+                // nhưng gọi cả 2 cũng không sao (lần 2 thường return 0).
                 await _topicRepository.SaveChangesAsync(cancellationToken);
+                await _vocabularyTopicRepository.SaveChangesAsync(cancellationToken);
 
+                _logger.LogInformation("Soft deleted topic {TopicId} and {Count} mappings",
+                    request.TopicId, mappings?.Count ?? 0);
 
-                return OperationResult<bool>.Success(
-                    true,
-                    200,
-                    "Xóa chủ đề thành công"
-                );
+                return OperationResult<bool>.Success(true, 200, "Xóa chủ đề thành công");
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Lỗi khi xóa topic {TopicId}", request.TopicId);
                 return OperationResult<bool>.Failure(
                     new List<Error> { AppErrors.ServerError },
                     500,

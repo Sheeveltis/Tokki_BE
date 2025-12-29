@@ -69,5 +69,45 @@ namespace Tokki.Infrastructure.Services
 
             return uploadResult.SecureUrl.ToString();
         }
+        public async Task<string> UploadImageFromUrlAsync(string imageUrl, string folderName)
+        {
+            if (string.IsNullOrEmpty(imageUrl))
+                throw new Exception("URL ảnh không được để trống");
+            var uploadParams = new ImageUploadParams
+            {
+                File = new FileDescription(imageUrl),
+                Folder = folderName
+            };
+            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+
+            if (uploadResult.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                throw new Exception($"Cloudinary Error (Url Upload): {uploadResult.Error.Message}");
+            }
+
+            return uploadResult.SecureUrl.ToString();
+        }
+        public async Task<string> UploadImageFromBytesAsync(byte[] fileBytes, string fileName, string folderName)
+        {
+            if (fileBytes == null || fileBytes.Length == 0)
+                throw new Exception("Dữ liệu ảnh rỗng");
+
+            using var stream = new MemoryStream(fileBytes);
+
+            var uploadParams = new ImageUploadParams
+            {
+                File = new FileDescription(fileName, stream),
+                Folder = folderName
+            };
+
+            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+
+            if (uploadResult.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                throw new Exception($"Cloudinary Byte Upload Error: {uploadResult.Error.Message}");
+            }
+
+            return uploadResult.SecureUrl.ToString();
+        }
     }
 }

@@ -79,7 +79,17 @@ namespace Tokki.Application.IRepositories
            int pageSize,
            string? vocabId,
            VocabularyStatus? status,
-           string? searchText);
+           string? searchText,
+           TopicLevel? levelTopic);
+        Task<Tokki.Domain.Entities.Vocabulary?> GetByIdWithChildrenAsync(string vocabularyId);
+
+
+        //Hàm của Kho
+        //Check xem có bị trùng text vs definition khi add = excel
+        Task<List<Vocabulary>> GetExistingVocabEntitiesAsync(List<(string Text, string Definition)> inputs);
+        //Hàm của Kho
+        //Add nhiều vocab 1 lần
+        Task AddRangeAsync(List<Vocabulary> vocabularies);
     }
 
 }

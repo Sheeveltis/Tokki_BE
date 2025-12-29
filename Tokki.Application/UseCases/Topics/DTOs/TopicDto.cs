@@ -15,5 +15,7 @@ namespace Tokki.Application.UseCases.Topics.DTOs
         public TopicLevel Level { get; set; }
         public string? ImgUrl { get; set; }
         public int VocabularyCount { get; set; }
+        public TopicStatus Status { get; set; }
+
     }
 }

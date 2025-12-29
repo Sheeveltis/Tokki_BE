@@ -88,11 +88,7 @@ namespace Tokki.Infrastructure.Repositories
                         throw new Exception($"Vocabulary '{vocab.Text}' is deleted");
                     }
 
-                    if (vocab.Status == VocabularyStatus.Inactive)
-                    {
-                        failedItems.Add($"{vocab.Text} (ID: {vocab.VocabularyId}) - Từ vựng đang không hoạt động");
-                        throw new Exception($"Vocabulary '{vocab.Text}' is inactive");
-                    }
+                    
 
                     // Kiểm tra xem liên kết này đã tồn tại chưa
                     var existingLink = await _context.VocabularyTopics
@@ -124,7 +120,7 @@ namespace Tokki.Infrastructure.Repositories
                             continue;
                         }
 
-                        // Nếu đã tồn tại nhưng bị Deleted/Inactive, kích hoạt lại
+                        // Nếu đã tồn tại nhưng bị Deleted, kích hoạt lại
                         existingLink.Status = VocabularyTopicStatus.Active;
                        
 

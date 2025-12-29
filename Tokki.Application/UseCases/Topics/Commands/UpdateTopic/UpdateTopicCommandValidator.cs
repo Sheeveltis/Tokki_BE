@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FluentValidation;
+﻿using FluentValidation;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Topics.Commands.UpdateTopic
 {
@@ -13,26 +9,43 @@ namespace Tokki.Application.UseCases.Topics.Commands.UpdateTopic
         {
             RuleFor(x => x.TopicId)
                 .NotEmpty()
-                .MaximumLength(15)
-                .WithName("Mã chủ đề");
+                .WithMessage("TopicId không được để trống.");
 
-            RuleFor(x => x.TopicName)
-                .NotEmpty()
-                .MaximumLength(100)
-                .WithName("Tên chủ đề");
+            When(x => x.TopicName != null, () =>
+            {
+                RuleFor(x => x.TopicName!)
+                    .MaximumLength(100)
+                    .WithMessage("TopicName không được vượt quá 100 ký tự.");
+                // Không bắt NotEmpty ở đây vì bạn muốn "truyền rỗng thì bỏ qua"
+            });
 
-            RuleFor(x => x.Description)
-                .MaximumLength(255)
-                .When(x => !string.IsNullOrEmpty(x.Description))
-                .WithName("Mô tả");
+            When(x => x.Description != null, () =>
+            {
+                RuleFor(x => x.Description!)
+                    .MaximumLength(255)
+                    .WithMessage("Description không được vượt quá 255 ký tự.");
+            });
 
-            RuleFor(x => x.UpdatedBy)
-                .NotEmpty()
-                .MaximumLength(15)
-                .WithName("Người cập nhật");
-            RuleFor(x => x.Level)
-                .IsInEnum().WithMessage("Cấp độ không hợp lệ.")
-                .WithName("Cấp độ");
+            When(x => x.ImgUrl != null, () =>
+            {
+                RuleFor(x => x.ImgUrl!)
+                    .MaximumLength(500)
+                    .WithMessage("ImgUrl không được vượt quá 500 ký tự.");
+            });
+
+            When(x => x.Level.HasValue, () =>
+            {
+                RuleFor(x => x.Level!.Value)
+                    .IsInEnum()
+                    .WithMessage("Level không hợp lệ.");
+            });
+
+            When(x => x.Status.HasValue, () =>
+            {
+                RuleFor(x => x.Status!.Value)
+                    .IsInEnum()
+                    .WithMessage("Status không hợp lệ.");
+            });
         }
     }
 }

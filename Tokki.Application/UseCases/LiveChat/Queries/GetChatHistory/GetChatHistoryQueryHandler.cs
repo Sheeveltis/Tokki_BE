@@ -5,21 +5,21 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Tokki.Application.Common.Models;
-using Tokki.Application.IServices;
+using Tokki.Application.IRepositories;
 using Tokki.Domain.Entities;
 
 namespace Tokki.Application.UseCases.LiveChat.Queries.GetChatHistory
 {
-    public class GetChatHistoryQueryHandler : IRequestHandler<GetChatHistoryQuery, OperationResult<List<LiveChatMessage>>>
+    public class GetChatHistoryQueryHandler : IRequestHandler<GetChatHistoryQuery, OperationResult<List<ChatMessage>>>
     {
-        private readonly IChatService _chatService; 
+        private readonly IChatRepository _chatService; 
 
-        public GetChatHistoryQueryHandler(IChatService chatService)
+        public GetChatHistoryQueryHandler(IChatRepository chatService)
         {
             _chatService = chatService;
         }
 
-        public async Task<OperationResult<List<LiveChatMessage>>> Handle(GetChatHistoryQuery request, CancellationToken token)
+        public async Task<OperationResult<List<ChatMessage>>> Handle(GetChatHistoryQuery request, CancellationToken token)
         {
             try
             {
@@ -27,17 +27,17 @@ namespace Tokki.Application.UseCases.LiveChat.Queries.GetChatHistory
 
                 if (messages == null || !messages.Any())
                 {
-                    return OperationResult<List<LiveChatMessage>>.Success(new List<LiveChatMessage>());
+                    return OperationResult<List<ChatMessage>>.Success(new List<ChatMessage>());
                 }
 
                 var sortedMessages = messages.OrderBy(x => x.CreatedAt).ToList();
 
-                return OperationResult<List<LiveChatMessage>>.Success(sortedMessages);
+                return OperationResult<List<ChatMessage>>.Success(sortedMessages);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[LỖI CHAT HISTORY]: {ex.Message}");
-                return OperationResult<List<LiveChatMessage>>.Failure("Không thể tải lịch sử chat lúc này.");
+                return OperationResult<List<ChatMessage>>.Failure("Không thể tải lịch sử chat lúc này.");
             }
         }
     }

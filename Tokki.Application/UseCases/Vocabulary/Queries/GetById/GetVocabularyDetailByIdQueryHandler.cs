@@ -11,8 +11,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Queries.GetById
     {
         private readonly IVocabularyRepository _vocabularyRepository;
 
-        public GetVocabularyDetailByIdQueryHandler(
-            IVocabularyRepository vocabularyRepository)
+        public GetVocabularyDetailByIdQueryHandler(IVocabularyRepository vocabularyRepository)
         {
             _vocabularyRepository = vocabularyRepository;
         }
@@ -41,13 +40,33 @@ namespace Tokki.Application.UseCases.Vocabulary.Queries.GetById
                 ImgURL = vocabulary.ImgURL,
                 AudioURL = vocabulary.AudioURL,
                 Status = vocabulary.Status,
+                CreateBy = vocabulary.CreateBy,
+                CreateDate = vocabulary.CreateDate,
+                UpdateBy = vocabulary.UpdateBy,
+                UpdateDate = vocabulary.UpdateDate,
 
                 Topics = vocabulary.VocabularyTopics
-                    .Where(vt => vt.Status == VocabularyTopicStatus.Active)
+                    .Where(vt => vt.Status == VocabularyTopicStatus.Active
+                                 && vt.Topic != null
+                                 && vt.Topic.Status == TopicStatus.Active)
                     .Select(vt => new VocabularyTopicDto
                     {
                         TopicId = vt.TopicId,
                         TopicName = vt.Topic.TopicName
+                    })
+                    .ToList(),
+
+                Examples = vocabulary.VocabularyExamples
+                    .Where(e => e.Status == VocabularyExampleStatus.Active) // đổi logic nếu muốn lấy cả Draft
+                    .OrderBy(e => e.CreateAt)
+                    .Select(e => new VocabularyExampleDetailDto
+                    {
+                        ExampleId = e.ExampleId,
+                        Sentence = e.Sentence,
+                        Translation = e.Translation,
+                        Status = e.Status,
+                        CreateAt = e.CreateAt,
+                        CreateBy = e.CreateBy
                     })
                     .ToList()
             };

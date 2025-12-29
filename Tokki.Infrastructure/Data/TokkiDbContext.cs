@@ -10,7 +10,6 @@ namespace Tokki.Infrastructure.Data
     {
         public TokkiDbContext(DbContextOptions<TokkiDbContext> options) : base(options) { }
 
-        // --- DbSets ---
         public DbSet<Blog> Blogs { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Tag> Tags { get; set; }
@@ -51,7 +50,7 @@ namespace Tokki.Infrastructure.Data
         //Live chat
         public DbSet<ChatRoom> ChatRooms { get; set; }
         public DbSet<ChatRoomMember> ChatRoomMembers { get; set; }
-        
+        public DbSet<ChatMessage> ChatMessages { get; set; }
         public DbSet<UserVocabProgress> UserVocabProgresses { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

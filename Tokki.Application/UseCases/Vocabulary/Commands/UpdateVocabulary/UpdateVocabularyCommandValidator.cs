@@ -21,14 +21,9 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.UpdateVocabulary
                 .When(x => !string.IsNullOrWhiteSpace(x.UpdateData.Pronunciation));
 
             RuleFor(x => x.UpdateData.Definition)
-                .MaximumLength(500)
+                .MaximumLength(500) 
                 .WithName("Definition")
-                .When(x => !string.IsNullOrWhiteSpace(x.UpdateData.Definition));
-
-            //RuleFor(x => x.UpdateData.ExampleSentence)
-            //    .MaximumLength(500)
-            //    .WithName("ExampleSentence")
-            //    .When(x => !string.IsNullOrWhiteSpace(x.UpdateData.ExampleSentence));
+                .When(x => x.UpdateData.Definition != null);
 
             RuleFor(x => x.UpdateData.ImgURL)
                 .MaximumLength(1000)

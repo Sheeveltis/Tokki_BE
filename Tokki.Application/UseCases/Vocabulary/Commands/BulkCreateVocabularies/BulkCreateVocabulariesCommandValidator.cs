@@ -24,6 +24,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies
                     .MaximumLength(500)
                     .WithName("Definition");
 
+
                 vocab.RuleFor(v => v.Pronunciation)
                     .MaximumLength(255)
                     .When(v => !string.IsNullOrEmpty(v.Pronunciation))

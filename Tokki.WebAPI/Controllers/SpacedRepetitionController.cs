@@ -9,10 +9,10 @@ namespace Tokki.WebAPI.Controllers
 {
     [Route("api/spaced-repetition")]
     [ApiController]
-    [Authorize] 
+    [Authorize]
     public class SpacedRepetitionController : ControllerBase
     {
-        private readonly ISender _sender; 
+        private readonly ISender _sender;
 
         public SpacedRepetitionController(ISender sender)
         {
@@ -22,7 +22,6 @@ namespace Tokki.WebAPI.Controllers
         /// <summary>
         /// Gửi kết quả học (Nhớ/Quên) cho 1 từ vựng
         /// </summary>
-        [Authorize]
         [HttpPost("submit")]
         public async Task<IActionResult> SubmitReview([FromBody] SubmitReviewCommand request)
         {
@@ -43,6 +42,23 @@ namespace Tokki.WebAPI.Controllers
 
             var result = await _sender.Send(command);
 
+            return StatusCode(result.StatusCode, result);
+        }
+        [HttpGet("vocab-for-review")]
+        public async Task<IActionResult> GetNextVocabularyForReview(int limit = 100)
+        {
+            var userId = User.FindFirst("UserId")?.Value
+                         ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("Không xác định được người dùng.");
+            }
+            var query = new GetDueReviewsQuery
+            {
+                UserId = userId,
+                Limit = limit
+            };
+            var result = await _sender.Send(query);
             return StatusCode(result.StatusCode, result);
         }
     }
