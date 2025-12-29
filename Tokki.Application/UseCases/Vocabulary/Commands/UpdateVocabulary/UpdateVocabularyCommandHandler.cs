@@ -83,16 +83,10 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.UpdateVocabulary
                 vocabulary.Definition = request.UpdateData.Definition;
             }
 
-<<<<<<< HEAD
             if (request.UpdateData.ImgURL != null)
-=======
-            //if (!string.IsNullOrWhiteSpace(request.UpdateData.ExampleSentence))
-            //{
-            //    vocabulary.ExampleSentence = request.UpdateData.ExampleSentence;
-            //}
+        
 
             if (!string.IsNullOrWhiteSpace(request.UpdateData.ImgURL))
->>>>>>> 519bc38f4c1de86d626062dd3e0674f2cf6e5803
             {
                 vocabulary.ImgURL = request.UpdateData.ImgURL;
             }

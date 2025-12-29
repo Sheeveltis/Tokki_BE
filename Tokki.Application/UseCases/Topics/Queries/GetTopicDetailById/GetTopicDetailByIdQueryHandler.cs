@@ -49,10 +49,6 @@ namespace Tokki.Application.UseCases.Topics.Queries.GetById
                     Text = vt.Vocabulary.Text,
                     Pronunciation = vt.Vocabulary.Pronunciation,
                     Definition = vt.Vocabulary.Definition,
-<<<<<<< HEAD
-=======
-                   // ExampleSentence = vt.Vocabulary.ExampleSentence,
->>>>>>> 519bc38f4c1de86d626062dd3e0674f2cf6e5803
                     ImgURL = vt.Vocabulary.ImgURL,
                     Status = vt.Vocabulary.Status
                 })

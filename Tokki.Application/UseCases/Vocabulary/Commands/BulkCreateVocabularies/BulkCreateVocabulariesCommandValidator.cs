@@ -24,9 +24,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies
                     .MaximumLength(500)
                     .WithName("Definition");
 
-<<<<<<< HEAD
-               
-=======
+
                 vocab.RuleFor(v => v.Pronunciation)
                     .MaximumLength(255)
                     .When(v => !string.IsNullOrEmpty(v.Pronunciation))
@@ -49,7 +47,6 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies
                             .WithMessage("Bản dịch không được vượt quá 1000 ký tự.");
                     })
                     .When(v => v.Examples != null);
->>>>>>> 519bc38f4c1de86d626062dd3e0674f2cf6e5803
             });
         }
     }

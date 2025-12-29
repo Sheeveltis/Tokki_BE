@@ -32,8 +32,7 @@ namespace Tokki.WebAPI.Controllers
             _mediator = mediator;
         }
 
-<<<<<<< HEAD
-=======
+
         [HttpGet("user/get-detail/{vocabularyId}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetVocabularyDetail(string vocabularyId)
@@ -84,7 +83,6 @@ namespace Tokki.WebAPI.Controllers
         /// <summary>
         /// Tạo hàng loạt vocabulary
         /// </summary>
->>>>>>> 519bc38f4c1de86d626062dd3e0674f2cf6e5803
         [HttpPost("bulk")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -157,7 +155,6 @@ namespace Tokki.WebAPI.Controllers
                 return StatusCode(result.StatusCode, result);
             }
             return StatusCode(result.StatusCode, result);
-<<<<<<< HEAD
         }  /// <summary>
            /// Cập nhật vocabulary
            /// </summary>
@@ -172,13 +169,6 @@ namespace Tokki.WebAPI.Controllers
            ///     }
            /// 
            /// </remarks>
-=======
-        }
-
-        /// <summary>
-        /// Cập nhật vocabulary
-        /// </summary>
->>>>>>> 519bc38f4c1de86d626062dd3e0674f2cf6e5803
         [HttpPut("{vocabularyId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
