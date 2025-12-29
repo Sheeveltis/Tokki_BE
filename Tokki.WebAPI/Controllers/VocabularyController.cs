@@ -10,6 +10,7 @@ using Tokki.Application.UseCases.Vocabulary.Queries; // Namespace chứa GetVoca
 using Tokki.Application.UseCases.Vocabulary.Queries.FlashCard;
 using Tokki.Application.UseCases.Vocabulary.Queries.GetAllForManager; // <--- THÊM DÒNG NÀY
 using Tokki.Application.UseCases.Vocabulary.Queries.GetById;
+using Tokki.Application.UseCases.Vocabulary.Queries.GetByIdForUser;
 using Tokki.Application.UseCases.Vocabulary.Queries.GetVocabulariesByTopic;
 using Tokki.Application.UseCases.Vocabulary.Queries.SearchVocabulary;
 using Tokki.Domain.Enums;
@@ -34,6 +35,18 @@ namespace Tokki.WebAPI.Controllers
         public async Task<IActionResult> GetVocabularyDetail(string vocabularyId)
         {
             var query = new GetVocabularyDetailByIdQuery
+            {
+                VocabularyId = vocabularyId
+            };
+
+            var result = await _mediator.Send(query);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpGet("admin/get-detail/{vocabularyId}")]
+        public async Task<IActionResult> GetVocabularyForAdminDetail(string vocabularyId)
+        {
+            var query = new GetVocabularyDetailByIdForAdminQuery
             {
                 VocabularyId = vocabularyId
             };

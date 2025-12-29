@@ -4,34 +4,34 @@ using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.Vocabulary.DTOs;
 using Tokki.Domain.Enums;
 
-namespace Tokki.Application.UseCases.Vocabulary.Queries.GetById
+namespace Tokki.Application.UseCases.Vocabulary.Queries.GetByIdForUser
 {
-    public class GetVocabularyDetailByIdQueryHandler
-        : IRequestHandler<GetVocabularyDetailByIdQuery, OperationResult<VocabularyDetailDto>>
+    public class GetVocabularyDetailByIdForAdminQueryHandler
+        : IRequestHandler<GetVocabularyDetailByIdForAdminQuery, OperationResult<VocabularyDetailForAdminDto>>
     {
         private readonly IVocabularyRepository _vocabularyRepository;
 
-        public GetVocabularyDetailByIdQueryHandler(IVocabularyRepository vocabularyRepository)
+        public GetVocabularyDetailByIdForAdminQueryHandler(IVocabularyRepository vocabularyRepository)
         {
             _vocabularyRepository = vocabularyRepository;
         }
 
-        public async Task<OperationResult<VocabularyDetailDto>> Handle(
-            GetVocabularyDetailByIdQuery request,
+        public async Task<OperationResult<VocabularyDetailForAdminDto>> Handle(
+            GetVocabularyDetailByIdForAdminQuery request,
             CancellationToken cancellationToken)
         {
             var vocabulary = await _vocabularyRepository.GetByIdAsync(request.VocabularyId);
 
             if (vocabulary == null || vocabulary.Status == VocabularyStatus.Deleted)
             {
-                return OperationResult<VocabularyDetailDto>.Failure(
+                return OperationResult<VocabularyDetailForAdminDto>.Failure(
                     new List<Error> { AppErrors.VocabularyNotFound },
                     404,
                     AppErrors.VocabularyNotFound.Description
                 );
             }
 
-            var dto = new VocabularyDetailDto
+            var dto = new VocabularyDetailForAdminDto
             {
                 VocabularyId = vocabulary.VocabularyId,
                 Text = vocabulary.Text,
@@ -40,6 +40,10 @@ namespace Tokki.Application.UseCases.Vocabulary.Queries.GetById
                 ImgURL = vocabulary.ImgURL,
                 AudioURL = vocabulary.AudioURL,
                 Status = vocabulary.Status,
+                CreateBy = vocabulary.CreateBy,
+                CreateDate = vocabulary.CreateDate,
+                UpdateBy = vocabulary.UpdateBy,
+                UpdateDate = vocabulary.UpdateDate,
                 Topics = vocabulary.VocabularyTopics
                     .Where(vt => vt.Status == VocabularyTopicStatus.Active
                                  && vt.Topic != null
@@ -52,7 +56,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Queries.GetById
                     .ToList(),
 
                 Examples = vocabulary.VocabularyExamples
-                    .Where(e => e.Status == VocabularyExampleStatus.Active) // đổi logic nếu muốn lấy cả Draft
+                    .Where(e => e.Status == VocabularyExampleStatus.Active)
                     .OrderBy(e => e.CreateAt)
                     .Select(e => new VocabularyExampleDetailDto
                     {
@@ -66,7 +70,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Queries.GetById
                     .ToList()
             };
 
-            return OperationResult<VocabularyDetailDto>.Success(
+            return OperationResult<VocabularyDetailForAdminDto>.Success(
                 dto,
                 200,
                 "Lấy chi tiết từ vựng thành công."
