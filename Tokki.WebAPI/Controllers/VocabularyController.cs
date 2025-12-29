@@ -59,7 +59,8 @@ namespace Tokki.WebAPI.Controllers
             [FromQuery] int pageSize = 20,
             [FromQuery] VocabularyStatus? status = null,
             [FromQuery] string? vocabId = null,
-            [FromQuery] string? searchText = null)
+            [FromQuery] string? searchText = null,
+            [FromQuery] TopicLevel? topicLevel =null)
         {
             var query = new GetAllForManagerQuery
             {
@@ -67,7 +68,9 @@ namespace Tokki.WebAPI.Controllers
                 PageSize = pageSize,
                 Status = status,
                 VocabId = vocabId,
-                SearchText = searchText
+                SearchText = searchText,
+                LevelTopic = topicLevel
+
             };
 
             var result = await _mediator.Send(query);

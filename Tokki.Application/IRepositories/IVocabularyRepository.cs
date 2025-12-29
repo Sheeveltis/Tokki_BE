@@ -79,7 +79,8 @@ namespace Tokki.Application.IRepositories
            int pageSize,
            string? vocabId,
            VocabularyStatus? status,
-           string? searchText);
+           string? searchText,
+           TopicLevel? levelTopic);
 
 
         //Hàm của Kho

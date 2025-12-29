@@ -18,5 +18,6 @@ namespace Tokki.Application.UseCases.Vocabulary.Queries.GetAllForManager
 
         // Search chung (tìm trong Text, Definition, Pronunciation)
         public string? SearchText { get; set; }
+        public TopicLevel? LevelTopic { get; set; }
     }
 }

@@ -159,11 +159,11 @@ namespace Tokki.Infrastructure.Repositories
             int pageSize,
             string? vocabId,
             VocabularyStatus? status,
-            string? searchText)
+            string? searchText,
+            TopicLevel? levelTopic)
         {
             var query = _context.Vocabularies.AsNoTracking().AsQueryable();
 
-            // Lọc theo VocabId (thay cho TopicId)
             if (!string.IsNullOrWhiteSpace(vocabId))
             {
                 query = query.Where(v => v.VocabularyId == vocabId);
@@ -172,6 +172,20 @@ namespace Tokki.Infrastructure.Repositories
             if (status.HasValue)
             {
                 query = query.Where(v => v.Status == status.Value);
+            }
+
+            // Lọc theo Level của Topic
+            if (levelTopic.HasValue)
+            {
+                var level = levelTopic.Value;
+
+                query = query.Where(v =>
+                    v.VocabularyTopics.Any(vt =>
+                        vt.Topic.Level == level
+                        && vt.Status == VocabularyTopicStatus.Active
+                        && vt.Topic.Status == TopicStatus.Active
+                    )
+                );
             }
 
             if (!string.IsNullOrWhiteSpace(searchText))
@@ -194,6 +208,7 @@ namespace Tokki.Infrastructure.Repositories
 
             return (items, totalCount);
         }
+
         public async Task<(List<VocabularySearchResultDto> Items, int TotalCount)>
        SearchVocabulariesAsync(
            string searchTerm,

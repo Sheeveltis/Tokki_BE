@@ -30,38 +30,59 @@ namespace Tokki.Application.UseCases.Vocabulary.Queries.GetAllForManager
             GetAllForManagerQuery request,
             CancellationToken cancellationToken)
         {
-            
-
+            // request.LevelTopic == null => repository phải hiểu là "không filter"
             var (vocabularies, totalCount) = await _vocabularyRepository.GetPagedVocabulariesForManagerAsync(
-                    request.PageNumber,
-                    request.PageSize,
-                    request.VocabId,
-                    request.Status,
-                    request.SearchText
-                );
+                request.PageNumber,
+                request.PageSize,
+                request.VocabId,
+                request.Status,
+                request.SearchText,
+                request.LevelTopic
+            );
 
-            // --- PHẦN MAP DTO GIỮ NGUYÊN ---
             var vocabularyDtos = new List<VocabularyForGetAll>();
+
+            var topicCache = new Dictionary<string, Tokki.Domain.Entities.Topic>();
 
             foreach (var vocab in vocabularies)
             {
-                // Lấy danh sách Topics cho từng Vocabulary để hiển thị ra
                 var vocabTopics = await _vocabularyTopicRepository.GetByVocabularyIdAsync(vocab.VocabularyId);
-                var activeTopics = vocabTopics.Where(vt => vt.Status == VocabularyTopicStatus.Active).ToList();
+
+                var activeMappings = vocabTopics
+                    .Where(vt => vt.Status == VocabularyTopicStatus.Active)
+                    .ToList();
 
                 var topics = new List<TopicInfoDto>();
-                foreach (var vt in activeTopics)
+
+                foreach (var vt in activeMappings)
                 {
-                    var t = await _topicRepository.GetByIdAsync(vt.TopicId);
-                    if (t != null)
+                    if (!topicCache.TryGetValue(vt.TopicId, out var topic))
+                    {
+                        topic = await _topicRepository.GetByIdAsync(vt.TopicId);
+                        if (topic != null)
+                        {
+                            topicCache[vt.TopicId] = topic;
+                        }
+                    }
+
+                    if (topic != null && topic.Status == TopicStatus.Active)
                     {
                         topics.Add(new TopicInfoDto
                         {
-                            TopicId = t.TopicId,
-                            TopicName = t.TopicName
+                            TopicId = topic.TopicId,
+                            TopicName = topic.TopicName,
+                            Level = topic.Level
                         });
                     }
                 }
+
+                var levels = topics
+                    .Select(t => t.Level)
+                    .Distinct()
+                    .ToList();
+
+                // An toàn: chỉ set khi đúng 1 level
+                TopicLevel? singleLevel = levels.Count == 1 ? levels[0] : (TopicLevel?)null;
 
                 vocabularyDtos.Add(new VocabularyForGetAll
                 {
@@ -70,7 +91,12 @@ namespace Tokki.Application.UseCases.Vocabulary.Queries.GetAllForManager
                     Pronunciation = vocab.Pronunciation,
                     Definition = vocab.Definition,
                     AudioURL = vocab.AudioURL,
-                    Status = vocab.Status
+                    Status = vocab.Status,
+
+                    // nếu DTO bạn có field Topics thì mở dòng dưới
+                    // Topics = topics,
+
+                    LevelTopic = singleLevel
                 });
             }
 
