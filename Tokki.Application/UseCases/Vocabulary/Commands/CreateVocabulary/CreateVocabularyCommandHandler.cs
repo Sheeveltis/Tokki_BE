@@ -129,7 +129,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.CreateVocabulary
                         }
 
                         // Tạo example mới
-                        var example = new VocabularyExample
+                        var example = new Domain.Entities.VocabularyExample
                         {
                             ExampleId = _idGenerator.Generate(15),
                             VocabularyId = vocabulary.VocabularyId,

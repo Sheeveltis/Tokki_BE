@@ -76,5 +76,26 @@ namespace Tokki.Infrastructure.Repositories
         {
             return await _context.Database.BeginTransactionAsync(cancellationToken);
         }
+        public async Task<VocabularyExample?> GetByIdAsync(string exampleId, CancellationToken cancellationToken)
+        {
+            return await _context.VocabularyExamples
+                .FirstOrDefaultAsync(x => x.ExampleId == exampleId, cancellationToken);
+        }
+        public async Task<List<VocabularyExample>> GetByVocabularyIdAsync(
+       string vocabularyId,
+       VocabularyExampleStatus? status,
+       CancellationToken cancellationToken)
+        {
+            var q = _context.VocabularyExamples
+                .AsNoTracking()
+                .Where(x => x.VocabularyId == vocabularyId);
+
+            if (status.HasValue)
+                q = q.Where(x => x.Status == status.Value);
+
+            return await q
+                .OrderByDescending(x => x.CreateAt)
+                .ToListAsync(cancellationToken);
+        }
     }
 }

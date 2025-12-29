@@ -1,10 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using Tokki.Application.Common.Models;
 using Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies;
 using Tokki.Application.UseCases.Vocabulary.Commands.CreateVocabulary;
 using Tokki.Application.UseCases.Vocabulary.Commands.DeleteVocabulary;
@@ -16,6 +12,11 @@ using Tokki.Application.UseCases.Vocabulary.Queries.GetAllForManager; // <--- TH
 using Tokki.Application.UseCases.Vocabulary.Queries.GetById;
 using Tokki.Application.UseCases.Vocabulary.Queries.GetVocabulariesByTopic;
 using Tokki.Application.UseCases.Vocabulary.Queries.SearchVocabulary;
+using Tokki.Application.UseCases.VocabularyExample.Commands.AddExamples;
+using Tokki.Application.UseCases.VocabularyExample.Commands.DeleteExample;
+using Tokki.Application.UseCases.VocabularyExample.Commands.UpdateExample;
+using Tokki.Application.UseCases.VocabularyExample.DTOs;
+using Tokki.Application.UseCases.VocabularyExample.Queries.GetByVocabularyId;
 using Tokki.Domain.Enums;
 
 namespace Tokki.WebAPI.Controllers
@@ -321,7 +322,7 @@ namespace Tokki.WebAPI.Controllers
 
             return Ok(result);
         }
-
+        
     }
      
 

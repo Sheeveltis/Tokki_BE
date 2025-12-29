@@ -151,7 +151,23 @@ namespace Tokki.Application.Common.Models
 
         public static Error VocabularyStatusInvalid(string text, string vocabularyId, string status)
             => new("Vocabulary.StatusInvalid", $"{text} (ID: {vocabularyId}) - {status}");
+        public static readonly Error ExampleIdEmpty =
+        new("VocabularyExample.ExampleIdEmpty", "ExampleId không được rỗng.");
 
+        public static readonly Error ExampleNotFound =
+            new("VocabularyExample.ExampleNotFound", "Không tìm thấy câu ví dụ.");
+        public static readonly Error VocabularyIdEmpty =
+    new("Vocabulary.VocabularyIdEmpty", "VocabularyId không được rỗng.");
+
+        public static readonly Error ExamplesEmpty =
+            new("VocabularyExample.ExamplesEmpty", "Danh sách câu ví dụ không được rỗng.");
+
+        public static readonly Error ExampleSentenceEmpty =
+            new("VocabularyExample.SentenceEmpty", "Sentence không được rỗng.");
+        public static readonly Error ExampleDuplicate =
+          new("VocabularyExample.ExampleDuplicate", "Câu ví dụ trông được trùng.");
+
+        
         // ========
 
         // ============================================
