@@ -22,7 +22,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Queries.GetByIdForUser
         {
             var vocabulary = await _vocabularyRepository.GetByIdAsync(request.VocabularyId);
 
-            if (vocabulary == null || vocabulary.Status == VocabularyStatus.Deleted)
+            if (vocabulary == null )
             {
                 return OperationResult<VocabularyDetailForAdminDto>.Failure(
                     new List<Error> { AppErrors.VocabularyNotFound },
