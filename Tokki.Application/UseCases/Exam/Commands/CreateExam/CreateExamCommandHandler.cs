@@ -66,7 +66,8 @@ namespace Tokki.Application.UseCases.Exam.Commands.CreateExam
                     Title = request.Title,
                     Type = request.Type,
                     Status = ExamStatus.Draft,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    Duration = request.Duration,
                 };
 
                 await _examRepository.AddAsync(exam);

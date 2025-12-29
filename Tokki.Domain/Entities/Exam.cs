@@ -23,6 +23,8 @@ namespace Tokki.Domain.Entities
         [MaxLength(150)]
         public string Title { get; set; } = string.Empty;
 
+        public int Duration { get; set; }
+
         [Required]
         public ExamType Type { get; set; }
 
