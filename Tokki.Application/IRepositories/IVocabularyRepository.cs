@@ -81,6 +81,7 @@ namespace Tokki.Application.IRepositories
            VocabularyStatus? status,
            string? searchText,
            TopicLevel? levelTopic);
+        Task<Tokki.Domain.Entities.Vocabulary?> GetByIdWithChildrenAsync(string vocabularyId);
 
 
         //Hàm của Kho

@@ -21,8 +21,11 @@ namespace Tokki.Infrastructure.Repositories
             return await _context.Vocabularies
                 .Include(v => v.VocabularyTopics)
                     .ThenInclude(vt => vt.Topic)
+                .Include(v => v.VocabularyExamples)
+                .AsSplitQuery()
                 .FirstOrDefaultAsync(v => v.VocabularyId == vocabularyId);
         }
+
 
         public async Task<Vocabulary?> GetByTextAndDefinitionAsync(string text, string definition)
         {
@@ -281,5 +284,14 @@ namespace Tokki.Infrastructure.Repositories
             await _context.Vocabularies.AddRangeAsync(vocabularies);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<Vocabulary?> GetByIdWithChildrenAsync(string vocabularyId)
+        {
+            return await _context.Vocabularies
+                .Include(v => v.VocabularyTopics)
+                .Include(v => v.VocabularyExamples)
+                .FirstOrDefaultAsync(v => v.VocabularyId == vocabularyId);
+        }
+
     }
 }

@@ -167,7 +167,9 @@ namespace Tokki.Application.Common.Models
         public static readonly Error ExampleDuplicate =
           new("VocabularyExample.ExampleDuplicate", "Câu ví dụ trông được trùng.");
 
-        
+        public static readonly Error VocabularyDeletedCannotUpdate =
+    new("Vocabulary.DeletedCannotUpdate", "Vocabulary đã bị xóa, không thể cập nhật hoặc khôi phục.");
+
         // ========
 
         // ============================================

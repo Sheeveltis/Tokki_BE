@@ -169,10 +169,6 @@ namespace Tokki.WebAPI.Controllers
            /// 
            /// </remarks>
         [HttpPut("{vocabularyId}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> UpdateVocabulary(
             string vocabularyId,
             [FromBody] VocabularyUpdateDto updateData)

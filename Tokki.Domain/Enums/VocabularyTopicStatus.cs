@@ -1,14 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 
 namespace Tokki.Domain.Enums
 {
     public enum VocabularyTopicStatus
     {
+        [Description("Soạn thảo, Không hoạt động")]
+        Draft = 0,
+        [Description("Đang hoạt động")]
         Active = 1,
-        Deleted = 2
+        [Description("Đã xóa")]
+        Deleted = 2,
+       
     }
 }

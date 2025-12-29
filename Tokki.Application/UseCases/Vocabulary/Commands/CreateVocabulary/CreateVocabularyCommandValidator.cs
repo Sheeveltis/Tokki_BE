@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Tokki.Application.UseCases.Vocabulary.DTOs;
 
 namespace Tokki.Application.UseCases.Vocabulary.Commands.CreateVocabulary
 {
@@ -26,6 +27,35 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.CreateVocabulary
             RuleFor(x => x.Examples)
                 .Must(examples => examples == null || examples.Count <= 10)
                 .WithMessage("Không thể thêm quá 10 câu ví dụ.");
+
+            // Báo cụ thể sentence nào bị trùng trong input
+            RuleFor(x => x.Examples)
+                .Custom((examples, context) =>
+                {
+                    if (examples == null || examples.Count == 0) return;
+
+                    // Normalize + giữ lại câu gốc để hiển thị
+                    var normalized = examples
+                        .Select(e => e?.Sentence?.Trim())
+                        .Where(s => !string.IsNullOrWhiteSpace(s))
+                        .ToList();
+
+                    if (normalized.Count == 0) return;
+
+                    var duplicates = normalized
+                        .GroupBy(s => s!, StringComparer.OrdinalIgnoreCase)
+                        .Where(g => g.Count() > 1)
+                        .Select(g => g.Key)
+                        .ToList();
+
+                    if (duplicates.Any())
+                    {
+                        context.AddFailure(
+                            "Examples",
+                            $"Danh sách câu ví dụ bị trùng: {string.Join(" | ", duplicates)}"
+                        );
+                    }
+                });
 
             RuleForEach(x => x.Examples)
                 .ChildRules(example =>

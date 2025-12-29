@@ -26,14 +26,12 @@ namespace Tokki.WebAPI.Controllers
         /// <summary>
         /// Admin: Thêm nhiều câu ví dụ vào Vocabulary
         /// </summary>
-        [HttpPost("admin/{vocabularyId}")]
+        [HttpPost("admin/add")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddExamplesToVocabulary(
-            string vocabularyId,
             [FromBody] AddVocabularyExamplesCommand command)
         {
-            if (vocabularyId != command.VocabularyId)
-                return BadRequest(new { message = "ID không khớp" });
+            
 
             var result = await _mediator.Send(command);
             return StatusCode(result.StatusCode, result);

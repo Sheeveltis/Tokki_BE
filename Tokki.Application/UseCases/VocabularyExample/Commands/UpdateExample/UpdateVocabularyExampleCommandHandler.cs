@@ -41,7 +41,6 @@ namespace Tokki.Application.UseCases.VocabularyExample.Commands.UpdateExample
                 );
             }
 
-            // Assumption: ExampleId và UpdateData đã được FluentValidation validate
             var example = await _exampleRepo.GetByIdAsync(request.ExampleId);
             if (example == null)
             {
@@ -52,13 +51,15 @@ namespace Tokki.Application.UseCases.VocabularyExample.Commands.UpdateExample
                 );
             }
 
-            // Update Sentence (nếu có)
+            // Sentence: nếu client truyền null -> bỏ qua
+            // nếu client truyền "" / "   " -> bỏ qua (không đổi)
+            // nếu có giá trị thật -> update + check duplicate
             if (request.UpdateData.Sentence != null)
             {
                 var newSentence = request.UpdateData.Sentence.Trim();
 
-                // Nếu sentence thay đổi thì check duplicate trong cùng vocabulary
-                if (!string.Equals(example.Sentence, newSentence, StringComparison.Ordinal))
+                if (!string.IsNullOrWhiteSpace(newSentence)
+                    && !string.Equals(example.Sentence, newSentence, StringComparison.Ordinal))
                 {
                     var dup = await _exampleRepo.GetBySentenceAsync(example.VocabularyId, newSentence);
                     if (dup != null && dup.ExampleId != example.ExampleId)
@@ -74,13 +75,19 @@ namespace Tokki.Application.UseCases.VocabularyExample.Commands.UpdateExample
                 }
             }
 
-            // Update Translation (nếu có) - cho phép chuỗi rỗng nếu bạn muốn "clear"
+            // Translation: tương tự
             if (request.UpdateData.Translation != null)
             {
-                example.Translation = request.UpdateData.Translation.Trim();
+                var newTranslation = request.UpdateData.Translation.Trim();
+
+                // Nếu muốn "truyền rỗng thì không đổi" -> chỉ update khi có nội dung
+                if (!string.IsNullOrWhiteSpace(newTranslation))
+                {
+                    example.Translation = newTranslation;
+                }
             }
 
-            // Update Status (nếu có)
+            // Status: chỉ update khi HasValue
             if (request.UpdateData.Status.HasValue)
             {
                 example.Status = request.UpdateData.Status.Value;

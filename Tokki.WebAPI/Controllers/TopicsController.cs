@@ -139,6 +139,8 @@ namespace Tokki.WebAPI.Controllers
                     AppErrors.UserUnauthorized.Description
                 ));
             }
+            command.UpdatedBy = userId;
+
             var result = await _mediator.Send(command);
 
             return StatusCode(result.StatusCode, result);

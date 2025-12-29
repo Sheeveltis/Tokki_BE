@@ -1,5 +1,7 @@
 
 
+using Tokki.Domain.Enums;
+
 namespace Tokki.Application.UseCases.Vocabulary.DTOs
 {
     public class VocabularyUpdateDto
@@ -26,8 +28,9 @@ namespace Tokki.Application.UseCases.Vocabulary.DTOs
         /// URL hình ảnh mới
         /// </summary>
         public string? ImgURL { get; set; }
+        public VocabularyStatus? Status { get; set; }
 
-     
+
 
     }
 }
