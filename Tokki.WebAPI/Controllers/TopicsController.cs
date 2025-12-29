@@ -41,7 +41,8 @@ namespace Tokki.WebAPI.Controllers
                 PageNumber = pageNumber,
                 PageSize = pageSize,
                 SearchTerm = searchTerm,
-                Level = level
+                Level = level,
+                Status = status
             };
 
             var result = await _mediator.Send(query);

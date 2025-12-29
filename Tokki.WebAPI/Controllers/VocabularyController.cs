@@ -12,11 +12,6 @@ using Tokki.Application.UseCases.Vocabulary.Queries.GetAllForManager; // <--- TH
 using Tokki.Application.UseCases.Vocabulary.Queries.GetById;
 using Tokki.Application.UseCases.Vocabulary.Queries.GetVocabulariesByTopic;
 using Tokki.Application.UseCases.Vocabulary.Queries.SearchVocabulary;
-using Tokki.Application.UseCases.VocabularyExample.Commands.AddExamples;
-using Tokki.Application.UseCases.VocabularyExample.Commands.DeleteExample;
-using Tokki.Application.UseCases.VocabularyExample.Commands.UpdateExample;
-using Tokki.Application.UseCases.VocabularyExample.DTOs;
-using Tokki.Application.UseCases.VocabularyExample.Queries.GetByVocabularyId;
 using Tokki.Domain.Enums;
 
 namespace Tokki.WebAPI.Controllers
