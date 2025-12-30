@@ -21,11 +21,15 @@ namespace Tokki.Application.UseCases.EmailTemplates.Commands.DeleteEmailCampaign
             if (job == null)
                 return OperationResult<string>.Failure("Không tìm thấy campaign!", 404);
 
-            // chỉ cho xóa khi Pending (chưa gửi)
+            // Chỉ cho xóa khi Pending (chưa gửi)
             if (job.Status != EmailJobStatus.Pending)
-            {
                 return OperationResult<string>.Failure("Chỉ được xóa campaign khi trạng thái là Pending (chưa gửi).", 400);
-            }
+
+            var now = DateTime.UtcNow.AddHours(7);
+
+            // Audit: coi delete là một lần update
+            job.UpdatedAt = now;
+            job.UpdatedBy = request.UpdateBy; 
 
             await _repo.SoftDeleteAsync(job);
             await _repo.SaveChangesAsync(cancellationToken);

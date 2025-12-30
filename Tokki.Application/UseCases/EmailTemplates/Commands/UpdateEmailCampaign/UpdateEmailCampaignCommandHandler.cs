@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
+﻿using System.Text.Json;
 using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
@@ -25,19 +20,12 @@ namespace Tokki.Application.UseCases.EmailTemplates.Commands.UpdateEmailCampaign
         {
             var job = await _emailJobRepository.GetByIdAsync(request.JobId);
             if (job == null)
-            {
                 return OperationResult<string>.Failure("Không tìm thấy campaign!", 404);
-            }
 
-            // Chỉ cho update khi chưa gửi
-            // Khuyến nghị: chỉ cho Pending; chặn Processing/Sent
             if (job.Status != EmailJobStatus.Pending)
-            {
                 return OperationResult<string>.Failure("Chỉ được cập nhật campaign khi trạng thái là Pending (chưa gửi).", 400);
-            }
 
-            // ===== Update theo kiểu PATCH: null/rỗng => giữ nguyên =====
-
+            // ===== PATCH =====
             if (!string.IsNullOrWhiteSpace(request.Subject))
                 job.Subject = request.Subject.Trim();
 
@@ -47,8 +35,6 @@ namespace Tokki.Application.UseCases.EmailTemplates.Commands.UpdateEmailCampaign
             if (request.TargetGroup.HasValue)
                 job.TargetGroup = request.TargetGroup.Value;
 
-            // SpecificEmails: chỉ update khi client truyền list != null
-            // - nếu truyền []: hiểu là xoá danh sách email cá nhân
             if (request.SpecificEmails != null)
             {
                 var cleaned = request.SpecificEmails
@@ -62,23 +48,27 @@ namespace Tokki.Application.UseCases.EmailTemplates.Commands.UpdateEmailCampaign
                     : null;
             }
 
-            // ScheduledTime: chỉ update khi có value
             if (request.ScheduledTime.HasValue)
             {
-                // đảm bảo Kind=Unspecified (giờ local UTC+7) để tránh lỗi offset
-                job.ScheduledTime = DateTime.SpecifyKind(request.ScheduledTime.Value, DateTimeKind.Unspecified);
+                job.ScheduledTime = request.ScheduledTime.Value;
             }
 
-            // Status: chỉ cho phép set Deleted (xóa mềm) trong update này
             if (request.Status.HasValue)
             {
                 if (request.Status.Value != EmailJobStatus.Deleted)
-                {
                     return OperationResult<string>.Failure("Chỉ cho phép cập nhật Status sang Deleted (xóa mềm).", 400);
-                }
 
                 job.Status = EmailJobStatus.Deleted;
+
+                // Nếu repo của bạn có SoftDeleteAsync và bạn muốn đồng bộ cơ chế soft delete:
+                // await _emailJobRepository.SoftDeleteAsync(job);
+                // (khi đó cân nhắc bỏ job.Status = Deleted nếu SoftDeleteAsync đã set)
             }
+
+            // ===== Audit =====
+            var now = DateTime.UtcNow.AddHours(7);
+            job.UpdatedAt = now;
+            job.UpdatedBy = string.IsNullOrWhiteSpace(request.UpdatedBy) ? "system" : request.UpdatedBy;
 
             await _emailJobRepository.UpdateAsync(job);
             await _emailJobRepository.SaveChangesAsync(cancellationToken);

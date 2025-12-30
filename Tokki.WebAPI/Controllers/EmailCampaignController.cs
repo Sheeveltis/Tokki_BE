@@ -1,4 +1,5 @@
 ﻿// Tokki.API/Controllers/EmailCampaignController.cs
+using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -29,6 +30,9 @@ namespace Tokki.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateEmailCampaignByGroupCommand command)
         {
+            var userId = User.FindFirst("UserId")?.Value
+                             ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            command.CreatedBy = userId;
             var result = await _mediator.Send(command);
             return StatusCode(result.StatusCode, result);
         }
@@ -63,6 +67,9 @@ namespace Tokki.API.Controllers
         public async Task<IActionResult> Update([FromRoute] string id, [FromBody] UpdateEmailCampaignCommand command)
         {
             command.JobId = id;
+            var userId = User.FindFirst("UserId")?.Value
+                          ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            command.UpdatedBy = userId;
             var result = await _mediator.Send(command);
             return StatusCode(result.StatusCode, result);
         }
@@ -74,7 +81,16 @@ namespace Tokki.API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete([FromRoute] string id)
         {
-            var result = await _mediator.Send(new DeleteEmailCampaignCommand { JobId = id });
+            var userId = User.FindFirst("UserId")?.Value
+                           ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var command = new DeleteEmailCampaignCommand
+            {
+                JobId = id,
+                UpdateBy = userId
+            };
+
+            var result = await _mediator.Send(command);
             return StatusCode(result.StatusCode, result);
         }
     }

@@ -1,6 +1,5 @@
 ﻿// Tokki.Domain/Entities/EmailJob.cs
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Tokki.Domain.Enums;
@@ -25,7 +24,7 @@ namespace Tokki.Domain.Entities
         public UserTargetGroup TargetGroup { get; set; } = UserTargetGroup.None;
 
         [Column(TypeName = "nvarchar(max)")]
-        public string? SpecificEmails { get; set; } // JSON array: ["email1@test.com", "email2@test.com"]
+        public string? SpecificEmails { get; set; } // JSON array
 
         [Required]
         public DateTime ScheduledTime { get; set; }
@@ -34,6 +33,15 @@ namespace Tokki.Domain.Entities
 
         public DateTime? SentAt { get; set; }
         public string? ErrorMessage { get; set; }
+
+        // Audit
+        [MaxLength(100)]
+        public string? CreatedBy { get; set; }
+
+        [MaxLength(100)]
+        public string? UpdatedBy { get; set; }
+
+        public DateTime? UpdatedAt { get; set; }
 
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow.AddHours(7);
