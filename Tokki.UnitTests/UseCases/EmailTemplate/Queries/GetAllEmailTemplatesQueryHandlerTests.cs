@@ -3,7 +3,7 @@ using Moq;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Tokki.Application.UseCases.EmailTemplates.Queries;
+using Tokki.Application.UseCases.EmailTemplates.Queries.GetAllEmailTemplates;
 using Tokki.UnitTests.Common.Bases;
 using Tokki.UnitTests.Common.TestData;
 using Xunit;
@@ -12,11 +12,11 @@ namespace Tokki.UnitTests.Features.EmailTemplates.Queries
 {
     public class GetAllEmailTemplatesQueryHandlerTests : EmailTemplateTestBase
     {
-        private readonly GetAllEmailTemplatesQueryHandler _handler;
+        private readonly GetAllEmailAutoTemplatesQueryHandler _handler;
 
         public GetAllEmailTemplatesQueryHandlerTests()
         {
-            _handler = new GetAllEmailTemplatesQueryHandler(_mockRepo.Object);
+            _handler = new GetAllEmailAutoTemplatesQueryHandler(_mockRepo.Object);
         }
 
         [Fact]

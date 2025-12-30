@@ -23,7 +23,6 @@ namespace Tokki.Infrastructure.Data
         public DbSet<VipPackage> VipPackages { get; set; }
         public DbSet<SocialLogin> SocialLogins { get; set; }
         public DbSet<EmailJob> EmailJobs { get; set; }
-        public DbSet<Subscription> Subscriptions { get; set; }
         public DbSet<EmailTemplate> EmailTemplates { get; set; }
         public DbSet<EmailHistory> EmailHistories { get; set; }
         public DbSet<Title> Titles { get; set; }
@@ -222,33 +221,47 @@ namespace Tokki.Infrastructure.Data
                       .HasDefaultValue(true);
             });
 
-            modelBuilder.Entity<EmailJob>()
-                .Property(j => j.Status)
-                .HasConversion<int>();
-
-            modelBuilder.Entity<EmailJob>()
-                .Property(j => j.TargetGroup)
-                .HasConversion<int>();
 
             // =========================================================
             // CONFIG EMAIL HISTORY
             // =========================================================
-
-            modelBuilder.Entity<EmailHistory>(entity =>
-            {
-                entity.HasIndex(e => new { e.UserId, e.TemplateKey })
-                      .IsUnique();
-
-                entity.HasOne(e => e.Account)
-                      .WithMany()
-                      .HasForeignKey(e => e.UserId)
-                      .OnDelete(DeleteBehavior.Cascade);
-            });
-
+            // ===================== EmailTemplate =====================
+            modelBuilder.Entity<EmailTemplate>()
+                        .Property(t => t.Status)
+                        .HasConversion<int>();
             modelBuilder.Entity<EmailTemplate>(entity =>
             {
+                entity.ToTable("EmailTemplates");
+
                 entity.HasKey(e => e.TemplateId);
-                entity.HasIndex(e => e.TemplateKey).IsUnique();
+
+                entity.Property(e => e.TemplateId)
+                      .HasMaxLength(15)
+                      .IsRequired();
+
+                entity.Property(e => e.TemplateName)
+                      .HasMaxLength(100)
+                      .IsUnicode(true)
+                      .IsRequired();
+
+                entity.HasIndex(e => e.TemplateName)
+                      .IsUnique();
+
+                // Enum -> int
+                entity.Property(e => e.Type)
+                      .HasConversion<int>()
+                      .IsRequired();
+                
+                entity.Property(e => e.TargetGroup)
+                      .HasConversion<int>()
+                      .IsRequired();
+
+                entity.Property(e => e.Value)
+                      .IsRequired();
+
+                // (Khuyến nghị) chặn trùng cấu hình (Type + Value + TargetGroup)
+                entity.HasIndex(e => new { e.Type, e.Value, e.TargetGroup })
+                      .IsUnique();
 
                 entity.Property(e => e.Subject)
                       .IsRequired()
@@ -262,6 +275,91 @@ namespace Tokki.Infrastructure.Data
                 entity.Property(e => e.Description)
                       .HasMaxLength(500)
                       .IsUnicode(true);
+
+                entity.Property(e => e.UpdatedAt)
+                      .IsRequired();
+                entity.Property(e => e.CreateAt)
+                .IsRequired()
+                .HasDefaultValueSql("DATEADD(HOUR, 7, SYSUTCDATETIME())");
+                    });
+
+
+            // ===================== EmailHistory =====================
+            modelBuilder.Entity<EmailHistory>(entity =>
+            {
+                entity.ToTable("EmailHistories");
+
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.Id)
+                      .HasMaxLength(15)
+                      .IsRequired();
+
+                entity.Property(e => e.UserId)
+                      .HasMaxLength(15)
+                      .IsRequired();
+
+                entity.Property(e => e.TemplateId)
+                      .HasMaxLength(15)
+                      .IsRequired();
+
+                entity.Property(e => e.SentAt)
+                      .IsRequired();
+
+                // chống gửi trùng theo template
+                entity.HasIndex(e => new { e.UserId, e.TemplateId })
+                      .IsUnique();
+
+                entity.HasOne(e => e.Account)
+                      .WithMany()
+                      .HasForeignKey(e => e.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.EmailTemplate)
+                      .WithMany()
+                      .HasForeignKey(e => e.TemplateId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+
+            // ===================== EmailJob =====================
+            modelBuilder.Entity<EmailJob>(entity =>
+            {
+                entity.ToTable("EmailJobs");
+
+                entity.HasKey(e => e.JobId);
+
+                // Enum -> int
+                entity.Property(j => j.Status)
+                      .HasConversion<int>()
+                      .IsRequired();
+
+                entity.Property(j => j.TargetGroup)
+                      .HasConversion<int>()
+                      .IsRequired();
+
+                entity.Property(j => j.ScheduledTime)
+                      .IsRequired();
+
+                entity.Property(j => j.Subject)
+                      .IsRequired()
+                      .HasMaxLength(255)
+                      .IsUnicode(true);
+
+                entity.Property(j => j.Body)
+                      .IsRequired()
+                      .IsUnicode(true);
+
+                entity.Property(j => j.SpecificEmails)
+                      .IsUnicode(true);
+
+                entity.Property(j => j.ErrorMessage)
+                      .IsUnicode(true);
+
+                entity.Property(j => j.SentAt);
+
+                // index để query job Pending nhanh
+                entity.HasIndex(j => new { j.Status, j.ScheduledTime });
             });
 
             // =========================================================

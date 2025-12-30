@@ -2,9 +2,9 @@
 
 namespace Tokki.Application.UseCases.EmailTemplates.Commands.DeleteEmailTemplate
 {
-    public class DeleteEmailTemplateCommandValidator : AbstractValidator<DeleteEmailTemplateCommand>
+    public class DeleteEmailAutoTemplateCommandValidator : AbstractValidator<DeleteEmailAutoTemplateCommand>
     {
-        public DeleteEmailTemplateCommandValidator()
+        public DeleteEmailAutoTemplateCommandValidator()
         {
             RuleFor(x => x.TemplateId)
                 .NotEmpty()

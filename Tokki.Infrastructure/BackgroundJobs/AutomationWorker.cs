@@ -1,16 +1,19 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Tokki.Infrastructure.Data;
 using Tokki.Application.IServices;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
+using Tokki.Infrastructure.Data;
 
 namespace Tokki.Infrastructure.BackgroundJobs
 {
     public class AutomationWorker : BackgroundService
     {
+        // UTC+7
+        private static readonly TimeSpan LocalOffset = TimeSpan.FromHours(7);
+
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<AutomationWorker> _logger;
 
@@ -20,219 +23,240 @@ namespace Tokki.Infrastructure.BackgroundJobs
             _logger = logger;
         }
 
+        private static DateTimeOffset NowLocalOffset() =>
+            DateTimeOffset.UtcNow.ToOffset(LocalOffset);
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("Automation Email Worker đã khởi động.");
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                var now = DateTime.UtcNow.AddHours(7);
+                var now = NowLocalOffset();
 
-                // Chạy lúc 02:00 sáng mỗi ngày
-                if (now.Hour == 2 && now.Minute == 0)
-                {
-                    await RunDailyTasks();
-                    // Ngủ 1 tiếng để tránh chạy lại trong cùng 1 giờ
-                    await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
-                }
+                // nextRun = 02:00 mỗi ngày theo UTC+7
+                var nextRun = new DateTimeOffset(now.Year, now.Month, now.Day, 2, 0, 0, LocalOffset);
+                if (now >= nextRun)
+                    nextRun = nextRun.AddDays(1);
 
-                // Kiểm tra mỗi phút
-                await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+                var delay = nextRun - now;
+                if (delay < TimeSpan.Zero) delay = TimeSpan.FromMinutes(1);
+
+                _logger.LogInformation($"Lần chạy kế tiếp lúc: {nextRun:yyyy-MM-dd HH:mm:ss} (UTC+7)");
+                await Task.Delay(delay, stoppingToken);
+
+                if (!stoppingToken.IsCancellationRequested)
+                    await RunDailyTasks(stoppingToken);
             }
         }
 
-        public async Task RunDailyTasks()
+        public async Task RunDailyTasks(CancellationToken stoppingToken = default)
         {
-            _logger.LogInformation("=== Bắt đầu chạy Daily Tasks lúc 02:00 ===");
+            _logger.LogInformation("=== Bắt đầu chạy Daily Tasks ===");
 
-            using (var scope = _serviceProvider.CreateScope())
+            using var scope = _serviceProvider.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<TokkiDbContext>();
+            var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
+            var idGenerator = scope.ServiceProvider.GetRequiredService<IIdGeneratorService>();
+
+            // thời gian hiện tại theo UTC+7
+            var nowOffset = NowLocalOffset();
+            var nowLocal = nowOffset.DateTime; // DateTime Kind=Unspecified (an toàn để dùng với DateTimeOffset constructor)
+
+            try
             {
-                var context = scope.ServiceProvider.GetRequiredService<TokkiDbContext>();
-                var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
-                var idGenerator = scope.ServiceProvider.GetRequiredService<IIdGeneratorService>(); // ✅ Thêm dòng này
+                var templates = await context.EmailTemplates
+                    .AsNoTracking()
+                    .Where(t => t.Status == EmailTemplateStatus.Active) // chỉ gửi template đang hoạt động
+                    .Where(t => t.Type == EmailTemplateType.OfflineReminder
+                             || t.Type == EmailTemplateType.VipExpiringReminder)
+                    .Where(t => t.Value > 0)
+                    .ToListAsync(stoppingToken);
 
-                try
+                _logger.LogInformation($"Tìm thấy {templates.Count} email templates automation.");
+
+                foreach (var template in templates)
                 {
-                    // ========== OFFLINE REMINDERS ==========
-                    await SendOfflineReminder(context, emailService, idGenerator, 30, "OFFLINE_30_DAYS");
-                    await SendOfflineReminder(context, emailService, idGenerator, 90, "OFFLINE_90_DAYS");
-                    await SendOfflineReminder(context, emailService, idGenerator, 180, "OFFLINE_180_DAYS");
+                    if (stoppingToken.IsCancellationRequested) break;
 
-                    //TA
-                    await ResetDailyProgressAndCheckBreaks(context);
-                    await SendOfflineReminder(context, emailService, idGenerator, 30, "OFFLINE_30_DAYS");
+                    try
+                    {
+                        switch (template.Type)
+                        {
+                            case EmailTemplateType.OfflineReminder:
+                                await ProcessOfflineReminderTemplate(
+                                    context, emailService, idGenerator,
+                                    template, nowLocal, nowOffset, stoppingToken);
+                                break;
 
-                    // ========== VIP EXPIRING REMINDERS ==========
-                    await SendVipExpiringReminder(context, emailService, idGenerator, 7, "VIP_EXPIRING_7_DAYS");
-                    await SendVipExpiringReminder(context, emailService, idGenerator, 3, "VIP_EXPIRING_3_DAYS");
-                    await SendVipExpiringReminder(context, emailService, idGenerator, 1, "VIP_EXPIRING_1_DAY");
+                            case EmailTemplateType.VipExpiringReminder:
+                                await ProcessVipExpiringTemplate(
+                                    context, emailService, idGenerator,
+                                    template, nowLocal, nowOffset, stoppingToken);
+                                break;
 
-                    _logger.LogInformation("=== Hoàn thành Daily Tasks ===");
+                            default:
+                                _logger.LogWarning($"[Template:{template.TemplateId}] Type không hợp lệ: {template.Type}");
+                                break;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, $"Lỗi khi xử lý template: {template.TemplateId} - {template.TemplateName}");
+                    }
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Lỗi khi chạy Daily Tasks");
-                }
+
+                _logger.LogInformation("=== Hoàn thành Daily Tasks ===");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi chạy Daily Tasks");
             }
         }
-        //TA
-        private async Task ResetDailyProgressAndCheckBreaks(TokkiDbContext context)
+
+        private static IQueryable<Account> ApplyTargetGroup(
+            IQueryable<Account> query,
+            UserTargetGroup targetGroup,
+            DateTimeOffset nowLocalOffset)
         {
-            _logger.LogInformation("Bắt đầu reset DailyStudySeconds và kiểm tra đứt chuỗi streak...");
-
-            var yesterday = DateTime.UtcNow.AddHours(7).Date.AddDays(-1);
-
-            var usersToUpdate = await context.Accounts
-                .Where(u => u.DailyStudySeconds > 0 || (u.CurrentStreak > 0 && u.LastStreakDate < yesterday))
-                .ToListAsync();
-
-            foreach (var user in usersToUpdate)
+            return targetGroup switch
             {
-                user.DailyStudySeconds = 0;
+                UserTargetGroup.None => query.Where(_ => false),
+                UserTargetGroup.All => query,
 
-                if (user.LastStreakDate.HasValue && user.LastStreakDate.Value.Date < yesterday)
-                {
-                    user.CurrentStreak = 0;
-                }
-            }
+                UserTargetGroup.VipUsers => query.Where(a =>
+                    a.VipExpirationDate.HasValue &&
+                    a.VipExpirationDate.Value > nowLocalOffset),
 
-            await context.SaveChangesAsync();
+                UserTargetGroup.FreeUsers => query.Where(a =>
+                    !a.VipExpirationDate.HasValue ||
+                    a.VipExpirationDate.Value <= nowLocalOffset),
+
+                _ => query
+            };
         }
 
-        // ========== HÀM GỬI EMAIL OFFLINE (ĐÃ SỬA) ==========
-        private async Task SendOfflineReminder(
+        private async Task ProcessOfflineReminderTemplate(
             TokkiDbContext context,
             IEmailService emailService,
-            IIdGeneratorService idGenerator, // ✅ Thêm parameter
-            int days,
-            string templateKey)
+            IIdGeneratorService idGenerator,
+            EmailTemplate template,
+            DateTime nowLocal,
+            DateTimeOffset nowLocalOffset,
+            CancellationToken ct)
         {
-            _logger.LogInformation($"[{templateKey}] Bắt đầu kiểm tra user offline >= {days} ngày...");
+            var days = template.Value;
+            var cutoff = nowLocal.AddDays(-days);
 
-            // 1. Lấy template
-            var template = await context.EmailTemplates.FirstOrDefaultAsync(t => t.TemplateKey == templateKey);
-            if (template == null)
-            {
-                _logger.LogWarning($"[{templateKey}] KHÔNG tìm thấy template trong DB!");
-                return;
-            }
+            var baseQuery = context.Accounts
+                .AsNoTracking()
+                .Where(a => a.Status == AccountStatus.Active)
+                .Where(a => !string.IsNullOrEmpty(a.Email));
 
-            // 2. Tính ngày cutoff
-            var cutoffDate = DateTime.UtcNow.AddHours(7).AddDays(-days);
-            _logger.LogInformation($"[{templateKey}] Cutoff Date: {cutoffDate:yyyy-MM-dd HH:mm:ss}");
+            baseQuery = ApplyTargetGroup(baseQuery, template.TargetGroup, nowLocalOffset);
 
-            // 3. Lấy danh sách user thỏa điều kiện
-            var users = await context.Accounts
-                .Where(u => u.LastLoginAt != null && u.LastLoginAt <= cutoffDate)
-                .Where(u => !context.EmailHistories.Any(h =>
-                    h.UserId == u.UserId &&
-                    h.TemplateKey == templateKey
+            var users = await baseQuery
+                .Where(a => a.LastLoginAt.HasValue && a.LastLoginAt.Value <= cutoff)
+                .Where(a => !context.EmailHistories.Any(h =>
+                    h.UserId == a.UserId && h.TemplateId == template.TemplateId
                 ))
-                .ToListAsync();
-
-            _logger.LogInformation($"[{templateKey}] Tìm thấy {users.Count} user thỏa điều kiện.");
+                .ToListAsync(ct);
 
             if (!users.Any()) return;
 
-            // 4. Gửi email + Lưu lịch sử
-            int successCount = 0;
             foreach (var user in users)
             {
                 try
                 {
-                    string body = template.Body.Replace("{FullName}", user.FullName);
-                    await emailService.SendEmailAsync(user.Email, template.Subject, body);
+                    var subject = template.Subject.Replace("{Value}", template.Value.ToString());
+                    var body = template.Body
+                        .Replace("{FullName}", user.FullName)
+                        .Replace("{Value}", template.Value.ToString());
 
-                    // ✅ Lưu lịch sử đã gửi với NanoID
+                    await emailService.SendEmailAsync(user.Email, subject, body);
+
                     context.EmailHistories.Add(new EmailHistory
                     {
-                        Id = idGenerator.Generate(), // ✅ Tạo ID bằng NanoID
+                        Id = idGenerator.Generate(15),
                         UserId = user.UserId,
-                        TemplateKey = templateKey,
-                        SentAt = DateTime.UtcNow.AddHours(7)
+                        TemplateId = template.TemplateId,
+                        SentAt = nowLocal
                     });
-
-                    successCount++;
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"[{templateKey}] Lỗi gửi email cho {user.Email}");
+                    _logger.LogError(ex, $"[T1:{template.TemplateName}] Lỗi gửi email cho {user.Email}");
                 }
             }
 
-            await context.SaveChangesAsync();
-            _logger.LogInformation($"[{templateKey}] Đã gửi thành công {successCount}/{users.Count} email.");
+            await context.SaveChangesAsync(ct);
         }
 
-        // ========== HÀM NHẮC VIP SẮP HẾT HẠN (ĐÃ SỬA) ==========
-        private async Task SendVipExpiringReminder(
+        private async Task ProcessVipExpiringTemplate(
             TokkiDbContext context,
             IEmailService emailService,
-            IIdGeneratorService idGenerator, // ✅ Thêm parameter
-            int daysLeft,
-            string templateKey)
+            IIdGeneratorService idGenerator,
+            EmailTemplate template,
+            DateTime nowLocal,
+            DateTimeOffset nowLocalOffset,
+            CancellationToken ct)
         {
-            _logger.LogInformation($"[{templateKey}] Bắt đầu kiểm tra VIP hết hạn trong {daysLeft} ngày...");
+            var daysLeft = template.Value;
 
-            // 1. Lấy template
-            var template = await context.EmailTemplates.FirstOrDefaultAsync(t => t.TemplateKey == templateKey);
-            if (template == null)
-            {
-                _logger.LogWarning($"[{templateKey}] KHÔNG tìm thấy template trong DB!");
-                return;
-            }
+            // targetDate là DateTime Kind=Unspecified (an toàn)
+            var targetDate = nowLocal.Date.AddDays(daysLeft);
 
-            // 2. Tính ngày hết hạn mục tiêu
-            var targetDate = DateTime.UtcNow.AddHours(7).Date.AddDays(daysLeft);
-            _logger.LogInformation($"[{templateKey}] Target Date: {targetDate:yyyy-MM-dd}");
+            var start = new DateTimeOffset(targetDate, LocalOffset);
+            var end = start.AddDays(1);
 
-            // 3. Lấy danh sách subscription sắp hết hạn
-            var subs = await context.Subscriptions
-                .Include(s => s.Account)
-                .Where(s => s.Status == SubscriptionStatus.Active && s.EndDate.Date == targetDate)
-                .Where(s => !context.EmailHistories.Any(h =>
-                    h.UserId == s.UserId &&
-                    h.TemplateKey == templateKey
+            var baseQuery = context.Accounts
+                .AsNoTracking()
+                .Where(a => a.Status == AccountStatus.Active)
+                .Where(a => !string.IsNullOrEmpty(a.Email))
+                .Where(a => a.VipExpirationDate.HasValue);
+
+            baseQuery = ApplyTargetGroup(baseQuery, template.TargetGroup, nowLocalOffset);
+
+            var users = await baseQuery
+                .Where(a => a.VipExpirationDate!.Value >= start && a.VipExpirationDate.Value < end)
+                .Where(a => !context.EmailHistories.Any(h =>
+                    h.UserId == a.UserId && h.TemplateId == template.TemplateId
                 ))
-                .ToListAsync();
+                .ToListAsync(ct);
 
-            _logger.LogInformation($"[{templateKey}] Tìm thấy {subs.Count} subscription thỏa điều kiện.");
+            if (!users.Any()) return;
 
-            if (!subs.Any()) return;
-
-            // 4. Gửi email + Lưu lịch sử
-            int successCount = 0;
-            foreach (var sub in subs)
+            foreach (var user in users)
             {
-                if (sub.Account == null) continue;
-
                 try
                 {
-                    string body = template.Body
-                        .Replace("{FullName}", sub.Account.FullName)
-                        .Replace("{EndDate}", sub.EndDate.ToString("dd/MM/yyyy"));
+                    var endDateStr = user.VipExpirationDate!.Value
+                        .ToOffset(LocalOffset)
+                        .ToString("dd/MM/yyyy");
 
-                    await emailService.SendEmailAsync(sub.Account.Email, template.Subject, body);
+                    var subject = template.Subject.Replace("{Value}", template.Value.ToString());
+                    var body = template.Body
+                        .Replace("{FullName}", user.FullName)
+                        .Replace("{EndDate}", endDateStr)
+                        .Replace("{Value}", template.Value.ToString());
 
-                    // ✅ Lưu lịch sử đã gửi với NanoID
+                    await emailService.SendEmailAsync(user.Email, subject, body);
+
                     context.EmailHistories.Add(new EmailHistory
                     {
-                        Id = idGenerator.Generate(15), 
-                        UserId = sub.UserId,
-                        TemplateKey = templateKey,
-                        SentAt = DateTime.UtcNow.AddHours(7)
+                        Id = idGenerator.Generate(15),
+                        UserId = user.UserId,
+                        TemplateId = template.TemplateId,
+                        SentAt = nowLocal
                     });
-
-                    successCount++;
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"[{templateKey}] Lỗi gửi email cho {sub.Account.Email}");
+                    _logger.LogError(ex, $"[T2:{template.TemplateName}] Lỗi gửi email cho {user.Email}");
                 }
             }
 
-            await context.SaveChangesAsync();
-            _logger.LogInformation($"[{templateKey}] Đã gửi thành công {successCount}/{subs.Count} email.");
+            await context.SaveChangesAsync(ct);
         }
     }
 }

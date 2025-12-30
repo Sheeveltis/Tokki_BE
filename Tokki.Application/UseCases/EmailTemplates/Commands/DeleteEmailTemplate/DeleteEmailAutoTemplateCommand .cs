@@ -8,7 +8,7 @@ using Tokki.Application.Common.Models;
 
 namespace Tokki.Application.UseCases.EmailTemplates.Commands.DeleteEmailTemplate
 {
-    public class DeleteEmailTemplateCommand : IRequest<OperationResult<string>>
+    public class DeleteEmailAutoTemplateCommand : IRequest<OperationResult<string>>
     {
         public string TemplateId { get; set; } = string.Empty; 
     }

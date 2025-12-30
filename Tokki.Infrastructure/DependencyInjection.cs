@@ -30,7 +30,6 @@ namespace Tokki.Infrastructure
             services.AddScoped<IEmailTemplateRepository, EmailTemplateRepository>();
             services.AddScoped<IReportRepository, ReportRepository>();
             services.AddScoped<IVipPackageRepository, VipPackageRepository>();
-            services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
             services.AddScoped<IStatisticsRepository, StatisticsRepository>();
             services.AddScoped<IStatisticBlogRepository, StatisticBlogRepository>();
             services.AddScoped<ITitleRepository, TitleRepository>();
