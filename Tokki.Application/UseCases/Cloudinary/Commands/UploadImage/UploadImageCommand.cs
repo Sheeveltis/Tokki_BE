@@ -7,11 +7,11 @@ using System.Text;
 using System.Threading.Tasks;
 using Tokki.Application.Common.Models;
 
-namespace Tokki.Application.UseCases.Cloudinary.Commands.UploadVocabularyImage
+namespace Tokki.Application.UseCases.Cloudinary.Commands.UploadImage
 {
-    public class UploadVocabularyImageCommand : IRequest<OperationResult<string>>
-
+    public class UploadImageCommand : IRequest<OperationResult<string>>
     {
         public IFormFile File { get; set; } = default!;
+        public string FolderName { get; set; } = string.Empty;
     }
 }

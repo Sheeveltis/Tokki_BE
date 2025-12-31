@@ -7,23 +7,22 @@ using System.Threading.Tasks;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IServices;
 
-namespace Tokki.Application.UseCases.Cloudinary.Commands.UploadTopicImage
+namespace Tokki.Application.UseCases.Cloudinary.Commands.UploadImage
 {
-    internal class UploadTopicImageCommandHandler : IRequestHandler<UploadTopicImageCommand, OperationResult<string>>
+    internal class UploadImageCommandHandler : IRequestHandler<UploadImageCommand, OperationResult<string>>
     {
         private readonly ICloudinaryService _cloudinaryService;
 
-        public UploadTopicImageCommandHandler(ICloudinaryService cloudinaryService)
+        public UploadImageCommandHandler(ICloudinaryService cloudinaryService)
         {
             _cloudinaryService = cloudinaryService;
         }
 
-        public async Task<OperationResult<string>> Handle(UploadTopicImageCommand request, CancellationToken cancellationToken)
+        public async Task<OperationResult<string>> Handle(UploadImageCommand request, CancellationToken cancellationToken)
         {
-            const string folderName = "tokki/topic-image";
             try
             {
-                var url = await _cloudinaryService.UploadImageAsync(request.File, folderName);
+                var url = await _cloudinaryService.UploadImageAsync(request.File, request.FolderName);
 
                 if (string.IsNullOrEmpty(url))
                 {
@@ -38,4 +37,5 @@ namespace Tokki.Application.UseCases.Cloudinary.Commands.UploadTopicImage
             }
         }
     }
+
 }

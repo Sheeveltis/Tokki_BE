@@ -1,11 +1,16 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Http;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace Tokki.Application.UseCases.Cloudinary.Commands.UploadVocabularyImage
+namespace Tokki.Application.UseCases.Cloudinary.Commands.UploadImage
 {
-    public class UploadVocabularyImageCommandValidator : AbstractValidator<UploadVocabularyImageCommand>
+    public class UploadImageCommandValidator : AbstractValidator<UploadImageCommand>
     {
-        public UploadVocabularyImageCommandValidator()
+        public UploadImageCommandValidator()
         {
             ClassLevelCascadeMode = CascadeMode.Stop;
 
