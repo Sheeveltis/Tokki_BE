@@ -66,5 +66,12 @@ namespace Tokki.Application.IRepositories
         /// <param name="topicId"></param>
         /// <returns></returns>
         Task<List<VocabularyExportDTO>> GetVocabsByTopicIdAsync(string topicId);
+        //Kho
+        /// <summary>
+        /// Này lấy VocabId thui, dùng cho xem vocabId add vào topic bị trùng ko
+        /// </summary>
+        /// <param name="topicId"></param>
+        /// <returns></returns>
+        Task<List<string>> GetVocabIdsByTopicIdAsync(string topicId);
     }
 }

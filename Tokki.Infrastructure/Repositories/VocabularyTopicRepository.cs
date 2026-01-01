@@ -239,5 +239,18 @@ namespace Tokki.Infrastructure.Repositories
 
             return await query.ToListAsync();
         }
+        //Kho
+        /// <summary>
+        /// Này lấy VocabId thui, dùng cho xem vocabId add vào topic bị trùng ko
+        /// </summary>
+        /// <param name="topicId"></param>
+        /// <returns></returns>
+        public async Task<List<string>> GetVocabIdsByTopicIdAsync(string topicId)
+        {
+            return await _context.VocabularyTopics
+                .Where(vt => vt.TopicId == topicId)
+                .Select(vt => vt.VocabularyId)
+                .ToListAsync();
+        }
     }
 }
