@@ -30,13 +30,13 @@ namespace Tokki.Application.UseCases.Excel.Queries.ExportVocabByTopic
             var topicName = await _topicRepo.GetTopicNameAsync(request.TopicId);
             if (string.IsNullOrEmpty(topicName))
             {
-                return OperationResult<ExportFileDTO>.Failure("Topic không tồn tại.");
+                return OperationResult<ExportFileDTO>.Failure(AppErrors.TopicNotFound);
             }
 
             var vocabs = await _vocabTopicRepo.GetVocabsByTopicIdAsync(request.TopicId);
             if (vocabs == null || !vocabs.Any())
             {
-                return OperationResult<ExportFileDTO>.Failure("Topic này chưa có từ vựng nào để xuất.");
+                return OperationResult<ExportFileDTO>.Failure(AppErrors.VocabTopicIsEmpty);
             }
 
             string safeSheetName = topicName.Length > 30 ? topicName.Substring(0, 30) : topicName;
