@@ -20,10 +20,10 @@ namespace Tokki.Infrastructure.Repositories
         }
 
         public async Task<GameMatchSession?> GetByUserGameTopicAsync(
-           string userId,
-           string gameId,
-           string topicId,
-           GameDifficulty difficulty)
+            string userId,
+            string gameId,
+            string topicId,
+            GameDifficulty difficulty)
         {
             return await _dbContext.GameMatchSessions
                 .FirstOrDefaultAsync(s =>
@@ -36,6 +36,7 @@ namespace Tokki.Infrastructure.Repositories
         public async Task<(IReadOnlyList<GameMatchSession> Items, int TotalCount)> GetPagedByGameTopicAsync(
             string gameId,
             string topicId,
+            GameDifficulty difficulty,
             int pageNumber,
             int pageSize)
         {
@@ -44,14 +45,17 @@ namespace Tokki.Infrastructure.Repositories
 
             var query = _dbContext.GameMatchSessions
                 .AsNoTracking()
-                .Where(s => s.GameId == gameId && s.TopicId == topicId);
+                .Where(s =>
+                    s.GameId == gameId &&
+                    s.TopicId == topicId &&
+                    s.GameDifficulty == difficulty);
 
             var totalCount = await query.CountAsync();
 
             var items = await query
-                .OrderByDescending(s => s.BestScore)   // ưu tiên best score
-                .ThenByDescending(s => s.LatestScore) // tie-break
-                .ThenByDescending(s => s.CreatedAt)   // mới hơn trước
+                .OrderByDescending(s => s.BestScore)
+                .ThenByDescending(s => s.LatestScore)
+                .ThenByDescending(s => s.CreatedAt)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();

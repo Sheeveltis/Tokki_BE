@@ -17,6 +17,7 @@ namespace Tokki.Application.IRepositories
         Task<(IReadOnlyList<GameMatchSession> Items, int TotalCount)> GetPagedByGameTopicAsync(
             string gameId,
             string topicId,
+            GameDifficulty difficulty,
             int pageNumber,
             int pageSize);
 

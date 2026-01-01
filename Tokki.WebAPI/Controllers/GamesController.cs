@@ -50,6 +50,7 @@ namespace Tokki.WebAPI.Controllers
         public async Task<IActionResult> GetGameResultsForAllUsers(
     [FromQuery] string gameId,
     [FromQuery] string topicId,
+    [FromQuery] GameDifficulty gameDifficulty,
     [FromQuery] int pageNumber = 1,
     [FromQuery] int pageSize = 10)
         {
@@ -57,6 +58,7 @@ namespace Tokki.WebAPI.Controllers
             {
                 GameId = gameId,
                 TopicId = topicId,
+                gameDifficulty = gameDifficulty,
                 PageNumber = pageNumber,
                 PageSize = pageSize
             };
@@ -72,13 +74,15 @@ namespace Tokki.WebAPI.Controllers
         public async Task<IActionResult> GetGameResultForUser(
             [FromQuery] string gameId,
             [FromQuery] string topicId,
-            [FromQuery] string userId)
+            [FromQuery] string userId,
+            [FromQuery] GameDifficulty diff)
         {
             var query = new GetGameResultForUserQuery
             {
                 GameId = gameId,
                 TopicId = topicId,
-                UserId = userId
+                UserId = userId,
+                GameDifficulty = diff
             };
 
             var result = await _mediator.Send(query);

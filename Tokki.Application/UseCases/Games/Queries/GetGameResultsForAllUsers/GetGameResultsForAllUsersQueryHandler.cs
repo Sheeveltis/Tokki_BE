@@ -22,11 +22,17 @@ namespace Tokki.Application.UseCases.Games.Queries.GetGameResultsForAllUsers
             GetGameResultsForAllUsersQuery request,
             CancellationToken cancellationToken)
         {
-            var (sessions, totalCount) = await _sessionRepository.GetPagedByGameTopicAsync(
+            // Gọi repo: gameId, topicId, difficulty, pageNumber, pageSize
+            var result = await _sessionRepository.GetPagedByGameTopicAsync(
                 request.GameId,
                 request.TopicId,
+                request.gameDifficulty,
                 request.PageNumber,
-                request.PageSize);
+                request.PageSize
+            );
+
+            var sessions = result.Items;
+            var totalCount = result.TotalCount;
 
             var dtos = sessions.Select(s => new GameResultDto
             {
@@ -36,6 +42,7 @@ namespace Tokki.Application.UseCases.Games.Queries.GetGameResultsForAllUsers
                 TopicId = s.TopicId,
                 BestScore = s.BestScore,
                 LatestScore = s.LatestScore,
+                GameDifficulty = s.GameDifficulty,
                 CreatedAt = s.CreatedAt
             }).ToList();
 
