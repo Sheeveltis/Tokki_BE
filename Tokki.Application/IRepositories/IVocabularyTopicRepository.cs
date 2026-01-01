@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Tokki.Application.UseCases.Excel.DTOs;
 using Tokki.Domain.Entities;
 
 namespace Tokki.Application.IRepositories
@@ -58,5 +59,19 @@ namespace Tokki.Application.IRepositories
           CancellationToken cancellationToken);
         Task<bool> HasActiveTopicAsync(string vocabularyId, CancellationToken cancellationToken);
 
+        //Kho
+        /// <summary>
+        /// Này dùng lấy từ vựng để xuất excel theo topicId
+        /// </summary>
+        /// <param name="topicId"></param>
+        /// <returns></returns>
+        Task<List<VocabularyExportDTO>> GetVocabsByTopicIdAsync(string topicId);
+        //Kho
+        /// <summary>
+        /// Này lấy VocabId thui, dùng cho xem vocabId add vào topic bị trùng ko
+        /// </summary>
+        /// <param name="topicId"></param>
+        /// <returns></returns>
+        Task<List<string>> GetVocabIdsByTopicIdAsync(string topicId);
     }
 }

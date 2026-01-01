@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using MediatR;
 using Tokki.Application.Common.Models;
@@ -11,6 +12,8 @@ namespace Tokki.Application.UseCases.Accounts.Commands.CreateEmailCampaign
 {
     public class CreateEmailCampaignByGroupCommand : IRequest<OperationResult<string>>
     {
+        [JsonIgnore]
+        public string? CreatedBy { get; set; }
         public string Subject { get; set; } = string.Empty;
         public string Body { get; set; } = string.Empty;
         public UserTargetGroup TargetGroup { get; set; }

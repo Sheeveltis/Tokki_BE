@@ -68,44 +68,7 @@ namespace Tokki.Infrastructure.Repositories
             return await _context.Accounts
                 .AnyAsync(u => u.PhoneNumber == phoneNumber);
         }
-        public async Task<List<string>> GetEmailsByTargetGroupAsync(UserTargetGroup targetGroup)
-        {
-            var now = DateTime.UtcNow.AddHours(7);
-
-            // Bắt đầu query từ bảng Account
-            var query = _context.Accounts.AsNoTracking()
-                .Where(u => u.Status == AccountStatus.Active); // Chỉ lấy user đang hoạt động
-
-            switch (targetGroup)
-            {
-                case UserTargetGroup.VipUsers:
-                    // Logic: Có ít nhất 1 gói Active và còn hạn
-                    query = query.Where(u => _context.Subscriptions.Any(s =>
-                        s.UserId == u.UserId &&
-                        s.Status == SubscriptionStatus.Active &&
-                        s.EndDate > now
-                    ));
-                    break;
-
-                case UserTargetGroup.FreeUsers:
-                    // Logic: KHÔNG CÓ gói nào Active và còn hạn
-                    query = query.Where(u => !_context.Subscriptions.Any(s =>
-                        s.UserId == u.UserId &&
-                        s.Status == SubscriptionStatus.Active &&
-                        s.EndDate > now
-                    ));
-                    break;
-
-                case UserTargetGroup.All:
-                default:
-                    // Không lọc gì thêm
-                    break;
-            }
-
-            // Chỉ select cột Email để tối ưu hiệu suất
-            return await query.Select(u => u.Email).ToListAsync();
-        }
-        public async Task<bool> IsPhoneNumberUsedByOtherUserAsync(string phoneNumber, string currentUserId)
+       public async Task<bool> IsPhoneNumberUsedByOtherUserAsync(string phoneNumber, string currentUserId)
         {
             // 1. Nếu số điện thoại truyền vào rỗng thì coi như không trùng (bỏ qua)
             if (string.IsNullOrWhiteSpace(phoneNumber)) return false;

@@ -14,6 +14,8 @@ namespace Tokki.Domain.Enums
         Sent = 2,
 
         [Description("Gửi thất bại")]
-        Failed = 3
+        Failed = 3,
+        [Description("Đã hủy")]
+        Deleted  = 4
     }
 }

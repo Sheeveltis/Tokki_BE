@@ -15,11 +15,6 @@ namespace Tokki.Application.UseCases.Exam.Commands.UpdateExam
                 .NotEmpty()
                 .WithName("ID bài test");
 
-            RuleFor(x => x.Title)
-                .NotEmpty()
-                .MaximumLength(150)
-                .WithName("Tiêu đề");
-
             RuleFor(x => x.Type)
                 .IsInEnum()
                 .WithName("Loại bài test");

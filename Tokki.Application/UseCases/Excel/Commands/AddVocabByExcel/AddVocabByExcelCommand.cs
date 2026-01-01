@@ -7,7 +7,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Tokki.Application.Common.Models;
-using Tokki.Application.UseCases.Excel.Commands.DTOs;
+using Tokki.Application.UseCases.Excel.DTOs;
 
 namespace Tokki.Application.UseCases.Excel.Commands.AddVocabByExcel
 {

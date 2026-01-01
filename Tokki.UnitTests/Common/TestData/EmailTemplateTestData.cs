@@ -2,7 +2,8 @@
 using Tokki.Application.UseCases.EmailTemplates.Commands.CreateEmailTemplate;
 using Tokki.Application.UseCases.EmailTemplates.Commands.DeleteEmailTemplate;
 using Tokki.Application.UseCases.EmailTemplates.Commands.UpdateEmailTemplate;
-using Tokki.Application.UseCases.EmailTemplates.Queries;
+using Tokki.Application.UseCases.EmailTemplates.Queries.GetAllEmailTemplates;
+using Tokki.Application.UseCases.EmailTemplates.Queries.GetEmailAutoTemplateById;
 using Tokki.Domain.Entities;
 
 namespace Tokki.UnitTests.Common.TestData
@@ -10,9 +11,9 @@ namespace Tokki.UnitTests.Common.TestData
     public static class EmailTemplateTestData
     {
         // Tạo một Command hợp lệ (thỏa mãn Validator)
-        public static CreateEmailTemplateCommand GetValidCreateEmailTemplateCommand()
+        public static CreateEmailAutoTemplateCommand GetValidCreateEmailTemplateCommand()
         {
-            return new CreateEmailTemplateCommand
+            return new CreateEmailAutoTemplateCommand
             {
                 TemplateKey = "WELCOME_USER_2025", // Thỏa mãn regex: chữ, số, _, -
                 Subject = "Chào mừng bạn đến với Tokki",
@@ -35,9 +36,9 @@ namespace Tokki.UnitTests.Common.TestData
         }
 
 
-        public static UpdateEmailTemplateCommand GetValidUpdateEmailTemplateCommand(string id)
+        public static UpdateEmailAutoTemplateCommand GetValidUpdateEmailTemplateCommand(string id)
         {
-            return new UpdateEmailTemplateCommand
+            return new UpdateEmailAutoTemplateCommand
             {
                 TemplateId = id,
                 Subject = "Tiêu đề đã chỉnh sửa",
@@ -46,9 +47,9 @@ namespace Tokki.UnitTests.Common.TestData
             };
         }
 
-        public static UpdateEmailTemplateCommand GetUpdateCommandWithNonExistentId()
+        public static UpdateEmailAutoTemplateCommand GetUpdateCommandWithNonExistentId()
         {
-            return new UpdateEmailTemplateCommand
+            return new UpdateEmailAutoTemplateCommand
             {
                 TemplateId = "template-khong-ton-tai", // ID fake
                 Subject = "Test Fail",

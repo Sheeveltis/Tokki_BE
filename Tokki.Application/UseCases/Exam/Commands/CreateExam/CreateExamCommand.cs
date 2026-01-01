@@ -13,6 +13,7 @@ namespace Tokki.Application.UseCases.Exam.Commands.CreateExam
     {
         public string ExamTemplateId { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
+        public int Duration { get; set; }
         public ExamType Type { get; set; }
     }
 }

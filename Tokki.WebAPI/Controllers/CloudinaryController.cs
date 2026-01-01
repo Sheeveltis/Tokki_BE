@@ -1,8 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Http; // Cần cho IFormFile
 using Microsoft.AspNetCore.Mvc;
-using Tokki.Application.UseCases.Cloudinary.Commands.UploadTopicImage;
-using Tokki.Application.UseCases.Cloudinary.Commands.UploadVocabularyImage;
+using Tokki.Application.UseCases.Cloudinary.Commands.UploadImage;
 using Tokki.Application.UseCases.Cloudinary.Commands.UploadVocabularyImageByUrl;
 
 namespace Tokki.WebAPI.Controllers
@@ -22,9 +21,10 @@ namespace Tokki.WebAPI.Controllers
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> UploadVocabularyImage(IFormFile file)
         {
-            var command = new UploadVocabularyImageCommand
+            var command = new UploadImageCommand
             {
-                File = file
+                File = file,
+                FolderName = "tokki/vocab-image"
             };
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
@@ -33,9 +33,22 @@ namespace Tokki.WebAPI.Controllers
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> UploadTopicImage(IFormFile file)
         {
-            var command = new UploadTopicImageCommand
+            var command = new UploadImageCommand
             {
-                File = file
+                File = file,
+                FolderName = "tokki/topic-image"
+            };
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+        [HttpPost("avatar")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UploadAvatar(IFormFile file)
+        {
+            var command = new UploadImageCommand
+            {
+                File = file,
+                FolderName = "tokki/avatar"
             };
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);

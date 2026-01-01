@@ -7,7 +7,7 @@ using Tokki.Application.UseCases.VocabSpacedRepetition.DTOs;
 
 namespace Tokki.WebAPI.Controllers
 {
-    [Route("api/spaced-repetition")]
+    [Route("api/[controller]")]
     [ApiController]
     [Authorize]
     public class SpacedRepetitionController : ControllerBase

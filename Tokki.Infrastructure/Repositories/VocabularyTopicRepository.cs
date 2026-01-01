@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Tokki.Application.IRepositories;
+using Tokki.Application.UseCases.Excel.DTOs;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 using Tokki.Infrastructure.Data;
@@ -217,6 +218,39 @@ namespace Tokki.Infrastructure.Repositories
                     vt.Status == VocabularyTopicStatus.Active,
                     cancellationToken);
         }
+        //Kho
+        /// <summary>
+        /// Này dùng lấy từ vựng để xuất excel theo topicId
+        /// </summary>
+        /// <param name="topicId"></param>
+        /// <returns></returns>
+        public async Task<List<VocabularyExportDTO>> GetVocabsByTopicIdAsync(string topicId)
+        {
+            var query = from vt in _context.VocabularyTopics
+                        join v in _context.Vocabularies on vt.VocabularyId equals v.VocabularyId
+                        where vt.TopicId == topicId && v.Status == VocabularyStatus.Active
+                        select new VocabularyExportDTO
+                        {
+                            Text = v.Text,
+                            Pronunciation = v.Pronunciation,
+                            ImgURL = v.ImgURL,
+                            Definition = v.Definition
+                        };
 
+            return await query.ToListAsync();
+        }
+        //Kho
+        /// <summary>
+        /// Này lấy VocabId thui, dùng cho xem vocabId add vào topic bị trùng ko
+        /// </summary>
+        /// <param name="topicId"></param>
+        /// <returns></returns>
+        public async Task<List<string>> GetVocabIdsByTopicIdAsync(string topicId)
+        {
+            return await _context.VocabularyTopics
+                .Where(vt => vt.TopicId == topicId)
+                .Select(vt => vt.VocabularyId)
+                .ToListAsync();
+        }
     }
 }

@@ -40,11 +40,6 @@ namespace Tokki.Application.UseCases.Vocabulary.Queries.GetById
                 ImgURL = vocabulary.ImgURL,
                 AudioURL = vocabulary.AudioURL,
                 Status = vocabulary.Status,
-                CreateBy = vocabulary.CreateBy,
-                CreateDate = vocabulary.CreateDate,
-                UpdateBy = vocabulary.UpdateBy,
-                UpdateDate = vocabulary.UpdateDate,
-
                 Topics = vocabulary.VocabularyTopics
                     .Where(vt => vt.Status == VocabularyTopicStatus.Active
                                  && vt.Topic != null

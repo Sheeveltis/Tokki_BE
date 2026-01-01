@@ -74,7 +74,7 @@ namespace Tokki.Application.UseCases.Topics.Commands.PublishTopic
                 // Idempotent: đã Active thì coi như publish thành công
                 if (topic.Status == TopicStatus.Active)
                 {
-                    return OperationResult<bool>.Success(true, 200, "Topic is already active.");
+                    return OperationResult<bool>.Success(true, 200, "Topic đã được kích hoạt.");
                 }
 
                 // Chỉ cho phép Draft -> Active
@@ -95,7 +95,7 @@ namespace Tokki.Application.UseCases.Topics.Commands.PublishTopic
                 await _topicRepository.UpdateAsync(topic);
                 await _topicRepository.SaveChangesAsync(cancellationToken);
 
-                return OperationResult<bool>.Success(true, 200, "Publish topic successfully.");
+                return OperationResult<bool>.Success(true, 200, "Xuất bản chủ đề thành công.");
             }
             catch
             {

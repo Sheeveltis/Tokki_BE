@@ -4,7 +4,7 @@ using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Application.UseCases.Excel.Commands.AddVocabByExcel;
-using Tokki.Application.UseCases.Excel.Commands.DTOs;
+using Tokki.Application.UseCases.Excel.DTOs;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 
@@ -53,7 +53,12 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate
 
             var vocabsToCheck = extractedVocabs.Select(x => (x.Text, x.Definition)).ToList();
             var existingEntities = await _vocabRepo.GetExistingVocabEntitiesAsync(vocabsToCheck);
-
+            var existingVocabIdsInTopic = new HashSet<string>(); 
+            if (!string.IsNullOrEmpty(request.TopicId))
+            {
+                var ids = await _vocabTopicRepo.GetVocabIdsByTopicIdAsync(request.TopicId);
+                existingVocabIdsInTopic = new HashSet<string>(ids);
+            }
             var newItemsToProcess = new List<VocabularyExcelDTO>();
             var finalVocabsForTopic = new List<Domain.Entities.Vocabulary>();
 
@@ -67,15 +72,27 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate
                 {
                     if (!string.IsNullOrEmpty(request.TopicId))
                     {
-                        finalVocabsForTopic.Add(existingMatch);
-                        response.SuccessList.Add(new VocabularyPreviewDTO
+                        if (existingVocabIdsInTopic.Contains(existingMatch.VocabularyId))
                         {
-                            Text = existingMatch.Text,
-                            Definition = existingMatch.Definition,
-                            Pronunciation = existingMatch.Pronunciation,
-                            ImageUrl = existingMatch.ImgURL,
-                            Reason = "Đã có sẵn trong từ điển -> Sẽ thêm vào Topic"
-                        });
+                            response.FailureList.Add(new VocabularyPreviewDTO
+                            {
+                                Text = item.Text,
+                                Definition = item.Definition,
+                                Reason = "Từ vựng này đã tồn tại trong Topic rồi." 
+                            });
+                        }
+                        else
+                        {
+                            finalVocabsForTopic.Add(existingMatch);
+                            response.SuccessList.Add(new VocabularyPreviewDTO
+                            {
+                                Text = existingMatch.Text,
+                                Definition = existingMatch.Definition,
+                                Pronunciation = existingMatch.Pronunciation,
+                                ImageUrl = existingMatch.ImgURL,
+                                Reason = "Đã có sẵn trong từ điển -> Sẽ thêm vào Topic"
+                            });
+                        }
                     }
                     else
                     {
@@ -83,7 +100,7 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate
                         {
                             Text = item.Text,
                             Definition = item.Definition,
-                            Reason = "Từ vựng và nghĩa này đã tồn tại."
+                            Reason = "Từ vựng và nghĩa này đã tồn tại trong hệ thống."
                         });
                     }
                 }
@@ -92,7 +109,6 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate
                     newItemsToProcess.Add(item);
                 }
             }
-
             if (!newItemsToProcess.Any() && !finalVocabsForTopic.Any())
             {
                 return OperationResult<ImportVocabularyResponse>.Success(response, 200, "Không có thao tác nào được thực hiện.");

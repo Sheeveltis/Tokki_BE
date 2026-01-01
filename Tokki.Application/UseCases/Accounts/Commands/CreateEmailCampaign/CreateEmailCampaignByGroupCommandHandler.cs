@@ -36,6 +36,7 @@ namespace Tokki.Application.UseCases.Email.Commands.CreateCampaign
 
             var job = new EmailJob
             {
+                CreatedBy = request.CreatedBy,
                 JobId = _idGenerator.Generate(15),
                 Subject = request.Subject,
                 Body = request.Body,

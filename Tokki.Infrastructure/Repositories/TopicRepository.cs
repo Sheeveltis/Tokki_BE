@@ -159,5 +159,19 @@ namespace Tokki.Infrastructure.Repositories
 
             return (items, totalCount);
         }
+        //Kho
+        /// <summary>
+        /// Này lấy tên topic từ topicId (dùng đặt tên file xuất excel)
+        /// </summary>
+        /// <param name="topicId"></param>
+        /// <returns></returns>
+        public async Task<string?> GetTopicNameAsync(string topicId)
+        {
+            // Lấy tên Topic để làm tên File
+            return await _context.Topics
+                .Where(t => t.TopicId == topicId)
+                .Select(t => t.TopicName)
+                .FirstOrDefaultAsync();
+        }
     }
 }

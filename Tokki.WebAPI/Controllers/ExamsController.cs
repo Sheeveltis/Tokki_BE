@@ -23,6 +23,41 @@ namespace Tokki.WebAPI.Controllers
             _mediator = mediator;
         }
 
+        // =========================
+        // CREATE (POST)
+        // =========================
+
+        /// <summary>
+        /// Tạo bài test mới từ mẫu đề thi
+        /// </summary>
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> CreateExam([FromBody] CreateExamCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        /// <summary>
+        /// Thêm câu hỏi vào bài test
+        /// </summary>
+        [HttpPost("{id}/questions")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> AddQuestionToExam(string id, [FromBody] AddQuestionToExamCommand command)
+        {
+            if (id != command.ExamId)
+            {
+                return BadRequest(new { message = "ID không khớp" });
+            }
+
+            var result = await _mediator.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        // =========================
+        // READ (GET)
+        // =========================
+
         /// <summary>
         /// Lấy danh sách bài test (phân trang)
         /// </summary>
@@ -44,16 +79,9 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
-        /// <summary>
-        /// Tạo bài test mới từ mẫu đề thi
-        /// </summary>
-        [HttpPost]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> CreateExam([FromBody] CreateExamCommand command)
-        {
-            var result = await _mediator.Send(command);
-            return StatusCode(result.StatusCode, result);
-        }
+        // =========================
+        // UPDATE (PUT)
+        // =========================
 
         /// <summary>
         /// Cập nhật thông tin bài test
@@ -71,6 +99,10 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
+        // =========================
+        // DELETE (DELETE)
+        // =========================
+
         /// <summary>
         /// Xóa bài test
         /// </summary>
@@ -79,22 +111,6 @@ namespace Tokki.WebAPI.Controllers
         public async Task<IActionResult> DeleteExam(string id)
         {
             var command = new DeleteExamCommand { ExamId = id };
-            var result = await _mediator.Send(command);
-            return StatusCode(result.StatusCode, result);
-        }
-
-        /// <summary>
-        /// Thêm câu hỏi vào bài test
-        /// </summary>
-        [HttpPost("{id}/questions")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> AddQuestionToExam(string id, [FromBody] AddQuestionToExamCommand command)
-        {
-            if (id != command.ExamId)
-            {
-                return BadRequest(new { message = "ID không khớp" });
-            }
-
             var result = await _mediator.Send(command);
             return StatusCode(result.StatusCode, result);
         }
@@ -111,6 +127,7 @@ namespace Tokki.WebAPI.Controllers
                 ExamId = id,
                 QuestionNo = questionNo
             };
+
             var result = await _mediator.Send(command);
             return StatusCode(result.StatusCode, result);
         }

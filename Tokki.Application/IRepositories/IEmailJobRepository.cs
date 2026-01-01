@@ -5,14 +5,36 @@ namespace Tokki.Application.IRepositories
 {
     public interface IEmailJobRepository
     {
-        // Hàm dùng cho Handler (Tạo mới)
+        // Create
         Task AddAsync(EmailJob job);
 
-        // Hàm dùng cho Background Worker (Lấy danh sách cần gửi)
+        // Worker
         Task<List<EmailJob>> GetPendingJobsAsync(DateTime scheduledTime);
 
-        // Hàm chung
+        // Read
+        Task<EmailJob?> GetByIdAsync(string jobId);
+
+        // Get all (paged + filter)
+        Task<(List<EmailJob> Items, int TotalCount)> GetPagedAsync(
+            int pageNumber,
+            int pageSize,
+            EmailJobStatus? status = null,
+            UserTargetGroup? targetGroup = null,
+            DateTime? scheduledFrom = null,
+            DateTime? scheduledTo = null,
+            DateTime? createdFrom = null,
+            DateTime? createdTo = null,
+            string? searchSubject = null,
+            bool includeDeleted = false
+        );
+
+        // Update
         Task UpdateAsync(EmailJob job);
+
+        // Soft delete
+        Task SoftDeleteAsync(EmailJob job);
+
+        // Save
         Task SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }

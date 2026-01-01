@@ -2,7 +2,7 @@
 using Moq;
 using System.Threading;
 using System.Threading.Tasks;
-using Tokki.Application.UseCases.EmailTemplates.Queries;
+using Tokki.Application.UseCases.EmailTemplates.Queries.GetEmailAutoTemplateById;
 using Tokki.Domain.Entities;
 using Tokki.UnitTests.Common.Bases;
 using Tokki.UnitTests.Common.TestData;

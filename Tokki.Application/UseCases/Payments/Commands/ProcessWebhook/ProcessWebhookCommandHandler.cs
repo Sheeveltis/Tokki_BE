@@ -14,7 +14,6 @@ namespace Tokki.Application.UseCases.Payments.Commands.ProcessWebhook
         private readonly IPaymentRepository _paymentRepository;
         private readonly IAccountRepository _accountRepository;
         private readonly IVipPackageRepository _vipPackageRepository;
-        private readonly ISubscriptionRepository _subscriptionRepository;
         private readonly IIdGeneratorService _idGenerator;
         private readonly ILogger<ProcessWebhookCommandHandler> _logger;
 
@@ -22,14 +21,12 @@ namespace Tokki.Application.UseCases.Payments.Commands.ProcessWebhook
             IPaymentRepository paymentRepository,
             IAccountRepository accountRepository,
             IVipPackageRepository vipPackageRepository,
-            ISubscriptionRepository subscriptionRepository,
             IIdGeneratorService idGenerator,
             ILogger<ProcessWebhookCommandHandler> logger)
         {
             _paymentRepository = paymentRepository;
             _accountRepository = accountRepository;
             _vipPackageRepository = vipPackageRepository;
-            _subscriptionRepository = subscriptionRepository;
             _idGenerator = idGenerator;
             _logger = logger;
         }
@@ -96,20 +93,7 @@ namespace Tokki.Application.UseCases.Payments.Commands.ProcessWebhook
                             user.Role = AccountRole.Vip;
                             await _accountRepository.UpdateUserAsync(user);
 
-                            var subscription = new Subscription
-                            {
-                                Id = _idGenerator.GenerateCustom(21),
-                                UserId = user.UserId,
-                                VipPackageId = vipPackage.Id,
-                                PaymentId = payment.Id,
-                                StartDate = startDate.DateTime,
-                                EndDate = endDate.DateTime,
-                                Status = SubscriptionStatus.Active,
-                                CreatedAt = DateTime.UtcNow
-                            };
-                            await _subscriptionRepository.AddAsync(subscription);
-
-                            _logger.LogInformation("Activated VIP for User {UserId}. SubId: {SubId}", user.UserId, subscription.Id);
+                            _logger.LogInformation("Activated VIP for User {UserId}", user.UserId);
                         }
 
                         await _paymentRepository.UpdateAsync(payment);

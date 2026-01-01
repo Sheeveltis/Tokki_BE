@@ -30,5 +30,12 @@ namespace Tokki.Application.IRepositories
         Task UpdateAsync(Topic topic);
         Task DeleteAsync(Topic topic);
         Task SaveChangesAsync(CancellationToken cancellationToken = default);
+        //Kho
+        /// <summary>
+        /// Này lấy tên topic từ topicId (dùng đặt tên file xuất excel)
+        /// </summary>
+        /// <param name="topicId"></param>
+        /// <returns></returns>
+        Task<string?> GetTopicNameAsync(string topicId);
     }
 }

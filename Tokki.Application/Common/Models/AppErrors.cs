@@ -170,7 +170,8 @@ namespace Tokki.Application.Common.Models
         public static readonly Error VocabularyDeletedCannotUpdate =
     new("Vocabulary.DeletedCannotUpdate", "Vocabulary đã bị xóa, không thể cập nhật hoặc khôi phục.");
 
-        // ========
+        // VocabulariesTopic
+        public static readonly Error VocabTopicIsEmpty = new("VocabTopic.IsEmpty", "Topic này không có từ vựng.");
 
         // ============================================
         // NHÓM 13: WORD
