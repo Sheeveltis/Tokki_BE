@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using Tokki.Application.UseCases.Games.Commands.SaveGameResult;
+using Tokki.Application.UseCases.Games.Commands.UpdateGameResult;
 using Tokki.Application.UseCases.Games.Queries.GetAllGamesForUser;
 using Tokki.Application.UseCases.Games.Queries.GetGameResultForUser;
 using Tokki.Application.UseCases.Games.Queries.GetGameResultsForAllUsers;
@@ -92,6 +93,13 @@ namespace Tokki.WebAPI.Controllers
         [HttpPost("user/save-result")]
         [Authorize]
         public async Task<IActionResult> SaveGameResult([FromBody] SaveGameResultCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+        [HttpPut("user/result")]
+        [Authorize]
+        public async Task<IActionResult> UpdateGameResult([FromBody] UpdateGameResultCommand command)
         {
             var result = await _mediator.Send(command);
             return StatusCode(result.StatusCode, result);

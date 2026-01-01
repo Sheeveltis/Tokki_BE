@@ -1,0 +1,18 @@
+﻿using MediatR;
+using Tokki.Application.Common.Models;
+using Tokki.Domain.Enums;
+
+namespace Tokki.Application.UseCases.Games.Commands.UpdateGameResult
+{
+    public class UpdateGameResultCommand : IRequest<OperationResult<bool>>
+    {
+        public string GameId { get; set; } = string.Empty;
+        public string TopicId { get; set; } = string.Empty;
+        public int Score { get; set; }
+        public GameDifficulty GameDifficulty { get; set; }
+
+        // UserId lấy từ token, không nhận từ client
+        [JsonIgnore]
+        public string UserId { get; set; } = string.Empty;
+    }
+}
