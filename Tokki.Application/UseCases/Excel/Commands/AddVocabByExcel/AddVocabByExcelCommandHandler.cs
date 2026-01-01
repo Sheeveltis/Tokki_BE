@@ -4,7 +4,7 @@ using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Application.UseCases.Excel.Commands.AddVocabByExcel;
-using Tokki.Application.UseCases.Excel.Commands.DTOs;
+using Tokki.Application.UseCases.Excel.DTOs;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 

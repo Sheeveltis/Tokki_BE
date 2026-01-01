@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using OfficeOpenXml;
 using Tokki.Application.IServices;
-using Tokki.Application.UseCases.Excel.Commands.DTOs;
+using Tokki.Application.UseCases.Excel.DTOs;
 
 namespace Application.Services
 {
@@ -41,6 +41,42 @@ namespace Application.Services
             }
 
             return Task.FromResult(result);
+        }
+        public Task<byte[]> ExportVocabularyToExcelAsync(List<VocabularyExportDTO> data, string sheetName)
+        {
+            ExcelPackage.License.SetNonCommercialPersonal("TokkiProject");
+
+            using (var package = new ExcelPackage())
+            {
+                var worksheet = package.Workbook.Worksheets.Add(sheetName);
+
+                worksheet.Cells[1, 1].Value = "Text";
+                worksheet.Cells[1, 2].Value = "Pronunciation";
+                worksheet.Cells[1, 3].Value = "ImgURL";
+                worksheet.Cells[1, 4].Value = "Definition";
+
+                using (var range = worksheet.Cells[1, 1, 1, 4])
+                {
+                    range.Style.Font.Bold = true;
+                    range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                    range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                }
+
+                for (int i = 0; i < data.Count; i++)
+                {
+                    var item = data[i];
+                    int rowIndex = i + 2; 
+
+                    worksheet.Cells[rowIndex, 1].Value = item.Text;
+                    worksheet.Cells[rowIndex, 2].Value = item.Pronunciation;
+                    worksheet.Cells[rowIndex, 3].Value = item.ImgURL ?? "(Không có ảnh)";
+                    worksheet.Cells[rowIndex, 4].Value = item.Definition;
+                }
+
+                worksheet.Cells.AutoFitColumns();
+
+                return Task.FromResult(package.GetAsByteArray());
+            }
         }
     }
 }

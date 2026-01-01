@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Tokki.Application.UseCases.Excel.Commands.DTOs
+namespace Tokki.Application.UseCases.Excel.DTOs
 {
     public class VocabularyExcelDTO
     {

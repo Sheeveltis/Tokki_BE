@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.CognitiveServices.Speech.Transcription;
 using System.Security.Claims;
 using Tokki.Application.UseCases.Excel.Commands.AddVocabByExcel;
+using Tokki.Application.UseCases.Excel.Queries.ExportVocabByTopic;
 using Tokki.Application.UseCases.LiveChat.Commands.CreateSupportChat;
 
 namespace Tokki.WebAPI.Controllers
@@ -49,6 +50,20 @@ namespace Tokki.WebAPI.Controllers
             {
                 return StatusCode(500, ex.ToString());
             }
+        }
+        [HttpGet("export-by-topic/{topicId}")]
+        [Authorize(Roles = "Admin, Staff")] 
+        public async Task<IActionResult> ExportVocabByTopic(string topicId)
+        {
+            var query = new ExportVocabByTopicQuery { TopicId = topicId };
+            var result = await _sender.Send(query);
+
+            if (result.IsSuccess)
+            {
+                return File(result.Data.FileContent, result.Data.ContentType, result.Data.FileName);
+            }
+
+            return BadRequest(result.Errors);
         }
     }
 }
