@@ -52,6 +52,9 @@ namespace Tokki.Infrastructure.Data
         public DbSet<ChatRoomMember> ChatRoomMembers { get; set; }
         public DbSet<ChatMessage> ChatMessages { get; set; }
         public DbSet<UserVocabProgress> UserVocabProgresses { get; set; }
+        public DbSet<Game> Games { get; set; }
+        public DbSet<GameMatch> GameMatches { get; set; }
+        public DbSet<GameMatchSession> GameMatchSessions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -524,6 +527,113 @@ namespace Tokki.Infrastructure.Data
                       .HasForeignKey(c => c.ParentId)
                       .OnDelete(DeleteBehavior.Restrict);
             });
+            // =========================================================
+            // 10. CONFIG GAME / GAME MATCH / GAME MATCH SESSION
+            // =========================================================
+
+            modelBuilder.Entity<Game>(entity =>
+            {
+                entity.HasKey(g => g.GameId);
+
+                entity.Property(g => g.GameId)
+                      .HasMaxLength(50);
+
+                entity.Property(g => g.GameName)
+                      .IsRequired()
+                      .HasMaxLength(200);
+
+                entity.Property(g => g.GameType)
+                      .HasConversion<int>();
+
+                entity.Property(g => g.Status)
+                      .HasConversion<int>();
+
+                entity.Property(g => g.CreatedAt)
+                      .HasDefaultValueSql("GETUTCDATE()");
+
+                entity.Property(g => g.UpdatedAt)
+                      .HasDefaultValueSql("GETUTCDATE()");
+            });
+
+            modelBuilder.Entity<GameMatch>(entity =>
+            {
+                // PK là LevelId
+                entity.HasKey(m => m.LevelId);
+
+                entity.Property(m => m.LevelId)
+                      .HasMaxLength(50);
+
+                entity.Property(m => m.GameId)
+                      .IsRequired()
+                      .HasMaxLength(50);
+
+                entity.Property(m => m.LevelName)
+                      .IsRequired()
+                      .HasMaxLength(200);
+
+                entity.Property(m => m.TopicId)
+                      .IsRequired()
+                      .HasMaxLength(50);
+
+                entity.Property(m => m.ConfigJson)
+                      .HasColumnType("nvarchar(max)");
+
+                entity.Property(m => m.Status)
+                      .HasConversion<int>();
+
+                entity.HasOne(m => m.Game)
+                      .WithMany(g => g.Levels)
+                      .HasForeignKey(m => m.GameId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(m => m.Topic)
+                      .WithMany()
+                      .HasForeignKey(m => m.TopicId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<GameMatchSession>(entity =>
+            {
+                entity.HasKey(s => s.GameMatchSessionId);
+
+                entity.Property(s => s.GameMatchSessionId)
+                      .HasMaxLength(50);
+
+                entity.Property(s => s.UserId)
+                      .IsRequired()
+                      .HasMaxLength(50);
+
+                entity.Property(s => s.GameId)
+                      .IsRequired()
+                      .HasMaxLength(50);
+
+                entity.Property(s => s.GameMatchId)
+                      .IsRequired()
+                      .HasMaxLength(50);
+
+                entity.Property(s => s.GameResultStatus)
+                      .HasConversion<int>();
+
+                // Quan hệ tới Game
+                entity.HasOne(s => s.Game)
+                      .WithMany(g => g.PlaySessions)
+                      .HasForeignKey(s => s.GameId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                // Quan hệ tới GameMatch (FK GameMatchId -> PK LevelId)
+                entity.HasOne(s => s.GameMatch)
+                      .WithMany(m => m.PlaySessions)
+                      .HasForeignKey(s => s.GameMatchId)
+                      .HasPrincipalKey(m => m.LevelId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                // Quan hệ tới Account (User)
+                entity.HasOne(s => s.User)
+                      .WithMany()
+                      .HasForeignKey(s => s.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
         }
     }
 }
