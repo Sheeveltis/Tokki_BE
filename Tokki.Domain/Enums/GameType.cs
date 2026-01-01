@@ -15,6 +15,6 @@ namespace Tokki.Domain.Enums
         [Description(" Solitaire")]
         Solitaire = 2,
         [Description("Typing practice")]
-        TypingPractice= 2,
+        TypingPractice= 3,
     }
 }

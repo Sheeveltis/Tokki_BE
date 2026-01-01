@@ -30,7 +30,6 @@ namespace Tokki.Domain.Entities
         public DateTime UpdatedAt { get; set; }
 
         // Navigation
-        public ICollection<GameMatch> Levels { get; set; } = new List<GameMatch>();
 
         public ICollection<GameMatchSession> PlaySessions { get; set; } = new List<GameMatchSession>();
     }

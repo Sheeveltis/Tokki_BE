@@ -275,5 +275,11 @@ namespace Tokki.Application.Common.Models
         public static readonly Error ExcelNoValidDataFound = new("Excel.NoValidDataFound", "Không tìm thấy dữ liệu hợp lệ trong file Excel.");
         public static readonly Error ExcelDataValidationFailed = new("Excel.DataValidationFailed", "Dữ liệu trong file Excel không hợp lệ.");
         public static readonly Error ExcelDataNull = new("Excel.DataNull", "Dữ liệu trong file Excel bị trống.");
+
+        //Game
+        public static readonly Error GameNotFound = new("Game.NotFound","Game không tồn tại.");
+        public static readonly Error GameNameDuplicated = new( "Game.NameDuplicated","Tên game đã tồn tại.");
+        public static readonly Error GameResultNotFound = new( "GameResult.NotFound","Không tìm thấy kết quả trò chơi cho user.");
+
     }
 }

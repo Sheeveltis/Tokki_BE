@@ -53,7 +53,6 @@ namespace Tokki.Infrastructure.Data
         public DbSet<ChatMessage> ChatMessages { get; set; }
         public DbSet<UserVocabProgress> UserVocabProgresses { get; set; }
         public DbSet<Game> Games { get; set; }
-        public DbSet<GameMatch> GameMatches { get; set; }
         public DbSet<GameMatchSession> GameMatchSessions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -535,13 +534,6 @@ namespace Tokki.Infrastructure.Data
             {
                 entity.HasKey(g => g.GameId);
 
-                entity.Property(g => g.GameId)
-                      .HasMaxLength(50);
-
-                entity.Property(g => g.GameName)
-                      .IsRequired()
-                      .HasMaxLength(200);
-
                 entity.Property(g => g.GameType)
                       .HasConversion<int>();
 
@@ -555,42 +547,6 @@ namespace Tokki.Infrastructure.Data
                       .HasDefaultValueSql("GETUTCDATE()");
             });
 
-            modelBuilder.Entity<GameMatch>(entity =>
-            {
-                // PK là LevelId
-                entity.HasKey(m => m.LevelId);
-
-                entity.Property(m => m.LevelId)
-                      .HasMaxLength(50);
-
-                entity.Property(m => m.GameId)
-                      .IsRequired()
-                      .HasMaxLength(50);
-
-                entity.Property(m => m.LevelName)
-                      .IsRequired()
-                      .HasMaxLength(200);
-
-                entity.Property(m => m.TopicId)
-                      .IsRequired()
-                      .HasMaxLength(50);
-
-                entity.Property(m => m.ConfigJson)
-                      .HasColumnType("nvarchar(max)");
-
-                entity.Property(m => m.Status)
-                      .HasConversion<int>();
-
-                entity.HasOne(m => m.Game)
-                      .WithMany(g => g.Levels)
-                      .HasForeignKey(m => m.GameId)
-                      .OnDelete(DeleteBehavior.Restrict);
-
-                entity.HasOne(m => m.Topic)
-                      .WithMany()
-                      .HasForeignKey(m => m.TopicId)
-                      .OnDelete(DeleteBehavior.Restrict);
-            });
 
             modelBuilder.Entity<GameMatchSession>(entity =>
             {
@@ -601,18 +557,25 @@ namespace Tokki.Infrastructure.Data
 
                 entity.Property(s => s.UserId)
                       .IsRequired()
-                      .HasMaxLength(50);
+                      .HasMaxLength(15);   // khớp với Accounts.UserId
 
                 entity.Property(s => s.GameId)
                       .IsRequired()
-                      .HasMaxLength(50);
+                      .HasMaxLength(15);   // khớp với Games.GameId
 
-                entity.Property(s => s.GameMatchId)
+                entity.Property(s => s.TopicId)
                       .IsRequired()
-                      .HasMaxLength(50);
+                      .HasMaxLength(50);   // khớp với Topics.TopicId
 
-                entity.Property(s => s.GameResultStatus)
-                      .HasConversion<int>();
+                entity.Property(s => s.BestScore)
+                      .IsRequired();
+
+                entity.Property(s => s.LatestScore)
+                      .IsRequired();
+
+           
+
+           
 
                 // Quan hệ tới Game
                 entity.HasOne(s => s.Game)
@@ -620,12 +583,11 @@ namespace Tokki.Infrastructure.Data
                       .HasForeignKey(s => s.GameId)
                       .OnDelete(DeleteBehavior.Restrict);
 
-                // Quan hệ tới GameMatch (FK GameMatchId -> PK LevelId)
-                entity.HasOne(s => s.GameMatch)
-                      .WithMany(m => m.PlaySessions)
-                      .HasForeignKey(s => s.GameMatchId)
-                      .HasPrincipalKey(m => m.LevelId)
-                      .OnDelete(DeleteBehavior.Cascade);
+                // Quan hệ tới Topic
+                entity.HasOne(s => s.Topic)
+                      .WithMany()
+                      .HasForeignKey(s => s.TopicId)
+                      .OnDelete(DeleteBehavior.Restrict);
 
                 // Quan hệ tới Account (User)
                 entity.HasOne(s => s.User)
