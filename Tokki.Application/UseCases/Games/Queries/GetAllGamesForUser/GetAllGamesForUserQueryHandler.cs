@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.Games.DTOs;
-using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Games.Queries.GetAllGamesForUser
 {
@@ -23,14 +22,15 @@ namespace Tokki.Application.UseCases.Games.Queries.GetAllGamesForUser
             GetAllGamesForUserQuery request,
             CancellationToken cancellationToken)
         {
-            // Lấy dữ liệu phân trang cho user:
-            // Repository nên chỉ trả về các game Status = Active
-            var (items, totalCount) = await _gameRepository.GetPagedForUserAsync(
+            var result = await _gameRepository.GetPagedForUserAsync(
                 request.PageNumber,
                 request.PageSize,
                 request.SearchTerm,
                 request.GameType
             );
+
+            var items = result.Items;
+            var totalCount = result.TotalCount;
 
             var dtos = new List<GameForUserDto>();
 
@@ -41,7 +41,8 @@ namespace Tokki.Application.UseCases.Games.Queries.GetAllGamesForUser
                     GameId = game.GameId,
                     GameName = game.GameName,
                     GameType = game.GameType,
-                    IsVip = game.IsVip
+                    IsVip = game.IsVip,
+                    ImgUrl = game.ImgUrl   // lấy ảnh ra đây
                 });
             }
 

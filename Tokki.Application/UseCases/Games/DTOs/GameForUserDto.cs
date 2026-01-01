@@ -13,5 +13,7 @@ namespace Tokki.Application.UseCases.Games.DTOs
         public string GameName { get; set; } = string.Empty;
         public GameType GameType { get; set; }
         public bool IsVip { get; set; }
+        public string ImgUrl { get; set; }
+
     }
 }
