@@ -1,8 +1,8 @@
-﻿using System.Reflection.Emit;
-using Tokki.Application.IRepositories;
+﻿using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Domain.Entities;
 using Tokki.Infrastructure.Data;
+using Tokki.Application.Common.Helpers; 
 namespace Tokki.Infrastructure.Services
 {
     public class GamificationService : IGamificationService
@@ -11,7 +11,7 @@ namespace Tokki.Infrastructure.Services
         private readonly ITitleRepository _titleRepository;
         private readonly TokkiDbContext _context;
         private readonly IIdGeneratorService _idGenerator;
-        private const int TARGET_STUDY_SECONDS = 900; 
+        private const int TARGET_STUDY_SECONDS = 900;
         private const string LAZY_TITLE_NAME = "Con Lười";
 
         public GamificationService(IAccountRepository accountRepository, ITitleRepository titleRepository, TokkiDbContext context, IIdGeneratorService idGenerator)
@@ -37,11 +37,9 @@ namespace Tokki.Infrastructure.Services
                 await _accountRepository.AddAccountTitleAsync(newUnlock);
             }
 
-            if (user.CurrentTitleId != title.TitleId)
-            {
-                user.CurrentTitleId = title.TitleId;
-            }
+            user.CurrentTitleId = title.TitleId;
         }
+
         public async Task CheckLoginGamificationAsync(string userId)
         {
             var user = await _accountRepository.GetByIdAsync(userId);
@@ -53,7 +51,7 @@ namespace Tokki.Infrastructure.Services
 
                 if (daysInactive > 3)
                 {
-                    var lazyTitle = await _titleRepository.GetTitleByNameAsync("Con Lười");
+                    var lazyTitle = await _titleRepository.GetTitleByNameAsync(LAZY_TITLE_NAME);
                     if (lazyTitle != null)
                     {
                         await UnlockAndEquipTitleAsync(user, lazyTitle);
@@ -69,14 +67,16 @@ namespace Tokki.Infrastructure.Services
 
             user.DailyStudySeconds += seconds;
             bool isStreakCompletedNow = false;
+            DateTime vietnamNow = DateTime.UtcNow.AddHours(7);
 
             bool completedToday = user.LastStreakDate.HasValue
-                      && user.LastStreakDate.Value.Date == DateTime.UtcNow.AddHours(7).Date;
+                      && user.LastStreakDate.Value.Date == vietnamNow.Date;
 
-            if (user.DailyStudySeconds >= 900 && !completedToday)
+            if (user.DailyStudySeconds >= TARGET_STUDY_SECONDS && !completedToday)
             {
                 isStreakCompletedNow = true;
-                var yesterday = DateTime.UtcNow.AddHours(7).Date.AddDays(-1);
+
+                var yesterday = vietnamNow.Date.AddDays(-1);
                 if (user.LastStreakDate.HasValue && user.LastStreakDate.Value.Date == yesterday)
                 {
                     user.CurrentStreak++;
@@ -87,47 +87,38 @@ namespace Tokki.Infrastructure.Services
                 }
 
                 if (user.CurrentStreak > user.MaxStreak)
-                { 
-                    user.MaxStreak = user.CurrentStreak; 
+                {
+                    user.MaxStreak = user.CurrentStreak;
                 }
 
-                user.LastStreakDate = DateTime.UtcNow.AddHours(7).Date; 
+                user.LastStreakDate = vietnamNow.Date;
+
+                int oldLevel = LevelEngine.GetLevel(user.TotalXP);
 
                 long bonusXP = 100;
                 user.TotalXP += bonusXP;
+
+                int newLevel = LevelEngine.GetLevel(user.TotalXP);
 
                 var history = new UserXpHistory
                 {
                     Id = _idGenerator.Generate(),
                     UserId = user.UserId,
                     Amount = bonusXP,
-                    Action = "Daily Streak", 
-                    CreatedAt = DateTime.UtcNow.AddHours(7)
+                    Action = "Daily Streak",
+                    CreatedAt = vietnamNow
                 };
-
                 _context.UserXpHistories.Add(history);
-
-                if (user.CurrentTitleId != null)
-                {
-                }
 
                 var bestTitle = await _titleRepository.GetTitleByXpAsync(user.TotalXP);
 
-                if (bestTitle != null && user.CurrentTitleId == bestTitle.TitleId)
-                {
-                    await _accountRepository.UpdateUserAsync(user);
-                    await _accountRepository.SaveChangesAsync(default);
-                    return isStreakCompletedNow;
-                }
-
-                if (bestTitle != null)
+                if (bestTitle != null && user.CurrentTitleId != bestTitle.TitleId)
                 {
                     await UnlockAndEquipTitleAsync(user, bestTitle);
                 }
             }
 
             await _accountRepository.UpdateUserAsync(user);
-
             await _accountRepository.SaveChangesAsync(default);
 
             return isStreakCompletedNow;
