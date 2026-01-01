@@ -1,6 +1,7 @@
 ﻿// 1. THÊM CÁC NAMESPACE NÀY
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models; // Dùng cho Swagger
@@ -104,6 +105,10 @@ ValidatorOptions.Global.LanguageManager = new ValidationVietnameseLanguageManage
 ValidatorOptions.Global.LanguageManager.Enabled = true;
 ValidatorOptions.Global.LanguageManager.Culture = new CultureInfo("vi");
 
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.SuppressModelStateInvalidFilter = true;
+});
 // Đăng ký các layer khác (Giữ nguyên)
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddApplication();
