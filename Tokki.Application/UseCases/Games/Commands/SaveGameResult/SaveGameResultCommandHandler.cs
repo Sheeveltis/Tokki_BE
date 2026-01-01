@@ -71,16 +71,17 @@ namespace Tokki.Application.UseCases.Games.Commands.SaveGameResult
                     );
                 }
 
-                // 3. Lấy session hiện tại của user cho Game + Topic
+                // 3. Lấy session hiện tại của user cho Game + Topic + Difficulty
                 var session = await _sessionRepository.GetByUserGameTopicAsync(
                     request.UserId,
                     request.GameId,
-                    request.TopicId
+                    request.TopicId,
+                    request.GameDifficulty
                 );
 
                 if (session == null)
                 {
-                    // Tạo mới
+                    // Tạo mới cho độ khó này
                     string newId = _idGeneratorService.GenerateCustom(15);
 
                     session = new GameMatchSession
@@ -89,6 +90,7 @@ namespace Tokki.Application.UseCases.Games.Commands.SaveGameResult
                         UserId = request.UserId,
                         GameId = request.GameId,
                         TopicId = request.TopicId,
+                        GameDifficulty = request.GameDifficulty,
                         BestScore = request.Score,
                         LatestScore = request.Score,
                         CreatedAt = DateTime.UtcNow.AddHours(7)
@@ -106,6 +108,7 @@ namespace Tokki.Application.UseCases.Games.Commands.SaveGameResult
                         session.BestScore = request.Score;
                     }
 
+                    // Không đổi GameDifficulty / CreatedAt
                 }
 
                 await _sessionRepository.SaveChangesAsync(cancellationToken);
@@ -119,8 +122,8 @@ namespace Tokki.Application.UseCases.Games.Commands.SaveGameResult
             catch (Exception ex)
             {
                 _logger.LogError(ex,
-                    "Lỗi khi lưu kết quả game. UserId={UserId}, GameId={GameId}, TopicId={TopicId}",
-                    request.UserId, request.GameId, request.TopicId);
+                    "Lỗi khi lưu kết quả game. UserId={UserId}, GameId={GameId}, TopicId={TopicId}, Difficulty={Difficulty}",
+                    request.UserId, request.GameId, request.TopicId, request.GameDifficulty);
 
                 return OperationResult<bool>.Failure(
                     new List<Error> { AppErrors.ServerError },

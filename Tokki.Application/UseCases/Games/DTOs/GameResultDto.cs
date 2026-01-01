@@ -1,4 +1,6 @@
-﻿namespace Tokki.Application.UseCases.Games.DTOs
+﻿using Tokki.Domain.Enums;
+
+namespace Tokki.Application.UseCases.Games.DTOs
 {
     public class GameResultDto
     {
@@ -9,6 +11,9 @@
 
         public int BestScore { get; set; }
         public int LatestScore { get; set; }
+        public GameDifficulty GameDifficulty { get; set; }
+
+
         public DateTime CreatedAt { get; set; }
     }
 }

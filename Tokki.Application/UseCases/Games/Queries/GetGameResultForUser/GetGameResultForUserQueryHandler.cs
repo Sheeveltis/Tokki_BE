@@ -16,13 +16,15 @@ namespace Tokki.Application.UseCases.Games.Queries.GetGameResultForUser
         }
 
         public async Task<OperationResult<GameResultDto?>> Handle(
-            GetGameResultForUserQuery request,
-            CancellationToken cancellationToken)
+        GetGameResultForUserQuery request,
+        CancellationToken cancellationToken)
         {
             var session = await _sessionRepository.GetByUserGameTopicAsync(
                 request.UserId,
                 request.GameId,
-                request.TopicId);
+                request.TopicId,
+                request.GameDifficulty   // lọc thêm theo độ khó
+            );
 
             if (session == null)
             {
@@ -41,6 +43,7 @@ namespace Tokki.Application.UseCases.Games.Queries.GetGameResultForUser
                 TopicId = session.TopicId,
                 BestScore = session.BestScore,
                 LatestScore = session.LatestScore,
+                GameDifficulty = session.GameDifficulty,
                 CreatedAt = session.CreatedAt
             };
 
@@ -50,5 +53,6 @@ namespace Tokki.Application.UseCases.Games.Queries.GetGameResultForUser
                 "Lấy kết quả trò chơi thành công"
             );
         }
+
     }
 }

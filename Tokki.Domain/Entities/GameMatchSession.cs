@@ -26,8 +26,7 @@ namespace Tokki.Domain.Entities
         public int LatestScore { get; set; }
 
         // Thời gian chơi (giây/phút tùy quy ước, decimal để có phần lẻ)
-
-        // Nếu bạn vẫn muốn lưu exp thì giữ lại, còn không thì xóa luôn property này
+        public GameDifficulty GameDifficulty { get; set; }
 
         // Navigation
         public Game Game { get; set; } = null!;

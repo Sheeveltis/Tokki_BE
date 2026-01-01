@@ -656,7 +656,9 @@ namespace Tokki.Infrastructure.Data
                 entity.Property(s => s.UserId)
                       .IsRequired()
                       .HasMaxLength(15);   // khớp với Accounts.UserId
-
+                entity.Property(s => s.GameDifficulty)
+        .HasColumnName("Difficulty")
+        .HasConversion<int>();
                 entity.Property(s => s.GameId)
                       .IsRequired()
                       .HasMaxLength(15);   // khớp với Games.GameId

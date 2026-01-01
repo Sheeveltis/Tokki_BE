@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Tokki.Application.IRepositories;
 using Tokki.Domain.Entities;
+using Tokki.Domain.Enums;
 using Tokki.Infrastructure.Data;
 
 namespace Tokki.Infrastructure.Repositories
@@ -19,15 +20,17 @@ namespace Tokki.Infrastructure.Repositories
         }
 
         public async Task<GameMatchSession?> GetByUserGameTopicAsync(
-            string userId,
-            string gameId,
-            string topicId)
+           string userId,
+           string gameId,
+           string topicId,
+           GameDifficulty difficulty)
         {
             return await _dbContext.GameMatchSessions
                 .FirstOrDefaultAsync(s =>
                     s.UserId == userId &&
                     s.GameId == gameId &&
-                    s.TopicId == topicId);
+                    s.TopicId == topicId &&
+                    s.GameDifficulty == difficulty);
         }
 
         public async Task<(IReadOnlyList<GameMatchSession> Items, int TotalCount)> GetPagedByGameTopicAsync(

@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Tokki.Domain.Entities;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.IRepositories
 {
@@ -10,7 +11,8 @@ namespace Tokki.Application.IRepositories
         Task<GameMatchSession?> GetByUserGameTopicAsync(
             string userId,
             string gameId,
-            string topicId);
+            string topicId,
+            GameDifficulty difficulty);
 
         Task<(IReadOnlyList<GameMatchSession> Items, int TotalCount)> GetPagedByGameTopicAsync(
             string gameId,
