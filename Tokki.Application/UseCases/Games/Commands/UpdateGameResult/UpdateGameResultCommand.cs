@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using System.Text.Json.Serialization;
+using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Domain.Enums;
 
