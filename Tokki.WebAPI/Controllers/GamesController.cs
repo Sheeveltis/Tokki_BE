@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using Tokki.Application.UseCases.Games.Commands.SaveGameResult;
+using Tokki.Application.UseCases.Games.Commands.UpdateGameResult;
+using Tokki.Application.UseCases.Games.Queries.CheckUserPlayedLevel;
 using Tokki.Application.UseCases.Games.Queries.GetAllGamesForUser;
 using Tokki.Application.UseCases.Games.Queries.GetGameResultForUser;
 using Tokki.Application.UseCases.Games.Queries.GetGameResultsForAllUsers;
@@ -21,7 +23,24 @@ namespace Tokki.WebAPI.Controllers
         {
             _mediator = mediator;
         }
+        [HttpGet("user/has-played-level")]
+        [Authorize]
+        public async Task<IActionResult> HasPlayedLevel(
+    [FromQuery] string gameId,
+    [FromQuery] string topicId,
+    [FromQuery] GameDifficulty gameDifficulty)
+        {
+            var query = new CheckUserPlayedLevelQuery
+            {
+                GameId = gameId,
+                TopicId = topicId,
+                GameDifficulty = gameDifficulty
+            };
 
+            var result = await _mediator.Send(query);
+
+            return StatusCode(result.StatusCode, result);
+        }
         /// <summary>
         /// Lấy danh sách game cho user (phân trang).
         /// </summary>
@@ -92,6 +111,13 @@ namespace Tokki.WebAPI.Controllers
         [HttpPost("user/save-result")]
         [Authorize]
         public async Task<IActionResult> SaveGameResult([FromBody] SaveGameResultCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+        [HttpPut("user/result")]
+        [Authorize]
+        public async Task<IActionResult> UpdateGameResult([FromBody] UpdateGameResultCommand command)
         {
             var result = await _mediator.Send(command);
             return StatusCode(result.StatusCode, result);
