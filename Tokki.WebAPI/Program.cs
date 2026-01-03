@@ -149,8 +149,19 @@ builder.Services.AddCors(options =>
               .AllowCredentials();
     });
 });
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowMobile", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
 //SignalR
 builder.Services.AddSignalR();
+
 // ==========================================
 
 var app = builder.Build();
@@ -158,6 +169,9 @@ var app = builder.Build();
 app.MapHub<ChatHub>("/chatHub");
 app.MapHub<VocabularyHub>("/vocabularyHub");
 app.UseMiddleware<GlobalExceptionMiddleware>();
+//mobile
+app.Urls.Add("http://0.0.0.0:5031");
+app.UseCors("AllowMobile");
 // ==========================================
 var supportedCultures = new[] { "vi" };
 var localizationOptions = new RequestLocalizationOptions()
