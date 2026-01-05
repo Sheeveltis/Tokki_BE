@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tokki.Application.UseCases.ExamTemplates.Commands.CreateExamTemplate;
 using Tokki.Application.UseCases.ExamTemplates.Commands.DeleteExamTemplate;
+using Tokki.Application.UseCases.ExamTemplates.Commands.DuplicateExamTemplate;
 using Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate;
 using Tokki.Application.UseCases.ExamTemplates.Queries.GetAdminExamTemplates;
 using Tokki.Application.UseCases.ExamTemplates.Queries.GetExamTemplateById;
@@ -65,7 +66,16 @@ namespace Tokki.WebAPI.Controllers
             var result = await _mediator.Send(command);
             return StatusCode(result.StatusCode, result);
         }
-        
+
+        [HttpPost("{id}/duplicate")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DuplicateExamTemplate(string id)
+        {
+            var command = new DuplicateExamTemplateCommand(id);
+            var result = await _mediator.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteExamTemplate(string id)
