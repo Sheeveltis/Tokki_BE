@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 
 namespace Tokki.Domain.Enums
 {
@@ -13,6 +8,9 @@ namespace Tokki.Domain.Enums
         TopikI = 1,
 
         [Description("TOPIK II")]
-        TopikII = 2
+        TopikII = 2,
+
+        [Description("Test đầu vào")]
+        EntranceTest = 3
     }
 }
