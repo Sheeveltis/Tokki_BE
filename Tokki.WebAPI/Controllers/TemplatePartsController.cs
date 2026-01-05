@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Tokki.Application.UseCases.TemplateParts.Commands.CreateTemplatePart;
-using Tokki.Application.UseCases.TemplateParts.Commands.DeleteTemplatePart; // Giả sử bạn đã có file Delete
+using Tokki.Application.UseCases.TemplateParts.Commands.DeleteTemplatePart; 
 using Tokki.Application.UseCases.TemplateParts.Commands.UpdateTemplatePart;
 
 namespace Tokki.API.Controllers
