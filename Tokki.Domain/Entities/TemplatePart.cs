@@ -35,7 +35,6 @@ namespace Tokki.Domain.Entities
         public string QuestionTypeId { get; set; } = string.Empty;
 
         public string? ExampleUrl { get; set; }
-        public TemplatePartStatus Status { get; set; } = TemplatePartStatus.Active;
 
         [ForeignKey(nameof(ExamTemplateId))]
         public virtual ExamTemplate ExamTemplate { get; set; } = null!;

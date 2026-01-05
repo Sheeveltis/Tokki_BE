@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Tokki.Application.UseCases.TemplateParts.Commands.CreateTemplatePart;
 using Tokki.Application.UseCases.TemplateParts.Commands.DeleteTemplatePart; 
 using Tokki.Application.UseCases.TemplateParts.Commands.UpdateTemplatePart;
+using Tokki.Application.UseCases.TemplateParts.Queries.GetTemplatePartById;
 
 namespace Tokki.API.Controllers
 {
@@ -30,6 +31,14 @@ namespace Tokki.API.Controllers
             command.TemplatePartId = id;
             var result = await _mediator.Send(command);
             return result.IsSuccess ? Ok(result) : StatusCode(result.StatusCode, result);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(string id)
+        {
+            var query = new GetTemplatePartByIdQuery { TemplatePartId = id };
+            var result = await _mediator.Send(query);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpDelete("{id}")]
