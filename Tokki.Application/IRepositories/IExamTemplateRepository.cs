@@ -17,7 +17,8 @@ namespace Tokki.Application.IRepositories
             int pageSize,
             string? searchTerm = null,
             ExamTemplateStatus? status = null,
-            CancellationToken cancellationToken = default);
+            CancellationToken cancellationToken = default,
+            ExamType? type = null);
         Task<bool> IsNameExistsAsync(string name, string? excludeId = null);
         Task AddAsync(ExamTemplate examTemplate);
         Task UpdateAsync(ExamTemplate examTemplate);

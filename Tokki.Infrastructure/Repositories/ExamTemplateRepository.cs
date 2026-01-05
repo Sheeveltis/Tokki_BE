@@ -36,11 +36,13 @@ namespace Tokki.Infrastructure.Repositories
             int pageNumber,
             int pageSize,
             string? searchTerm = null,
-            ExamTemplateStatus? status = null,
-            CancellationToken cancellationToken = default)
+            ExamTemplateStatus? status = null,           
+            CancellationToken cancellationToken = default,
+            ExamType? type = null)
         {
             var query = _context.ExamTemplates
                 .Include(et => et.TemplateParts)
+                .Where(et => et.Status != ExamTemplateStatus.Deleted)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
@@ -51,6 +53,11 @@ namespace Tokki.Infrastructure.Repositories
             if (status.HasValue)
             {
                 query = query.Where(et => et.Status == status.Value);
+            }
+
+            if (type.HasValue)
+            {
+                query = query.Where(et => et.Type == type.Value);
             }
 
             var totalCount = await query.CountAsync(cancellationToken);
