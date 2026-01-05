@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Tokki.Domain.Enums;
 
 namespace Tokki.Domain.Entities
@@ -21,11 +18,12 @@ namespace Tokki.Domain.Entities
         [MaxLength(255)]
         public string? Description { get; set; }
 
+        public ExamType Type { get; set; } 
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public ExamTemplateStatus Status { get; set; } = ExamTemplateStatus.Draft;
 
-        // Navigation
         public virtual ICollection<TemplatePart> TemplateParts { get; set; } = new List<TemplatePart>();
         public virtual ICollection<Exam> Exams { get; set; } = new List<Exam>();
     }
