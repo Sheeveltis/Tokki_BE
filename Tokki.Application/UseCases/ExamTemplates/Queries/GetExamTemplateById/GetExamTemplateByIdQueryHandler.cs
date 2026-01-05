@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MediatR;
+﻿using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.ExamTemplates.DTOs;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.ExamTemplates.Queries.GetExamTemplateById
 {
@@ -19,50 +15,41 @@ namespace Tokki.Application.UseCases.ExamTemplates.Queries.GetExamTemplateById
             _examTemplateRepository = examTemplateRepository;
         }
 
-        public async Task<OperationResult<ExamTemplateDto>> Handle(
-            GetExamTemplateByIdQuery request,
-            CancellationToken cancellationToken)
+        public async Task<OperationResult<ExamTemplateDto>> Handle(GetExamTemplateByIdQuery request, CancellationToken cancellationToken)
         {
-            var examTemplate = await _examTemplateRepository.GetByIdWithPartsAsync(request.ExamTemplateId, cancellationToken);
+            var et = await _examTemplateRepository.GetByIdWithPartsAsync(request.ExamTemplateId, cancellationToken);
 
-            if (examTemplate == null)
+            if (et == null || et.Status == ExamTemplateStatus.Deleted)
             {
-                return OperationResult<ExamTemplateDto>.Failure(
-                   new List<Tokki.Application.Common.Models.Error> { AppErrors.ExamTemplateNotFound },
-                    404,
-                    AppErrors.ExamTemplateNotFound.Description
-                );
+                return OperationResult<ExamTemplateDto>.Failure(AppErrors.ExamTemplateNotFound);
             }
 
             var dto = new ExamTemplateDto
             {
-                ExamTemplateId = examTemplate.ExamTemplateId,
-                Name = examTemplate.Name,
-                Description = examTemplate.Description,
-                CreatedAt = examTemplate.CreatedAt,
-                Status = examTemplate.Status,
-                TotalParts = examTemplate.TemplateParts.Count,
-                TotalQuestions = examTemplate.TemplateParts.Any()
-                    ? examTemplate.TemplateParts.Max(tp => tp.QuestionTo)
-                    : 0,
-                Parts = examTemplate.TemplateParts.Select(tp => new TemplatePartDto
+                ExamTemplateId = et.ExamTemplateId,
+                Name = et.Name,
+                Description = et.Description,
+                Type = et.Type,
+                CreatedAt = et.CreatedAt,
+                Status = et.Status,
+                TotalParts = et.TemplateParts.Count,
+                TotalQuestions = et.TemplateParts.Sum(p => p.QuestionTo - p.QuestionFrom + 1),
+                Parts = et.TemplateParts.OrderBy(p => p.QuestionFrom).Select(p => new TemplatePartDto
                 {
-                    TemplatePartId = tp.TemplatePartId,
-                    Skill = tp.Skill,
-                    QuestionFrom = tp.QuestionFrom,
-                    QuestionTo = tp.QuestionTo,
-                    PartTitle = tp.PartTitle,
-                    Instruction = tp.Instruction,
-                    ExampleType = tp.ExampleType,
-                    ExampleData = tp.ExampleData
-                }).OrderBy(tp => tp.QuestionFrom).ToList()
+                    TemplatePartId = p.TemplatePartId,
+                    Skill = p.Skill,
+                    QuestionFrom = p.QuestionFrom,
+                    QuestionTo = p.QuestionTo,
+                    PartTitle = p.PartTitle,
+                    Instruction = p.Instruction,
+                    Mark = p.Mark,
+                    ExampleUrl = p.ExampleUrl,
+                    QuestionTypeId = p.QuestionTypeId,
+                    QuestionTypeName = p.QuestionType != null ? p.QuestionType.Name : "" 
+                }).ToList()
             };
 
-            return OperationResult<ExamTemplateDto>.Success(
-                dto,
-                200,
-                "Lấy thông tin mẫu đề thi thành công"
-            );
+            return OperationResult<ExamTemplateDto>.Success(dto);
         }
     }
-    }
+}
