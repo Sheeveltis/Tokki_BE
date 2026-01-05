@@ -13,6 +13,9 @@ namespace Tokki.Domain.Enums
         Draft = 0,
 
         [Description("Đã xuất bản")]
-        Published = 1
+        Published = 1,
+
+        [Description("Đã xóa")]
+        Deleted = 99
     }
 }
