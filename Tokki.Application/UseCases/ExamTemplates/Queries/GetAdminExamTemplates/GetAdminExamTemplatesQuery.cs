@@ -5,11 +5,12 @@ using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.ExamTemplates.Queries.GetAdminExamTemplates
 {
-    public class GetAdminExamTemplatesQuery : IRequest<OperationResult<PagedResult<AdminExamTemplateDto>>>
+    public class GetAdminExamTemplatesQuery : IRequest<OperationResult<(IEnumerable<ExamTemplateDto> Items, int TotalCount)>>
     {
         public int PageNumber { get; set; } = 1;
         public int PageSize { get; set; } = 10;
         public string? SearchTerm { get; set; }
         public ExamTemplateStatus? Status { get; set; }
+        public ExamType? Type { get; set; }
     }
 }
