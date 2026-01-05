@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.EntityFrameworkCore;
 using Tokki.Application.IRepositories;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 using Tokki.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
+
 namespace Tokki.Infrastructure.Repositories
 {
     public class ExamTemplateRepository : IExamTemplateRepository
@@ -22,21 +18,22 @@ namespace Tokki.Infrastructure.Repositories
         public async Task<ExamTemplate?> GetByIdAsync(string examTemplateId, CancellationToken cancellationToken = default)
         {
             return await _context.ExamTemplates
-                .FirstOrDefaultAsync(et => et.ExamTemplateId == examTemplateId, cancellationToken);
+                .FirstOrDefaultAsync(et => et.ExamTemplateId == examTemplateId && et.Status != ExamTemplateStatus.Deleted, cancellationToken);
         }
 
         public async Task<ExamTemplate?> GetByIdWithPartsAsync(string examTemplateId, CancellationToken cancellationToken = default)
         {
             return await _context.ExamTemplates
                 .Include(et => et.TemplateParts.OrderBy(tp => tp.QuestionFrom))
-                .FirstOrDefaultAsync(et => et.ExamTemplateId == examTemplateId, cancellationToken);
+                .ThenInclude(tp => tp.QuestionType) 
+                .FirstOrDefaultAsync(et => et.ExamTemplateId == examTemplateId && et.Status != ExamTemplateStatus.Deleted, cancellationToken);
         }
 
         public async Task<(IEnumerable<ExamTemplate> items, int totalCount)> GetPagedAsync(
             int pageNumber,
             int pageSize,
             string? searchTerm = null,
-            ExamTemplateStatus? status = null,           
+            ExamTemplateStatus? status = null,
             CancellationToken cancellationToken = default,
             ExamType? type = null)
         {
@@ -47,7 +44,7 @@ namespace Tokki.Infrastructure.Repositories
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                query = query.Where(et => et.Name.Contains(searchTerm) || et.Description!.Contains(searchTerm));
+                query = query.Where(et => et.Name.Contains(searchTerm) || (et.Description != null && et.Description.Contains(searchTerm)));
             }
 
             if (status.HasValue)
@@ -73,7 +70,7 @@ namespace Tokki.Infrastructure.Repositories
 
         public async Task<bool> IsNameExistsAsync(string name, string? excludeId = null)
         {
-            var query = _context.ExamTemplates.Where(et => et.Name == name);
+            var query = _context.ExamTemplates.Where(et => et.Name == name && et.Status != ExamTemplateStatus.Deleted);
             if (!string.IsNullOrEmpty(excludeId))
             {
                 query = query.Where(et => et.ExamTemplateId != excludeId);
@@ -101,37 +98,6 @@ namespace Tokki.Infrastructure.Repositories
         public async Task<bool> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             return await _context.SaveChangesAsync(cancellationToken) > 0;
-        }
-
-        //Trang Anh
-        public async Task<(IEnumerable<ExamTemplate> items, int totalCount)> GetPagedSummaryAsync(
-                int pageNumber,
-                int pageSize,
-                string? searchTerm = null,
-                ExamTemplateStatus? status = null,
-                CancellationToken cancellationToken = default)
-        {
-            var query = _context.ExamTemplates.AsQueryable(); 
-
-            if (!string.IsNullOrWhiteSpace(searchTerm))
-            {
-                query = query.Where(et => et.Name.Contains(searchTerm) || et.Description!.Contains(searchTerm));
-            }
-
-            if (status.HasValue)
-            {
-                query = query.Where(et => et.Status == status.Value);
-            }
-
-            var totalCount = await query.CountAsync(cancellationToken);
-
-            var items = await query
-                .OrderByDescending(et => et.CreatedAt)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync(cancellationToken);
-
-            return (items, totalCount);
         }
     }
 }

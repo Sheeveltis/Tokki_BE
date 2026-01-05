@@ -23,14 +23,6 @@ namespace Tokki.Application.IRepositories
         Task AddAsync(ExamTemplate examTemplate);
         Task UpdateAsync(ExamTemplate examTemplate);
         Task DeleteAsync(ExamTemplate examTemplate);
-        Task<bool> SaveChangesAsync(CancellationToken cancellationToken = default);
-
-        //Trang Anh
-        Task<(IEnumerable<ExamTemplate> items, int totalCount)> GetPagedSummaryAsync(
-            int pageNumber,
-            int pageSize,
-            string? searchTerm = null,
-            ExamTemplateStatus? status = null,
-            CancellationToken cancellationToken = default);
+        Task<bool> SaveChangesAsync(CancellationToken cancellationToken = default);       
     }
 }
