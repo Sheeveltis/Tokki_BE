@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Tokki.Application.Common.Models;
@@ -31,10 +30,12 @@ namespace Tokki.Application.UseCases.Accounts.Commands.AdminSoftDeleteAccount
 
             if (string.IsNullOrWhiteSpace(request.TargetUserId))
             {
-                return OperationResult<string>.Failure(new List<Error>
-                {
-                    new Error("Account.TargetUserIdRequired", "Thiếu userId cần xóa.")
-                });
+                return OperationResult<string>.Failure(new List<Error> { AppErrors.TargetUserIdRequired });
+            }
+
+            if (string.Equals(request.AdminUserId.Trim(), request.TargetUserId.Trim(), StringComparison.OrdinalIgnoreCase))
+            {
+                return OperationResult<string>.Failure(new List<Error> { AppErrors.CannotDisableSelf });
             }
 
             var user = await _accountRepository.GetByIdAsync(request.TargetUserId);
@@ -43,21 +44,13 @@ namespace Tokki.Application.UseCases.Accounts.Commands.AdminSoftDeleteAccount
                 return OperationResult<string>.Failure(new List<Error> { AppErrors.UserNotFoundById });
             }
 
-            // Nếu đã bị xóa mềm trước đó
             if (user.Status == AccountStatus.Inactive)
             {
-                return OperationResult<string>.Failure(new List<Error>
-                {
-                    new Error("Account.AlreadyDeleted", "Tài khoản này đã bị vô hiệu hóa!")
-                });
+                return OperationResult<string>.Failure(new List<Error> { AppErrors.AccountAlreadyInactive });
             }
 
-            user.Status = AccountStatus.Inactive; // hoặc AccountStatus.Invalid nếu enum của bạn có
+            user.Status = AccountStatus.Inactive;
             user.UpdatedAt = DateTime.UtcNow.AddHours(7);
-
-            // (Tuỳ chọn) audit
-            // user.DeletedBy = request.AdminUserId;
-            // user.DeletedAt = DateTime.UtcNow.AddHours(7);
 
             await _accountRepository.UpdateUserAsync(user);
             await _accountRepository.SaveChangesAsync(cancellationToken);

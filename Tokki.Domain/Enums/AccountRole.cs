@@ -15,7 +15,11 @@ namespace Tokki.Domain.Enums
         Staff = 2,
 
         [Description("Thành viên VIP")]
-        Vip = 3
+        Vip = 3,
+
+        [Description("Nguời giám sát")]
+        Moderator = 4
+            
 
     }
 }

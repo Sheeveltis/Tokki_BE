@@ -61,6 +61,7 @@ namespace Tokki.Application.UseCases.Accounts.Commands.CreateStaff
             {
                 AccountRole.Admin => "DEFAULT_PASSWORD_FOR_ADMIN",
                 AccountRole.Staff => "DEFAULT_PASSWORD_FOR_STAFF",
+                AccountRole.Moderator => "DEFAULT_PASSWORD_FOR_STAFF",
                 AccountRole.User => "DEFAULT_PASSWORD_FOR_USER",
                 _ => "DEFAULT_PASSWORD_FOR_STAFF"
             };
@@ -76,7 +77,6 @@ namespace Tokki.Application.UseCases.Accounts.Commands.CreateStaff
 
             if (string.IsNullOrEmpty(defaultPassword))
             {
-                _logger.LogError($"Cấu hình {configKey} không được tìm thấy hoặc rỗng.");
                 return OperationResult<string>.Failure(
                     new List<Error> { AppErrors.ServerError },
                     500,
@@ -129,6 +129,7 @@ namespace Tokki.Application.UseCases.Accounts.Commands.CreateStaff
                     AccountRole.Admin => "Admin",
                     AccountRole.Staff => "Staff",
                     AccountRole.User => "User",
+                    AccountRole.Moderator => "Moderator",
                     _ => request.Role.ToString()
                 };
 

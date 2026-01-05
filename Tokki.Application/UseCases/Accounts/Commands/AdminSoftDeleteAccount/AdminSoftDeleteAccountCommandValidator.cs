@@ -12,7 +12,8 @@ namespace Tokki.Application.UseCases.Accounts.Commands.AdminSoftDeleteAccount
         public AdminSoftDeleteAccountCommandValidator()
         {
             RuleFor(x => x.TargetUserId)
-                .NotEmpty().WithMessage("TargetUserId is required.");
+               .NotEmpty()
+               .WithName("userId của người cần xóa");
         }
     }
 }

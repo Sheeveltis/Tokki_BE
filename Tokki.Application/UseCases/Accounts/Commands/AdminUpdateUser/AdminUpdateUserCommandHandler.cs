@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Accounts.Commands.AdminUpdateUser
 {
@@ -20,14 +20,12 @@ namespace Tokki.Application.UseCases.Accounts.Commands.AdminUpdateUser
 
         public async Task<OperationResult<string>> Handle(AdminUpdateUserCommand request, CancellationToken cancellationToken)
         {
-            // 1. Tìm người dùng cần sửa
             var user = await _accountRepository.GetByIdAsync(request.TargetUserId);
             if (user == null)
             {
                 return OperationResult<string>.Failure(new List<Error> { AppErrors.UserNotFoundById });
             }
 
-            // 2. Kiểm tra trùng số điện thoại (nếu Admin có nhập số điện thoại mới)
             if (!string.IsNullOrEmpty(request.PhoneNumber) && request.PhoneNumber != user.PhoneNumber)
             {
                 var isDuplicate = await _accountRepository.IsPhoneNumberUsedByOtherUserAsync(request.PhoneNumber, request.TargetUserId);
@@ -38,7 +36,11 @@ namespace Tokki.Application.UseCases.Accounts.Commands.AdminUpdateUser
                 user.PhoneNumber = request.PhoneNumber;
             }
 
-            // 3. Cập nhật các thông tin
+            if (request.Status == AccountStatus.Inactive)
+            {
+                return OperationResult<string>.Failure(new List<Error> { AppErrors.AccountInvalidStatusTransition });
+            }
+
             user.FullName = request.FullName;
             user.Role = request.Role;
             user.Status = request.Status;
@@ -51,7 +53,6 @@ namespace Tokki.Application.UseCases.Accounts.Commands.AdminUpdateUser
 
             user.UpdatedAt = DateTime.UtcNow.AddHours(7);
 
-            // 4. Lưu thay đổi
             await _accountRepository.UpdateUserAsync(user);
             await _accountRepository.SaveChangesAsync(cancellationToken);
 

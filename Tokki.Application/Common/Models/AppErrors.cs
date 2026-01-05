@@ -40,6 +40,14 @@ namespace Tokki.Application.Common.Models
         public static readonly Error FacebookIdMismatch =    new("Facebook.IdMismatch", "Facebook token không khớp với FacebookId.");
         public static readonly Error FacebookEmailMismatch =    new("Facebook.EmailMismatch", "Email cung cấp không khớp với email từ Facebook token.");
         public static readonly Error GoogleEmailRequired = new("Google.GoogleEmailRequired", "Email là bắt buộc. Vui lòng cấp quyền email cho ứng dụng");
+        public static readonly Error TargetUserIdRequired = new("Account.TargetUserIdRequired", "Thiếu userId cần thao tác.");
+        public static readonly Error CannotDisableSelf  = new("Account.CannotDisableSelf", "Bạn không thể vô hiệu hóa tài khoản của chính mình.");
+        public static readonly Error AccountAlreadyInactive  = new("Account.AlreadyInactive", "Tài khoản này đã bị vô hiệu hóa.");
+        public static readonly Error AdminForbidden  = new("Admin.Forbidden", "Bạn không có quyền thực hiện thao tác này.");
+        public static readonly Error CannotDisableSuperAdmin   = new("Account.CannotDisableSuperAdmin", "Không thể vô hiệu hóa tài khoản Super Admin.");
+        public static readonly Error AccountInvalidStatusTransition  = new("Account.InvalidStatusTransition", "Không thể chuyển trạng thái tài khoản theo yêu cầu.");
+        public static readonly Error AccountUpdateFailed      = new("Account.UpdateFailed", "Cập nhật tài khoản thất bại. Vui lòng thử lại.");
+        public static readonly Error AccountSoftDisableFailed  = new("Account.SoftDisableFailed", "Không thể vô hiệu hóa tài khoản do lỗi hệ thống.");
 
 
         // ============================================
