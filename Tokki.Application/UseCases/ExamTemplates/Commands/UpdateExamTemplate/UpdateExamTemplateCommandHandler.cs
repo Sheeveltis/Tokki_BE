@@ -4,6 +4,7 @@ using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Domain.Entities;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate
 {
@@ -31,6 +32,15 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate
             var examTemplate = await _examTemplateRepository.GetByIdWithPartsAsync(request.ExamTemplateId, cancellationToken);
             if (examTemplate == null) return OperationResult<string>.Failure(AppErrors.ExamTemplateNotFound);
 
+            if (examTemplate.Status == ExamTemplateStatus.Published)
+            {
+                bool isUsed = await _examTemplateRepository.HasExamsAsync(request.ExamTemplateId, cancellationToken);
+                if (isUsed)
+                {
+                    return OperationResult<string>.Failure(AppErrors.ExamTemplateCannotUpdateInUse);
+                }
+            }
+
             if (await _examTemplateRepository.IsNameExistsAsync(request.Name, request.ExamTemplateId))
                 return OperationResult<string>.Failure(AppErrors.ExamTemplateNameDuplicated);
 
@@ -49,8 +59,8 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate
             {
                 examTemplate.Name = request.Name;
                 examTemplate.Description = request.Description;
-                examTemplate.Type = request.Type;
                 examTemplate.Status = request.Status;
+                examTemplate.Type = request.Type; 
 
                 await _examTemplateRepository.UpdateAsync(examTemplate);
 
