@@ -99,5 +99,9 @@ namespace Tokki.Infrastructure.Repositories
         {
             return await _context.SaveChangesAsync(cancellationToken) > 0;
         }
+        public async Task<bool> HasExamsAsync(string examTemplateId, CancellationToken cancellationToken = default)
+        {
+            return await _context.Exams.AnyAsync(e => e.ExamTemplateId == examTemplateId, cancellationToken);
+        }
     }
 }
