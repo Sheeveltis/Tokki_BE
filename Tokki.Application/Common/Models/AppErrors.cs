@@ -10,6 +10,7 @@ namespace Tokki.Application.Common.Models
         // ============================================
         public static readonly Error ServerError = new("App.ServerError", "Lỗi hệ thống, vui lòng thử lại sau.");
         public static readonly Error ValidationFailed = new("App.ValidationFailed", "Dữ liệu đầu vào không hợp lệ.");
+        public static readonly Error BadRequest = new("App.BadRequest", "Yêu cầu không hợp lệ.");
 
         // ============================================
         // NHÓM 2: AUTHENTICATION & USER
@@ -291,6 +292,5 @@ namespace Tokki.Application.Common.Models
         public static readonly Error GameNotFound = new("Game.NotFound","Game không tồn tại.");
         public static readonly Error GameNameDuplicated = new( "Game.NameDuplicated","Tên game đã tồn tại.");
         public static readonly Error GameResultNotFound = new( "GameResult.NotFound","Không tìm thấy kết quả trò chơi cho user.");
-
-    }
+  }
 }

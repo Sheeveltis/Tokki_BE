@@ -1,9 +1,11 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Tokki.Application.UseCases.QuestionBanks.Commands.ActivateQuestionBanks;
 using Tokki.Application.UseCases.QuestionBanks.Commands.CreateQuestionBank;
 using Tokki.Application.UseCases.QuestionBanks.Commands.DeleteQuestionBank;
 using Tokki.Application.UseCases.QuestionBanks.Commands.UpdateQuestionBank;
+using Tokki.Application.UseCases.QuestionBanks.Queries.GetByQuestionTypeId;
 using Tokki.Application.UseCases.QuestionBanks.Queries.GetQuestionBankById;
 using Tokki.Application.UseCases.QuestionBanks.Queries.GetQuestionBanks;
 
@@ -112,6 +114,30 @@ namespace Tokki.Api.Controllers
             }
 
             return Ok(result);
+        }
+        [HttpGet("admin/by-question-type/{questionTypeId}")]
+        public async Task<IActionResult> GetByQuestionTypeId([FromRoute] string questionTypeId, CancellationToken cancellationToken)
+        {
+            var query = new GetQuestionBanksByQuestionTypeIdQuery
+            {
+                QuestionTypeId = questionTypeId
+            };
+
+            var result = await _mediator.Send(query, cancellationToken);
+
+            if (!result.IsSuccess)
+            {
+                return StatusCode(result.StatusCode, result);
+            }
+
+            return Ok(result);
+        }
+        [HttpPut("admin/activate")]
+        public async Task<IActionResult> ActivateQuestionBanks(
+            [FromBody] ActivateQuestionBanksCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return StatusCode(result.StatusCode, result);
         }
     }
 }

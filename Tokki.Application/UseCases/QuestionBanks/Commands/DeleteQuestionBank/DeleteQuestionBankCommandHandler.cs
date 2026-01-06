@@ -1,28 +1,26 @@
-﻿
-
-using MediatR;
-using Microsoft.Extensions.Logging;
+﻿using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.QuestionBanks.Commands.DeleteQuestionBank
 {
     public class DeleteQuestionBankCommandHandler : IRequestHandler<DeleteQuestionBankCommand, OperationResult<bool>>
     {
         private readonly IQuestionBankRepository _questionBankRepository;
-        private readonly ILogger<DeleteQuestionBankCommandHandler> _logger;
+        private readonly IQuestionOptionRepository _questionOptionRepository;
 
         public DeleteQuestionBankCommandHandler(
             IQuestionBankRepository questionBankRepository,
-            ILogger<DeleteQuestionBankCommandHandler> logger)
+            IQuestionOptionRepository questionOptionRepository)
         {
             _questionBankRepository = questionBankRepository;
-            _logger = logger;
+            _questionOptionRepository = questionOptionRepository;
         }
 
         public async Task<OperationResult<bool>> Handle(DeleteQuestionBankCommand request, CancellationToken cancellationToken)
         {
-            var questionBank = await _questionBankRepository.GetByIdAsync(request.QuestionBankId, cancellationToken);
+            var questionBank = await _questionBankRepository.GetByIdWithDetailsAsync(request.QuestionBankId, cancellationToken);
             if (questionBank == null)
             {
                 return OperationResult<bool>.Failure(
@@ -32,20 +30,27 @@ namespace Tokki.Application.UseCases.QuestionBanks.Commands.DeleteQuestionBank
                 );
             }
 
+            // Đã xóa mềm rồi thì coi như OK (idempotent)
+            if (questionBank.Status == QuestionBankStatus.Deleted)
+            {
+                return OperationResult<bool>.Success(true, 200, "Câu hỏi đã được xóa trước đó.");
+            }
+
             try
             {
-                await _questionBankRepository.DeleteAsync(questionBank);
+                // 1) XÓA CỨNG toàn bộ đáp án trắc nghiệm
+                await _questionOptionRepository.DeleteByQuestionBankIdAsync(questionBank.QuestionBankId, cancellationToken);
+
+                // 2) XÓA MỀM câu hỏi
+                questionBank.Status = QuestionBankStatus.Deleted;
+
+                await _questionBankRepository.UpdateAsync(questionBank);
                 await _questionBankRepository.SaveChangesAsync(cancellationToken);
 
-                return OperationResult<bool>.Success(
-                    true,
-                    200,
-                    "Xóa câu hỏi thành công"
-                );
+                return OperationResult<bool>.Success(true, 200, "Xóa câu hỏi thành công");
             }
-            catch (Exception ex)
+            catch
             {
-                _logger.LogError(ex, "Lỗi khi xóa câu hỏi: {QuestionBankId}", request.QuestionBankId);
                 return OperationResult<bool>.Failure(
                     new List<Error> { AppErrors.ServerError },
                     500,

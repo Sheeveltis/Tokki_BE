@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.EntityFrameworkCore;
 using Tokki.Application.IRepositories;
 using Tokki.Domain.Entities;
-using Tokki.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
 using Tokki.Domain.Enums;
+using Tokki.Infrastructure.Data;
+
 namespace Tokki.Infrastructure.Repositories
 {
     public class QuestionBankRepository : IQuestionBankRepository
@@ -38,53 +34,51 @@ namespace Tokki.Infrastructure.Repositories
             int pageNumber,
             int pageSize,
             string? searchTerm = null,
-            QuestionSkill? skill = null,
-            DifficultyLevel? difficultyLevel = null,
             string? questionTypeId = null,
             string? passageId = null,
-            bool? isActive = null,
+            QuestionBankStatus? status = null,
             CancellationToken cancellationToken = default)
         {
-            var query = _context.QuestionBank
-                .Include(q => q.Passage)
-                .Include(q => q.QuestionType)
-                .Include(q => q.QuestionOptions)
-                .AsQueryable();
+            if (pageNumber < 1) pageNumber = 1;
+            if (pageSize < 1) pageSize = 10;
+
+            // Query nền để filter + count (không Include cho nhẹ)
+            IQueryable<QuestionBank> baseQuery = _context.QuestionBank.AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                query = query.Where(q => q.Content!.Contains(searchTerm) || q.Explanation!.Contains(searchTerm));
+                baseQuery = baseQuery.Where(q =>
+                    (q.Content != null && q.Content.Contains(searchTerm)) ||
+                    (q.Explanation != null && q.Explanation.Contains(searchTerm)));
             }
 
-            if (skill.HasValue)
-            {
-                query = query.Where(q => q.Skill == skill.Value);
-            }
-
-            if (difficultyLevel.HasValue)
-            {
-                query = query.Where(q => q.DifficultyLevel == difficultyLevel.Value);
-            }
+          
+         
 
             if (!string.IsNullOrEmpty(questionTypeId))
             {
-                query = query.Where(q => q.QuestionTypeId == questionTypeId);
+                baseQuery = baseQuery.Where(q => q.QuestionTypeId == questionTypeId);
             }
 
             if (!string.IsNullOrEmpty(passageId))
             {
-                query = query.Where(q => q.PassageId == passageId);
+                baseQuery = baseQuery.Where(q => q.PassageId == passageId);
             }
 
-            if (isActive.HasValue)
+            if (status.HasValue)
             {
-                query = query.Where(q => q.IsActive == isActive.Value);
+                baseQuery = baseQuery.Where(q => q.Status == status.Value);
             }
 
-            var totalCount = await query.CountAsync(cancellationToken);
+            var totalCount = await baseQuery.CountAsync(cancellationToken);
 
-            var items = await query
-                .OrderByDescending(q => q.QuestionBankId)
+            // Query lấy items (Include đầy đủ)
+            var items = await baseQuery
+                .Include(q => q.Passage)
+                .Include(q => q.QuestionType)
+                .Include(q => q.QuestionOptions)
+                .OrderByDescending(q => q.CreatedAt)
+                .ThenByDescending(q => q.QuestionBankId)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync(cancellationToken);
@@ -96,15 +90,21 @@ namespace Tokki.Infrastructure.Repositories
         {
             return await _context.QuestionBank
                 .Include(q => q.QuestionOptions)
-                .Where(q => q.PassageId == passageId && q.IsActive)
+                .Where(q => q.PassageId == passageId && q.Status == QuestionBankStatus.Active)
+                .OrderByDescending(q => q.CreatedAt)
+                .ThenByDescending(q => q.QuestionBankId)
                 .ToListAsync(cancellationToken);
         }
 
         public async Task<IEnumerable<QuestionBank>> GetByQuestionTypeIdAsync(string questionTypeId, CancellationToken cancellationToken = default)
         {
             return await _context.QuestionBank
+                .Include(q => q.Passage)
+                .Include(q => q.QuestionType)
                 .Include(q => q.QuestionOptions)
-                .Where(q => q.QuestionTypeId == questionTypeId && q.IsActive)
+                .Where(q => q.QuestionTypeId == questionTypeId && q.Status == QuestionBankStatus.Active)
+                .OrderByDescending(q => q.CreatedAt)
+                .ThenByDescending(q => q.QuestionBankId)
                 .ToListAsync(cancellationToken);
         }
 
@@ -129,6 +129,19 @@ namespace Tokki.Infrastructure.Repositories
         {
             return await _context.SaveChangesAsync(cancellationToken) > 0;
         }
-    }
+        public async Task<List<QuestionBank>> GetByIdsAsync(IEnumerable<string> questionBankIds, CancellationToken cancellationToken = default)
+        {
+            var ids = questionBankIds.Distinct().ToList();
 
+            return await _context.QuestionBank
+                .Where(q => ids.Contains(q.QuestionBankId))
+                .ToListAsync(cancellationToken);
+        }
+
+        public Task UpdateRangeAsync(IEnumerable<QuestionBank> questionBanks)
+        {
+            _context.QuestionBank.UpdateRange(questionBanks);
+            return Task.CompletedTask;
+        }
+    }
 }

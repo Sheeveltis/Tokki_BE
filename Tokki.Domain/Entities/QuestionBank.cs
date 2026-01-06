@@ -15,14 +15,9 @@ namespace Tokki.Domain.Entities
         [MaxLength(10)]
         public string QuestionBankId { get; set; } = string.Empty;
 
-        [MaxLength(10)]
         public string? PassageId { get; set; }
 
-        [MaxLength(10)]
         public string? QuestionTypeId { get; set; }
-
-        [Required]
-        public QuestionSkill Skill { get; set; }
 
         public string? Content { get; set; }
 
@@ -31,9 +26,8 @@ namespace Tokki.Domain.Entities
 
         public string? Explanation { get; set; }
 
-        public DifficultyLevel DifficultyLevel { get; set; } = DifficultyLevel.Medium;
 
-        public bool IsActive { get; set; } = true;
+        public QuestionBankStatus Status { get; set; }
 
         // Navigation
         [ForeignKey(nameof(PassageId))]
@@ -41,6 +35,7 @@ namespace Tokki.Domain.Entities
 
         [ForeignKey(nameof(QuestionTypeId))]
         public virtual QuestionType? QuestionType { get; set; }
+        public DateTime CreatedAt { get; set; }
 
         public virtual ICollection<QuestionOption> QuestionOptions { get; set; } = new List<QuestionOption>();
     }

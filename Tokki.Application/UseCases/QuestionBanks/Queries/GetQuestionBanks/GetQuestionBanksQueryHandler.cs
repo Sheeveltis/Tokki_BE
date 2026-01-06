@@ -27,11 +27,9 @@ namespace Tokki.Application.UseCases.QuestionBanks.Queries.GetQuestionBanks
                 request.PageNumber,
                 request.PageSize,
                 request.SearchTerm,
-                request.Skill,
-                request.DifficultyLevel,
                 request.QuestionTypeId,
                 request.PassageId,
-                request.IsActive,
+                request.Status,
                 cancellationToken
             );
 
@@ -42,12 +40,10 @@ namespace Tokki.Application.UseCases.QuestionBanks.Queries.GetQuestionBanks
                 PassageTitle = q.Passage?.Title,
                 QuestionTypeId = q.QuestionTypeId,
                 QuestionTypeName = q.QuestionType?.Name,
-                Skill = q.Skill,
                 Content = q.Content,
                 MediaUrl = q.MediaUrl,
                 Explanation = q.Explanation,
-                DifficultyLevel = q.DifficultyLevel,
-                IsActive = q.IsActive,
+                Status = q.Status,
                 Options = q.QuestionOptions.Select(o => new QuestionOptionDto
                 {
                     OptionId = o.OptionId,

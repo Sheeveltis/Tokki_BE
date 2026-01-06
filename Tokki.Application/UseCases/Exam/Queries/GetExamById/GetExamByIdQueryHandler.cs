@@ -59,12 +59,10 @@ namespace Tokki.Application.UseCases.Exam.Queries.GetExamById
                         PassageTitle = eq.QuestionBank.Passage?.Title,
                         QuestionTypeId = eq.QuestionBank.QuestionTypeId,
                         QuestionTypeName = eq.QuestionBank.QuestionType?.Name,
-                        Skill = eq.QuestionBank.Skill,
                         Content = eq.QuestionBank.Content,
                         MediaUrl = eq.QuestionBank.MediaUrl,
                         Explanation = eq.QuestionBank.Explanation,
-                        DifficultyLevel = eq.QuestionBank.DifficultyLevel,
-                        IsActive = eq.QuestionBank.IsActive,
+                        Status = eq.QuestionBank.Status,
                         Options = eq.QuestionBank.QuestionOptions.Select(o => new QuestionOptionDto
                         {
                             OptionId = o.OptionId,

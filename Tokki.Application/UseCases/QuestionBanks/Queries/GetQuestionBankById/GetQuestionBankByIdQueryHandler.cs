@@ -37,12 +37,10 @@ namespace Tokki.Application.UseCases.QuestionBanks.Queries.GetQuestionBankById
                 PassageTitle = questionBank.Passage?.Title,
                 QuestionTypeId = questionBank.QuestionTypeId,
                 QuestionTypeName = questionBank.QuestionType?.Name,
-                Skill = questionBank.Skill,
                 Content = questionBank.Content,
                 MediaUrl = questionBank.MediaUrl,
                 Explanation = questionBank.Explanation,
-                DifficultyLevel = questionBank.DifficultyLevel,
-                IsActive = questionBank.IsActive,
+                Status = questionBank.Status,
                 Options = questionBank.QuestionOptions.Select(o => new QuestionOptionDto
                 {
                     OptionId = o.OptionId,

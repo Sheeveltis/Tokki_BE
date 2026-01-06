@@ -1,57 +1,117 @@
 ﻿using FluentValidation;
+using Tokki.Application.Common.Models;
+using Tokki.Application.IRepositories;
 using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.QuestionBanks.Commands.CreateQuestionBank
 {
     public class CreateQuestionBankCommandValidator : AbstractValidator<CreateQuestionBankCommand>
     {
-        public CreateQuestionBankCommandValidator()
+        private readonly IQuestionTypeRepository _questionTypeRepository;
+
+        public CreateQuestionBankCommandValidator(IQuestionTypeRepository questionTypeRepository)
         {
+            _questionTypeRepository = questionTypeRepository;
+
             RuleFor(x => x.Content)
                 .NotEmpty()
                 .WithName("Nội dung câu hỏi");
 
-            RuleFor(x => x.Skill)
-                .IsInEnum()
-                .WithName("Kỹ năng");
-
-            RuleFor(x => x.DifficultyLevel)
-                .IsInEnum()
-                .WithName("Mức độ");
-
-            // Nếu là Writing (3), không được có Options
-            RuleFor(x => x.Options)
-                .Must(opts => opts == null || !opts.Any())
-                .When(x => x.Skill == QuestionSkill.Writing)
-                .WithMessage("Câu hỏi tự luận (Writing) không được có đáp án trắc nghiệm");
-
-            // Nếu KHÔNG phải Writing, phải có 2-4 Options
-            RuleFor(x => x.Options)
+            RuleFor(x => x.QuestionTypeId)
                 .NotEmpty()
-                .When(x => x.Skill != QuestionSkill.Writing)
-                .WithMessage("Câu hỏi trắc nghiệm phải có ít nhất 2 đáp án");
+                .WithName("Loại câu hỏi");
 
-            RuleFor(x => x.Options)
-                .Must(opts => opts.Count >= 2 && opts.Count <= 4)
-                .When(x => x.Skill != QuestionSkill.Writing && x.Options != null)
-                .WithMessage("Số đáp án phải từ 2 đến 4");
+            // Validate theo QuestionType.Skill trong DB
+            RuleFor(x => x).CustomAsync(ValidateOptionsByQuestionTypeSkillAsync);
+        }
 
-            // Validate từng Option (chỉ khi KHÔNG phải Writing)
-            When(x => x.Skill != QuestionSkill.Writing, () =>
+        private async Task ValidateOptionsByQuestionTypeSkillAsync(
+            CreateQuestionBankCommand model,
+            ValidationContext<CreateQuestionBankCommand> context,
+            CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(model.QuestionTypeId))
+                return; // Rule NotEmpty sẽ bắt
+
+            var questionTypeId = model.QuestionTypeId.Trim();
+
+            var questionType = await _questionTypeRepository.GetByIdAsync(questionTypeId, cancellationToken);
+            if (questionType == null)
             {
-                RuleForEach(x => x.Options).ChildRules(option =>
-                {
-                    option.RuleFor(o => o.KeyOption)
-                        .NotEmpty()
-                        .Must(k => new[] { "1", "2", "3", "4" }.Contains(k))
-                        .WithMessage("KeyOption phải là '1', '2', '3' hoặc '4'");
+                context.AddFailure(nameof(CreateQuestionBankCommand.QuestionTypeId), AppErrors.QuestionTypeNotFound.Description);
+                return;
+            }
 
-                    option.RuleFor(o => o.Content)
-                        .NotEmpty()
-                        .When(o => string.IsNullOrEmpty(o.ImageUrl))
-                        .WithMessage("Đáp án phải có nội dung text hoặc ảnh");
-                });
-            });
+            if (!questionType.IsActive)
+            {
+                context.AddFailure(nameof(CreateQuestionBankCommand.QuestionTypeId), "Loại câu hỏi đang bị vô hiệu hóa.");
+                return;
+            }
+
+            var skill = questionType.Skill;
+
+            // Writing: không được có options
+            if (skill == QuestionSkill.Writing)
+            {
+                if (model.Options != null && model.Options.Any())
+                {
+                    context.AddFailure(nameof(CreateQuestionBankCommand.Options), AppErrors.WritingNoOptions.Description);
+                }
+                return;
+            }
+
+            // Reading/Listening: bắt buộc 2-4 options
+            if (model.Options == null || model.Options.Count < 2 || model.Options.Count > 4)
+            {
+                context.AddFailure(nameof(CreateQuestionBankCommand.Options), AppErrors.QuestionBankInvalidOptions.Description);
+                return;
+            }
+
+            var validKeys = new HashSet<string> { "1", "2", "3", "4" };
+            var keys = new List<string>();
+            var correctCount = 0;
+
+            foreach (var o in model.Options)
+            {
+                if (o == null)
+                {
+                    context.AddFailure(nameof(CreateQuestionBankCommand.Options), "Danh sách đáp án chứa phần tử không hợp lệ.");
+                    continue;
+                }
+
+                var key = o.KeyOption?.Trim();
+                if (string.IsNullOrWhiteSpace(key) || !validKeys.Contains(key))
+                {
+                    context.AddFailure(nameof(CreateQuestionBankCommand.Options), AppErrors.QuestionBankInvalidKeyOption.Description);
+                }
+                else
+                {
+                    keys.Add(key);
+                }
+
+                var hasText = !string.IsNullOrWhiteSpace(o.Content);
+                var hasImage = !string.IsNullOrWhiteSpace(o.ImageUrl);
+                if (!hasText && !hasImage)
+                {
+                    context.AddFailure(nameof(CreateQuestionBankCommand.Options), "Đáp án phải có nội dung text hoặc ảnh.");
+                }
+
+                if (o.IsCorrect) correctCount++;
+            }
+
+            if (keys.Distinct().Count() != keys.Count)
+            {
+                context.AddFailure(nameof(CreateQuestionBankCommand.Options), AppErrors.QuestionBankDuplicateKeyOption.Description);
+            }
+
+            if (correctCount == 0)
+            {
+                context.AddFailure(nameof(CreateQuestionBankCommand.Options), AppErrors.QuestionBankNoCorrectAnswer.Description);
+            }
+            else if (correctCount > 1)
+            {
+                context.AddFailure(nameof(CreateQuestionBankCommand.Options), AppErrors.QuestionBankMultipleCorrectAnswers.Description);
+            }
         }
     }
 }

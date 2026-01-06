@@ -7,7 +7,7 @@ using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.QuestionBanks.DTOs
 {
-    public class QuestionBankDto
+    public class QuestionBankByQuestionTypeDto
     {
         public string QuestionBankId { get; set; } = string.Empty;
         public string? PassageId { get; set; }
