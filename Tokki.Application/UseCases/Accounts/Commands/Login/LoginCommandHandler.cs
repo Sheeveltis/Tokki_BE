@@ -79,7 +79,7 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
                 return OperationResult<LoginResponse>.Failure(new List<Error> { AppErrors.WrongPassword }, 400, AppErrors.WrongPassword.Description);
             }
             // 4.2. Chặn nếu người dùng đang dùng bất kỳ mật khẩu mặc định nào (3 key)
-            if (await IsUsingAnyDefaultPasswordAsync(request.Password))
+            if (await IsUsingAnyDefaultPasswordAsync(request.Password, cancellationToken))
             {
                 return OperationResult<LoginResponse>.Failure(
                     new List<Error> { AppErrors.DefaultPasswordUsed },
@@ -188,12 +188,11 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
             }
             return defaultValue;
         }
-        private async Task<bool> IsUsingAnyDefaultPasswordAsync(string inputPassword)
+        private async Task<bool> IsUsingAnyDefaultPasswordAsync(string inputPassword, CancellationToken ct)
         {
             if (string.IsNullOrWhiteSpace(inputPassword))
                 return false;
 
-            // Lưu ý: key thứ 3 nếu hệ thống bạn đặt tên khác thì đổi lại tại đây
             var keys = new[]
             {
         "DEFAULT_PASSWORD_FOR_STAFF",
@@ -201,11 +200,9 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
         "DEFAULT_PASSWORD_FOR_ADMIN"
     };
 
-            // Gọi song song để giảm latency
-            var values = await Task.WhenAll(keys.Select(k => _systemConfigRepository.GetValueByKeyAsync(k)));
-
-            foreach (var v in values)
+            foreach (var key in keys)
             {
+                var v = await _systemConfigRepository.GetValueByKeyAsync(key); // tuần tự
                 if (!string.IsNullOrEmpty(v) && inputPassword == v)
                     return true;
             }
