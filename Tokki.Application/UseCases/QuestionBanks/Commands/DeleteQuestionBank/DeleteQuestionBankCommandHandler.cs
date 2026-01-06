@@ -20,7 +20,9 @@ namespace Tokki.Application.UseCases.QuestionBanks.Commands.DeleteQuestionBank
 
         public async Task<OperationResult<bool>> Handle(DeleteQuestionBankCommand request, CancellationToken cancellationToken)
         {
-            var questionBank = await _questionBankRepository.GetByIdWithDetailsAsync(request.QuestionBankId, cancellationToken);
+            var questionBank = await _questionBankRepository.GetByIdWithDetailsAsync(
+                request.QuestionBankId, cancellationToken);
+
             if (questionBank == null)
             {
                 return OperationResult<bool>.Failure(
@@ -30,16 +32,21 @@ namespace Tokki.Application.UseCases.QuestionBanks.Commands.DeleteQuestionBank
                 );
             }
 
-            // Đã xóa mềm rồi thì coi như OK (idempotent)
+            // Nếu đã xóa trước đó -> trả lỗi theo yêu cầu
             if (questionBank.Status == QuestionBankStatus.Deleted)
             {
-                return OperationResult<bool>.Success(true, 200, "Câu hỏi đã được xóa trước đó.");
+                return OperationResult<bool>.Failure(
+                    new List<Error> { AppErrors.QuestionBankHasDeleted },
+                    409, // khuyến nghị: Conflict (đã ở trạng thái không thể delete tiếp)
+                    AppErrors.QuestionBankHasDeleted.Description
+                );
             }
 
             try
             {
                 // 1) XÓA CỨNG toàn bộ đáp án trắc nghiệm
-                await _questionOptionRepository.DeleteByQuestionBankIdAsync(questionBank.QuestionBankId, cancellationToken);
+                await _questionOptionRepository.DeleteByQuestionBankIdAsync(
+                    questionBank.QuestionBankId, cancellationToken);
 
                 // 2) XÓA MỀM câu hỏi
                 questionBank.Status = QuestionBankStatus.Deleted;

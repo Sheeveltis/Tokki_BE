@@ -143,5 +143,11 @@ namespace Tokki.Infrastructure.Repositories
             _context.QuestionBank.UpdateRange(questionBanks);
             return Task.CompletedTask;
         }
+        public async Task<bool> AnyUsingPassageAsync(string passageId, CancellationToken cancellationToken = default)
+        {
+            return await _context.QuestionBank
+                .AsNoTracking()
+                .AnyAsync(q => q.PassageId == passageId && q.Status != QuestionBankStatus.Deleted, cancellationToken);
+        }
     }
 }

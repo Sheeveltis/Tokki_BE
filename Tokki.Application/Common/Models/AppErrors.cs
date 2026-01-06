@@ -224,12 +224,15 @@ namespace Tokki.Application.Common.Models
         // ============================================
         // NHÓM 19: QUESTION BANK
         // ============================================
+        public static readonly Error QuestionBankHasDeleted = new("QuestionBank.HasDeleted", "Câu hỏi đã được xóa trước đó.");
         public static readonly Error QuestionBankNotFound = new("QuestionBank.NotFound", "Câu hỏi không tồn tại.");
         public static readonly Error QuestionBankInvalidOptions = new("QuestionBank.InvalidOptions", "Câu hỏi phải có từ 2 đến 4 đáp án.");
         public static readonly Error QuestionBankNoCorrectAnswer = new("QuestionBank.NoCorrectAnswer", "Câu hỏi phải có ít nhất một đáp án đúng.");
         public static readonly Error QuestionBankMultipleCorrectAnswers = new("QuestionBank.MultipleCorrectAnswers", "Câu hỏi chỉ được có một đáp án đúng.");
         public static readonly Error QuestionBankInvalidKeyOption = new("QuestionBank.InvalidKeyOption", "Đáp án phải có KeyOption từ '1' đến '4'.");
         public static readonly Error QuestionBankDuplicateKeyOption = new("QuestionBank.DuplicateKeyOption", "Không được trùng KeyOption trong các đáp án.");
+        public static readonly Error QuestionBankNeedToHaveDraftStatus = new("QuestionType.QuestionBankNeedToHaveDraftStatus", "Câu hỏi này phải ở trạng thái soạn thảo.");
+
         public static Error PassageMediaTypeMismatch(PassageMediaType mediaType, QuestionSkill skill) => new(
         "Passage.MediaTypeMismatch",
         $"Loại media '{mediaType}' của bài đọc không phù hợp với kỹ năng '{skill}'."
