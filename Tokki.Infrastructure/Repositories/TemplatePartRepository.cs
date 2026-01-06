@@ -60,7 +60,18 @@ namespace Tokki.Infrastructure.Repositories
                     questionNo <= tp.QuestionTo,
                     cancellationToken);
         }
+        public async Task<(int totalParts, int totalQuestions)> GetStatsByTemplateIdAsync(string examTemplateId)
+        {
+            var rangeData = await _context.TemplateParts
+                .Where(tp => tp.ExamTemplateId == examTemplateId)
+                .Select(tp => new { tp.QuestionFrom, tp.QuestionTo })
+                .ToListAsync();
 
+            int totalParts = rangeData.Count;
+            int totalQuestions = rangeData.Sum(x => x.QuestionTo - x.QuestionFrom + 1);
+
+            return (totalParts, totalQuestions);
+        }
         public async Task AddAsync(TemplatePart templatePart)
         {
             await _context.TemplateParts.AddAsync(templatePart);
