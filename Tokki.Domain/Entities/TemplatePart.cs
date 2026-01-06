@@ -30,9 +30,8 @@ namespace Tokki.Domain.Entities
         [Required]
         public int Mark { get; set; } 
 
-        [Required]
         [MaxLength(10)]
-        public string QuestionTypeId { get; set; } = string.Empty;
+        public string? QuestionTypeId { get; set; } = string.Empty;
 
         public string? ExampleUrl { get; set; }
 

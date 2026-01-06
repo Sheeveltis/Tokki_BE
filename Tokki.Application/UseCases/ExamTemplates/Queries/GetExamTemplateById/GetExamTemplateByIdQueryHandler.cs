@@ -2,54 +2,39 @@
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.ExamTemplates.DTOs;
-using Tokki.Domain.Enums;
+using Tokki.Application.UseCases.ExamTemplates.Queries.GetExamTemplateById;
 
-namespace Tokki.Application.UseCases.ExamTemplates.Queries.GetExamTemplateById
+public class GetExamTemplateByIdQueryHandler : IRequestHandler<GetExamTemplateByIdQuery, OperationResult<ExamTemplateDto>>
 {
-    public class GetExamTemplateByIdQueryHandler : IRequestHandler<GetExamTemplateByIdQuery, OperationResult<ExamTemplateDto>>
+    private readonly IExamTemplateRepository _examTemplateRepository;
+    private readonly ITemplatePartRepository _templatePartRepository;
+    public GetExamTemplateByIdQueryHandler(
+        IExamTemplateRepository examTemplateRepository,
+        ITemplatePartRepository templatePartRepository)
     {
-        private readonly IExamTemplateRepository _examTemplateRepository;
+        _examTemplateRepository = examTemplateRepository;
+        _templatePartRepository = templatePartRepository;
+    }
 
-        public GetExamTemplateByIdQueryHandler(IExamTemplateRepository examTemplateRepository)
+    public async Task<OperationResult<ExamTemplateDto>> Handle(GetExamTemplateByIdQuery request, CancellationToken cancellationToken)
+    {
+        var et = await _examTemplateRepository.GetByIdAsync(request.ExamTemplateId, cancellationToken);
+        if (et == null) return OperationResult<ExamTemplateDto>.Failure(AppErrors.ExamTemplateNotFound);
+
+        var stats = await _templatePartRepository.GetStatsByTemplateIdAsync(request.ExamTemplateId);
+
+        var dto = new ExamTemplateDto
         {
-            _examTemplateRepository = examTemplateRepository;
-        }
+            ExamTemplateId = et.ExamTemplateId,
+            Name = et.Name,
+            Description = et.Description,
+            CreatedAt = et.CreatedAt,
+            Status = et.Status,
+            Type = et.Type,
+            TotalParts = stats.totalParts,
+            TotalQuestions = stats.totalQuestions,            
+        };
 
-        public async Task<OperationResult<ExamTemplateDto>> Handle(GetExamTemplateByIdQuery request, CancellationToken cancellationToken)
-        {
-            var et = await _examTemplateRepository.GetByIdWithPartsAsync(request.ExamTemplateId, cancellationToken);
-
-            if (et == null || et.Status == ExamTemplateStatus.Deleted)
-            {
-                return OperationResult<ExamTemplateDto>.Failure(AppErrors.ExamTemplateNotFound);
-            }
-
-            var dto = new ExamTemplateDto
-            {
-                ExamTemplateId = et.ExamTemplateId,
-                Name = et.Name,
-                Description = et.Description,
-                Type = et.Type,
-                CreatedAt = et.CreatedAt,
-                Status = et.Status,
-                TotalParts = et.TemplateParts.Count,
-                TotalQuestions = et.TemplateParts.Sum(p => p.QuestionTo - p.QuestionFrom + 1),
-                Parts = et.TemplateParts.OrderBy(p => p.QuestionFrom).Select(p => new TemplatePartDto
-                {
-                    TemplatePartId = p.TemplatePartId,
-                    Skill = p.Skill,
-                    QuestionFrom = p.QuestionFrom,
-                    QuestionTo = p.QuestionTo,
-                    PartTitle = p.PartTitle,
-                    Instruction = p.Instruction,
-                    Mark = p.Mark,
-                    ExampleUrl = p.ExampleUrl,
-                    QuestionTypeId = p.QuestionTypeId,
-                    QuestionTypeName = p.QuestionType != null ? p.QuestionType.Name : "" 
-                }).ToList()
-            };
-
-            return OperationResult<ExamTemplateDto>.Success(dto);
-        }
+        return OperationResult<ExamTemplateDto>.Success(dto);
     }
 }

@@ -23,6 +23,36 @@ namespace Tokki.WebAPI.Controllers
             _mediator = mediator;
         }
 
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> CreateExamTemplate([FromBody] CreateExamTemplateCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpPost("{id}/duplicate")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DuplicateExamTemplate(string id)
+        {
+            var command = new DuplicateExamTemplateCommand(id);
+            var result = await _mediator.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateExamTemplate(string id, [FromBody] UpdateExamTemplateCommand command)
+        {
+            if (id != command.ExamTemplateId)
+            {
+                return BadRequest(new { message = "ID không khớp" });
+            }
+
+            var result = await _mediator.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetExamTemplates([FromQuery] GetExamTemplatesQuery query)
         {
@@ -43,36 +73,6 @@ namespace Tokki.WebAPI.Controllers
         {
             var query = new GetExamTemplateByIdQuery { ExamTemplateId = id };
             var result = await _mediator.Send(query);
-            return StatusCode(result.StatusCode, result);
-        }
-
-        [HttpPost]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> CreateExamTemplate([FromBody] CreateExamTemplateCommand command)
-        {
-            var result = await _mediator.Send(command);
-            return StatusCode(result.StatusCode, result);
-        }
-
-        [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> UpdateExamTemplate(string id, [FromBody] UpdateExamTemplateCommand command)
-        {
-            if (id != command.ExamTemplateId)
-            {
-                return BadRequest(new { message = "ID không khớp" });
-            }
-
-            var result = await _mediator.Send(command);
-            return StatusCode(result.StatusCode, result);
-        }
-
-        [HttpPost("{id}/duplicate")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> DuplicateExamTemplate(string id)
-        {
-            var command = new DuplicateExamTemplateCommand(id);
-            var result = await _mediator.Send(command);
             return StatusCode(result.StatusCode, result);
         }
 

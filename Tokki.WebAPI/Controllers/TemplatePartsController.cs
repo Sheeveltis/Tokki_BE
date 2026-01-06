@@ -4,6 +4,7 @@ using Tokki.Application.UseCases.TemplateParts.Commands.CreateTemplatePart;
 using Tokki.Application.UseCases.TemplateParts.Commands.DeleteTemplatePart; 
 using Tokki.Application.UseCases.TemplateParts.Commands.UpdateTemplatePart;
 using Tokki.Application.UseCases.TemplateParts.Queries.GetTemplatePartById;
+using Tokki.Application.UseCases.TemplateParts.Queries.GetTemplateParts;
 
 namespace Tokki.API.Controllers
 {
@@ -41,12 +42,19 @@ namespace Tokki.API.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetAll([FromQuery] GetTemplatePartsQuery query)
+        {
+            var result = await _mediator.Send(query);
+            return StatusCode(result.StatusCode, result);
+        }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
             var command = new DeleteTemplatePartCommand(id);
             var result = await _mediator.Send(command);
             return result.IsSuccess ? Ok(result) : StatusCode(result.StatusCode, result);
-        }
+        }        
     }
 }

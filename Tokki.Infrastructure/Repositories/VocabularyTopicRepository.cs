@@ -228,7 +228,7 @@ namespace Tokki.Infrastructure.Repositories
         {
             var query = from vt in _context.VocabularyTopics
                         join v in _context.Vocabularies on vt.VocabularyId equals v.VocabularyId
-                        where vt.TopicId == topicId && v.Status == VocabularyStatus.Active
+                        where vt.TopicId == topicId && v.Status == VocabularyStatus.Active && vt.Status == VocabularyTopicStatus.Active
                         select new VocabularyExportDTO
                         {
                             Text = v.Text,

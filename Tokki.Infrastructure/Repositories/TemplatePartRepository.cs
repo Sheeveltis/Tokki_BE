@@ -60,7 +60,18 @@ namespace Tokki.Infrastructure.Repositories
                     questionNo <= tp.QuestionTo,
                     cancellationToken);
         }
+        public async Task<(int totalParts, int totalQuestions)> GetStatsByTemplateIdAsync(string examTemplateId)
+        {
+            var rangeData = await _context.TemplateParts
+                .Where(tp => tp.ExamTemplateId == examTemplateId)
+                .Select(tp => new { tp.QuestionFrom, tp.QuestionTo })
+                .ToListAsync();
 
+            int totalParts = rangeData.Count;
+            int totalQuestions = rangeData.Sum(x => x.QuestionTo - x.QuestionFrom + 1);
+
+            return (totalParts, totalQuestions);
+        }
         public async Task AddAsync(TemplatePart templatePart)
         {
             await _context.TemplateParts.AddAsync(templatePart);
@@ -92,6 +103,32 @@ namespace Tokki.Infrastructure.Repositories
         public async Task<bool> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             return await _context.SaveChangesAsync(cancellationToken) > 0;
+        }
+        public async Task<(IEnumerable<TemplatePart> items, int totalCount)> GetPagedAsync(
+            int pageNumber,
+            int pageSize,
+            string? examTemplateId = null,
+            CancellationToken cancellationToken = default)
+        {
+            var query = _context.TemplateParts
+                .Include(tp => tp.QuestionType) 
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(examTemplateId))
+            {
+                query = query.Where(tp => tp.ExamTemplateId == examTemplateId);
+            }
+
+            var totalCount = await query.CountAsync(cancellationToken);
+
+            var items = await query
+                .OrderBy(tp => tp.ExamTemplateId)
+                .ThenBy(tp => tp.QuestionFrom)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+
+            return (items, totalCount);
         }
     }
 }
