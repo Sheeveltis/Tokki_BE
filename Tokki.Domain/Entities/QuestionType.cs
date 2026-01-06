@@ -20,13 +20,13 @@ namespace Tokki.Domain.Entities
         public string? Description { get; set; }
 
         [Required]
-        public QuestionSkill Skill { get; set; }
+        public QuestionSkill Skill { get; set; } 
 
         [Required]
-        public DifficultyLevel Difficulty { get; set; }
+        public DifficultyLevel Difficulty { get; set; } 
 
         [Required]
-        public ExamType ExamType { get; set; }
+        public ExamType ExamType { get; set; } 
 
         public bool IsActive { get; set; } = true;
 

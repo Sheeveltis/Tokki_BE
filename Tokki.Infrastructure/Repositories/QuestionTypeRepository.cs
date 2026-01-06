@@ -41,6 +41,41 @@ namespace Tokki.Infrastructure.Repositories
                 .OrderBy(qt => qt.Name)
                 .ToListAsync(cancellationToken);
         }
+        public async Task<IEnumerable<QuestionType>> GetAsync(
+            string? keyword = null,
+            QuestionSkill? skill = null,
+            DifficultyLevel? difficulty = null,
+            ExamType? examType = null,
+            CancellationToken cancellationToken = default)
+        {
+            var query = _context.QuestionTypes.AsNoTracking().Where(qt => qt.IsActive);
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                query = query.Where(qt => qt.Name.Contains(keyword) || (qt.Code != null && qt.Code.Contains(keyword)));
+            }
+
+            if (skill.HasValue)
+            {
+                query = query.Where(qt => qt.Skill == skill.Value);
+            }
+
+            if (difficulty.HasValue)
+            {
+                query = query.Where(qt => qt.Difficulty == difficulty.Value);
+            }
+
+            if (examType.HasValue)
+            {
+                query = query.Where(qt => qt.ExamType == examType.Value);
+            }
+
+            return await query
+                .OrderBy(qt => qt.Skill)
+                .ThenBy(qt => qt.ExamType)
+                .ThenBy(qt => qt.Name)
+                .ToListAsync(cancellationToken);
+        }
 
         public async Task<bool> IsCodeExistsAsync(string code, string? excludeId = null)
         {
