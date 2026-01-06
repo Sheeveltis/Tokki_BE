@@ -18,5 +18,10 @@ namespace Tokki.Application.IRepositories
         Task DeleteAsync(TemplatePart templatePart);
         Task DeleteRangeAsync(IEnumerable<TemplatePart> templateParts);
         Task<bool> SaveChangesAsync(CancellationToken cancellationToken = default);
+        Task<(IEnumerable<TemplatePart> items, int totalCount)> GetPagedAsync(
+            int pageNumber,
+            int pageSize,
+            string? examTemplateId = null,
+            CancellationToken cancellationToken = default);
     }
 }

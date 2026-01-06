@@ -104,5 +104,31 @@ namespace Tokki.Infrastructure.Repositories
         {
             return await _context.SaveChangesAsync(cancellationToken) > 0;
         }
+        public async Task<(IEnumerable<TemplatePart> items, int totalCount)> GetPagedAsync(
+            int pageNumber,
+            int pageSize,
+            string? examTemplateId = null,
+            CancellationToken cancellationToken = default)
+        {
+            var query = _context.TemplateParts
+                .Include(tp => tp.QuestionType) 
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(examTemplateId))
+            {
+                query = query.Where(tp => tp.ExamTemplateId == examTemplateId);
+            }
+
+            var totalCount = await query.CountAsync(cancellationToken);
+
+            var items = await query
+                .OrderBy(tp => tp.ExamTemplateId)
+                .ThenBy(tp => tp.QuestionFrom)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+
+            return (items, totalCount);
+        }
     }
 }
