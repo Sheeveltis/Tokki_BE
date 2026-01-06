@@ -18,6 +18,7 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
         private readonly IIdGeneratorService _idGenerator;
         private readonly IValidator<LoginCommand> _validator;
         private readonly IGamificationService _gamificationService;
+        private readonly IEmailHistoryRepository _emailHistoryRepository;
 
         public LoginCommandHandler(
             IAccountRepository accountRepository,
@@ -25,7 +26,8 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
             IJwtTokenGenerator jwtGenerator,
             IIdGeneratorService idGenerator,
             IGamificationService gamificationService,
-            IValidator<LoginCommand> validator)
+            IValidator<LoginCommand> validator,
+            IEmailHistoryRepository emailHistoryRepository)
         {
             _accountRepository = accountRepository;
             _systemConfigRepository = systemConfigRepository;
@@ -33,7 +35,9 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
             _idGenerator = idGenerator;
             _validator = validator;
             _gamificationService = gamificationService;
+            _emailHistoryRepository = emailHistoryRepository;
         }
+
 
         public async Task<OperationResult<LoginResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
@@ -74,17 +78,16 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
                 await HandleFailedLoginAsync(user, vietnamTimeNow, cancellationToken);
                 return OperationResult<LoginResponse>.Failure(new List<Error> { AppErrors.WrongPassword }, 400, AppErrors.WrongPassword.Description);
             }
-            string? defaultPassword = await _systemConfigRepository.GetValueByKeyAsync("DEFALUT_PASSWORD_FOR_STAFF");
-
-            // 4.2. So sánh mật khẩu người dùng nhập vào với mật khẩu mặc định
-            if (!string.IsNullOrEmpty(defaultPassword) && request.Password == defaultPassword)
+            // 4.2. Chặn nếu người dùng đang dùng bất kỳ mật khẩu mặc định nào (3 key)
+            if (await IsUsingAnyDefaultPasswordAsync(request.Password))
             {
                 return OperationResult<LoginResponse>.Failure(
-                    new List<Error> { AppErrors.DefaultPasswordUsed }, 
+                    new List<Error> { AppErrors.DefaultPasswordUsed },
                     403,
-                    AppErrors.DefaultPasswordUsed.Description 
+                    AppErrors.DefaultPasswordUsed.Description
                 );
             }
+
             // === XỬ LÝ KHI ĐÚNG MẬT KHẨU ===
             if (user.FailedLoginCount > 0 || user.LockedUntil != null)
             {
@@ -114,7 +117,11 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
 
             // C. Tạo JWT Token (truyền UTC)
             var accessToken = _jwtGenerator.GenerateToken(user, tokenExpiresAtUtc);
-
+            await _emailHistoryRepository.DeleteByUserAndTemplateTypeAsync(
+                    user.UserId,
+                    EmailTemplateType.OfflineReminder,
+                    cancellationToken
+                );
             // D. Lưu Session vào database (lưu giờ Việt Nam)
             var newSession = new Session
             {
@@ -181,5 +188,30 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
             }
             return defaultValue;
         }
+        private async Task<bool> IsUsingAnyDefaultPasswordAsync(string inputPassword)
+        {
+            if (string.IsNullOrWhiteSpace(inputPassword))
+                return false;
+
+            // Lưu ý: key thứ 3 nếu hệ thống bạn đặt tên khác thì đổi lại tại đây
+            var keys = new[]
+            {
+        "DEFAULT_PASSWORD_FOR_STAFF",
+        "DEFAULT_PASSWORD_FOR_USER",
+        "DEFAULT_PASSWORD_FOR_ADMIN"
+    };
+
+            // Gọi song song để giảm latency
+            var values = await Task.WhenAll(keys.Select(k => _systemConfigRepository.GetValueByKeyAsync(k)));
+
+            foreach (var v in values)
+            {
+                if (!string.IsNullOrEmpty(v) && inputPassword == v)
+                    return true;
+            }
+
+            return false;
+        }
+
     }
 }
