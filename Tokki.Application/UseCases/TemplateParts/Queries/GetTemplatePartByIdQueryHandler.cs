@@ -33,7 +33,7 @@ namespace Tokki.Application.UseCases.TemplateParts.Queries.GetTemplatePartById
                 Instruction = part.Instruction,
                 Mark = part.Mark,
                 ExampleUrl = part.ExampleUrl,
-                QuestionTypeId = part.QuestionTypeId,
+                QuestionTypeId = part.QuestionTypeId ?? string.Empty,
                 QuestionTypeName = part.QuestionType != null ? part.QuestionType.Name : string.Empty
             };
 
