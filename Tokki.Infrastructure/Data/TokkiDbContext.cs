@@ -438,7 +438,9 @@ namespace Tokki.Infrastructure.Data
 
                 entity.Property(qt => qt.Skill)
                       .HasConversion<int>();
-
+                entity.Property(qt => qt.Skill).HasConversion<int>();
+                entity.Property(qt => qt.Difficulty).HasConversion<int>();
+                entity.Property(qt => qt.ExamType).HasConversion<int>();
                 entity.Property(qt => qt.IsActive)
                       .HasDefaultValue(true);
             });

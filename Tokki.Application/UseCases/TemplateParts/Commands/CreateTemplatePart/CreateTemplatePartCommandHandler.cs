@@ -11,17 +11,20 @@ namespace Tokki.Application.UseCases.TemplateParts.Commands.CreateTemplatePart
     {
         private readonly ITemplatePartRepository _templatePartRepository;
         private readonly IExamTemplateRepository _examTemplateRepository;
+        private readonly IQuestionTypeRepository _questionTypeRepository;
         private readonly IIdGeneratorService _idGeneratorService;
         private readonly ILogger<CreateTemplatePartCommandHandler> _logger;
 
         public CreateTemplatePartCommandHandler(
             ITemplatePartRepository templatePartRepository,
             IExamTemplateRepository examTemplateRepository,
+            IQuestionTypeRepository questionTypeRepository,
             IIdGeneratorService idGeneratorService,
             ILogger<CreateTemplatePartCommandHandler> logger)
         {
             _templatePartRepository = templatePartRepository;
             _examTemplateRepository = examTemplateRepository;
+            _questionTypeRepository = questionTypeRepository;
             _idGeneratorService = idGeneratorService;
             _logger = logger;
         }
@@ -37,6 +40,22 @@ namespace Tokki.Application.UseCases.TemplateParts.Commands.CreateTemplatePart
                 request.ExamTemplateId, request.QuestionFrom, request.QuestionTo, null);
 
             if (isOverlap) return OperationResult<string>.Failure(AppErrors.TemplatePartRangeOverlap);
+            
+            if (!string.IsNullOrEmpty(request.QuestionTypeId))
+            {
+                var questionType = await _questionTypeRepository.GetByIdAsync(request.QuestionTypeId, cancellationToken);
+
+                if (questionType == null)
+                {
+                    return OperationResult<string>.Failure("Loại câu hỏi không tồn tại.");
+                }
+
+                if (questionType.Skill != request.Skill)
+                {
+                    return OperationResult<string>.Failure(
+                        $"Kỹ năng không khớp. Phần thi là '{request.Skill}' nhưng loại câu hỏi thuộc '{questionType.Skill}'.");
+                }
+            }
 
             try
             {

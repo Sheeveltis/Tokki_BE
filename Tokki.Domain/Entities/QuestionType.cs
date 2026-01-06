@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 using Tokki.Domain.Enums;
 
 namespace Tokki.Domain.Entities
@@ -25,12 +20,16 @@ namespace Tokki.Domain.Entities
         public string? Description { get; set; }
 
         [Required]
-        public QuestionSkill Skill { get; set; }
+        public QuestionSkill Skill { get; set; } 
+
+        [Required]
+        public DifficultyLevel Difficulty { get; set; } 
+
+        [Required]
+        public ExamType ExamType { get; set; } 
 
         public bool IsActive { get; set; } = true;
 
-        // Navigation
         public virtual ICollection<QuestionBank> QuestionBank { get; set; } = new List<QuestionBank>();
     }
-
 }
