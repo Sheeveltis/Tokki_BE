@@ -518,9 +518,6 @@ namespace Tokki.Infrastructure.Data
                 entity.Property(et => et.Status)
                       .HasConversion<int>();
 
-                entity.Property(et => et.Status)
-                      .HasDefaultValue(ExamTemplateStatus.Draft);
-
                 entity.Property(et => et.CreatedAt)
                       .HasDefaultValueSql("GETUTCDATE()");
 
@@ -540,14 +537,7 @@ namespace Tokki.Infrastructure.Data
                 entity.HasKey(tp => tp.TemplatePartId);
 
                 entity.Property(tp => tp.Skill)
-                      .HasConversion<int>();
-
-                entity.Property(tp => tp.ExampleType)
-                      .HasConversion<int>();
-
-                entity.Property(tp => tp.ExampleType)
-                      .HasDefaultValue(ExampleType.None);
-
+                      .HasConversion<int>();              
                 entity.HasOne(tp => tp.ExamTemplate)
                       .WithMany(et => et.TemplateParts)
                       .HasForeignKey(tp => tp.ExamTemplateId)

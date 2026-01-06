@@ -8,17 +8,12 @@ namespace Tokki.Application.UseCases.TemplateParts.Commands.CreateTemplatePart
     {
         public string ExamTemplateId { get; set; } = string.Empty;
         public string PartTitle { get; set; } = string.Empty;
-
-        public QuestionSkill Skill { get; set; } 
-
+        public QuestionSkill Skill { get; set; }
         public int QuestionFrom { get; set; }
         public int QuestionTo { get; set; }
         public string? Instruction { get; set; }
-
-        public DifficultyLevel DifficultyLevel { get; set; } 
+        public int Mark { get; set; } 
         public string QuestionTypeId { get; set; } = string.Empty;
-
-        public ExampleType ExampleType { get; set; }
-        public string? ExampleData { get; set; }
+        public string? ExampleUrl { get; set; } 
     }
 }

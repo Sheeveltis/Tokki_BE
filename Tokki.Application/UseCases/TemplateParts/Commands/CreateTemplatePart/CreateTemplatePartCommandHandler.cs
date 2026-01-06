@@ -25,31 +25,18 @@ namespace Tokki.Application.UseCases.TemplateParts.Commands.CreateTemplatePart
             _idGeneratorService = idGeneratorService;
             _logger = logger;
         }
-
         public async Task<OperationResult<string>> Handle(CreateTemplatePartCommand request, CancellationToken cancellationToken)
         {
             var template = await _examTemplateRepository.GetByIdAsync(request.ExamTemplateId, cancellationToken);
-            if (template == null)
-                return OperationResult<string>.Failure(new List<Error> { AppErrors.ExamTemplateNotFound }, 404, "Mẫu đề không tồn tại");
+            if (template == null) return OperationResult<string>.Failure(AppErrors.ExamTemplateNotFound);
 
             if (request.QuestionFrom > request.QuestionTo || request.QuestionFrom <= 0)
-                return OperationResult<string>.Failure(new List<Error> { AppErrors.TemplatePartInvalidRange }, 400, "Dải câu hỏi không hợp lệ");
+                return OperationResult<string>.Failure(AppErrors.TemplatePartInvalidRange);
 
             bool isOverlap = await _templatePartRepository.IsQuestionRangeOverlapAsync(
-                request.ExamTemplateId,
-                request.QuestionFrom,
-                request.QuestionTo,
-                excludePartId: null
-            );
+                request.ExamTemplateId, request.QuestionFrom, request.QuestionTo, null);
 
-            if (isOverlap)
-            {
-                return OperationResult<string>.Failure(
-                    new List<Error> { AppErrors.TemplatePartRangeOverlap },
-                    409,
-                    $"Dải câu hỏi ({request.QuestionFrom}-{request.QuestionTo}) bị trùng với phần khác trong đề thi."
-                );
-            }
+            if (isOverlap) return OperationResult<string>.Failure(AppErrors.TemplatePartRangeOverlap);
 
             try
             {
@@ -58,25 +45,23 @@ namespace Tokki.Application.UseCases.TemplateParts.Commands.CreateTemplatePart
                     TemplatePartId = _idGeneratorService.GenerateCustom(10),
                     ExamTemplateId = request.ExamTemplateId,
                     PartTitle = request.PartTitle,
-                    Skill = request.Skill, 
+                    Skill = request.Skill,
                     QuestionFrom = request.QuestionFrom,
                     QuestionTo = request.QuestionTo,
                     Instruction = request.Instruction,
-                    DifficultyLevel = request.DifficultyLevel,
+                    Mark = request.Mark,
                     QuestionTypeId = request.QuestionTypeId,
-                    ExampleType = request.ExampleType,
-                    ExampleData = request.ExampleData
+                    ExampleUrl = request.ExampleUrl
                 };
 
                 await _templatePartRepository.AddAsync(newPart);
                 await _templatePartRepository.SaveChangesAsync(cancellationToken);
-
                 return OperationResult<string>.Success(newPart.TemplatePartId, 201, "Thêm phần thi thành công");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi thêm Template Part");
-                return OperationResult<string>.Failure(new List<Error> { AppErrors.ServerError }, 500, AppErrors.ServerError.Description);
+                return OperationResult<string>.Failure(AppErrors.ServerError);
             }
         }
     }

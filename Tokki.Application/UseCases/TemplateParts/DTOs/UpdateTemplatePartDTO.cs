@@ -2,8 +2,9 @@
 
 namespace Tokki.Application.UseCases.ExamTemplates.DTOs
 {
-    public class CreateTemplatePartDto
+    public class UpdateTemplatePartDTO
     {
+        public string? TemplatePartId { get; set; }
         public QuestionSkill Skill { get; set; }
         public int QuestionFrom { get; set; }
         public int QuestionTo { get; set; }

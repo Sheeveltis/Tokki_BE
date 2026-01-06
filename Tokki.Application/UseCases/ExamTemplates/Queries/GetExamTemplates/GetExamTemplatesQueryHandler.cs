@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MediatR;
+﻿using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.ExamTemplates.DTOs;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.ExamTemplates.Queries.GetExamTemplates
 {
@@ -19,16 +15,17 @@ namespace Tokki.Application.UseCases.ExamTemplates.Queries.GetExamTemplates
             _examTemplateRepository = examTemplateRepository;
         }
 
-        public async Task<OperationResult<PagedResult<ExamTemplateDto>>> Handle(
-            GetExamTemplatesQuery request,
-            CancellationToken cancellationToken)
+        public async Task<OperationResult<PagedResult<ExamTemplateDto>>> Handle(GetExamTemplatesQuery request, CancellationToken cancellationToken)
         {
+            var statusFilter = request.Status ?? ExamTemplateStatus.Published;
+
             var (items, totalCount) = await _examTemplateRepository.GetPagedAsync(
-                request.PageNumber,
-                request.PageSize,
-                request.SearchTerm,
-                request.Status,
-                cancellationToken
+                pageNumber: request.PageNumber,
+                pageSize: request.PageSize,
+                searchTerm: request.SearchTerm,
+                status: statusFilter,
+                cancellationToken: cancellationToken,
+                type: request.Type 
             );
 
             var dtos = items.Select(et => new ExamTemplateDto
@@ -39,34 +36,13 @@ namespace Tokki.Application.UseCases.ExamTemplates.Queries.GetExamTemplates
                 CreatedAt = et.CreatedAt,
                 Status = et.Status,
                 TotalParts = et.TemplateParts.Count,
-                TotalQuestions = et.TemplateParts.Any()
-                    ? et.TemplateParts.Max(tp => tp.QuestionTo)
-                    : 0,
-                Parts = et.TemplateParts.Select(tp => new TemplatePartDto
-                {
-                    TemplatePartId = tp.TemplatePartId,
-                    Skill = tp.Skill,
-                    QuestionFrom = tp.QuestionFrom,
-                    QuestionTo = tp.QuestionTo,
-                    PartTitle = tp.PartTitle,
-                    Instruction = tp.Instruction,
-                    ExampleType = tp.ExampleType,
-                    ExampleData = tp.ExampleData
-                }).OrderBy(tp => tp.QuestionFrom).ToList()
+                TotalQuestions = et.TemplateParts.Sum(p => p.QuestionTo - p.QuestionFrom + 1),
+                Parts = new List<TemplatePartDto>()
             }).ToList();
 
-            var pagedResult = PagedResult<ExamTemplateDto>.Create(
-                dtos,
-                totalCount,
-                request.PageNumber,
-                request.PageSize
-            );
+            var result = PagedResult<ExamTemplateDto>.Create(dtos, totalCount, request.PageNumber, request.PageSize);
 
-            return OperationResult<PagedResult<ExamTemplateDto>>.Success(
-                pagedResult,
-                200,
-                $"Tìm thấy {totalCount} mẫu đề thi."
-            );
+            return OperationResult<PagedResult<ExamTemplateDto>>.Success(result);
         }
     }
 }

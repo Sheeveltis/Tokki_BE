@@ -25,34 +25,19 @@ namespace Tokki.Application.UseCases.TemplateParts.Commands.DeleteTemplatePart
         public async Task<OperationResult<string>> Handle(DeleteTemplatePartCommand request, CancellationToken cancellationToken)
         {
             var part = await _templatePartRepository.GetByIdAsync(request.TemplatePartId, cancellationToken);
-            if (part == null)
-            {
-                return OperationResult<string>.Failure(
-                    new List<Error> { AppErrors.TemplatePartNotFound },
-                    404,
-                    "Phần thi không tồn tại"
-                );
-            }
 
+            if (part == null) return OperationResult<string>.Failure(AppErrors.TemplatePartNotFound);
             try
             {
                 await _templatePartRepository.DeleteAsync(part);
                 await _templatePartRepository.SaveChangesAsync(cancellationToken);
 
-                return OperationResult<string>.Success(
-                    request.TemplatePartId,
-                    200,
-                    "Xóa phần thi thành công"
-                );
+                return OperationResult<string>.Success(request.TemplatePartId, 200, "Xóa phần thi thành công");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi khi xóa Template Part: {Id}", request.TemplatePartId);
-                return OperationResult<string>.Failure(
-                    new List<Error> { AppErrors.ServerError },
-                    500,
-                    AppErrors.ServerError.Description
-                );
+                return OperationResult<string>.Failure(AppErrors.ServerError);
             }
         }
     }

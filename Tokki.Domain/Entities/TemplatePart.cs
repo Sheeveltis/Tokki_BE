@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Tokki.Domain.Enums;
+using Tokki.Domain.Entities;
 
 namespace Tokki.Domain.Entities
 {
@@ -15,7 +16,7 @@ namespace Tokki.Domain.Entities
         public string ExamTemplateId { get; set; } = string.Empty;
 
         [Required]
-        public QuestionSkill Skill { get; set; } 
+        public QuestionSkill Skill { get; set; }
 
         public int QuestionFrom { get; set; }
         public int QuestionTo { get; set; }
@@ -27,14 +28,13 @@ namespace Tokki.Domain.Entities
         public string? Instruction { get; set; }
 
         [Required]
-        public DifficultyLevel DifficultyLevel { get; set; } 
+        public int Mark { get; set; } 
 
         [Required]
         [MaxLength(10)]
         public string QuestionTypeId { get; set; } = string.Empty;
 
-        public ExampleType ExampleType { get; set; } = ExampleType.None;
-        public string? ExampleData { get; set; }
+        public string? ExampleUrl { get; set; }
 
         [ForeignKey(nameof(ExamTemplateId))]
         public virtual ExamTemplate ExamTemplate { get; set; } = null!;

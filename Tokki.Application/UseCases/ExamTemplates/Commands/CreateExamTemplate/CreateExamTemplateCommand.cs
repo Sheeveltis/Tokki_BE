@@ -2,6 +2,7 @@
 using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.UseCases.ExamTemplates.DTOs;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.ExamTemplates.Commands.CreateExamTemplate
 {
@@ -9,6 +10,7 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.CreateExamTemplate
     {
         public string Name { get; set; } = string.Empty;
         public string? Description { get; set; }
+        public ExamType Type { get; set; }
         public List<CreateTemplatePartDto> Parts { get; set; } = new();
     }
 }
