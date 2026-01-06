@@ -25,7 +25,15 @@ namespace Tokki.Application.UseCases.Email.Commands.CreateCampaign
 
         public async Task<OperationResult<string>> Handle(CreateEmailCampaignByGroupCommand request, CancellationToken cancellationToken)
         {
-            var sendTime = request.ScheduledTime ?? DateTime.UtcNow.AddHours(7);
+            var vnOffset = TimeSpan.FromHours(7);
+            var nowVn = DateTimeOffset.UtcNow.ToOffset(vnOffset);
+
+            // Lấy giờ user gửi (ưu tiên) hoặc lấy giờ hiện tại VN
+            var sendTimeOffset = (request.ScheduledTime ?? nowVn).ToOffset(vnOffset);
+
+            // Convert DateTimeOffset -> DateTime để lưu vào entity (DateTime)
+            var sendTime = DateTime.SpecifyKind(sendTimeOffset.DateTime, DateTimeKind.Unspecified);
+
 
             // ✅ Chuyển danh sách email thành JSON
             string? specificEmailsJson = null;
@@ -44,7 +52,7 @@ namespace Tokki.Application.UseCases.Email.Commands.CreateCampaign
                 SpecificEmails = specificEmailsJson, 
                 ScheduledTime = sendTime,
                 Status = EmailJobStatus.Pending,
-                CreatedAt = DateTime.UtcNow.AddHours(7)
+                CreatedAt = DateTime.SpecifyKind(nowVn.DateTime, DateTimeKind.Unspecified)
             };
 
             await _emailJobRepository.AddAsync(job);

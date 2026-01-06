@@ -19,11 +19,23 @@ namespace Tokki.Application.UseCases.Accounts.Commands.CreateEmailCampaign
                 .IsInEnum()
                 .WithName("Nhóm khách hàng mục tiêu");
 
+            // So sánh theo UTC để tránh lệch timezone
             RuleFor(x => x.ScheduledTime)
-                .Must(time => time.Value > DateTime.UtcNow.AddHours(7))
-                .When(x => x.ScheduledTime.HasValue)
-                .WithMessage("Thời gian lên lịch gửi phải lớn hơn thời gian hiện tại.")
-                .WithName("Thời gian gửi");
+      .Must(t =>
+      {
+          if (!t.HasValue) return true;
+
+          var vnOffset = TimeSpan.FromHours(7);
+          var nowVn = DateTimeOffset.UtcNow.ToOffset(vnOffset);
+
+          // ép về +07:00 để so sánh đúng theo giờ VN
+          var scheduledVn = t.Value.ToOffset(vnOffset);
+
+          return scheduledVn > nowVn;
+      })
+      .When(x => x.ScheduledTime.HasValue)
+      .WithMessage("Thời gian lên lịch gửi phải lớn hơn thời gian hiện tại (giờ Việt Nam).")
+      .WithName("Thời gian gửi");
 
             // ✅ Validate danh sách email
             RuleFor(x => x.SpecificEmails)

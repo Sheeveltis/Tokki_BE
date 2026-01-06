@@ -20,6 +20,6 @@ namespace Tokki.Application.UseCases.Accounts.Commands.CreateEmailCampaign
 
         public List<string>? SpecificEmails { get; set; }
 
-        public DateTime? ScheduledTime { get; set; }
+        public DateTimeOffset? ScheduledTime { get; set; }
     }
 }
