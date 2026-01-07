@@ -44,7 +44,13 @@ namespace Tokki.Infrastructure.Repositories
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                query = query.Where(et => et.Name.Contains(searchTerm) || (et.Description != null && et.Description.Contains(searchTerm)));
+                var term = searchTerm.Trim();
+
+                query = query.Where(et =>
+                    et.Name.Contains(term) ||
+                    (et.Description != null && et.Description.Contains(term)) ||
+                    et.ExamTemplateId.Contains(term)
+                );
             }
 
             if (status.HasValue)

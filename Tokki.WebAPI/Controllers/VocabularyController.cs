@@ -1,8 +1,11 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Tokki.Application.UseCases.Vocabulary.Commands.ApproveVocabulary;
 using Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies;
+using Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabulariesByStaff;
 using Tokki.Application.UseCases.Vocabulary.Commands.CreateVocabulary;
+using Tokki.Application.UseCases.Vocabulary.Commands.CreateVocabularyByStaff;
 using Tokki.Application.UseCases.Vocabulary.Commands.DeleteVocabulary;
 using Tokki.Application.UseCases.Vocabulary.Commands.UpdateVocabulary;
 using Tokki.Application.UseCases.Vocabulary.DTOs;
@@ -326,9 +329,65 @@ namespace Tokki.WebAPI.Controllers
 
             return Ok(result);
         }
-        
-    }
-     
+        /// <summary>
+        /// Staff tạo vocabulary (chờ phê duyệt)
+        /// </summary>
+        [HttpPost("staff/create-a-vocabulary")]
+        [Authorize(Roles = "Staff")]
+        public async Task<IActionResult> CreateVocabularyByStaff(
+            [FromBody] CreateVocabularyByStaffCommand command)
+        {
+            var result = await _mediator.Send(command);
 
+            if (!result.IsSuccess)
+            {
+                return StatusCode(result.StatusCode, result);
+            }
+
+            return StatusCode(result.StatusCode, result);
+        }
+        /// <summary>
+        /// Staff tạo hàng loạt vocabulary (chờ phê duyệt)
+        /// </summary>
+        [HttpPost("staff/create-a-list-vocabularies")]
+        [Authorize(Roles = "Staff")]
+        public async Task<IActionResult> BulkCreateVocabulariesByStaff(
+            [FromBody] BulkCreateVocabulariesByStaffCommand command)
+        {
+            var result = await _mediator.Send(command);
+
+            if (!result.IsSuccess)
+            {
+                return StatusCode(result.StatusCode, result);
+            }
+
+            return StatusCode(result.StatusCode, result);
+        }
+        /// <summary>
+        /// Duyệt vocabulary (chuyển sang Active)
+        /// </summary>
+        [HttpPut("moderator/approve/{vocabularyId}")]
+        [Authorize(Roles = "Admin,Moderator")]
        
+        public async Task<IActionResult> ApproveVocabulary(string vocabularyId)
+        {
+            var command = new ApproveVocabularyCommand
+            {
+                VocabularyId = vocabularyId
+            };
+
+            var result = await _mediator.Send(command);
+
+            if (!result.IsSuccess)
+            {
+                return StatusCode(result.StatusCode, result);
+            }
+
+            return Ok(result);
+        }
+
+    }
+
+
+
 }
