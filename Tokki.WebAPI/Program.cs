@@ -170,7 +170,7 @@ app.MapHub<ChatHub>("/chatHub");
 app.MapHub<VocabularyHub>("/vocabularyHub");
 app.UseMiddleware<GlobalExceptionMiddleware>();
 //mobile
-app.Urls.Add("http://0.0.0.0:5031");
+//app.Urls.Add("http://0.0.0.0:5031");
 app.UseCors("AllowMobile");
 // ==========================================
 var supportedCultures = new[] { "vi" };
@@ -180,11 +180,11 @@ var localizationOptions = new RequestLocalizationOptions()
     .AddSupportedUICultures(supportedCultures);
 
 app.UseRequestLocalization(localizationOptions);
-if (app.Environment.IsDevelopment())
-{
+//if (app.Environment.IsDevelopment())
+//{
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+//}
 
 app.UseCors("AllowReactApp");
 app.UseHttpsRedirection();
