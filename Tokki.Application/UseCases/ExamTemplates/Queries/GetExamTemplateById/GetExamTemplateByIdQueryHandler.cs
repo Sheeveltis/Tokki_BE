@@ -7,21 +7,17 @@ using Tokki.Application.UseCases.ExamTemplates.Queries.GetExamTemplateById;
 public class GetExamTemplateByIdQueryHandler : IRequestHandler<GetExamTemplateByIdQuery, OperationResult<ExamTemplateDto>>
 {
     private readonly IExamTemplateRepository _examTemplateRepository;
-    private readonly ITemplatePartRepository _templatePartRepository;
-    public GetExamTemplateByIdQueryHandler(
-        IExamTemplateRepository examTemplateRepository,
-        ITemplatePartRepository templatePartRepository)
+
+    public GetExamTemplateByIdQueryHandler(IExamTemplateRepository examTemplateRepository)
     {
         _examTemplateRepository = examTemplateRepository;
-        _templatePartRepository = templatePartRepository;
     }
 
     public async Task<OperationResult<ExamTemplateDto>> Handle(GetExamTemplateByIdQuery request, CancellationToken cancellationToken)
     {
-        var et = await _examTemplateRepository.GetByIdAsync(request.ExamTemplateId, cancellationToken);
-        if (et == null) return OperationResult<ExamTemplateDto>.Failure(AppErrors.ExamTemplateNotFound);
+        var et = await _examTemplateRepository.GetByIdWithPartsAsync(request.ExamTemplateId, cancellationToken);
 
-        var stats = await _templatePartRepository.GetStatsByTemplateIdAsync(request.ExamTemplateId);
+        if (et == null) return OperationResult<ExamTemplateDto>.Failure(AppErrors.ExamTemplateNotFound);
 
         var dto = new ExamTemplateDto
         {
@@ -31,8 +27,22 @@ public class GetExamTemplateByIdQueryHandler : IRequestHandler<GetExamTemplateBy
             CreatedAt = et.CreatedAt,
             Status = et.Status,
             Type = et.Type,
-            TotalParts = stats.totalParts,
-            TotalQuestions = stats.totalQuestions,            
+            TotalParts = et.TemplateParts.Count,
+            TotalQuestions = et.TemplateParts.Sum(p => p.QuestionTo - p.QuestionFrom + 1),
+
+            Parts = et.TemplateParts.Select(tp => new TemplatePartDto
+            {
+                TemplatePartId = tp.TemplatePartId,
+                Skill = tp.Skill,
+                QuestionFrom = tp.QuestionFrom,
+                QuestionTo = tp.QuestionTo,
+                PartTitle = tp.PartTitle,
+                Instruction = tp.Instruction,
+                Mark = tp.Mark,
+                ExampleUrl = tp.ExampleUrl,
+                QuestionTypeId = tp.QuestionTypeId ?? string.Empty,
+                QuestionTypeName = tp.QuestionType != null ? tp.QuestionType.Name : string.Empty
+            }).ToList()
         };
 
         return OperationResult<ExamTemplateDto>.Success(dto);

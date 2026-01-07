@@ -7,7 +7,6 @@ using Tokki.Application.UseCases.ExamTemplates.Commands.DuplicateExamTemplate;
 using Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate;
 using Tokki.Application.UseCases.ExamTemplates.Queries.GetAdminExamTemplates;
 using Tokki.Application.UseCases.ExamTemplates.Queries.GetExamTemplateById;
-using Tokki.Application.UseCases.ExamTemplates.Queries.GetExamTemplates;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -50,13 +49,6 @@ namespace Tokki.WebAPI.Controllers
             }
 
             var result = await _mediator.Send(command);
-            return StatusCode(result.StatusCode, result);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetExamTemplates([FromQuery] GetExamTemplatesQuery query)
-        {
-            var result = await _mediator.Send(query);
             return StatusCode(result.StatusCode, result);
         }
 
