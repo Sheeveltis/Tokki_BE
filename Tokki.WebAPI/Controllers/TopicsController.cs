@@ -12,6 +12,8 @@ using Tokki.Domain.Enums;
 using Tokki.Application.UseCases.Topics.Commands.AddVocabulariesToTopic;
 using Tokki.Application.UseCases.Topics.Commands.RemoveVocabulariesFromTopic;
 using Tokki.Application.UseCases.Topics.Commands.PublishTopic;
+using Tokki.Application.UseCases.Topics.Commands.CreateTopicByStaff;
+using Tokki.Application.UseCases.Topics.Commands.ApproveTopic;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -107,6 +109,15 @@ namespace Tokki.WebAPI.Controllers
 
             return Ok(result);
         }
+        [HttpPost("staff/create-topic")]
+        [Authorize(Roles = "Staff")]
+        public async Task<IActionResult> CreateTopicByStaff(
+    [FromBody] CreateTopicByStaffCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
         [HttpPost]
         public async Task<IActionResult> CreateTopic([FromBody] CreateTopicCommand request)
         {
@@ -122,6 +133,17 @@ namespace Tokki.WebAPI.Controllers
             }
 
             var result = await _mediator.Send(request);
+
+            return StatusCode(result.StatusCode, result);
+        }
+        [HttpPut("moderator/approve-topic/{topicId}")]
+        [Authorize(Roles = "Admin,Moderator")]
+        public async Task<IActionResult> ApproveTopic(string topicId)
+        {
+            var result = await _mediator.Send(new ApproveTopicCommand
+            {
+                TopicId = topicId
+            });
 
             return StatusCode(result.StatusCode, result);
         }
