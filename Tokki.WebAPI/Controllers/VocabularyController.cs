@@ -366,7 +366,7 @@ namespace Tokki.WebAPI.Controllers
         /// <summary>
         /// Duyệt vocabulary (chuyển sang Active)
         /// </summary>
-        [HttpPut("admin/approve/{vocabularyId}")]
+        [HttpPut("moderator/approve/{vocabularyId}")]
         [Authorize(Roles = "Admin,Moderator")]
        
         public async Task<IActionResult> ApproveVocabulary(string vocabularyId)
