@@ -47,26 +47,36 @@ namespace Tokki.Infrastructure.Repositories
             };
         }
 
-        public async Task<RevenueChartDto> GetRevenueChartAsync(int year)
+        public async Task<List<RevenueChartDto>> GetRevenueChartAsync(int year)
         {
             var data = await _context.Payments
                 .Where(p => p.Status == PaymentStatus.Paid &&
                             p.PaidAt.HasValue &&
                             p.PaidAt.Value.Year == year)
                 .GroupBy(p => p.PaidAt.Value.Month)
-                .Select(g => new { Month = g.Key, Revenue = g.Sum(p => p.Amount) })
+                .Select(g => new
+                {
+                    Month = g.Key,
+                    Revenue = g.Sum(p => p.Amount),
+                    Count = g.Count() 
+                })
                 .ToListAsync();
 
-            var chartData = new RevenueChartDto();
+            var result = new List<RevenueChartDto>();
 
             for (int i = 1; i <= 12; i++)
             {
-                chartData.Labels.Add($"Tháng {i}");
                 var monthData = data.FirstOrDefault(x => x.Month == i);
-                chartData.Data.Add(monthData?.Revenue ?? 0);
+
+                result.Add(new RevenueChartDto
+                {
+                    Month = $"Tháng {i}",
+                    Revenue = monthData?.Revenue ?? 0,
+                    TotalOrders = monthData?.Count ?? 0 
+                });
             }
 
-            return chartData;
+            return result;
         }
 
         public async Task<List<RevenueByPackageDto>> GetRevenueByPackageAsync(DateTime startDate, DateTime endDate)
