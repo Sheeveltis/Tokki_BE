@@ -12,7 +12,7 @@
 //        protected readonly Mock<IIdGeneratorService> _mockIdGen;
 
 //        // Class cần test
-//        protected readonly CreateEmailAutoTemplateCommandHandler _handler;
+//        protected readonly CreateEmailTemplateCommandHandler _handler;
 
 //        public EmailTemplateTestBase()
 //        {
@@ -20,7 +20,7 @@
 //            _mockIdGen = new Mock<IIdGeneratorService>();
 
 //            // Khởi tạo Handler với các mock object
-//            _handler = new CreateEmailAutoTemplateCommandHandler(
+//            _handler = new CreateEmailTemplateCommandHandler(
 //                _mockRepo.Object,
 //                _mockIdGen.Object
 //            );

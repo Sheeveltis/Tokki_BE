@@ -12,7 +12,6 @@ namespace Tokki.UnitTests.Common.Bases
         protected readonly Mock<IPaymentRepository> _mockPaymentRepo;
         protected readonly Mock<IVipPackageRepository> _mockVipRepo;
         protected readonly Mock<IAccountRepository> _mockAccountRepo;       
-        protected readonly Mock<ISubscriptionRepository> _mockSubRepo;      
 
         protected readonly Mock<ISePayService> _mockSePayService;
         protected readonly Mock<IIdGeneratorService> _mockIdGen;
@@ -25,7 +24,6 @@ namespace Tokki.UnitTests.Common.Bases
             _mockPaymentRepo = new Mock<IPaymentRepository>();
             _mockVipRepo = new Mock<IVipPackageRepository>();
             _mockAccountRepo = new Mock<IAccountRepository>();
-            _mockSubRepo = new Mock<ISubscriptionRepository>();
 
             _mockSePayService = new Mock<ISePayService>();
             _mockIdGen = new Mock<IIdGeneratorService>();

@@ -10,11 +10,9 @@ namespace Tokki.Application.UseCases.QuestionBanks.Commands.CreateQuestionBank
     {
         public string? PassageId { get; set; }
         public string? QuestionTypeId { get; set; }
-        public QuestionSkill Skill { get; set; }
         public string Content { get; set; } = string.Empty;
         public string? MediaUrl { get; set; }
         public string? Explanation { get; set; }
-        public DifficultyLevel DifficultyLevel { get; set; } = DifficultyLevel.Medium;
         public List<CreateQuestionOptionDto> Options { get; set; } = new();
     }
 }

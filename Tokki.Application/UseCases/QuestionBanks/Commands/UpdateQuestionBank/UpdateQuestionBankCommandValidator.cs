@@ -14,14 +14,6 @@ namespace Tokki.Application.UseCases.QuestionBanks.Commands.UpdateQuestionBank
             RuleFor(x => x.Content)
                 .NotEmpty()
                 .WithName("Nội dung câu hỏi");
-
-            RuleFor(x => x.Skill)
-                .IsInEnum()
-                .WithName("Kỹ năng");
-
-            RuleFor(x => x.DifficultyLevel)
-                .IsInEnum()
-                .WithName("Mức độ");
         }
     }
 }

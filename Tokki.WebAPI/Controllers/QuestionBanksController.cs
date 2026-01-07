@@ -1,9 +1,14 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Tokki.Application.UseCases.QuestionBanks.Commands.ActivateQuestionBanks;
 using Tokki.Application.UseCases.QuestionBanks.Commands.CreateQuestionBank;
 using Tokki.Application.UseCases.QuestionBanks.Commands.DeleteQuestionBank;
+using Tokki.Application.UseCases.QuestionBanks.Commands.QuestionOptions.Create;
+using Tokki.Application.UseCases.QuestionBanks.Commands.QuestionOptions.Delete;
+using Tokki.Application.UseCases.QuestionBanks.Commands.QuestionOptions.Update;
 using Tokki.Application.UseCases.QuestionBanks.Commands.UpdateQuestionBank;
+using Tokki.Application.UseCases.QuestionBanks.Queries.GetByQuestionTypeId;
 using Tokki.Application.UseCases.QuestionBanks.Queries.GetQuestionBankById;
 using Tokki.Application.UseCases.QuestionBanks.Queries.GetQuestionBanks;
 
@@ -112,6 +117,68 @@ namespace Tokki.Api.Controllers
             }
 
             return Ok(result);
+        }
+        [HttpGet("admin/by-question-type/{questionTypeId}")]
+        public async Task<IActionResult> GetByQuestionTypeId([FromRoute] string questionTypeId, CancellationToken cancellationToken)
+        {
+            var query = new GetQuestionBanksByQuestionTypeIdQuery
+            {
+                QuestionTypeId = questionTypeId
+            };
+
+            var result = await _mediator.Send(query, cancellationToken);
+
+            if (!result.IsSuccess)
+            {
+                return StatusCode(result.StatusCode, result);
+            }
+
+            return Ok(result);
+        }
+        [HttpPut("admin/activate")]
+        public async Task<IActionResult> ActivateQuestionBanks(
+            [FromBody] ActivateQuestionBanksCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+        /// <summary>
+        /// Thêm đáp án cho 1 câu hỏi
+        /// </summary>
+        [HttpPost("{questionBankId}/options")]
+        public async Task<IActionResult> CreateOption(string questionBankId, [FromBody] CreateQuestionOptionCommand command)
+        {
+            command.QuestionBankId = questionBankId;
+            var result = await _mediator.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        /// <summary>
+        /// Cập nhật đáp án của 1 câu hỏi
+        /// </summary>
+        [HttpPut("{questionBankId}/options/{optionId}")]
+        public async Task<IActionResult> UpdateOption(string questionBankId, string optionId, [FromBody] UpdateQuestionOptionCommand command)
+        {
+            command.QuestionBankId = questionBankId;
+            command.OptionId = optionId;
+
+            var result = await _mediator.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        /// <summary>
+        /// Xóa cứng 1 đáp án của 1 câu hỏi
+        /// </summary>
+        [HttpDelete("{questionBankId}/options/{optionId}")]
+        public async Task<IActionResult> DeleteOption(string questionBankId, string optionId)
+        {
+            var result = await _mediator.Send(new DeleteQuestionOptionCommand
+            {
+                QuestionBankId = questionBankId,
+                OptionId = optionId
+            });
+
+            return StatusCode(result.StatusCode, result);
         }
     }
 }

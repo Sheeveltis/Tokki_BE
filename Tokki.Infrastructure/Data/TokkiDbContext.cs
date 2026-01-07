@@ -438,7 +438,9 @@ namespace Tokki.Infrastructure.Data
 
                 entity.Property(qt => qt.Skill)
                       .HasConversion<int>();
-
+                entity.Property(qt => qt.Skill).HasConversion<int>();
+                entity.Property(qt => qt.Difficulty).HasConversion<int>();
+                entity.Property(qt => qt.ExamType).HasConversion<int>();
                 entity.Property(qt => qt.IsActive)
                       .HasDefaultValue(true);
             });
@@ -465,17 +467,10 @@ namespace Tokki.Infrastructure.Data
             {
                 entity.HasKey(qb => qb.QuestionBankId);
 
-                entity.Property(qb => qb.Skill)
+             
+                entity.Property(qb => qb.Status)
                       .HasConversion<int>();
 
-                entity.Property(qb => qb.DifficultyLevel)
-                      .HasConversion<int>();
-
-                entity.Property(qb => qb.DifficultyLevel)
-                      .HasDefaultValue(DifficultyLevel.Medium);
-
-                entity.Property(qb => qb.IsActive)
-                      .HasDefaultValue(true);
 
                 entity.HasOne(qb => qb.Passage)
                       .WithMany(p => p.QuestionBank)

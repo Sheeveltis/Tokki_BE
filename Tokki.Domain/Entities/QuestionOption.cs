@@ -29,7 +29,6 @@ namespace Tokki.Domain.Entities
         public string? ImageUrl { get; set; }
 
         public bool IsCorrect { get; set; } = false;
-        public QuestionOptionStatus Status { get; set; } = QuestionOptionStatus.Active;
 
         // Navigation
         [ForeignKey(nameof(QuestionBankId))]

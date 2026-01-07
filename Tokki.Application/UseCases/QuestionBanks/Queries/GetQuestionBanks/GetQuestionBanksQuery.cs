@@ -17,7 +17,7 @@ namespace Tokki.Application.UseCases.QuestionBanks.Queries.GetQuestionBanks
         public DifficultyLevel? DifficultyLevel { get; set; }
         public string? QuestionTypeId { get; set; }
         public string? PassageId { get; set; }
-        public bool? IsActive { get; set; }
+        public QuestionBankStatus? Status { get; set; }
         public int PageNumber { get; set; } = 1;
         public int PageSize { get; set; } = 10;
     }

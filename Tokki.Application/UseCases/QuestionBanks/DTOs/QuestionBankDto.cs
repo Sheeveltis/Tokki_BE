@@ -14,12 +14,10 @@ namespace Tokki.Application.UseCases.QuestionBanks.DTOs
         public string? PassageTitle { get; set; }
         public string? QuestionTypeId { get; set; }
         public string? QuestionTypeName { get; set; }
-        public QuestionSkill Skill { get; set; }
         public string? Content { get; set; }
         public string? MediaUrl { get; set; }
         public string? Explanation { get; set; }
-        public DifficultyLevel DifficultyLevel { get; set; }
-        public bool IsActive { get; set; }
+        public QuestionBankStatus Status { get; set; }
         public List<QuestionOptionDto> Options { get; set; } = new();
     }
 }

@@ -18,13 +18,13 @@ namespace Tokki.Infrastructure.Repositories
         public async Task<QuestionOption?> GetByIdAsync(string optionId, CancellationToken cancellationToken = default)
         {
             return await _context.QuestionOptions
-                .FirstOrDefaultAsync(o => o.OptionId == optionId && o.Status == QuestionOptionStatus.Active, cancellationToken);
+                .FirstOrDefaultAsync(o => o.OptionId == optionId , cancellationToken);
         }
 
         public async Task<IEnumerable<QuestionOption>> GetByQuestionBankIdAsync(string questionBankId, CancellationToken cancellationToken = default)
         {
             return await _context.QuestionOptions
-                .Where(o => o.QuestionBankId == questionBankId && o.Status == QuestionOptionStatus.Active)
+                .Where(o => o.QuestionBankId == questionBankId)
                 .OrderBy(o => o.KeyOption)
                 .ToListAsync(cancellationToken);
         }
@@ -32,21 +32,16 @@ namespace Tokki.Infrastructure.Repositories
         public async Task<QuestionOption?> GetCorrectOptionAsync(string questionBankId, CancellationToken cancellationToken = default)
         {
             return await _context.QuestionOptions
-                .FirstOrDefaultAsync(o => o.QuestionBankId == questionBankId && o.IsCorrect && o.Status == QuestionOptionStatus.Active, cancellationToken);
+                .FirstOrDefaultAsync(o => o.QuestionBankId == questionBankId, cancellationToken);
         }
 
         public async Task AddAsync(QuestionOption questionOption)
         {
-            questionOption.Status = QuestionOptionStatus.Active; // ✅ Sửa: Gán trực tiếp enum
             await _context.QuestionOptions.AddAsync(questionOption);
         }
 
         public async Task AddRangeAsync(IEnumerable<QuestionOption> questionOptions)
         {
-            foreach (var option in questionOptions)
-            {
-                option.Status = QuestionOptionStatus.Active; // ✅ Sửa: Gán trực tiếp enum
-            }
             await _context.QuestionOptions.AddRangeAsync(questionOptions);
         }
 
@@ -73,21 +68,16 @@ namespace Tokki.Infrastructure.Repositories
             return await _context.SaveChangesAsync(cancellationToken) > 0;
         }
 
-        public async Task SoftDeleteAsync(QuestionOption option)
+        public async Task DeleteByQuestionBankIdAsync(string questionBankId, CancellationToken cancellationToken = default)
         {
-            option.Status = QuestionOptionStatus.Deleted; 
-            _context.QuestionOptions.Update(option);
-            await Task.CompletedTask;
-        }
+            var options = await _context.QuestionOptions
+                .Where(x => x.QuestionBankId == questionBankId)
+                .ToListAsync(cancellationToken);
 
-        public async Task SoftDeleteRangeAsync(List<QuestionOption> options)
-        {
-            foreach (var option in options)
+            if (options.Count > 0)
             {
-                option.Status = QuestionOptionStatus.Deleted; 
+                _context.QuestionOptions.RemoveRange(options);
             }
-            _context.QuestionOptions.UpdateRange(options);
-            await Task.CompletedTask;
         }
     }
 }

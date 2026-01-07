@@ -15,7 +15,7 @@
 //        {
 //            return new CreateEmailAutoTemplateCommand
 //            {
-//                TemplateName = "WELCOME_USER_2025", // Thỏa mãn regex: chữ, số, _, -
+//                TemplateKey = "WELCOME_USER_2025", // Thỏa mãn regex: chữ, số, _, -
 //                Subject = "Chào mừng bạn đến với Tokki",
 //                Body = "<p>Xin chào, cảm ơn bạn đã đăng ký...</p>",
 //                Description = "Template gửi khi user đăng ký thành công"
