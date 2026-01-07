@@ -12,6 +12,8 @@ namespace Tokki.Domain.Enums
         [Description("Soạn thảo, Không hoạt động")]
         Draft = 0,
         Active = 1,
-        Deleted = 2
+        Deleted = 2,
+        [Description("Chờ phê duyệt")]
+        PendingApproval = 3
     }
 }
