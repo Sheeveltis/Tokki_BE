@@ -5,7 +5,7 @@ using Tokki.Application.UseCases.ExamTemplates.DTOs;
 
 namespace Tokki.Application.UseCases.ExamTemplates.Queries.GetAdminExamTemplates
 {
-    public class GetAdminExamTemplatesQueryHandler : IRequestHandler<GetAdminExamTemplatesQuery, OperationResult<PagedResult<ExamTemplateDto>>>
+    public class GetAdminExamTemplatesQueryHandler : IRequestHandler<GetAdminExamTemplatesQuery, OperationResult<PagedResult<AdminExamTemplateDto>>>
     {
         private readonly IExamTemplateRepository _examTemplateRepository;
 
@@ -14,36 +14,37 @@ namespace Tokki.Application.UseCases.ExamTemplates.Queries.GetAdminExamTemplates
             _examTemplateRepository = examTemplateRepository;
         }
 
-        public async Task<OperationResult<PagedResult<ExamTemplateDto>>> Handle(GetAdminExamTemplatesQuery request, CancellationToken cancellationToken)
+        public async Task<OperationResult<PagedResult<AdminExamTemplateDto>>> Handle(GetAdminExamTemplatesQuery request, CancellationToken cancellationToken)
         {
             var (items, totalCount) = await _examTemplateRepository.GetPagedAsync(
                 request.PageNumber,
                 request.PageSize,
                 request.SearchTerm,
                 request.Status,
-                cancellationToken
+                cancellationToken,
+                request.Type
             );
 
-            var dtos = items.Select(et => new ExamTemplateDto
+            var dtos = items.Select(et => new AdminExamTemplateDto
             {
                 ExamTemplateId = et.ExamTemplateId,
                 Name = et.Name,
                 Description = et.Description,
                 CreatedAt = et.CreatedAt,
                 Status = et.Status,
+                Type = et.Type,
                 TotalParts = et.TemplateParts.Count,
-                TotalQuestions = et.TemplateParts.Sum(p => p.QuestionTo - p.QuestionFrom + 1),
-                Parts = new List<TemplatePartDto>()
+                TotalQuestions = et.TemplateParts.Sum(p => p.QuestionTo - p.QuestionFrom + 1)
             }).ToList();
 
-            var pagedResult = PagedResult<ExamTemplateDto>.Create(
+            var pagedResult = PagedResult<AdminExamTemplateDto>.Create(
                 dtos,
                 totalCount,
                 request.PageNumber,
                 request.PageSize
             );
 
-            return OperationResult<PagedResult<ExamTemplateDto>>.Success(pagedResult);
+            return OperationResult<PagedResult<AdminExamTemplateDto>>.Success(pagedResult);
         }
     }
 }

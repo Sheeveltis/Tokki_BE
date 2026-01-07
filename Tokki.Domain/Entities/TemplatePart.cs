@@ -8,7 +8,7 @@ namespace Tokki.Domain.Entities
     public class TemplatePart
     {
         [Key]
-        [MaxLength(10)]
+        [MaxLength(50)]
         public string TemplatePartId { get; set; } = string.Empty;
 
         [Required]

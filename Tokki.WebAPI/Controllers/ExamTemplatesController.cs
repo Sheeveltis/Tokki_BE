@@ -2,12 +2,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tokki.Application.UseCases.ExamTemplates.Commands.CreateExamTemplate;
+using Tokki.Application.UseCases.ExamTemplates.Commands.AddTemplateParts; 
 using Tokki.Application.UseCases.ExamTemplates.Commands.DeleteExamTemplate;
 using Tokki.Application.UseCases.ExamTemplates.Commands.DuplicateExamTemplate;
 using Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate;
 using Tokki.Application.UseCases.ExamTemplates.Queries.GetAdminExamTemplates;
 using Tokki.Application.UseCases.ExamTemplates.Queries.GetExamTemplateById;
-using Tokki.Application.UseCases.ExamTemplates.Queries.GetExamTemplates;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -26,6 +26,14 @@ namespace Tokki.WebAPI.Controllers
         [HttpPost]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateExamTemplate([FromBody] CreateExamTemplateCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpPost("TemplateParts")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> AddTemplateParts([FromBody] AddTemplatePartsCommand command)
         {
             var result = await _mediator.Send(command);
             return StatusCode(result.StatusCode, result);
@@ -50,13 +58,6 @@ namespace Tokki.WebAPI.Controllers
             }
 
             var result = await _mediator.Send(command);
-            return StatusCode(result.StatusCode, result);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetExamTemplates([FromQuery] GetExamTemplatesQuery query)
-        {
-            var result = await _mediator.Send(query);
             return StatusCode(result.StatusCode, result);
         }
 

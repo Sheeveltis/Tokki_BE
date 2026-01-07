@@ -106,7 +106,23 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate
                 }
                 else
                 {
-                    newItemsToProcess.Add(item);
+                    bool isDuplicateInFile = newItemsToProcess.Any(n =>
+                        n.Text.Equals(item.Text, StringComparison.OrdinalIgnoreCase) &&
+                        n.Definition.Equals(item.Definition, StringComparison.OrdinalIgnoreCase));
+
+                    if (isDuplicateInFile)
+                    {
+                        response.FailureList.Add(new VocabularyPreviewDTO
+                        {
+                            Text = item.Text,
+                            Definition = item.Definition,
+                            Reason = "Từ vựng này bị lặp lại nhiều lần trong file Excel."
+                        });
+                    }
+                    else
+                    {
+                        newItemsToProcess.Add(item);
+                    }
                 }
             }
             if (!newItemsToProcess.Any() && !finalVocabsForTopic.Any())
