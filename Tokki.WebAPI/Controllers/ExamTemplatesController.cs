@@ -8,6 +8,7 @@ using Tokki.Application.UseCases.ExamTemplates.Commands.DuplicateExamTemplate;
 using Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate;
 using Tokki.Application.UseCases.ExamTemplates.Queries.GetAdminExamTemplates;
 using Tokki.Application.UseCases.ExamTemplates.Queries.GetExamTemplateById;
+using Tokki.Application.UseCases.ExamTemplates.Commands.UpdateTemplatePart;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -52,10 +53,16 @@ namespace Tokki.WebAPI.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateExamTemplate(string id, [FromBody] UpdateExamTemplateCommand command)
         {
-            if (id != command.ExamTemplateId)
-            {
-                return BadRequest(new { message = "ID không khớp" });
-            }
+            if (id != command.ExamTemplateId) return BadRequest("ID không khớp");
+            var result = await _mediator.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpPut("TemplateParts/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateTemplatePart(string id, [FromBody] UpdateExamTemplatePartCommand command)
+        {
+            if (id != command.TemplatePartId) return BadRequest("Part ID không khớp");
 
             var result = await _mediator.Send(command);
             return StatusCode(result.StatusCode, result);
