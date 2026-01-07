@@ -24,7 +24,7 @@ public class GetExamTemplateByIdQueryHandler : IRequestHandler<GetExamTemplateBy
             ExamTemplateId = et.ExamTemplateId,
             Name = et.Name,
             Description = et.Description,
-            CreatedAt = et.CreatedAt,
+            CreatedAt = et.CreatedAt.AddHours(7),
             Status = et.Status,
             Type = et.Type,
             TotalParts = et.TemplateParts.Count,
