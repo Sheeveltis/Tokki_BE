@@ -8,7 +8,7 @@ namespace Tokki.Domain.Entities
     public class ExamTemplate
     {
         [Key]
-        [MaxLength(10)]
+        [MaxLength(50)]
         public string ExamTemplateId { get; set; } = string.Empty;
 
         [Required]

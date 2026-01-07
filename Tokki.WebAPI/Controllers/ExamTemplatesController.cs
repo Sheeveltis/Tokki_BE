@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tokki.Application.UseCases.ExamTemplates.Commands.CreateExamTemplate;
+using Tokki.Application.UseCases.ExamTemplates.Commands.AddTemplateParts; 
 using Tokki.Application.UseCases.ExamTemplates.Commands.DeleteExamTemplate;
 using Tokki.Application.UseCases.ExamTemplates.Commands.DuplicateExamTemplate;
 using Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate;
@@ -25,6 +26,14 @@ namespace Tokki.WebAPI.Controllers
         [HttpPost]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateExamTemplate([FromBody] CreateExamTemplateCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpPost("TemplateParts")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> AddTemplateParts([FromBody] AddTemplatePartsCommand command)
         {
             var result = await _mediator.Send(command);
             return StatusCode(result.StatusCode, result);
