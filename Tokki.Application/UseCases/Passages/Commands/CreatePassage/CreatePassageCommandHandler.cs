@@ -42,10 +42,9 @@ namespace Tokki.Application.UseCases.Passages.Commands.CreatePassage
                     Title = title,
                     Content = request.Content,
                     ImageUrl = request.ImageUrl,
+                    AudioUrl = request.AudioUrl, // NEW
                     MediaType = request.MediaType,
                     Status = PassageStatus.Active,
-
-                    // Nếu DB đã default CreatedAt thì bạn có thể bỏ dòng này.
                     CreatedAt = DateTime.UtcNow.AddHours(7)
                 };
 
@@ -63,5 +62,6 @@ namespace Tokki.Application.UseCases.Passages.Commands.CreatePassage
                 );
             }
         }
+
     }
 }

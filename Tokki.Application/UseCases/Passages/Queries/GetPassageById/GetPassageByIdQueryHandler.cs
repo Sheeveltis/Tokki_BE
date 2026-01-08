@@ -36,6 +36,7 @@ namespace Tokki.Application.UseCases.Passages.Queries.GetPassageById
                     Title = p.Title,
                     Content = p.Content,
                     ImageUrl = p.ImageUrl,
+                    AudioUrl = p.AudioUrl,
                     Status = p.Status,
                     MediaType = p.MediaType,
                     CreatedAt = p.CreatedAt
