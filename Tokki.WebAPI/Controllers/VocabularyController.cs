@@ -7,6 +7,8 @@ using Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabulariesBySta
 using Tokki.Application.UseCases.Vocabulary.Commands.CreateVocabulary;
 using Tokki.Application.UseCases.Vocabulary.Commands.CreateVocabularyByStaff;
 using Tokki.Application.UseCases.Vocabulary.Commands.DeleteVocabulary;
+using Tokki.Application.UseCases.Vocabulary.Commands.RejectVocabulary;
+using Tokki.Application.UseCases.Vocabulary.Commands.SubmitVocabulariesForApproval;
 using Tokki.Application.UseCases.Vocabulary.Commands.UpdateVocabulary;
 using Tokki.Application.UseCases.Vocabulary.DTOs;
 using Tokki.Application.UseCases.Vocabulary.Queries; // Namespace chứa GetVocabularyByTextQuery (nếu có)
@@ -363,30 +365,35 @@ namespace Tokki.WebAPI.Controllers
 
             return StatusCode(result.StatusCode, result);
         }
-        /// <summary>
-        /// Duyệt vocabulary (chuyển sang Active)
-        /// </summary>
-        [HttpPut("moderator/approve/{vocabularyId}")]
+
+        [HttpPost("moderator/approve-vocabularies")]
         [Authorize(Roles = "Admin,Moderator")]
-       
-        public async Task<IActionResult> ApproveVocabulary(string vocabularyId)
+        public async Task<IActionResult> ApproveVocabularies(
+         [FromBody] ApproveVocabulariesCommand command)
         {
-            var command = new ApproveVocabularyCommand
-            {
-                VocabularyId = vocabularyId
-            };
-
             var result = await _mediator.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
 
-            if (!result.IsSuccess)
+              [HttpPost("staff/submit-vocabularies-for-approval")]
+            [Authorize(Roles = "Staff")]
+            public async Task<IActionResult> SubmitVocabulariesForApproval(
+            [FromBody] SubmitVocabulariesForApprovalCommand command)
             {
+                var result = await _mediator.Send(command);
                 return StatusCode(result.StatusCode, result);
             }
 
-            return Ok(result);
-        }
+             [HttpPost("moderator/reject-vocabularies")]
+            [Authorize(Roles = "Admin,Moderator")]
+            public async Task<IActionResult> RejectVocabularies([FromBody] RejectVocabulariesCommand command)
+            {
+                var result = await _mediator.Send(command);
+                return StatusCode(result.StatusCode, result);
+            }
 
-    }
+
+}
 
 
 

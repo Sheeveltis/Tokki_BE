@@ -128,7 +128,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabulariesB
                         AudioURL = audioUrl,
                         CreateBy = currentUserId,
                         CreateDate = DateTime.UtcNow.AddHours(7),
-                        Status = VocabularyStatus.PendingApproval
+                        Status = VocabularyStatus.Draft
                     };
 
                     await _vocabularyRepository.AddAsync(vocabulary);
