@@ -53,7 +53,7 @@ namespace Tokki.WebAPI.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateExamTemplate(string id, [FromBody] UpdateExamTemplateCommand command)
         {
-            if (id != command.ExamTemplateId) return BadRequest("ID không khớp");
+            command.ExamTemplateId = id;
             var result = await _mediator.Send(command);
             return StatusCode(result.StatusCode, result);
         }
@@ -62,8 +62,7 @@ namespace Tokki.WebAPI.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateTemplatePart(string id, [FromBody] UpdateExamTemplatePartCommand command)
         {
-            if (id != command.TemplatePartId) return BadRequest("Part ID không khớp");
-
+            command.TemplatePartId = id;
             var result = await _mediator.Send(command);
             return StatusCode(result.StatusCode, result);
         }
