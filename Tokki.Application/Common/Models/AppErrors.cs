@@ -251,7 +251,7 @@ namespace Tokki.Application.Common.Models
         public static readonly Error ExamTemplateNameDuplicated = new("ExamTemplate.NameDuplicated", "Tên mẫu đề thi đã tồn tại.");
         public static readonly Error ExamTemplateInUse = new("ExamTemplate.InUse", "Mẫu đề thi đang được sử dụng, không thể xóa.");
         public static readonly Error ExamTemplateNoParts = new("ExamTemplate.NoParts", "Mẫu đề thi phải có ít nhất một phần.");
-
+        public static readonly Error ExamTemplateCantDelete = new("ExamTemplate.CannotDelete", "Không thể xóa đề thi đang ở trạng thái Xuất bản (Published). Hãy hủy xuất bản về Nháp trước khi xóa.");
         // ============================================
         // NHÓM 22: TEMPLATE PART
         // ============================================
