@@ -10,12 +10,12 @@ namespace Tokki.Domain.Enums
     public enum ExamTemplateStatus
     {
         [Description("Nháp")]
-        Draft = 0,
+        Draft = 1,
 
         [Description("Đã xuất bản")]
-        Published = 1,
+        Published = 2,
 
         [Description("Đã xóa")]
-        Deleted = 2
+        Deleted = 3
     }
 }

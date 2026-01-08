@@ -3,8 +3,7 @@ using Moq;
 using Tokki.Application.UseCases.Statistics.Queries;
 using Tokki.UnitTests.Common.Bases;
 using Tokki.UnitTests.Common.TestData;
-using Tokki.UnitTests.UseCases.Statistics.Queries.GetRevenueChart; 
-using Xunit;
+using Tokki.UnitTests.UseCases.Statistics.Queries.GetRevenueChart;
 
 namespace Tokki.UnitTests.Features.Statistics.Queries
 {
@@ -21,7 +20,7 @@ namespace Tokki.UnitTests.Features.Statistics.Queries
         public async Task Handle_Should_ReturnChartData_When_Called()
         {
             var year = 2023;
-            var expectedData = StatisticsTestData.GetRevenueChart();
+            var expectedData = StatisticsTestData.GetRevenueChart(); 
 
             _mockStatsRepo.Setup(x => x.GetRevenueChartAsync(year))
                           .ReturnsAsync(expectedData);
@@ -31,8 +30,11 @@ namespace Tokki.UnitTests.Features.Statistics.Queries
             var result = await _handler.Handle(query, CancellationToken.None);
 
             result.IsSuccess.Should().BeTrue();
-            result.Data.Labels.Should().HaveCount(2);
-            result.Data.Data.Should().Contain(500000);
+            result.Data.Should().HaveCount(2); 
+
+            result.Data[0].Month.Should().Be("Tháng 1");
+            result.Data[0].Revenue.Should().Be(500000);
+            result.Data[0].TotalOrders.Should().Be(50);
 
             _mockStatsRepo.Verify(x => x.GetRevenueChartAsync(year), Times.Once);
         }
