@@ -53,14 +53,16 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate
 
             var vocabsToCheck = extractedVocabs.Select(x => (x.Text, x.Definition)).ToList();
             var existingEntities = await _vocabRepo.GetExistingVocabEntitiesAsync(vocabsToCheck);
-            var existingVocabIdsInTopic = new HashSet<string>(); 
+
+            var existingVocabIdsInTopic = new HashSet<string>();
             if (!string.IsNullOrEmpty(request.TopicId))
             {
                 var ids = await _vocabTopicRepo.GetVocabIdsByTopicIdAsync(request.TopicId);
                 existingVocabIdsInTopic = new HashSet<string>(ids);
             }
-            var newItemsToProcess = new List<VocabularyExcelDTO>();
-            var finalVocabsForTopic = new List<Domain.Entities.Vocabulary>();
+
+            var newItemsToProcess = new List<VocabularyExcelDTO>(); 
+            var finalVocabsForTopic = new List<Domain.Entities.Vocabulary>(); 
 
             foreach (var item in extractedVocabs)
             {
@@ -70,6 +72,7 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate
 
                 if (existingMatch != null)
                 {
+
                     if (!string.IsNullOrEmpty(request.TopicId))
                     {
                         if (existingVocabIdsInTopic.Contains(existingMatch.VocabularyId))
@@ -78,19 +81,20 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate
                             {
                                 Text = item.Text,
                                 Definition = item.Definition,
-                                Reason = "Từ vựng này đã tồn tại trong Topic rồi." 
+                                Reason = "Từ vựng này đã tồn tại trong Topic rồi."
                             });
                         }
                         else
                         {
                             finalVocabsForTopic.Add(existingMatch);
-                            response.SuccessList.Add(new VocabularyPreviewDTO
+
+                            response.LinkedExistingVocabList.Add(new VocabularyPreviewDTO
                             {
                                 Text = existingMatch.Text,
                                 Definition = existingMatch.Definition,
                                 Pronunciation = existingMatch.Pronunciation,
                                 ImageUrl = existingMatch.ImgURL,
-                                Reason = "Đã có sẵn trong từ điển -> Sẽ thêm vào Topic"
+                                Reason = "Đã có sẵn trong từ điển -> Đã thêm vào Topic"
                             });
                         }
                     }
@@ -106,6 +110,7 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate
                 }
                 else
                 {
+
                     bool isDuplicateInFile = newItemsToProcess.Any(n =>
                         n.Text.Equals(item.Text, StringComparison.OrdinalIgnoreCase) &&
                         n.Definition.Equals(item.Definition, StringComparison.OrdinalIgnoreCase));
@@ -125,6 +130,7 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate
                     }
                 }
             }
+
             if (!newItemsToProcess.Any() && !finalVocabsForTopic.Any())
             {
                 return OperationResult<ImportVocabularyResponse>.Success(response, 200, "Không có thao tác nào được thực hiện.");
@@ -136,18 +142,12 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate
 
             foreach (var item in newItemsToProcess)
             {
-                //string finalImageUrl = null;
-                //if (!string.IsNullOrWhiteSpace(item.ImageUrl) && IsValidUrl(item.ImageUrl))
-                //{
-                //    try
-                //    {
-                //        finalImageUrl = await _cloudinaryService.UploadImageFromUrlAsync(item.ImageUrl, CLOUDINARY_FOLDER);
-                //    }
-                //    catch
-                //    {
-                //        finalImageUrl = null;
-                //    }
-                //}
+                string finalImageUrl = null;
+                if (!string.IsNullOrWhiteSpace(item.ImageUrl) && IsValidUrl(item.ImageUrl))
+                {
+                    try { finalImageUrl = await _cloudinaryService.UploadImageFromUrlAsync(item.ImageUrl, CLOUDINARY_FOLDER); }
+                    catch { finalImageUrl = null; } 
+                }
 
                 string? audioUrl = null;
                 try
@@ -155,10 +155,7 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate
                     var audioBytes = await _ttsService.SynthesizeKoreanAudioAsync(item.Text);
                     audioUrl = await _cloudinaryService.UploadAudioAsync(audioBytes, $"VOCAB_{Guid.NewGuid()}", AUDIO_FOLDER);
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "TTS Error");
-                }
+                catch (Exception ex) { _logger.LogWarning(ex, "TTS Error"); }
 
                 var entity = new Domain.Entities.Vocabulary
                 {
@@ -166,7 +163,7 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate
                     Text = item.Text,
                     Pronunciation = item.Pronunciation,
                     Definition = item.Definition,
-                    ImgURL = item.ImageUrl,
+                    ImgURL = finalImageUrl, 
                     AudioURL = audioUrl,
                     CreateBy = request.StaffId,
                     CreateDate = DateTime.UtcNow.AddHours(7),
@@ -175,7 +172,7 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate
 
                 newlyCreatedEntities.Add(entity);
 
-                response.SuccessList.Add(new VocabularyPreviewDTO
+                response.AddedNewVocabList.Add(new VocabularyPreviewDTO
                 {
                     Text = entity.Text,
                     Definition = entity.Definition,
@@ -199,6 +196,7 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate
                 }
             }
 
+
             if (!string.IsNullOrEmpty(request.TopicId) && finalVocabsForTopic.Any())
             {
                 try
@@ -218,10 +216,11 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate
                 }
             }
 
-            return OperationResult<ImportVocabularyResponse>.Success(response, 200,
-                $"Xử lý xong. Tạo mới: {newlyCreatedEntities.Count}. Tổng Success: {response.SuccessList.Count}");
-        }
+            // Tổng kết message
+            var msg = $"Xử lý xong. Thêm mới: {response.AddedNewVocabList.Count}. Link vào Topic: {response.LinkedExistingVocabList.Count}. Lỗi: {response.FailureList.Count}";
 
+            return OperationResult<ImportVocabularyResponse>.Success(response, 200, msg);
+        }
         private bool IsValidUrl(string url)
         {
             if (string.IsNullOrWhiteSpace(url)) return false;
