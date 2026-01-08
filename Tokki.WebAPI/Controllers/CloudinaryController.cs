@@ -6,7 +6,7 @@ using Tokki.Application.UseCases.Cloudinary.Commands.UploadVocabularyImageByUrl;
 
 namespace Tokki.WebAPI.Controllers
 {
-    [Route("api/cloudinary")]
+    [Route("api/[controller]")]
     [ApiController]
     public class CloudinaryController : ControllerBase
     {
@@ -52,7 +52,7 @@ namespace Tokki.WebAPI.Controllers
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
         }
-        [HttpPost("vocabulary-image")]
+        [HttpPost("image/vocabulary")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> UploadVocabularyImage(IFormFile file)
         {
@@ -64,43 +64,7 @@ namespace Tokki.WebAPI.Controllers
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
         }
-        [HttpPost("topic-image")]
-        [Consumes("multipart/form-data")]
-        public async Task<IActionResult> UploadTopicImage(IFormFile file)
-        {
-            var command = new UploadImageCommand
-            {
-                File = file,
-                FolderName = "tokki/topic-image"
-            };
-            var result = await _sender.Send(command);
-            return StatusCode(result.StatusCode, result);
-        }
-        [HttpPost("template-part-image")]
-        [Consumes("multipart/form-data")]
-        public async Task<IActionResult> UploadTemplatePartImage(IFormFile file)
-        {
-            var command = new UploadImageCommand
-            {
-                File = file,
-                FolderName = "tokki/template-parts"
-            };
-            var result = await _sender.Send(command);
-            return StatusCode(result.StatusCode, result);
-        }
-        [HttpPost("avatar")]
-        [Consumes("multipart/form-data")]
-        public async Task<IActionResult> UploadAvatar(IFormFile file)
-        {
-            var command = new UploadImageCommand
-            {
-                File = file,
-                FolderName = "tokki/avatar"
-            };
-            var result = await _sender.Send(command);
-            return StatusCode(result.StatusCode, result);
-        }
-        [HttpPost("vocabulary-image/url")]
+        [HttpPost("image/vocabulary/url")]
         public async Task<IActionResult> TestUpload(string ImgUrl)
         {
             try
@@ -117,6 +81,66 @@ namespace Tokki.WebAPI.Controllers
                 return StatusCode(500, ex.ToString());
             }
         }
-
+        [HttpPost("image/topic")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UploadTopicImage(IFormFile file)
+        {
+            var command = new UploadImageCommand
+            {
+                File = file,
+                FolderName = "tokki/topic-image"
+            };
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+        [HttpPost("image/template-part")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UploadTemplatePartImage(IFormFile file)
+        {
+            var command = new UploadImageCommand
+            {
+                File = file,
+                FolderName = "tokki/template-parts"
+            };
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+        [HttpPost("image/avatar")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UploadAvatar(IFormFile file)
+        {
+            var command = new UploadImageCommand
+            {
+                File = file,
+                FolderName = "tokki/avatar"
+            };
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+        
+        [HttpPost("audio/question")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UploadQuestionAudio(IFormFile file)
+        {
+            var command = new Tokki.Application.UseCases.Cloudinary.Commands.UploadAudio.UploadAudioCommand
+            {
+                AudioFile = file,
+                FolderName = "tokki/audio/question"
+            };
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+        [HttpPost("audio/option")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UploadOptionAudio(IFormFile file)
+        {
+            var command = new Tokki.Application.UseCases.Cloudinary.Commands.UploadAudio.UploadAudioCommand
+            {
+                AudioFile = file,
+                FolderName = "tokki/audio/option"
+            };
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
     }
 }
