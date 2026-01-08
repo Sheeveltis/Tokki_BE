@@ -164,7 +164,7 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
-        [HttpPost("moderator/reject-topic/{topicId}")]
+        [HttpPut("moderator/reject-topic/{topicId}")]
         [Authorize(Roles = "Admin,Moderator")]
         public async Task<IActionResult> RejectTopic(
         string topicId,
