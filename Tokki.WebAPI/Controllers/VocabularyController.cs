@@ -366,7 +366,7 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
-        [HttpPost("moderator/approve-vocabularies")]
+        [HttpPut("moderator/approve-vocabularies")]
         [Authorize(Roles = "Admin,Moderator")]
         public async Task<IActionResult> ApproveVocabularies(
          [FromBody] ApproveVocabulariesCommand command)
@@ -375,7 +375,7 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
-              [HttpPost("staff/submit-vocabularies-for-approval")]
+              [HttpPut("staff/submit-vocabularies-for-approval")]
             [Authorize(Roles = "Staff")]
             public async Task<IActionResult> SubmitVocabulariesForApproval(
             [FromBody] SubmitVocabulariesForApprovalCommand command)
@@ -384,7 +384,7 @@ namespace Tokki.WebAPI.Controllers
                 return StatusCode(result.StatusCode, result);
             }
 
-             [HttpPost("moderator/reject-vocabularies")]
+             [HttpPut("moderator/reject-vocabularies")]
             [Authorize(Roles = "Admin,Moderator")]
             public async Task<IActionResult> RejectVocabularies([FromBody] RejectVocabulariesCommand command)
             {
