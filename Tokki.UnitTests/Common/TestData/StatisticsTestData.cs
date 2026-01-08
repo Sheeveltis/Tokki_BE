@@ -12,15 +12,25 @@ namespace Tokki.UnitTests.Common.TestData
                 TotalRevenue = 15000000,
                 TotalOrders = 300,
                 AverageRevenue = 50000,
-                GrowthRate = 15.5
             };
         }
-        public static RevenueChartDto GetRevenueChart()
+        public static List<RevenueChartDto> GetRevenueChart()
         {
-            var chart = new RevenueChartDto();
-            chart.Labels = new List<string> { "Tháng 1", "Tháng 2" };
-            chart.Data = new List<decimal> { 500000, 700000 };
-            return chart;
+            return new List<RevenueChartDto>
+            {
+                new RevenueChartDto
+                {
+                    Month = "Tháng 1",
+                    Revenue = 500000,
+                    TotalOrders = 50
+                },
+                new RevenueChartDto
+                {
+                    Month = "Tháng 2",
+                    Revenue = 700000,
+                    TotalOrders = 70
+                }
+            };
         }
         public static List<RevenueByPackageDto> GetRevenueByPackages()
         {

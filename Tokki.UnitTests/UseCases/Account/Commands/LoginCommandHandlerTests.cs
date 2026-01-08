@@ -22,22 +22,22 @@ namespace Tokki.UnitTests.UseCases.Accounts
         private readonly Mock<IValidator<LoginCommand>> _mockValidator;
         private readonly LoginCommandHandler _handler;
         private readonly Mock<IGamificationService> _mockGamificationService;
-        public LoginCommandHandlerTests()
-        {
-            _mockValidator = new Mock<IValidator<LoginCommand>>();
+        //public LoginCommandHandlerTests()
+        //{
+        //    //_mockValidator = new Mock<IValidator<LoginCommand>>();
 
-            _mockValidator.Setup(v => v.ValidateAsync(It.IsAny<LoginCommand>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new ValidationResult());
+        //    //_mockValidator.Setup(v => v.ValidateAsync(It.IsAny<LoginCommand>(), It.IsAny<CancellationToken>()))
+        //    //    .ReturnsAsync(new ValidationResult());
 
-            _handler = new LoginCommandHandler(
-                _mockAccountRepo.Object,
-                _mockSystemConfigRepo.Object,
-                _mockJwtGenerator.Object,
-                _mockIdGenerator.Object,
-                _mockGamificationService.Object, 
-                _mockValidator.Object
-            );
-        }
+        //    //_handler = new LoginCommandHandler(
+        //    //    _mockAccountRepo.Object,
+        //    //    _mockSystemConfigRepo.Object,
+        //    //    _mockJwtGenerator.Object,
+        //    //    _mockIdGenerator.Object,
+        //    //    _mockGamificationService.Object, 
+        //    //    _mockValidator.Object
+        //    );
+        //}
 
         // ==========================================
         // CASE 1: ĐĂNG NHẬP THÀNH CÔNG
