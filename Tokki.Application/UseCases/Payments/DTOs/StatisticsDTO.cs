@@ -5,7 +5,6 @@
         public decimal TotalRevenue { get; set; }       
         public int TotalOrders { get; set; }            
         public decimal AverageRevenue { get; set; }     
-        public double GrowthRate { get; set; }         
     }
 
     public class RevenueChartDto

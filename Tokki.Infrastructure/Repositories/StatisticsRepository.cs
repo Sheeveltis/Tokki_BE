@@ -43,7 +43,6 @@ namespace Tokki.Infrastructure.Repositories
                 TotalRevenue = totalRevenue,
                 TotalOrders = totalOrders,
                 AverageRevenue = totalOrders > 0 ? totalRevenue / totalOrders : 0,
-                GrowthRate = Math.Round(growth, 2)
             };
         }
 
