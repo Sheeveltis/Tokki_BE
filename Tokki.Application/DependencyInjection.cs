@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Globalization;
 using System.Reflection;
 using Tokki.Application.Common.Behaviors;
-using Tokki.Application.Common.Helpers;
+using Tokki.Application.Common.Helpers.ValidationVietnameseLanguageManager;
 
 namespace Tokki.Application
 {

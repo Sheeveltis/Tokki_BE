@@ -1,6 +1,6 @@
 ﻿using FluentValidation.Resources;
 
-namespace Tokki.Application.Common.Helpers
+namespace Tokki.Application.Common.Helpers.ValidationVietnameseLanguageManager
 {
     public class ValidationVietnameseLanguageManager : LanguageManager
     {

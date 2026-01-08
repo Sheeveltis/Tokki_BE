@@ -6,15 +6,15 @@ using Tokki.Application.UseCases.Statistics.Queries;
 
 namespace Tokki.UnitTests.UseCases.Statistics.Queries.GetRevenueChart
 {
-    public class GetRevenueChartHandler : IRequestHandler<GetRevenueChartQuery, OperationResult<RevenueChartDto>>
+    public class GetRevenueChartHandler : IRequestHandler<GetRevenueChartQuery, OperationResult<List<RevenueChartDto>>>
     {
         private readonly IStatisticsRepository _repo;
         public GetRevenueChartHandler(IStatisticsRepository repo) => _repo = repo;
 
-        public async Task<OperationResult<RevenueChartDto>> Handle(GetRevenueChartQuery request, CancellationToken cancellationToken)
+        public async Task<OperationResult<List<RevenueChartDto>>> Handle(GetRevenueChartQuery request, CancellationToken cancellationToken)
         {
             var data = await _repo.GetRevenueChartAsync(request.Year);
-            return OperationResult<RevenueChartDto>.Success(data);
+            return OperationResult<List<RevenueChartDto>>.Success(data);
         }
     }
 }

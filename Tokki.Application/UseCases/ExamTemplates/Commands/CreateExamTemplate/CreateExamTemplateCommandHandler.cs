@@ -34,7 +34,7 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.CreateExamTemplate
                 Name = request.Name,
                 Description = request.Description,
                 Type = request.Type,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow.AddHours(7),
                 Status = ExamTemplateStatus.Draft
             };
 

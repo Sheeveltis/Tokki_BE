@@ -5,8 +5,7 @@ namespace Tokki.Application.IRepositories
     {
         Task<DashboardOverviewDto> GetOverviewAsync(DateTime startDate, DateTime endDate);
 
-        Task<RevenueChartDto> GetRevenueChartAsync(int year);
-
+        Task<List<RevenueChartDto>> GetRevenueChartAsync(int year);
         Task<List<RevenueByPackageDto>> GetRevenueByPackageAsync(DateTime startDate, DateTime endDate);
 
         Task<(List<TransactionReportDto> Items, int TotalCount)> GetTransactionsAsync(

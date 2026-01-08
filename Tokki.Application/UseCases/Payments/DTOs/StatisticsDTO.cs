@@ -10,8 +10,9 @@
 
     public class RevenueChartDto
     {
-        public List<string> Labels { get; set; } = new(); 
-        public List<decimal> Data { get; set; } = new(); 
+        public string Month { get; set; } = string.Empty; 
+        public decimal Revenue { get; set; }              
+        public int TotalOrders { get; set; }             
     }
 
     public class RevenueByPackageDto

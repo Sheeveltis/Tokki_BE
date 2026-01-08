@@ -15,6 +15,7 @@ using Tokki.Infrastructure.BackgroundJobs; // Nơi chứa class JwtSettings
 using Tokki.WebAPI.Hubs;
 using Tokki.WebAPI.Middlewares;
 using Tokki.WebAPI.Services;
+using Tokki.Application.Common.Helpers.ValidationVietnameseLanguageManager;
 var builder = WebApplication.CreateBuilder(args);
 
 // ==========================================
