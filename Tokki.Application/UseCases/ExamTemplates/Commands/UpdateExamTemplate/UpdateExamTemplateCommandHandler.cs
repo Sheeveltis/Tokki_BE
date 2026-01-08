@@ -18,18 +18,34 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate
         {
             var examTemplate = await _examTemplateRepository.GetByIdAsync(request.ExamTemplateId, cancellationToken);
 
-            if (examTemplate == null)
-                return OperationResult<bool>.Failure("Không tìm thấy đề thi mẫu.");
+            if (examTemplate == null) return OperationResult<bool>.Failure("Không tìm thấy đề thi mẫu.");
 
             if (examTemplate.Status != ExamTemplateStatus.Draft)
-                return OperationResult<bool>.Failure("Chỉ có thể cập nhật thông tin khi đề thi đang ở trạng thái Nháp.");
+                return OperationResult<bool>.Failure("Chỉ được sửa đổi khi đề thi đang ở trạng thái Nháp (Draft).");
 
-            if (await _examTemplateRepository.IsNameExistsAsync(request.Name, request.ExamTemplateId))
-                return OperationResult<bool>.Failure("Tên đề thi đã tồn tại.");
+            if (!string.IsNullOrWhiteSpace(request.Name))
+            {
+                if (request.Name != examTemplate.Name && await _examTemplateRepository.IsNameExistsAsync(request.Name, request.ExamTemplateId))
+                {
+                    return OperationResult<bool>.Failure("Tên đề thi đã tồn tại.");
+                }
+                examTemplate.Name = request.Name;
+            }
 
-            examTemplate.Name = request.Name;
-            examTemplate.Description = request.Description;
-            examTemplate.Type = request.Type;
+            if (request.Description != null)
+            {
+                examTemplate.Description = request.Description;
+            }
+
+            if (request.Type.HasValue)
+            {
+                examTemplate.Type = request.Type.Value;
+            }
+
+            if (request.Status.HasValue)
+            {
+                examTemplate.Status = request.Status.Value;
+            }
 
             await _examTemplateRepository.UpdateAsync(examTemplate);
             await _examTemplateRepository.SaveChangesAsync(cancellationToken);

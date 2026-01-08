@@ -32,27 +32,40 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.UpdateTemplatePart
             if (partToUpdate == null)
                 return OperationResult<bool>.Failure("Không tìm thấy phần thi này trong đề thi.");
 
-            if (request.QuestionFrom > request.QuestionTo || request.QuestionFrom <= 0)
+            int newFrom = request.QuestionFrom ?? partToUpdate.QuestionFrom;
+            int newTo = request.QuestionTo ?? partToUpdate.QuestionTo;
+            var newSkill = request.Skill ?? partToUpdate.Skill;
+            var newTypeId = request.QuestionTypeId ?? partToUpdate.QuestionTypeId;
+
+            if (newFrom > newTo || newFrom <= 0)
                 return OperationResult<bool>.Failure("Phạm vi câu hỏi không hợp lệ.");
 
-            bool isOverlap = examTemplate.TemplateParts.Any(otherPart =>
-                otherPart.TemplatePartId != request.TemplatePartId &&
-                Math.Max(otherPart.QuestionFrom, request.QuestionFrom) <= Math.Min(otherPart.QuestionTo, request.QuestionTo)
+            bool isOverlap = examTemplate.TemplateParts.Any(other =>
+                other.TemplatePartId != request.TemplatePartId &&
+                Math.Max(other.QuestionFrom, newFrom) <= Math.Min(other.QuestionTo, newTo)
             );
             if (isOverlap) return OperationResult<bool>.Failure("Phạm vi câu hỏi bị trùng lặp.");
 
-            var qt = await _questionTypeRepository.GetByIdAsync(request.QuestionTypeId, cancellationToken);
-            if (qt == null) return OperationResult<bool>.Failure($"Loại câu hỏi '{request.QuestionTypeId}' không tồn tại.");
-            if (qt.Skill != request.Skill) return OperationResult<bool>.Failure("Kỹ năng không khớp với loại câu hỏi.");
+            if (request.QuestionTypeId != null || request.Skill.HasValue)
+            {
+                if (!string.IsNullOrEmpty(newTypeId))
+                {
+                    var qt = await _questionTypeRepository.GetByIdAsync(newTypeId, cancellationToken);
+                    if (qt == null) return OperationResult<bool>.Failure($"Loại câu hỏi không tồn tại.");
+                    if (qt.Skill != newSkill) return OperationResult<bool>.Failure("Kỹ năng không khớp.");
+                }
+            }
 
-            partToUpdate.PartTitle = request.PartTitle ?? "Part";
-            partToUpdate.Skill = request.Skill;
-            partToUpdate.QuestionFrom = request.QuestionFrom;
-            partToUpdate.QuestionTo = request.QuestionTo;
-            partToUpdate.Instruction = request.Instruction;
-            partToUpdate.Mark = request.Mark;
-            partToUpdate.QuestionTypeId = request.QuestionTypeId;
-            partToUpdate.ExampleUrl = request.ExampleUrl;
+            if (request.PartTitle != null) partToUpdate.PartTitle = request.PartTitle;
+            if (request.Skill.HasValue) partToUpdate.Skill = request.Skill.Value;
+
+            partToUpdate.QuestionFrom = newFrom;
+            partToUpdate.QuestionTo = newTo;
+
+            if (request.Instruction != null) partToUpdate.Instruction = request.Instruction;
+            if (request.Mark.HasValue) partToUpdate.Mark = request.Mark.Value;
+            if (request.QuestionTypeId != null) partToUpdate.QuestionTypeId = request.QuestionTypeId;
+            if (request.ExampleUrl != null) partToUpdate.ExampleUrl = request.ExampleUrl;
 
             await _examTemplateRepository.UpdateAsync(examTemplate);
             await _examTemplateRepository.SaveChangesAsync(cancellationToken);

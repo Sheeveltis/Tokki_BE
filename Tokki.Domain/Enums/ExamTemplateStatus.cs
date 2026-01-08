@@ -16,6 +16,6 @@ namespace Tokki.Domain.Enums
         Published = 1,
 
         [Description("Đã xóa")]
-        Deleted = 99
+        Deleted = 2
     }
 }
