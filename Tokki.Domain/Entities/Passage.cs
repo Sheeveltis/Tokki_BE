@@ -21,6 +21,8 @@ namespace Tokki.Domain.Entities
 
         [MaxLength(255)]
         public string? ImageUrl { get; set; }
+        public string? AudioUrl { get; set; }
+
         public DateTime CreatedAt { get; set; }
         public PassageStatus Status { get; set; } = PassageStatus.Active;
 

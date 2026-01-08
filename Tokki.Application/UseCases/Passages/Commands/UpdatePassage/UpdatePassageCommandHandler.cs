@@ -34,11 +34,15 @@ namespace Tokki.Application.UseCases.Passages.Commands.UpdatePassage
                 var incomingTitle = string.IsNullOrWhiteSpace(request.Title) ? null : request.Title.Trim();
                 var incomingContent = string.IsNullOrWhiteSpace(request.Content) ? null : request.Content;
                 var incomingImageUrl = string.IsNullOrWhiteSpace(request.ImageUrl) ? null : request.ImageUrl.Trim();
+                var incomingAudioUrl = string.IsNullOrWhiteSpace(request.AudioUrl) ? null : request.AudioUrl.Trim(); // NEW
 
                 var newTitle = incomingTitle ?? passage.Title;
+                var newMediaType = request.MediaType ?? passage.MediaType;
+
+                // Tính field theo patch (tạm thời), sau đó sẽ chuẩn hóa theo MediaType
                 var newContent = incomingContent ?? passage.Content;
                 var newImageUrl = incomingImageUrl ?? passage.ImageUrl;
-                var newMediaType = request.MediaType ?? passage.MediaType;
+                var newAudioUrl = incomingAudioUrl ?? passage.AudioUrl; // NEW
 
                 // Không cho ra state invalid
                 if (string.IsNullOrWhiteSpace(newTitle))
@@ -62,16 +66,35 @@ namespace Tokki.Application.UseCases.Passages.Commands.UpdatePassage
                         );
                     }
                 }
-                else
+                else if (newMediaType == PassageMediaType.Image)
                 {
                     if (string.IsNullOrWhiteSpace(newImageUrl))
                     {
                         return OperationResult<string>.Failure(
                             new List<Error> { AppErrors.ValidationFailed },
                             400,
-                            "Loại Hình ảnh/Audio bắt buộc phải có link media."
+                            "Loại Hình ảnh bắt buộc phải có link hình."
                         );
                     }
+                }
+                else if (newMediaType == PassageMediaType.Audio)
+                {
+                    if (string.IsNullOrWhiteSpace(newAudioUrl))
+                    {
+                        return OperationResult<string>.Failure(
+                            new List<Error> { AppErrors.ValidationFailed },
+                            400,
+                            "Loại Audio bắt buộc phải có link audio."
+                        );
+                    }
+                }
+                else
+                {
+                    return OperationResult<string>.Failure(
+                        new List<Error> { AppErrors.ValidationFailed },
+                        400,
+                        "MediaType không hợp lệ."
+                    );
                 }
 
                 // Check trùng title chỉ khi có thay đổi title
@@ -88,10 +111,30 @@ namespace Tokki.Application.UseCases.Passages.Commands.UpdatePassage
                     }
                 }
 
+                // Chuẩn hóa dữ liệu theo MediaType (tránh state sai)
+                switch (newMediaType)
+                {
+                    case PassageMediaType.Text:
+                        newImageUrl = null;
+                        newAudioUrl = null;
+                        break;
+
+                    case PassageMediaType.Image:
+                        newContent = null;
+                        newAudioUrl = null;
+                        break;
+
+                    case PassageMediaType.Audio:
+                        newContent = null;
+                        newImageUrl = null;
+                        break;
+                }
+
                 // Apply update
                 passage.Title = newTitle;
                 passage.Content = newContent;
                 passage.ImageUrl = newImageUrl;
+                passage.AudioUrl = newAudioUrl; // NEW
                 passage.MediaType = newMediaType;
 
                 await _passageRepository.UpdateAsync(passage);

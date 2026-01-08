@@ -33,6 +33,7 @@ namespace Tokki.Application.UseCases.Passages.Queries.GetPassages
                 Content = p.Content,
                 ImageUrl = p.ImageUrl,
                 Status = p.Status,
+                AudioUrl = p.AudioUrl,
                 MediaType = p.MediaType,
                 CreatedAt = p.CreatedAt
             }).ToList();

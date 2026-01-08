@@ -18,7 +18,7 @@ namespace Tokki.Infrastructure.Repositories
         public async Task<ExamTemplate?> GetByIdAsync(string examTemplateId, CancellationToken cancellationToken = default)
         {
             return await _context.ExamTemplates
-                .FirstOrDefaultAsync(et => et.ExamTemplateId == examTemplateId && et.Status != ExamTemplateStatus.Deleted, cancellationToken);
+                .FirstOrDefaultAsync(et => et.ExamTemplateId == examTemplateId, cancellationToken);
         }
 
         public async Task<ExamTemplate?> GetByIdWithPartsAsync(string examTemplateId, CancellationToken cancellationToken = default)
@@ -26,7 +26,7 @@ namespace Tokki.Infrastructure.Repositories
             return await _context.ExamTemplates
                 .Include(et => et.TemplateParts.OrderBy(tp => tp.QuestionFrom))
                 .ThenInclude(tp => tp.QuestionType) 
-                .FirstOrDefaultAsync(et => et.ExamTemplateId == examTemplateId && et.Status != ExamTemplateStatus.Deleted, cancellationToken);
+                .FirstOrDefaultAsync(et => et.ExamTemplateId == examTemplateId, cancellationToken);
         }
 
         public async Task<(IEnumerable<ExamTemplate> items, int totalCount)> GetPagedAsync(

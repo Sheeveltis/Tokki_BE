@@ -27,6 +27,10 @@ namespace Tokki.Application.UseCases.Passages.Commands.CreatePassage
                 .NotEmpty()
                 .When(x => x.MediaType != PassageMediaType.Text)
                 .WithName("Link media");
+            RuleFor(x => x.AudioUrl)
+    .NotEmpty()
+    .When(x => x.MediaType == PassageMediaType.Audio);
+
         }
     }
 }
