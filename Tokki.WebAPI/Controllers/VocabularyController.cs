@@ -64,7 +64,7 @@ namespace Tokki.WebAPI.Controllers
         /// API này dùng cho trang quản lý, cho phép lọc theo status, topic, tìm kiếm.
         /// </remarks>
         [HttpGet("admin/get-all")]
-        [Authorize(Roles = "Manager,Admin")] // Bạn có thể mở comment này nếu muốn chặn user thường
+        [Authorize(Roles = "Moderator,Staff,Admin")] 
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllForManager(
             [FromQuery] int pageNumber = 1,

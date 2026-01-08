@@ -14,6 +14,9 @@ using Tokki.Application.UseCases.Topics.Commands.RemoveVocabulariesFromTopic;
 using Tokki.Application.UseCases.Topics.Commands.PublishTopic;
 using Tokki.Application.UseCases.Topics.Commands.CreateTopicByStaff;
 using Tokki.Application.UseCases.Topics.Commands.ApproveTopic;
+using Tokki.Application.UseCases.Topics.Commands.RejectTopic;
+using Tokki.Application.UseCases.Topics.Commands.SubmitTopicForApproval;
+using Tokki.Application.UseCases.Topics.DTOs;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -109,14 +112,14 @@ namespace Tokki.WebAPI.Controllers
 
             return Ok(result);
         }
-        [HttpPost("staff/create-topic")]
-        [Authorize(Roles = "Staff")]
-        public async Task<IActionResult> CreateTopicByStaff(
-    [FromBody] CreateTopicByStaffCommand command)
-        {
-            var result = await _mediator.Send(command);
-            return StatusCode(result.StatusCode, result);
-        }
+    //    [HttpPost("staff/create-topic")]
+    //    [Authorize(Roles = "Staff")]
+    //    public async Task<IActionResult> CreateTopicByStaff(
+    //[FromBody] CreateTopicByStaffCommand command)
+    //    {
+    //        var result = await _mediator.Send(command);
+    //        return StatusCode(result.StatusCode, result);
+    //    }
 
         [HttpPost]
         public async Task<IActionResult> CreateTopic([FromBody] CreateTopicCommand request)
@@ -136,6 +139,19 @@ namespace Tokki.WebAPI.Controllers
 
             return StatusCode(result.StatusCode, result);
         }
+
+        [HttpPost("staff/submit-for-approval/{topicId}")]
+        [Authorize(Roles = "Staff")]
+        public async Task<IActionResult> SubmitTopicForApproval(string topicId)
+        {
+            var result = await _mediator.Send(new SubmitTopicForApprovalCommand
+            {
+                TopicId = topicId
+            });
+
+            return StatusCode(result.StatusCode, result);
+        }
+
         [HttpPut("moderator/approve-topic/{topicId}")]
         [Authorize(Roles = "Admin,Moderator")]
         public async Task<IActionResult> ApproveTopic(string topicId)
@@ -147,6 +163,22 @@ namespace Tokki.WebAPI.Controllers
 
             return StatusCode(result.StatusCode, result);
         }
+
+        [HttpPost("moderator/reject-topic/{topicId}")]
+        [Authorize(Roles = "Admin,Moderator")]
+        public async Task<IActionResult> RejectTopic(
+        string topicId,
+     [FromBody] RejectTopicRequest request)
+        {
+            var result = await _mediator.Send(new RejectTopicCommand
+            {
+                TopicId = topicId,
+                RejectReason = request.RejectReason
+            });
+
+            return StatusCode(result.StatusCode, result);
+        }
+
 
         [HttpPut("update")]
         public async Task<IActionResult> UpdateTopic([FromBody] UpdateTopicCommand command)
@@ -167,6 +199,7 @@ namespace Tokki.WebAPI.Controllers
 
             return StatusCode(result.StatusCode, result);
         }
+
         [HttpPut("{topicId}/publish")]
         public async Task<IActionResult> Publish(string topicId)
         {

@@ -7,23 +7,23 @@ using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Domain.Enums;
 
-namespace Tokki.Application.UseCases.Topics.Commands.ApproveTopic
+namespace Tokki.Application.UseCases.Topics.Commands.RejectTopic
 {
-    public class ApproveTopicCommandHandler
-        : IRequestHandler<ApproveTopicCommand, OperationResult<bool>>
+    public class RejectTopicCommandHandler
+        : IRequestHandler<RejectTopicCommand, OperationResult<bool>>
     {
         private readonly ITopicRepository _topicRepository;
         private readonly IAccountRepository _accountRepository;
         private readonly IEmailService _emailService;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly ILogger<ApproveTopicCommandHandler> _logger;
+        private readonly ILogger<RejectTopicCommandHandler> _logger;
 
-        public ApproveTopicCommandHandler(
+        public RejectTopicCommandHandler(
             ITopicRepository topicRepository,
             IAccountRepository accountRepository,
             IEmailService emailService,
             IHttpContextAccessor httpContextAccessor,
-            ILogger<ApproveTopicCommandHandler> logger)
+            ILogger<RejectTopicCommandHandler> logger)
         {
             _topicRepository = topicRepository;
             _accountRepository = accountRepository;
@@ -33,7 +33,7 @@ namespace Tokki.Application.UseCases.Topics.Commands.ApproveTopic
         }
 
         public async Task<OperationResult<bool>> Handle(
-            ApproveTopicCommand request,
+            RejectTopicCommand request,
             CancellationToken cancellationToken)
         {
             var currentUserId = _httpContextAccessor.HttpContext?.User?
@@ -45,6 +45,21 @@ namespace Tokki.Application.UseCases.Topics.Commands.ApproveTopic
                     new List<Error> { AppErrors.UserUnauthorized },
                     401,
                     AppErrors.UserUnauthorized.Description
+                );
+            }
+
+            if (string.IsNullOrWhiteSpace(request.RejectReason))
+            {
+                return OperationResult<bool>.Failure(
+                    new List<Error>
+                    {
+                        new Error(
+                            "REJECT_REASON_REQUIRED",
+                            "Lý do từ chối là bắt buộc."
+                        )
+                    },
+                    400,
+                    "Thiếu lý do từ chối."
                 );
             }
 
@@ -69,25 +84,25 @@ namespace Tokki.Application.UseCases.Topics.Commands.ApproveTopic
                         )
                     },
                     400,
-                    "Không thể duyệt topic."
+                    "Không thể từ chối phê duyệt topic."
                 );
             }
 
-            topic.Status = TopicStatus.Active;
-
+            topic.Status = TopicStatus.Rejected;
             await _topicRepository.UpdateAsync(topic);
             await _topicRepository.SaveChangesAsync(cancellationToken);
 
-            // Gửi email thông báo cho người tạo topic
+            // Gửi email cho người tạo topic
             if (!string.IsNullOrEmpty(topic.CreateBy))
             {
                 var creator = await _accountRepository.GetByIdAsync(topic.CreateBy);
                 if (creator != null && !string.IsNullOrEmpty(creator.Email))
                 {
-                    await SendApproveEmailAsync(
+                    await SendRejectEmailAsync(
                         creator.Email,
                         creator.FullName,
-                        topic.TopicName
+                        topic.TopicName,
+                        request.RejectReason
                     );
                 }
             }
@@ -95,16 +110,17 @@ namespace Tokki.Application.UseCases.Topics.Commands.ApproveTopic
             return OperationResult<bool>.Success(
                 true,
                 200,
-                "Duyệt topic thành công."
+                "Từ chối phê duyệt topic thành công."
             );
         }
 
-        private async Task SendApproveEmailAsync(
+        private async Task SendRejectEmailAsync(
             string toEmail,
             string fullName,
-            string topicTitle)
+            string topicTitle,
+            string rejectReason)
         {
-            var subject = "[Tokki] Topic của bạn đã được phê duyệt";
+            var subject = "[Tokki] Topic của bạn chưa được phê duyệt";
 
             var safeName = string.IsNullOrWhiteSpace(fullName)
                 ? toEmail
@@ -115,12 +131,17 @@ namespace Tokki.Application.UseCases.Topics.Commands.ApproveTopic
                     <h2>Xin chào {safeName},</h2>
 
                     <p>
-                        Chúc mừng bạn! Topic <strong>{topicTitle}</strong> của bạn
-                        đã được <strong>phê duyệt</strong> và hiện đang hoạt động trên hệ thống Tokki.
+                        Topic <strong>{topicTitle}</strong> của bạn đã được xem xét nhưng
+                        <strong>chưa được phê duyệt</strong>.
                     </p>
 
+                    <div style='background-color: #f8d7da; padding: 15px; border-radius: 5px; margin: 20px 0;'>
+                        <p><strong>Lý do từ chối:</strong></p>
+                        <p>{rejectReason}</p>
+                    </div>
+
                     <p>
-                        Bạn có thể truy cập hệ thống để xem và tiếp tục quản lý nội dung của mình.
+                        Bạn có thể chỉnh sửa lại nội dung topic theo góp ý và gửi lại để được phê duyệt.
                     </p>
 
                     <hr />
