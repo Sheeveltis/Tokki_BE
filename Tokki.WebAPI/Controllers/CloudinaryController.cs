@@ -16,7 +16,42 @@ namespace Tokki.WebAPI.Controllers
         {
             _sender = sender;
         }
-
+        [HttpPost("image/question")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UploadQuestionImage(IFormFile file)
+        {
+            var command = new UploadImageCommand
+            {
+                File = file,
+                FolderName = "tokki/image/question"
+            };
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+        [HttpPost("image/option")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UploadOptionImage(IFormFile file)
+        {
+            var command = new UploadImageCommand
+            {
+                File = file,
+                FolderName = "tokki/image/option"
+            };
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+        [HttpPost("image/passage")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UploadPassageImage(IFormFile file)
+        {
+            var command = new UploadImageCommand
+            {
+                File = file,
+                FolderName = "tokki/image/passage"
+            };
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
         [HttpPost("vocabulary-image")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> UploadVocabularyImage(IFormFile file)
