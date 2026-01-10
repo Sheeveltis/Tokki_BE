@@ -252,5 +252,81 @@ namespace Tokki.Infrastructure.Repositories
                 .Select(vt => vt.VocabularyId)
                 .ToListAsync();
         }
+
+        public async Task<(int AddedOrReactivated, int SkippedAlreadyActive, List<string> FailedItems)>
+           AddOrReactivateVocabulariesToTopicAsync(
+               string topicId,
+               List<Vocabulary> vocabularies,
+               string? currentUserId,
+               CancellationToken cancellationToken = default)
+        {
+            var failedItems = new List<string>();
+
+            // Chống trùng input
+            var vocabList = vocabularies
+                .GroupBy(v => v.VocabularyId)
+                .Select(g => g.First())
+                .ToList();
+
+            var vocabIds = vocabList.Select(v => v.VocabularyId).ToList();
+
+            // Load tất cả mapping hiện có trong 1 query
+            var existingLinks = await _context.VocabularyTopics
+                .Where(vt => vt.TopicId == topicId && vocabIds.Contains(vt.VocabularyId))
+                .ToListAsync(cancellationToken);
+
+            var linkByVocabId = existingLinks.ToDictionary(x => x.VocabularyId);
+
+            var addedOrReactivated = 0;
+            var skippedAlreadyActive = 0;
+
+            foreach (var vocab in vocabList)
+            {
+                // Nếu vocab bị Deleted thì không cho add
+                if (vocab.Status == VocabularyStatus.Deleted)
+                {
+                    failedItems.Add($"{vocab.Text} (ID: {vocab.VocabularyId}) - Từ vựng đã bị xóa");
+                    continue;
+                }
+
+                if (linkByVocabId.TryGetValue(vocab.VocabularyId, out var link))
+                {
+                    // Đã có mapping
+                    if (link.Status == VocabularyTopicStatus.Active)
+                    {
+                        skippedAlreadyActive++;
+                        continue;
+                    }
+
+                    // Draft hoặc Deleted -> Active
+                    link.Status = VocabularyTopicStatus.Active;
+                    link.UpdateBy = currentUserId;
+                    link.UpdateDate = DateTime.UtcNow.AddHours(7);
+
+                    _context.VocabularyTopics.Update(link);
+                    addedOrReactivated++;
+                }
+                else
+                {
+                    // Chưa có mapping -> tạo mới
+                    var newLink = new VocabularyTopic
+                    {
+                        TopicId = topicId,
+                        VocabularyId = vocab.VocabularyId,
+                        Status = VocabularyTopicStatus.Active,
+                        CreateDate = DateTime.UtcNow.AddHours(7),
+                        CreateBy = currentUserId ?? string.Empty
+                    };
+
+                    await _context.VocabularyTopics.AddAsync(newLink, cancellationToken);
+                    addedOrReactivated++;
+                }
+            }
+
+            // Không dùng transaction/rollback như yêu cầu
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return (addedOrReactivated, skippedAlreadyActive, failedItems);
+        }
     }
 }

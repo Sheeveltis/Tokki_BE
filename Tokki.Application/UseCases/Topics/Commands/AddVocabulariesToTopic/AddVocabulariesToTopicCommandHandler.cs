@@ -1,18 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Security.Claims;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Topics.Commands.AddVocabulariesToTopic
 {
-    public class AddVocabulariesToTopicCommandHandler : IRequestHandler<AddVocabulariesToTopicCommand, OperationResult<int>>
+    public class AddVocabulariesToTopicCommandHandler
+        : IRequestHandler<AddVocabulariesToTopicCommand, OperationResult<int>>
     {
         private readonly ITopicRepository _topicRepository;
         private readonly IVocabularyRepository _vocabularyRepository;
@@ -34,9 +31,11 @@ namespace Tokki.Application.UseCases.Topics.Commands.AddVocabulariesToTopic
             _validator = validator;
         }
 
-        public async Task<OperationResult<int>> Handle(AddVocabulariesToTopicCommand request, CancellationToken cancellationToken)
+        public async Task<OperationResult<int>> Handle(
+            AddVocabulariesToTopicCommand request,
+            CancellationToken cancellationToken)
         {
-            // 1. VALIDATION
+            // 1) VALIDATION
             var validationResult = await _validator.ValidateAsync(request, cancellationToken);
             if (!validationResult.IsValid)
             {
@@ -47,84 +46,73 @@ namespace Tokki.Application.UseCases.Topics.Commands.AddVocabulariesToTopic
                 return OperationResult<int>.Failure(errors, 400, AppErrors.ValidationFailed.Description);
             }
 
-            // 2. CHECK TOPIC EXISTENCE
+            // Chống trùng ID đầu vào
+            var requestedIds = request.VocabularyIds
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Distinct()
+                .ToList();
+
+            // 2) CHECK TOPIC EXISTENCE
             var topic = await _topicRepository.GetByIdAsync(request.TopicId);
             if (topic == null)
             {
                 return OperationResult<int>.Failure(
                     new List<Error> { AppErrors.TopicNotFound },
                     404,
-                    AppErrors.TopicNotFound.Description
-                );
+                    AppErrors.TopicNotFound.Description);
             }
 
-            // 3. GET VOCABULARIES
-            var validVocabularies = await _vocabularyRepository.GetByIdsAsync(request.VocabularyIds);
+            // 3) GET VOCABULARIES (chỉ lấy được những ID tồn tại)
+            var foundVocabularies = await _vocabularyRepository.GetByIdsAsync(requestedIds);
 
-            if (!validVocabularies.Any())
+            if (!foundVocabularies.Any())
             {
                 return OperationResult<int>.Failure(
                     new List<Error> { AppErrors.NoValidVocabulariesFound },
                     400,
-                    AppErrors.NoValidVocabulariesFound.Description
-                );
+                    AppErrors.NoValidVocabulariesFound.Description);
             }
 
-            // Kiểm tra những từ vựng không tồn tại
-            var foundVocabIds = validVocabularies.Select(v => v.VocabularyId).ToList();
-            var notFoundVocabIds = request.VocabularyIds.Except(foundVocabIds).ToList();
+            var foundIds = foundVocabularies.Select(v => v.VocabularyId).ToHashSet();
+            var notFoundIds = requestedIds.Where(id => !foundIds.Contains(id)).ToList();
 
-            if (notFoundVocabIds.Any())
-            {
-                return OperationResult<int>.Failure(
-                    new List<Error>
-                    {
-                        new Error("VOCABULARY_NOT_FOUND",
-                            $"Các từ vựng sau không tồn tại: {string.Join(", ", notFoundVocabIds)}")
-                    },
-                    400,
-                    "Một số từ vựng không tồn tại trong hệ thống."
-                );
-            }
+            // 4) EXECUTE (NO TRANSACTION)
+            var currentUserId = _httpContextAccessor.HttpContext?.User?
+                .FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            // 4. EXECUTE WITH TRANSACTION (gọi method từ repository)
-            var currentUserId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            var (success, addedCount, failedItems) = await _vocabularyTopicRepository
-                .AddVocabulariesToTopicWithTransactionAsync(
+            var (addedOrReactivated, skippedAlreadyActive, failedItems) =
+                await _vocabularyTopicRepository.AddOrReactivateVocabulariesToTopicAsync(
                     request.TopicId,
-                    validVocabularies,
+                    foundVocabularies,
                     currentUserId,
                     cancellationToken);
 
-            // 5. RETURN RESULT
-            if (!success)
-            {
-                return OperationResult<int>.Failure(
-                    new List<Error>
-                    {
-                        new Error("ADD_VOCABULARIES_FAILED",
-                            $"Không thể thêm các từ vựng:\n{string.Join("\n", failedItems)}")
-                    },
-                    400,
-                    "Giao dịch đã bị hủy. Không có từ vựng nào được thêm vào chủ đề."
-                );
-            }
+            // 5) BUILD RESULT MESSAGE
+            var totalRequested = requestedIds.Count;
+            var notAddedCount = totalRequested - addedOrReactivated;
 
-            if (addedCount == 0)
+            var lines = new List<string>
             {
-                return OperationResult<int>.Success(
-                    0,
-                    200,
-                    "Tất cả các từ vựng đã tồn tại trong chủ đề. Không có thay đổi nào được thực hiện."
-                );
-            }
+                $"Kết quả thêm từ vựng vào chủ đề '{topic.TopicName}':",
+                $"- Thêm/Re-activate thành công: {addedOrReactivated}",
+                $"- Không thêm: {notAddedCount}"
+            };
+
+            if (skippedAlreadyActive > 0)
+                lines.Add($"  + Bỏ qua do đã Active: {skippedAlreadyActive}");
+
+            if (notFoundIds.Any())
+                lines.Add($"  + Không tồn tại trong hệ thống: {notFoundIds.Count} (IDs: {string.Join(", ", notFoundIds)})");
+
+            if (failedItems.Any())
+                lines.Add($"  + Không thể thêm (ví dụ vocab đã bị xóa): {failedItems.Count}\n    - {string.Join("\n    - ", failedItems)}");
+
+            var message = string.Join("\n", lines);
 
             return OperationResult<int>.Success(
-                addedCount,
+                addedOrReactivated,
                 200,
-                $"Đã thêm thành công {addedCount}/{validVocabularies.Count} từ vựng vào chủ đề '{topic.TopicName}'."
-            );
+                message);
         }
     }
 }

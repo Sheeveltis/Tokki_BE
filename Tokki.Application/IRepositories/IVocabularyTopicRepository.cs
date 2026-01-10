@@ -73,5 +73,12 @@ namespace Tokki.Application.IRepositories
         /// <param name="topicId"></param>
         /// <returns></returns>
         Task<List<string>> GetVocabIdsByTopicIdAsync(string topicId);
+
+        Task<(int AddedOrReactivated, int SkippedAlreadyActive, List<string> FailedItems)>
+         AddOrReactivateVocabulariesToTopicAsync(
+             string topicId,
+             List<Vocabulary> vocabularies,
+             string? currentUserId,
+             CancellationToken cancellationToken = default);
     }
 }
