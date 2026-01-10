@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
+using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.ExamTemplates.Commands.DeleteExamTemplate
@@ -22,7 +23,15 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.DeleteExamTemplate
             var template = await _examTemplateRepository.GetByIdAsync(request.ExamTemplateId, cancellationToken);
             if (template == null || template.Status == ExamTemplateStatus.Deleted)
                 return OperationResult<string>.Failure(AppErrors.ExamTemplateNotFound);
-
+            if (template.Status == ExamTemplateStatus.Published)
+            {
+                return OperationResult<string>.Failure(AppErrors.ExamTemplateCantDelete);
+            }
+            bool hasExams = await _examTemplateRepository.HasExamsAsync(request.ExamTemplateId, cancellationToken);
+            if (hasExams)
+            {
+                return OperationResult<string>.Failure(AppErrors.ExamTemplateInUse);
+            }
             try
             {
                 template.Status = ExamTemplateStatus.Deleted;

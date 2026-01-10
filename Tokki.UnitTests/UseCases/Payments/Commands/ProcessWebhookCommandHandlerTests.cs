@@ -24,7 +24,6 @@ namespace Tokki.UnitTests.Features.Payments.Commands
                 _mockPaymentRepo.Object,
                 _mockAccountRepo.Object,
                 _mockVipRepo.Object,
-                _mockSubRepo.Object,
                 _mockIdGen.Object,
                 _mockWebhookLogger.Object
             );
@@ -120,12 +119,6 @@ namespace Tokki.UnitTests.Features.Payments.Commands
             user.VipExpirationDate.Should().NotBeNull();
             user.VipExpirationDate.Value.Should().BeCloseTo(DateTimeOffset.UtcNow.AddDays(30), TimeSpan.FromMinutes(1));
             _mockAccountRepo.Verify(x => x.UpdateUserAsync(user), Times.Once);
-
-            _mockSubRepo.Verify(x => x.AddAsync(It.Is<Subscription>(s =>
-                s.UserId == userId &&
-                s.PaymentId == paymentId &&
-                s.Status == SubscriptionStatus.Active
-            )), Times.Once);
         }
 
         [Fact]
