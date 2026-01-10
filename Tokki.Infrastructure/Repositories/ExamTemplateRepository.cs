@@ -39,7 +39,6 @@ namespace Tokki.Infrastructure.Repositories
         {
             var query = _context.ExamTemplates
                 .Include(et => et.TemplateParts)
-                .Where(et => et.Status != ExamTemplateStatus.Deleted)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
