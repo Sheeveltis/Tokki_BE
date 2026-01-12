@@ -37,7 +37,7 @@ namespace Tokki.Application.UseCases.Topics.Commands.UpdateTopic
                     );
                 }
 
-                // Nếu topic đã Deleted thì không cho update/khôi phục (theo nghiệp vụ bạn đang áp dụng với vocab)
+                // Nếu topic đã Deleted thì không cho update/khôi phục
                 if (existingTopic.Status == TopicStatus.Deleted)
                 {
                     return OperationResult<bool>.Failure(
@@ -95,12 +95,11 @@ namespace Tokki.Application.UseCases.Topics.Commands.UpdateTopic
                     {
                         existingTopic.Status = newStatus;
 
-                        // Cascade VocabularyTopic theo status của Topic
-                        var mappings = await _vocabularyTopicRepository.GetByTopicIdAsync(existingTopic.TopicId);
-
+                        // Chỉ cascade VocabularyTopic khi Topic bị Deleted
                         if (newStatus == TopicStatus.Deleted)
                         {
-                            // Deleted: ép tất cả mapping -> Deleted
+                            var mappings = await _vocabularyTopicRepository.GetByTopicIdAsync(existingTopic.TopicId);
+
                             foreach (var vt in mappings)
                             {
                                 vt.Status = VocabularyTopicStatus.Deleted;
@@ -108,26 +107,11 @@ namespace Tokki.Application.UseCases.Topics.Commands.UpdateTopic
                                 vt.UpdateDate = DateTime.UtcNow.AddHours(7);
                                 await _vocabularyTopicRepository.UpdateAsync(vt);
                             }
-                        }
-                        else if (newStatus == TopicStatus.Draft)
-                        {
-                            // Draft: chỉ đổi những cái chưa Deleted
-                            foreach (var vt in mappings)
-                            {
-                                if (vt.Status == VocabularyTopicStatus.Deleted) continue;
 
-                                vt.Status = VocabularyTopicStatus.Draft;
-                                vt.UpdateBy = request.UpdatedBy;
-                                vt.UpdateDate = DateTime.UtcNow.AddHours(7);
-                                await _vocabularyTopicRepository.UpdateAsync(vt);
-                            }
-                        }
-                        else if (newStatus == TopicStatus.Active)
-                        {
-                            // Active: KHÔNG cascade (mapping giữ nguyên) theo nghiệp vụ bạn chốt
+                            await _vocabularyTopicRepository.SaveChangesAsync(cancellationToken);
                         }
 
-                        await _vocabularyTopicRepository.SaveChangesAsync(cancellationToken);
+                        // newStatus == Draft hoặc Active: KHÔNG cascade (giữ nguyên mapping)
                     }
                 }
 
