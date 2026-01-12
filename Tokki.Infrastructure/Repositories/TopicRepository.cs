@@ -88,7 +88,10 @@ namespace Tokki.Infrastructure.Repositories
 
         public async Task<bool> IsTopicNameExistsAsync(string topicName, string? excludeTopicId = null)
         {
-            var query = _context.Topics.Where(t => t.TopicName == topicName);
+            topicName = topicName.Trim();
+
+            var query = _context.Topics
+                .Where(t => t.TopicName == topicName && t.Status != TopicStatus.Deleted);
 
             if (!string.IsNullOrEmpty(excludeTopicId))
             {
@@ -97,6 +100,7 @@ namespace Tokki.Infrastructure.Repositories
 
             return await query.AnyAsync();
         }
+
 
         public async Task<int> CountVocabulariesInTopicAsync(string topicId)
         {
