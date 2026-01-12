@@ -5,6 +5,7 @@ using System.Security.Claims;
 using Tokki.Application.UseCases.Blogs.Commands.ApproveBlog;
 using Tokki.Application.UseCases.Blogs.Commands.CreateBlog;
 using Tokki.Application.UseCases.Blogs.Commands.DeleteBlog;
+using Tokki.Application.UseCases.Blogs.Commands.IncreaseViewCount;
 using Tokki.Application.UseCases.Blogs.Commands.RejectBlog;
 using Tokki.Application.UseCases.Blogs.Commands.SubmitBlogForApproval;
 using Tokki.Application.UseCases.Blogs.Commands.UpdateBlog;
@@ -100,6 +101,19 @@ namespace Tokki.WebAPI.Controllers
         [Authorize(Roles = "Moderator")] 
         public async Task<IActionResult> Reject([FromBody] RejectBlogCommand command)
         {
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+        /// <summary>
+        /// Tăng số lượt xem cho bài viết
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpPost("increase-view/{id}")]
+        [AllowAnonymous] 
+        public async Task<IActionResult> IncreaseViewCount(string id)
+        {
+            var command = new IncreaseViewCountCommand { BlogId = id };
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
         }
