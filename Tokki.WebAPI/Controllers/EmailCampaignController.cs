@@ -3,7 +3,7 @@ using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Tokki.Application.UseCases.Accounts.Commands.CreateEmailCampaign;
+using Tokki.Application.UseCases.EmailTemplates.Commands.CreateEmailCampaign;
 using Tokki.Application.UseCases.EmailTemplates.Commands.DeleteEmailCampaign;
 using Tokki.Application.UseCases.EmailTemplates.Commands.UpdateEmailCampaign;
 using Tokki.Application.UseCases.EmailTemplates.Queries.GetEmailCampaignById;

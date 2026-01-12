@@ -8,7 +8,7 @@ using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Domain.Enums;
 
-namespace Tokki.Application.UseCases.Accounts.Commands.CreateEmailCampaign
+namespace Tokki.Application.UseCases.EmailTemplates.Commands.CreateEmailCampaign
 {
     public class CreateEmailCampaignByGroupCommand : IRequest<OperationResult<string>>
     {

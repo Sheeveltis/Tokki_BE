@@ -4,11 +4,10 @@ using System.Text.Json;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
-using Tokki.Application.UseCases.Accounts.Commands.CreateEmailCampaign;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 
-namespace Tokki.Application.UseCases.Email.Commands.CreateCampaign
+namespace Tokki.Application.UseCases.EmailTemplates.Commands.CreateEmailCampaign
 {
     public class CreateEmailCampaignByGroupCommandHandler : IRequestHandler<CreateEmailCampaignByGroupCommand, OperationResult<string>>
     {

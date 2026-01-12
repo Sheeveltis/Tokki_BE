@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace Tokki.Application.UseCases.Accounts.Commands.CreateEmailCampaign
+namespace Tokki.Application.UseCases.EmailTemplates.Commands.CreateEmailCampaign
 {
     public class CreateEmailCampaignByGroupCommandValidator : AbstractValidator<CreateEmailCampaignByGroupCommand>
     {
