@@ -39,7 +39,7 @@ namespace Tokki.Application.UseCases.Topics.Commands.ApproveTopic
             var currentUserId = _httpContextAccessor.HttpContext?.User?
                 .FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            if (string.IsNullOrEmpty(currentUserId))
+            if (string.IsNullOrWhiteSpace(currentUserId))
             {
                 return OperationResult<bool>.Failure(
                     new List<Error> { AppErrors.UserUnauthorized },
@@ -48,55 +48,89 @@ namespace Tokki.Application.UseCases.Topics.Commands.ApproveTopic
                 );
             }
 
-            var topic = await _topicRepository.GetByIdAsync(request.TopicId);
-            if (topic == null)
+            try
             {
-                return OperationResult<bool>.Failure(
-                    new List<Error> { AppErrors.TopicNotFound },
-                    404,
-                    AppErrors.TopicNotFound.Description
-                );
-            }
-
-            if (topic.Status != TopicStatus.PendingApproval)
-            {
-                return OperationResult<bool>.Failure(
-                    new List<Error>
-                    {
-                        new Error(
-                            "TOPIC_INVALID_STATUS",
-                            "Topic không ở trạng thái chờ phê duyệt."
-                        )
-                    },
-                    400,
-                    "Không thể duyệt topic."
-                );
-            }
-
-            topic.Status = TopicStatus.Active;
-
-            await _topicRepository.UpdateAsync(topic);
-            await _topicRepository.SaveChangesAsync(cancellationToken);
-
-            // Gửi email thông báo cho người tạo topic
-            if (!string.IsNullOrEmpty(topic.CreateBy))
-            {
-                var creator = await _accountRepository.GetByIdAsync(topic.CreateBy);
-                if (creator != null && !string.IsNullOrEmpty(creator.Email))
+                var topic = await _topicRepository.GetByIdAsync(request.TopicId);
+                if (topic == null)
                 {
-                    await SendApproveEmailAsync(
-                        creator.Email,
-                        creator.FullName,
-                        topic.TopicName
+                    return OperationResult<bool>.Failure(
+                        new List<Error> { AppErrors.TopicNotFound },
+                        404,
+                        AppErrors.TopicNotFound.Description
                     );
                 }
-            }
 
-            return OperationResult<bool>.Success(
-                true,
-                200,
-                "Duyệt topic thành công."
-            );
+                // Không cho duyệt nếu đã Deleted
+                if (topic.Status == TopicStatus.Deleted)
+                {
+                    return OperationResult<bool>.Failure(
+                        new List<Error> { AppErrors.TopicAlreadyDeleted },
+                        400,
+                        AppErrors.TopicAlreadyDeleted.Description
+                    );
+                }
+
+                // Idempotent: đã Active thì coi như đã duyệt
+                if (topic.Status == TopicStatus.Active)
+                {
+                    return OperationResult<bool>.Success(true, 200, "Topic đã được duyệt và đang hoạt động.");
+                }
+
+                // Chỉ cho phép PendingApproval -> Active
+                if (topic.Status != TopicStatus.PendingApproval)
+                {
+                    return OperationResult<bool>.Failure(
+                        new List<Error>
+                        {
+                            new Error("TOPIC_INVALID_STATUS", "Topic không ở trạng thái chờ phê duyệt.")
+                        },
+                        400,
+                        "Không thể duyệt topic."
+                    );
+                }
+
+                var now = DateTime.UtcNow.AddHours(7);
+
+                // Duyệt
+                topic.Status = TopicStatus.Active;
+
+                // Audit update
+                topic.UpdateBy = currentUserId;
+                topic.UpdateDate = now;
+
+                // Audit approve (người duyệt + thời gian duyệt)
+                topic.ApprovedBy = currentUserId;   // NVARCHAR(15) FK -> Accounts.UserId
+                topic.ApprovedDate = now;
+
+                await _topicRepository.UpdateAsync(topic);
+                await _topicRepository.SaveChangesAsync(cancellationToken);
+
+                // Gửi email thông báo cho người tạo topic
+                if (!string.IsNullOrWhiteSpace(topic.CreateBy))
+                {
+                    var creator = await _accountRepository.GetByIdAsync(topic.CreateBy);
+                    if (creator != null && !string.IsNullOrWhiteSpace(creator.Email))
+                    {
+                        await SendApproveEmailAsync(
+                            creator.Email,
+                            creator.FullName,
+                            topic.TopicName
+                        );
+                    }
+                }
+
+                return OperationResult<bool>.Success(true, 200, "Duyệt topic thành công.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "ApproveTopic failed. TopicId={TopicId}", request.TopicId);
+
+                return OperationResult<bool>.Failure(
+                    new List<Error> { AppErrors.ServerError },
+                    500,
+                    AppErrors.ServerError.Description
+                );
+            }
         }
 
         private async Task SendApproveEmailAsync(

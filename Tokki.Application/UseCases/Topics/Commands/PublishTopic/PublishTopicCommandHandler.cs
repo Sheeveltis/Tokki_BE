@@ -89,8 +89,14 @@ namespace Tokki.Application.UseCases.Topics.Commands.PublishTopic
 
                 // 5) UPDATE
                 topic.Status = TopicStatus.Active;
+
+                // Update audit
                 topic.UpdateBy = currentUserId;
                 topic.UpdateDate = DateTime.UtcNow.AddHours(7);
+
+                // Approve audit (người duyệt + thời gian duyệt)
+                topic.ApprovedBy = currentUserId;                 // NVARCHAR(15) FK -> Accounts.UserId
+                topic.ApprovedDate = DateTime.UtcNow.AddHours(7); // thời gian duyệt
 
                 await _topicRepository.UpdateAsync(topic);
                 await _topicRepository.SaveChangesAsync(cancellationToken);
