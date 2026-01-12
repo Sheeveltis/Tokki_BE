@@ -1,97 +1,187 @@
-﻿//using FluentAssertions;
-//using Moq;
-//using System;
-//using System.Collections.Generic;
-//using System.Threading;
-//using System.Threading.Tasks;
-//using Tokki.Application.Common.Models;
-//using Tokki.Application.UseCases.EmailTemplates.Commands.DeleteEmailTemplate;
-//using Tokki.Domain.Entities;
-//using Tokki.UnitTests.Common.Bases;
-//using Tokki.UnitTests.Common.TestData;
-//using Xunit;
+﻿using FluentAssertions;
+using Moq;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Tokki.Application.Common.Models;
+using Tokki.Application.UseCases.EmailTemplates.Commands.DeleteEmailTemplate;
+using Tokki.Domain.Entities;
+using Tokki.Domain.Enums;
+using Tokki.UnitTests.Common.Bases;
+using Xunit;
 
-//namespace Tokki.UnitTests.Features.EmailTemplates.Commands
-//{
-//    public class DeleteEmailTemplateCommandHandlerTests : EmailTemplateTestBase
-//    {
-//        private readonly DeleteEmailTemplateCommandHandler _handler;
+namespace Tokki.UnitTests.Features.EmailTemplates.Commands
+{
+    public class DeleteEmailAutoTemplateCommandHandlerTests : EmailTemplateTestBase
+    {
+        private readonly DeleteEmailAutoTemplateCommandHandler _handler;
 
-//        public DeleteEmailTemplateCommandHandlerTests()
-//        {
-//            // Khởi tạo Handler với Mock Repository từ Base
-//            _handler = new DeleteEmailTemplateCommandHandler(_mockRepo.Object);
-//        }
+        public DeleteEmailAutoTemplateCommandHandlerTests()
+        {
+            _handler = new DeleteEmailAutoTemplateCommandHandler(_mockRepo.Object);
 
-//        [Fact]
-//        public async Task Handle_Should_ReturnFailure_When_TemplateNotFound()
-//        {
-//            // 1. Arrange
-//            string fakeId = "template-fake-id";
-//            var command = EmailTemplateTestData.GetValidDeleteCommand(fakeId);
+            // Tránh await null nếu repo methods là Task
+            _mockRepo.Setup(x => x.UpdateAsync(It.IsAny<EmailTemplate>()))
+                     .Returns(Task.CompletedTask);
 
-//            // Giả lập Repository: Tìm ID không thấy -> trả về null
-//            _mockRepo.Setup(x => x.GetByIdAsync(fakeId))
-//                     .ReturnsAsync((EmailTemplate?)null);
+            _mockRepo.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+                     .Returns(Task.CompletedTask);
+        }
 
-//            // 2. Act
-//            var result = await _handler.Handle(command, CancellationToken.None);
+        [Fact]
+        public async Task Handle_Should_ReturnFailure_When_TemplateNotFound()
+        {
+            // Arrange
+            var command = new DeleteEmailAutoTemplateCommand
+            {
+                TemplateId = "tpl-not-found"
+            };
 
-//            // 3. Assert
-//            result.IsSuccess.Should().BeFalse();
-//            // Kiểm tra mã lỗi trả về
-//            result.Errors.Should().Contain(e => e.Code == AppErrors.EmailTemplateNotFound.Code);
+            _mockRepo.Setup(x => x.GetByIdAsync(command.TemplateId))
+                     .ReturnsAsync((EmailTemplate?)null);
 
-//            // QUAN TRỌNG: Đảm bảo hàm DeleteAsync KHÔNG được gọi
-//            _mockRepo.Verify(x => x.DeleteAsync(It.IsAny<string>()), Times.Never);
-//            _mockRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
-//        }
+            // Act
+            var result = await _handler.Handle(command, CancellationToken.None);
 
-//        [Fact]
-//        public async Task Handle_Should_ReturnSuccess_When_TemplateExists()
-//        {
-//            // 1. Arrange
-//            string existingId = "template-real-id";
-//            var command = EmailTemplateTestData.GetValidDeleteCommand(existingId);
-//            var existingEntity = new EmailTemplate { TemplateId = existingId };
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Errors.Should().Contain(e => e.Code == AppErrors.EmailTemplateNotFound.Code);
 
-//            // Giả lập Repository: Tìm thấy entity
-//            _mockRepo.Setup(x => x.GetByIdAsync(existingId))
-//                     .ReturnsAsync(existingEntity);
+            _mockRepo.Verify(x => x.UpdateAsync(It.IsAny<EmailTemplate>()), Times.Never);
+            _mockRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        }
 
-//            // 2. Act
-//            var result = await _handler.Handle(command, CancellationToken.None);
+        [Fact]
+        public async Task Handle_Should_ReturnSuccess_When_TemplateAlreadyDeleted()
+        {
+            // Arrange
+            var command = new DeleteEmailAutoTemplateCommand
+            {
+                TemplateId = "tpl-deleted"
+            };
 
-//            // 3. Assert
-//            result.IsSuccess.Should().BeTrue();
-//            result.StatusCode.Should().Be(200);
-//            result.Message.Should().Be("Xóa template thành công!");
+            var existing = new EmailTemplate
+            {
+                TemplateId = command.TemplateId,
+                Status = EmailTemplateStatus.Deleted,
+                UpdatedAt = DateTime.UtcNow.AddHours(7).AddDays(-1)
+            };
 
-//            // Kiểm tra hàm DeleteAsync đã được gọi đúng ID
-//            _mockRepo.Verify(x => x.DeleteAsync(existingId), Times.Once);
+            _mockRepo.Setup(x => x.GetByIdAsync(command.TemplateId))
+                     .ReturnsAsync(existing);
 
-//            // Kiểm tra hàm SaveChangesAsync đã được gọi
-//            _mockRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
-//        }
+            // Act
+            var result = await _handler.Handle(command, CancellationToken.None);
 
-//        [Fact]
-//        public async Task Handle_Should_ThrowException_When_DatabaseErrorOccurs()
-//        {
-//            // 1. Arrange
-//            string existingId = "template-error-id";
-//            var command = EmailTemplateTestData.GetValidDeleteCommand(existingId);
-//            var existingEntity = new EmailTemplate { TemplateId = existingId };
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.StatusCode.Should().Be(200);
+            result.Data.Should().Be(command.TemplateId);
+            result.Message.Should().Be("Template đã ở trạng thái Deleted.");
 
-//            _mockRepo.Setup(x => x.GetByIdAsync(existingId)).ReturnsAsync(existingEntity);
+            // Idempotent: không update DB
+            _mockRepo.Verify(x => x.UpdateAsync(It.IsAny<EmailTemplate>()), Times.Never);
+            _mockRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        }
 
-//            // Giả lập lỗi tại hàm Delete hoặc SaveChanges
-//            _mockRepo.Setup(x => x.DeleteAsync(existingId))
-//                     .ThrowsAsync(new Exception("Foreign Key Constraint Error"));
+        [Fact]
+        public async Task Handle_Should_ReturnSuccess_When_TemplateExists_And_NotDeleted()
+        {
+            // Arrange
+            var command = new DeleteEmailAutoTemplateCommand
+            {
+                TemplateId = "tpl-active"
+            };
 
-//            // 2. Act & Assert
-//            await _handler.Invoking(h => h.Handle(command, CancellationToken.None))
-//                          .Should().ThrowAsync<Exception>()
-//                          .WithMessage("Foreign Key Constraint Error");
-//        }
-//    }
-//}
+            var existing = new EmailTemplate
+            {
+                TemplateId = command.TemplateId,
+                Status = EmailTemplateStatus.Draft
+                // UpdatedAt là DateTime (non-nullable) => không gán null
+            };
+
+            _mockRepo.Setup(x => x.GetByIdAsync(command.TemplateId))
+                     .ReturnsAsync(existing);
+
+            EmailTemplate? updatedEntity = null;
+            _mockRepo.Setup(x => x.UpdateAsync(It.IsAny<EmailTemplate>()))
+                     .Callback<EmailTemplate>(t => updatedEntity = t)
+                     .Returns(Task.CompletedTask);
+
+            var nowVn = DateTime.UtcNow.AddHours(7);
+
+            // Act
+            var result = await _handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.StatusCode.Should().Be(200);
+            result.Data.Should().Be(command.TemplateId);
+            result.Message.Should().Be("Xóa template thành công!");
+
+            _mockRepo.Verify(x => x.UpdateAsync(It.IsAny<EmailTemplate>()), Times.Once);
+            _mockRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+
+            updatedEntity.Should().NotBeNull();
+            updatedEntity!.Status.Should().Be(EmailTemplateStatus.Deleted);
+
+            updatedEntity.UpdatedAt.Should().BeCloseTo(nowVn, TimeSpan.FromMinutes(2));
+        }
+
+        [Fact]
+        public async Task Handle_Should_ThrowException_When_UpdateAsyncFails()
+        {
+            // Arrange
+            var command = new DeleteEmailAutoTemplateCommand
+            {
+                TemplateId = "tpl-error"
+            };
+
+            var existing = new EmailTemplate
+            {
+                TemplateId = command.TemplateId,
+                Status = EmailTemplateStatus.Draft
+            };
+
+            _mockRepo.Setup(x => x.GetByIdAsync(command.TemplateId))
+                     .ReturnsAsync(existing);
+
+            _mockRepo.Setup(x => x.UpdateAsync(It.IsAny<EmailTemplate>()))
+                     .ThrowsAsync(new Exception("DB Update Error"));
+
+            // Act & Assert
+            await _handler.Invoking(h => h.Handle(command, CancellationToken.None))
+                          .Should().ThrowAsync<Exception>()
+                          .WithMessage("DB Update Error");
+
+            _mockRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Handle_Should_ThrowException_When_SaveChangesFails()
+        {
+            // Arrange
+            var command = new DeleteEmailAutoTemplateCommand
+            {
+                TemplateId = "tpl-save-error"
+            };
+
+            var existing = new EmailTemplate
+            {
+                TemplateId = command.TemplateId,
+                Status = EmailTemplateStatus.Draft
+            };
+
+            _mockRepo.Setup(x => x.GetByIdAsync(command.TemplateId))
+                     .ReturnsAsync(existing);
+
+            _mockRepo.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+                     .ThrowsAsync(new Exception("DB Save Error"));
+
+            // Act & Assert
+            await _handler.Invoking(h => h.Handle(command, CancellationToken.None))
+                          .Should().ThrowAsync<Exception>()
+                          .WithMessage("DB Save Error");
+        }
+    }
+}

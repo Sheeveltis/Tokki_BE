@@ -1,35 +1,36 @@
 ﻿using Moq;
 using Xunit;
-using FluentValidation;
-using FluentValidation.Results;
-using Tokki.Application.UseCases.Accounts.Commands.UpdateProfile;
 using Tokki.Application.IRepositories;
-using Tokki.Application.Common.Models;
+using Tokki.Application.UseCases.Accounts.Commands.UpdateProfile;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Linq;
+
 using EntityAccount = Tokki.Domain.Entities.Account;
+using Tokki.Application.Common.Models;
 
 namespace Tokki.UnitTests.UseCases.Accounts.Commands
 {
     public class UpdateProfileCommandHandlerTests
     {
         private readonly Mock<IAccountRepository> _mockAccountRepo;
-        private readonly Mock<IValidator<UpdateProfileCommand>> _mockValidator;
         private readonly UpdateProfileCommandHandler _handler;
 
         public UpdateProfileCommandHandlerTests()
         {
             _mockAccountRepo = new Mock<IAccountRepository>();
-            _mockValidator = new Mock<IValidator<UpdateProfileCommand>>();
 
-            // Setup Validator mặc định là Valid
-            _mockValidator.Setup(v => v.ValidateAsync(It.IsAny<UpdateProfileCommand>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new ValidationResult());
+            // Tránh await null
+            _mockAccountRepo
+                .Setup(r => r.UpdateUserAsync(It.IsAny<EntityAccount>()))
+                .Returns(Task.CompletedTask);
+
+            _mockAccountRepo
+                .Setup(r => r.SaveChangesAsync(It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
 
             _handler = new UpdateProfileCommandHandler(_mockAccountRepo.Object);
         }
@@ -64,8 +65,13 @@ namespace Tokki.UnitTests.UseCases.Accounts.Commands
             _mockAccountRepo.Setup(r => r.GetByIdAsync(userId))
                 .ReturnsAsync(existingUser);
 
-            _mockAccountRepo.Setup(r => r.IsPhoneNumberUsedByOtherUserAsync(command.PhoneNumber, userId))
+            _mockAccountRepo.Setup(r => r.IsPhoneNumberUsedByOtherUserAsync(command.PhoneNumber!, userId))
                 .ReturnsAsync(false);
+
+            EntityAccount? updatedUser = null;
+            _mockAccountRepo.Setup(r => r.UpdateUserAsync(It.IsAny<EntityAccount>()))
+                .Callback<EntityAccount>(u => updatedUser = u)
+                .Returns(Task.CompletedTask);
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -73,17 +79,21 @@ namespace Tokki.UnitTests.UseCases.Accounts.Commands
             // Assert
             Assert.True(result.IsSuccess);
             Assert.Equal(200, result.StatusCode);
+
+            // Với OperationResult.Success("...", 200) => chuỗi thường nằm ở Data
             Assert.Equal("Cập nhật thông tin thành công!", result.Data);
 
-            // Verify UpdateUserAsync được gọi
-            _mockAccountRepo.Verify(r => r.UpdateUserAsync(It.Is<EntityAccount>(u =>
-                u.UserId == userId &&
-                u.FullName == command.FullName &&
-                u.PhoneNumber == command.PhoneNumber &&
-                u.AvatarUrl == command.AvatarUrl
-            )), Times.Once);
-
+            _mockAccountRepo.Verify(r => r.GetByIdAsync(userId), Times.Once);
+            _mockAccountRepo.Verify(r => r.IsPhoneNumberUsedByOtherUserAsync(command.PhoneNumber!, userId), Times.Once);
+            _mockAccountRepo.Verify(r => r.UpdateUserAsync(It.IsAny<EntityAccount>()), Times.Once);
             _mockAccountRepo.Verify(r => r.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+
+            Assert.NotNull(updatedUser);
+            Assert.Equal(userId, updatedUser!.UserId);
+            Assert.Equal(command.FullName, updatedUser.FullName);
+            Assert.Equal(command.PhoneNumber, updatedUser.PhoneNumber);
+            Assert.Equal(command.AvatarUrl, updatedUser.AvatarUrl);
+            Assert.NotNull(updatedUser.UpdatedAt);
         }
 
         // ==========================================
@@ -98,9 +108,9 @@ namespace Tokki.UnitTests.UseCases.Accounts.Commands
             {
                 UserId = userId,
                 FullName = "New Name Only",
-                PhoneNumber = null, // Không cập nhật phone
-                DateOfBirth = null, // Không cập nhật DOB
-                AvatarUrl = null    // Không cập nhật avatar
+                PhoneNumber = null,
+                DateOfBirth = null,
+                AvatarUrl = null
             };
 
             var existingUser = new EntityAccount
@@ -116,6 +126,11 @@ namespace Tokki.UnitTests.UseCases.Accounts.Commands
             _mockAccountRepo.Setup(r => r.GetByIdAsync(userId))
                 .ReturnsAsync(existingUser);
 
+            EntityAccount? updatedUser = null;
+            _mockAccountRepo.Setup(r => r.UpdateUserAsync(It.IsAny<EntityAccount>()))
+                .Callback<EntityAccount>(u => updatedUser = u)
+                .Returns(Task.CompletedTask);
+
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -123,15 +138,17 @@ namespace Tokki.UnitTests.UseCases.Accounts.Commands
             Assert.True(result.IsSuccess);
             Assert.Equal(200, result.StatusCode);
 
-            // Verify chỉ FullName được cập nhật, các trường khác giữ nguyên
-            _mockAccountRepo.Verify(r => r.UpdateUserAsync(It.Is<EntityAccount>(u =>
-                u.FullName == "New Name Only" &&
-                u.PhoneNumber == "0987654321" // Giữ nguyên
-            )), Times.Once);
+            _mockAccountRepo.Verify(r => r.IsPhoneNumberUsedByOtherUserAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            _mockAccountRepo.Verify(r => r.UpdateUserAsync(It.IsAny<EntityAccount>()), Times.Once);
+            _mockAccountRepo.Verify(r => r.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+
+            Assert.NotNull(updatedUser);
+            Assert.Equal("New Name Only", updatedUser!.FullName);
+            Assert.Equal("0987654321", updatedUser.PhoneNumber); // giữ nguyên
         }
 
         // ==========================================
-        // CASE 3: LỖI - USERID NULL HOẶC EMPTY
+        // CASE 3: LỖI - USERID NULL
         // ==========================================
         [Fact]
         public async Task Handle_ShouldReturnFailure_WhenUserIdIsNull()
@@ -139,7 +156,7 @@ namespace Tokki.UnitTests.UseCases.Accounts.Commands
             // Arrange
             var command = new UpdateProfileCommand
             {
-                UserId = null, // UserId null
+                UserId = null,
                 FullName = "Test Name"
             };
 
@@ -149,19 +166,18 @@ namespace Tokki.UnitTests.UseCases.Accounts.Commands
             // Assert
             Assert.False(result.IsSuccess);
 
-            // Kiểm tra Error từ AppErrors
             Assert.NotNull(result.Errors);
             Assert.Single(result.Errors);
             Assert.Equal(AppErrors.UserUnauthorized.Code, result.Errors.First().Code);
             Assert.Equal(AppErrors.UserUnauthorized.Description, result.Errors.First().Description);
 
-            // Không được gọi DB
             _mockAccountRepo.Verify(r => r.GetByIdAsync(It.IsAny<string>()), Times.Never);
             _mockAccountRepo.Verify(r => r.UpdateUserAsync(It.IsAny<EntityAccount>()), Times.Never);
+            _mockAccountRepo.Verify(r => r.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
         }
 
         // ==========================================
-        // CASE 4: LỖI - USERID EMPTY STRING
+        // CASE 4: LỖI - USERID EMPTY
         // ==========================================
         [Fact]
         public async Task Handle_ShouldReturnFailure_WhenUserIdIsEmpty()
@@ -169,7 +185,7 @@ namespace Tokki.UnitTests.UseCases.Accounts.Commands
             // Arrange
             var command = new UpdateProfileCommand
             {
-                UserId = "", // UserId empty
+                UserId = "",
                 FullName = "Test Name"
             };
 
@@ -182,8 +198,8 @@ namespace Tokki.UnitTests.UseCases.Accounts.Commands
             Assert.Single(result.Errors);
             Assert.Equal(AppErrors.UserUnauthorized.Code, result.Errors.First().Code);
 
-            // Không được gọi DB
             _mockAccountRepo.Verify(r => r.GetByIdAsync(It.IsAny<string>()), Times.Never);
+            _mockAccountRepo.Verify(r => r.UpdateUserAsync(It.IsAny<EntityAccount>()), Times.Never);
         }
 
         // ==========================================
@@ -199,7 +215,7 @@ namespace Tokki.UnitTests.UseCases.Accounts.Commands
                 FullName = "Test Name"
             };
 
-            _mockAccountRepo.Setup(r => r.GetByIdAsync(command.UserId))
+            _mockAccountRepo.Setup(r => r.GetByIdAsync(command.UserId!))
                 .ReturnsAsync((EntityAccount)null);
 
             // Act
@@ -207,19 +223,17 @@ namespace Tokki.UnitTests.UseCases.Accounts.Commands
 
             // Assert
             Assert.False(result.IsSuccess);
-
-            // Kiểm tra Error từ AppErrors
             Assert.NotNull(result.Errors);
             Assert.Single(result.Errors);
             Assert.Equal(AppErrors.UserNotFoundById.Code, result.Errors.First().Code);
             Assert.Equal(AppErrors.UserNotFoundById.Description, result.Errors.First().Description);
 
-            // Không được gọi UpdateUserAsync
             _mockAccountRepo.Verify(r => r.UpdateUserAsync(It.IsAny<EntityAccount>()), Times.Never);
+            _mockAccountRepo.Verify(r => r.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
         }
 
         // ==========================================
-        // CASE 6: LỖI - SỐ ĐIỆN THOẠI ĐÃ ĐƯỢC DÙNG BỞI USER KHÁC
+        // CASE 6: LỖI - SĐT ĐÃ ĐƯỢC DÙNG BỞI USER KHÁC
         // ==========================================
         [Fact]
         public async Task Handle_ShouldReturnFailure_WhenPhoneNumberIsUsedByOtherUser()
@@ -229,7 +243,7 @@ namespace Tokki.UnitTests.UseCases.Accounts.Commands
             var command = new UpdateProfileCommand
             {
                 UserId = userId,
-                PhoneNumber = "0999999999" // SĐT đã được user khác sử dụng
+                PhoneNumber = "0999999999"
             };
 
             var existingUser = new EntityAccount
@@ -244,8 +258,7 @@ namespace Tokki.UnitTests.UseCases.Accounts.Commands
             _mockAccountRepo.Setup(r => r.GetByIdAsync(userId))
                 .ReturnsAsync(existingUser);
 
-            // SĐT đã được user khác sử dụng
-            _mockAccountRepo.Setup(r => r.IsPhoneNumberUsedByOtherUserAsync(command.PhoneNumber, userId))
+            _mockAccountRepo.Setup(r => r.IsPhoneNumberUsedByOtherUserAsync(command.PhoneNumber!, userId))
                 .ReturnsAsync(true);
 
             // Act
@@ -253,127 +266,68 @@ namespace Tokki.UnitTests.UseCases.Accounts.Commands
 
             // Assert
             Assert.False(result.IsSuccess);
-
-            // Kiểm tra Error từ AppErrors
             Assert.NotNull(result.Errors);
             Assert.Single(result.Errors);
             Assert.Equal(AppErrors.PhoneNumberDuplicated.Code, result.Errors.First().Code);
             Assert.Equal(AppErrors.PhoneNumberDuplicated.Description, result.Errors.First().Description);
 
-            // Không được gọi UpdateUserAsync
             _mockAccountRepo.Verify(r => r.UpdateUserAsync(It.IsAny<EntityAccount>()), Times.Never);
+            _mockAccountRepo.Verify(r => r.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
         }
 
         // ==========================================
-        // CASE 7: LỖI VALIDATION - SỐ ĐIỆN THOẠI KHÔNG HỢP LỆ
+        // CASE 7/8/9: VALIDATION -> TEST VALIDATOR RIÊNG (VÌ HANDLER KHÔNG VALIDATE)
         // ==========================================
         [Fact]
-        public async Task Handle_ShouldReturnFailure_WhenPhoneNumberIsInvalid()
+        public async Task Validator_ShouldFail_WhenPhoneNumberIsInvalid()
         {
-            // Arrange
+            var validator = new UpdateProfileCommandValidator();
             var command = new UpdateProfileCommand
             {
                 UserId = "User123",
-                PhoneNumber = "abc123xyz" // Chứa ký tự không phải số
+                PhoneNumber = "abc123xyz"
             };
 
-            // Giả lập Validator: Trả về Lỗi
-            var validationFailures = new List<ValidationFailure>
-            {
-                new ValidationFailure("Số điện thoại", "Số điện thoại chỉ được chứa các ký tự số.")
-            };
-            var validationResult = new ValidationResult(validationFailures);
+            var result = await validator.ValidateAsync(command);
 
-            _mockValidator.Setup(v => v.ValidateAsync(command, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(validationResult);
-
-            // Act
-            var result = await _handler.Handle(command, CancellationToken.None);
-
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(400, result.StatusCode);
-
-            // Kiểm tra Error message
-            Assert.NotNull(result.Errors);
-            Assert.Contains(result.Errors, e => e.Description.Contains("Số điện thoại chỉ được chứa các ký tự số"));
-
-            // Không được gọi DB
-            _mockAccountRepo.Verify(r => r.GetByIdAsync(It.IsAny<string>()), Times.Never);
+            Assert.False(result.IsValid);
+            Assert.Contains(result.Errors, e => e.ErrorMessage.Contains("Số điện thoại chỉ được chứa các ký tự số."));
         }
 
-        // ==========================================
-        // CASE 8: LỖI VALIDATION - HỌ TÊN QUÁ DÀI
-        // ==========================================
         [Fact]
-        public async Task Handle_ShouldReturnFailure_WhenFullNameTooLong()
+        public async Task Validator_ShouldFail_WhenFullNameTooLong()
         {
-            // Arrange
+            var validator = new UpdateProfileCommandValidator();
             var command = new UpdateProfileCommand
             {
                 UserId = "User123",
-                FullName = new string('A', 300) // Quá 255 ký tự
+                FullName = new string('A', 300)
             };
 
-            // Giả lập Validator: Trả về Lỗi
-            var validationFailures = new List<ValidationFailure>
-            {
-                new ValidationFailure("Họ và tên", "'Họ và tên' tối đa 255 ký tự. Bạn đã nhập 300 ký tự.")
-            };
-            var validationResult = new ValidationResult(validationFailures);
+            var result = await validator.ValidateAsync(command);
 
-            _mockValidator.Setup(v => v.ValidateAsync(command, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(validationResult);
-
-            // Act
-            var result = await _handler.Handle(command, CancellationToken.None);
-
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(400, result.StatusCode);
-
-            // Kiểm tra Error message
-            Assert.NotNull(result.Errors);
-            Assert.Contains(result.Errors, e => e.Description.Contains("tối đa 255 ký tự"));
+            Assert.False(result.IsValid);
+            Assert.Contains(result.Errors, e => e.PropertyName == "FullName");
         }
 
-        // ==========================================
-        // CASE 9: LỖI VALIDATION - NGÀY SINH KHÔNG HỢP LỆ
-        // ==========================================
         [Fact]
-        public async Task Handle_ShouldReturnFailure_WhenDateOfBirthIsInFuture()
+        public async Task Validator_ShouldFail_WhenDateOfBirthIsInFuture()
         {
-            // Arrange
+            var validator = new UpdateProfileCommandValidator();
             var command = new UpdateProfileCommand
             {
                 UserId = "User123",
-                DateOfBirth = DateOnly.FromDateTime(DateTime.Now.AddYears(1)) // Ngày sinh trong tương lai
+                DateOfBirth = DateOnly.FromDateTime(DateTime.Now.AddYears(1))
             };
 
-            // Giả lập Validator: Trả về Lỗi
-            var validationFailures = new List<ValidationFailure>
-            {
-                new ValidationFailure("Ngày sinh", "Ngày sinh không hợp lệ (phải nhỏ hơn ngày hiện tại).")
-            };
-            var validationResult = new ValidationResult(validationFailures);
+            var result = await validator.ValidateAsync(command);
 
-            _mockValidator.Setup(v => v.ValidateAsync(command, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(validationResult);
-
-            // Act
-            var result = await _handler.Handle(command, CancellationToken.None);
-
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(400, result.StatusCode);
-
-            // Kiểm tra Error message
-            Assert.NotNull(result.Errors);
-            Assert.Contains(result.Errors, e => e.Description.Contains("Ngày sinh không hợp lệ"));
+            Assert.False(result.IsValid);
+            Assert.Contains(result.Errors, e => e.ErrorMessage.Contains("Ngày sinh không hợp lệ"));
         }
 
         // ==========================================
-        // CASE 10: CẬP NHẬT THÀNH CÔNG - UPDATEDTT ĐƯỢC SET
+        // CASE 10: UPDATEDAT ĐƯỢC SET
         // ==========================================
         [Fact]
         public async Task Handle_ShouldSetUpdatedAt_WhenUpdateSuccessful()
@@ -391,7 +345,7 @@ namespace Tokki.UnitTests.UseCases.Accounts.Commands
                 UserId = userId,
                 Email = "time@tokki.vn",
                 FullName = "Old Name",
-                UpdatedAt = null, // Chưa có UpdatedAt
+                UpdatedAt = null,
                 Status = AccountStatus.Active,
                 Role = AccountRole.User
             };
@@ -399,17 +353,23 @@ namespace Tokki.UnitTests.UseCases.Accounts.Commands
             _mockAccountRepo.Setup(r => r.GetByIdAsync(userId))
                 .ReturnsAsync(existingUser);
 
+            EntityAccount? updatedUser = null;
+            _mockAccountRepo.Setup(r => r.UpdateUserAsync(It.IsAny<EntityAccount>()))
+                .Callback<EntityAccount>(u => updatedUser = u)
+                .Returns(Task.CompletedTask);
+
+            var nowVn = DateTime.UtcNow.AddHours(7);
+
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
 
             // Assert
             Assert.True(result.IsSuccess);
+            Assert.NotNull(updatedUser);
+            Assert.NotNull(updatedUser!.UpdatedAt);
 
-            // Verify UpdatedAt được set
-            _mockAccountRepo.Verify(r => r.UpdateUserAsync(It.Is<EntityAccount>(u =>
-                u.UpdatedAt != null &&
-                u.UpdatedAt.Value.Date == DateTime.UtcNow.AddHours(7).Date
-            )), Times.Once);
+            // Tránh flaky: chỉ cần UpdatedAt gần thời điểm hiện tại
+            Assert.True((updatedUser.UpdatedAt.Value - nowVn).Duration() < TimeSpan.FromMinutes(2));
         }
     }
 }

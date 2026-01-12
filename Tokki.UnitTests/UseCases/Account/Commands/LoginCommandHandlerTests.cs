@@ -1,44 +1,22 @@
-﻿using Moq;
-using Xunit;
-using FluentValidation;
-using FluentValidation.Results;
-using Tokki.Application.UseCases.Accounts.Commands.Login;
-using Tokki.Application.Common.Models;
-using Tokki.Domain.Entities;
-using Tokki.UnitTests.Common.Bases;
-using Tokki.UnitTests.Common.TestData;
+﻿using FluentAssertions;
+using Moq;
+using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Tokki.Application.Common.Models;
+using Tokki.Application.UseCases.Accounts.Commands.Login;
+using Tokki.Domain.Entities;
+using Tokki.Domain.Enums;
+using Tokki.UnitTests.Common.Bases;
+using Tokki.UnitTests.Common.TestData;
+using Xunit;
 using EntityAccount = Tokki.Domain.Entities.Account;
-using Tokki.Application.UseCases.Accounts.Queries.Login;
-using System.Linq;
-using Tokki.Application.IServices;
 
 namespace Tokki.UnitTests.UseCases.Accounts
 {
     public class LoginCommandHandlerTests : AccountTestBase
     {
-        // Mock riêng biệt của Use Case này 
-        private readonly Mock<IValidator<LoginCommand>> _mockValidator;
-        private readonly LoginCommandHandler _handler;
-        private readonly Mock<IGamificationService> _mockGamificationService;
-        //public LoginCommandHandlerTests()
-        //{
-        //    //_mockValidator = new Mock<IValidator<LoginCommand>>();
-
-        //    //_mockValidator.Setup(v => v.ValidateAsync(It.IsAny<LoginCommand>(), It.IsAny<CancellationToken>()))
-        //    //    .ReturnsAsync(new ValidationResult());
-
-        //    //_handler = new LoginCommandHandler(
-        //    //    _mockAccountRepo.Object,
-        //    //    _mockSystemConfigRepo.Object,
-        //    //    _mockJwtGenerator.Object,
-        //    //    _mockIdGenerator.Object,
-        //    //    _mockGamificationService.Object, 
-        //    //    _mockValidator.Object
-        //    );
-        //}
-
         // ==========================================
         // CASE 1: ĐĂNG NHẬP THÀNH CÔNG
         // ==========================================
@@ -49,11 +27,11 @@ namespace Tokki.UnitTests.UseCases.Accounts
             var email = "success@tokki.vn";
             var password = "Password123!";
 
-            var mockUser = AccountTestData.GetValidAccount(email, password);
+            var user = AccountTestData.GetValidAccount(email, password);
             var command = AccountTestData.GetLoginCommand(email, password);
 
             _mockAccountRepo.Setup(x => x.GetByEmailAsync(email))
-                .ReturnsAsync(mockUser);
+                .ReturnsAsync(user);
 
             _mockJwtGenerator.Setup(x => x.GenerateToken(It.IsAny<EntityAccount>(), It.IsAny<DateTime>()))
                 .Returns("fake-jwt-token");
@@ -61,17 +39,31 @@ namespace Tokki.UnitTests.UseCases.Accounts
             _mockIdGenerator.Setup(x => x.Generate(It.IsAny<int>()))
                 .Returns("session-id-123");
 
+            // Không bắt buộc setup TOKEN_EXPIRATION_MINUTES, handler default 60 nếu null
+            // Không bắt buộc setup DEFAULT_PASSWORD_*; Moq mặc định trả null => không bị chặn
+
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
 
             // Assert
-            Assert.True(result.IsSuccess);
-            Assert.Equal(200, result.StatusCode);
-            Assert.Equal("Đăng nhập thành công!", result.Message);
-            Assert.NotNull(result.Data);
-            Assert.Equal("fake-jwt-token", result.Data.Token);
+            result.IsSuccess.Should().BeTrue();
+            result.StatusCode.Should().Be(200);
+            result.Message.Should().Be("Đăng nhập thành công!");
+            result.Data.Should().NotBeNull();
+            result.Data!.Token.Should().Be("fake-jwt-token");
 
-            // Verify
+            _mockAccountRepo.Verify(x => x.UpdateUserAsync(It.IsAny<EntityAccount>()), Times.Once);
+            _mockGamificationService.Verify(x => x.CheckLoginGamificationAsync(user.UserId), Times.Once);
+
+            _mockEmailHistoryRepository.Verify(x =>
+                x.DeleteByUserAndTemplateTypeAsync(
+                    user.UserId,
+                    EmailTemplateType.OfflineReminder,
+                    It.IsAny<CancellationToken>()
+                ),
+                Times.Once
+            );
+
             _mockAccountRepo.Verify(x => x.AddSessionAsync(It.IsAny<Session>()), Times.Once);
             _mockAccountRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
@@ -93,15 +85,16 @@ namespace Tokki.UnitTests.UseCases.Accounts
             var result = await _handler.Handle(command, CancellationToken.None);
 
             // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(404, result.StatusCode);
-            Assert.Equal("Tài khoản không tồn tại.", result.Message);
+            result.IsSuccess.Should().BeFalse();
+            result.StatusCode.Should().Be(404);
+            result.Message.Should().Be("Tài khoản không tồn tại.");
 
-            // Kiểm tra Error từ AppErrors
-            Assert.NotNull(result.Errors);
-            Assert.Single(result.Errors);
-            Assert.Equal(AppErrors.UserNotFound.Code, result.Errors.First().Code);
-            Assert.Equal(AppErrors.UserNotFound.Description, result.Errors.First().Description);
+            result.Errors.Should().NotBeNull();
+            result.Errors.Should().HaveCount(1);
+            result.Errors.First().Code.Should().Be(AppErrors.UserNotFound.Code);
+            result.Errors.First().Description.Should().Be(AppErrors.UserNotFound.Description);
+
+            _mockAccountRepo.Verify(x => x.AddSessionAsync(It.IsAny<Session>()), Times.Never);
         }
 
         // ==========================================
@@ -115,16 +108,12 @@ namespace Tokki.UnitTests.UseCases.Accounts
             var correctPassword = "CorrectPassword";
             var wrongInputPassword = "WrongInput";
 
-            // Tạo User có mật khẩu đúng trong DB
-            var mockUser = AccountTestData.GetValidAccount(email, correctPassword);
-
-            // Tạo Command gửi lên mật khẩu SAI
+            var user = AccountTestData.GetValidAccount(email, correctPassword);
             var command = AccountTestData.GetLoginCommand(email, wrongInputPassword);
 
             _mockAccountRepo.Setup(x => x.GetByEmailAsync(email))
-                .ReturnsAsync(mockUser);
+                .ReturnsAsync(user);
 
-            // Setup Config giới hạn đăng nhập sai
             _mockSystemConfigRepo.Setup(x => x.GetValueByKeyAsync("LOGIN_FAILED_LIMIT"))
                 .ReturnsAsync("5");
             _mockSystemConfigRepo.Setup(x => x.GetValueByKeyAsync("LOGIN_LOCKOUT_DURATION_LEVEL_1"))
@@ -134,23 +123,23 @@ namespace Tokki.UnitTests.UseCases.Accounts
             var result = await _handler.Handle(command, CancellationToken.None);
 
             // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(400, result.StatusCode);
-            Assert.Equal("Mật khẩu không chính xác.", result.Message);
+            result.IsSuccess.Should().BeFalse();
+            result.StatusCode.Should().Be(400);
+            result.Message.Should().Be(AppErrors.WrongPassword.Description);
 
-            // Kiểm tra Error từ AppErrors
-            Assert.NotNull(result.Errors);
-            Assert.Single(result.Errors);
-            Assert.Equal(AppErrors.WrongPassword.Code, result.Errors.First().Code);
-            Assert.Equal(AppErrors.WrongPassword.Description, result.Errors.First().Description);
+            result.Errors.Should().NotBeNull();
+            result.Errors.Should().HaveCount(1);
+            result.Errors.First().Code.Should().Be(AppErrors.WrongPassword.Code);
+            result.Errors.First().Description.Should().Be(AppErrors.WrongPassword.Description);
 
-            // Verify UpdateUser được gọi để tăng FailedLoginCount
-            _mockAccountRepo.Verify(x => x.UpdateUserAsync(It.IsAny<EntityAccount>()), Times.Once);
+            _mockAccountRepo.Verify(x => x.UpdateUserAsync(It.Is<EntityAccount>(u => u.FailedLoginCount == 1)), Times.Once);
             _mockAccountRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+
+            _mockAccountRepo.Verify(x => x.AddSessionAsync(It.IsAny<Session>()), Times.Never);
         }
 
         // ==========================================
-        // CASE 4: TÀI KHOẢN BỊ KHÓA (BANNED)
+        // CASE 4: TÀI KHOẢN BỊ KHÓA VĨNH VIỄN (BANNED)
         // ==========================================
         [Fact]
         public async Task Handle_ShouldReturnFailure_WhenAccountIsBanned()
@@ -159,26 +148,26 @@ namespace Tokki.UnitTests.UseCases.Accounts
             var email = "banned@tokki.vn";
             var password = "password123";
 
-            // Lấy User bị khóa từ TestData
-            var mockUser = AccountTestData.GetBannedAccount(email, password);
+            var user = AccountTestData.GetBannedAccount(email, password);
             var command = AccountTestData.GetLoginCommand(email, password);
 
             _mockAccountRepo.Setup(x => x.GetByEmailAsync(email))
-                .ReturnsAsync(mockUser);
+                .ReturnsAsync(user);
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
 
             // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(403, result.StatusCode);
-            Assert.Equal("Tài khoản của bạn đã bị khóa vĩnh viễn. Vui lòng liên hệ CSKH.", result.Message);
+            result.IsSuccess.Should().BeFalse();
+            result.StatusCode.Should().Be(403);
+            result.Message.Should().Be("Tài khoản của bạn đã bị khóa vĩnh viễn.");
 
-            // Kiểm tra Error từ AppErrors
-            Assert.NotNull(result.Errors);
-            Assert.Single(result.Errors);
-            Assert.Equal(AppErrors.AccountBanned.Code, result.Errors.First().Code);
-            Assert.Equal(AppErrors.AccountBanned.Description, result.Errors.First().Description);
+            result.Errors.Should().NotBeNull();
+            result.Errors.Should().HaveCount(1);
+            result.Errors.First().Code.Should().Be(AppErrors.AccountBanned.Code);
+            result.Errors.First().Description.Should().Be(AppErrors.AccountBanned.Description);
+
+            _mockAccountRepo.Verify(x => x.AddSessionAsync(It.IsAny<Session>()), Times.Never);
         }
 
         // ==========================================
@@ -191,28 +180,31 @@ namespace Tokki.UnitTests.UseCases.Accounts
             var email = "locked@tokki.vn";
             var password = "password123";
 
-            var mockUser = AccountTestData.GetValidAccount(email, password);
-            // Đặt thời gian khóa trong tương lai (giờ Việt Nam + 7)
-            mockUser.LockedUntil = DateTime.UtcNow.AddHours(7).AddMinutes(10);
+            var user = AccountTestData.GetValidAccount(email, password);
+
+            // Handler so sánh với vietnamTimeNow = UtcNow + 7
+            // nên set LockedUntil dựa theo UtcNow+7 để chắc chắn > vietnamTimeNow
+            user.LockedUntil = DateTime.UtcNow.AddHours(7).AddMinutes(10);
 
             var command = AccountTestData.GetLoginCommand(email, password);
 
             _mockAccountRepo.Setup(x => x.GetByEmailAsync(email))
-                .ReturnsAsync(mockUser);
+                .ReturnsAsync(user);
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
 
             // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal(403, result.StatusCode);
-            Assert.Contains("Tài khoản đang bị tạm khóa", result.Message);
+            result.IsSuccess.Should().BeFalse();
+            result.StatusCode.Should().Be(403);
+            result.Message.Should().Contain("Tài khoản đang bị tạm khóa. Thử lại sau");
 
-            // Kiểm tra Error từ AppErrors
-            Assert.NotNull(result.Errors);
-            Assert.Single(result.Errors);
-            Assert.Equal(AppErrors.AccountLocked.Code, result.Errors.First().Code);
-            Assert.Equal(AppErrors.AccountLocked.Description, result.Errors.First().Description);
+            result.Errors.Should().NotBeNull();
+            result.Errors.Should().HaveCount(1);
+            result.Errors.First().Code.Should().Be(AppErrors.AccountLocked.Code);
+            result.Errors.First().Description.Should().Be(AppErrors.AccountLocked.Description);
+
+            _mockAccountRepo.Verify(x => x.AddSessionAsync(It.IsAny<Session>()), Times.Never);
         }
 
         // ==========================================
@@ -225,13 +217,14 @@ namespace Tokki.UnitTests.UseCases.Accounts
             var email = "reset@tokki.vn";
             var password = "Password123!";
 
-            var mockUser = AccountTestData.GetValidAccount(email, password);
-            mockUser.FailedLoginCount = 3; // Đã đăng nhập sai 3 lần trước đó
+            var user = AccountTestData.GetValidAccount(email, password);
+            user.FailedLoginCount = 3;
+            user.LockedUntil = DateTime.UtcNow.AddHours(7).AddMinutes(-1); // đã hết lock
 
             var command = AccountTestData.GetLoginCommand(email, password);
 
             _mockAccountRepo.Setup(x => x.GetByEmailAsync(email))
-                .ReturnsAsync(mockUser);
+                .ReturnsAsync(user);
 
             _mockJwtGenerator.Setup(x => x.GenerateToken(It.IsAny<EntityAccount>(), It.IsAny<DateTime>()))
                 .Returns("fake-jwt-token");
@@ -243,11 +236,85 @@ namespace Tokki.UnitTests.UseCases.Accounts
             var result = await _handler.Handle(command, CancellationToken.None);
 
             // Assert
-            Assert.True(result.IsSuccess);
-            Assert.Equal(200, result.StatusCode);
+            result.IsSuccess.Should().BeTrue();
+            result.StatusCode.Should().Be(200);
 
-            // Verify UpdateUser được gọi để reset FailedLoginCount về 0
-            _mockAccountRepo.Verify(x => x.UpdateUserAsync(It.Is<EntityAccount>(u => u.FailedLoginCount == 0)), Times.Once);
+            _mockAccountRepo.Verify(x =>
+                x.UpdateUserAsync(It.Is<EntityAccount>(u => u.FailedLoginCount == 0 && u.LockedUntil == null)),
+                Times.Once
+            );
+        }
+
+        // ==========================================
+        // CASE 7: TÀI KHOẢN INACTIVE
+        // ==========================================
+        [Fact]
+        public async Task Handle_ShouldReturnFailure_WhenAccountIsInactive()
+        {
+            // Arrange
+            var email = "inactive@tokki.vn";
+            var password = "Password123!";
+
+            var user = AccountTestData.GetValidAccount(email, password);
+            user.Status = AccountStatus.Inactive;
+
+            var command = AccountTestData.GetLoginCommand(email, password);
+
+            _mockAccountRepo.Setup(x => x.GetByEmailAsync(email))
+                .ReturnsAsync(user);
+
+            // Act
+            var result = await _handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.StatusCode.Should().Be(403);
+            result.Message.Should().Be("Tài khoản của bạn không hoạt động.");
+
+            result.Errors.Should().NotBeNull();
+            result.Errors.Should().HaveCount(1);
+            result.Errors.First().Code.Should().Be(AppErrors.AccountInActive.Code);
+            result.Errors.First().Description.Should().Be(AppErrors.AccountInActive.Description);
+
+            _mockAccountRepo.Verify(x => x.AddSessionAsync(It.IsAny<Session>()), Times.Never);
+        }
+
+        // ==========================================
+        // CASE 8: CHẶN MẬT KHẨU MẶC ĐỊNH (DEFAULT PASSWORD)
+        // ==========================================
+        [Fact]
+        public async Task Handle_ShouldReturnFailure_WhenUsingDefaultPassword()
+        {
+            // Arrange
+            var email = "defaultpass@tokki.vn";
+            var defaultPassword = "Tokki@Default123"; // giả lập mật khẩu mặc định từ config
+
+            var user = AccountTestData.GetValidAccount(email, defaultPassword);
+            var command = AccountTestData.GetLoginCommand(email, defaultPassword);
+
+            _mockAccountRepo.Setup(x => x.GetByEmailAsync(email))
+                .ReturnsAsync(user);
+
+            // Đúng mật khẩu nhưng bị chặn do trùng default password
+            _mockSystemConfigRepo.Setup(x => x.GetValueByKeyAsync("DEFAULT_PASSWORD_FOR_USER"))
+                .ReturnsAsync(defaultPassword);
+
+            // Act
+            var result = await _handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.StatusCode.Should().Be(403);
+            result.Message.Should().Be(AppErrors.DefaultPasswordUsed.Description);
+
+            result.Errors.Should().NotBeNull();
+            result.Errors.Should().HaveCount(1);
+            result.Errors.First().Code.Should().Be(AppErrors.DefaultPasswordUsed.Code);
+            result.Errors.First().Description.Should().Be(AppErrors.DefaultPasswordUsed.Description);
+
+            // Vì bị chặn trước đoạn tạo session/token
+            _mockAccountRepo.Verify(x => x.AddSessionAsync(It.IsAny<Session>()), Times.Never);
+            _mockAccountRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
         }
     }
 }

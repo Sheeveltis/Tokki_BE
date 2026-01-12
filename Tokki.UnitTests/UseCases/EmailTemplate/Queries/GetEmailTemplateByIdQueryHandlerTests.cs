@@ -1,78 +1,124 @@
-﻿//using FluentAssertions;
-//using Moq;
-//using System.Threading;
-//using System.Threading.Tasks;
-//using Tokki.Application.UseCases.EmailTemplates.Queries.GetEmailAutoTemplateById;
-//using Tokki.Domain.Entities;
-//using Tokki.UnitTests.Common.Bases;
-//using Tokki.UnitTests.Common.TestData;
-//using Xunit;
+﻿using FluentAssertions;
+using Moq;
+using System.Threading;
+using System.Threading.Tasks;
+using Tokki.Application.Common.Models;
+using Tokki.Application.UseCases.EmailTemplates.Queries.GetEmailAutoTemplateById;
+using Tokki.Domain.Entities;
+using Tokki.Domain.Enums;
+using Tokki.UnitTests.Common.Bases;
+using Xunit;
 
-//namespace Tokki.UnitTests.Features.EmailTemplates.Queries
-//{
-//    public class GetEmailTemplateByIdQueryHandlerTests : EmailTemplateTestBase
-//    {
-//        private readonly GetEmailTemplateByIdQueryHandler _handler;
+namespace Tokki.UnitTests.Features.EmailTemplates.Queries
+{
+    public class GetEmailAutoTemplateByIdQueryHandlerTests : EmailTemplateTestBase
+    {
+        private readonly GetEmailAutoTemplateByIdQueryHandler _handler;
 
-//        public GetEmailTemplateByIdQueryHandlerTests()
-//        {
-//            _handler = new GetEmailTemplateByIdQueryHandler(_mockRepo.Object);
-//        }
+        public GetEmailAutoTemplateByIdQueryHandlerTests()
+        {
+            _handler = new GetEmailAutoTemplateByIdQueryHandler(_mockRepo.Object);
+        }
 
-//        [Fact]
-//        public async Task Handle_Should_ReturnData_When_Found()
-//        {
-//            // 1. Arrange
-//            string existingId = "tpl-exist";
-//            var query = EmailTemplateTestData.GetValidGetByIdQuery(existingId);
+        [Fact]
+        public async Task Handle_Should_ReturnSuccess_When_Found_And_NotDeleted()
+        {
+            // Arrange
+            string existingId = "tpl-exist";
+            var query = new GetEmailAutoTemplateByIdQuery { TemplateId = existingId };
 
-//            var existingEntity = new EmailTemplate
-//            {
-//                TemplateId = existingId,
-//                TemplateKey = "FOUND_KEY",
-//                Subject = "Found Subject"
-//            };
+            var existingEntity = new EmailTemplate
+            {
+                TemplateId = existingId,
+                TemplateName = "FOUND_NAME",
+                Subject = "Found Subject",
+                Status = EmailTemplateStatus.Active
+            };
 
-//            // Mock repo tìm thấy
-//            _mockRepo.Setup(x => x.GetByIdAsync(existingId))
-//                     .ReturnsAsync(existingEntity);
+            _mockRepo.Setup(x => x.GetByIdAsync(existingId))
+                     .ReturnsAsync(existingEntity);
 
-//            // 2. Act
-//            var result = await _handler.Handle(query, CancellationToken.None);
+            // Act
+            var result = await _handler.Handle(query, CancellationToken.None);
 
-//            // 3. Assert
-//            result.IsSuccess.Should().BeTrue();
-//            result.StatusCode.Should().Be(200);
-//            result.Data.Should().NotBeNull();
-//            result.Data.TemplateId.Should().Be(existingId);
-//            result.Data.Subject.Should().Be("Found Subject");
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.StatusCode.Should().Be(200);
+            result.Message.Should().Be("Lấy template thành công");
 
-//            _mockRepo.Verify(x => x.GetByIdAsync(existingId), Times.Once);
-//        }
+            result.Data.Should().NotBeNull();
+            result.Data!.TemplateId.Should().Be(existingId);
+            result.Data.Subject.Should().Be("Found Subject");
 
-//        [Fact]
-//        public async Task Handle_Should_ReturnFailure_When_NotFound()
-//        {
-//            // 1. Arrange
-//            string fakeId = "tpl-not-exist";
-//            var query = EmailTemplateTestData.GetValidGetByIdQuery(fakeId);
+            _mockRepo.Verify(x => x.GetByIdAsync(existingId), Times.Once);
+        }
 
-//            // Mock repo trả về null
-//            _mockRepo.Setup(x => x.GetByIdAsync(fakeId))
-//                     .ReturnsAsync((EmailTemplate?)null);
+        [Fact]
+        public async Task Handle_Should_ReturnFailure_When_TemplateId_IsEmpty()
+        {
+            // Arrange
+            var query = new GetEmailAutoTemplateByIdQuery { TemplateId = "" };
 
-//            // 2. Act
-//            var result = await _handler.Handle(query, CancellationToken.None);
+            // Act
+            var result = await _handler.Handle(query, CancellationToken.None);
 
-//            // 3. Assert
-//            result.IsSuccess.Should().BeFalse();
-//            result.StatusCode.Should().Be(404);
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Errors.Should().NotBeNull();
+            result.Errors.Should().Contain(e => e.Code == AppErrors.EmailTemplateNotFound.Code);
 
-//            // Kiểm tra message lỗi cứng mà bạn đã code trong Handler:
-//            // "Không tìm thấy template!"
-//            // Lưu ý: OperationResult.Failure(string) thường gán string vào Message hoặc tạo 1 Error mặc định.
-//            // Tùy vào cách implement OperationResult của bạn, dòng dưới đây có thể cần điều chỉnh:
-//            result.Message.Should().Contain("Không tìm thấy template");
-//        }
-//    }
-//}
+            // Không gọi repo vì id không hợp lệ
+            _mockRepo.Verify(x => x.GetByIdAsync(It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Handle_Should_ReturnFailure_When_NotFound()
+        {
+            // Arrange
+            string fakeId = "tpl-not-exist";
+            var query = new GetEmailAutoTemplateByIdQuery { TemplateId = fakeId };
+
+            _mockRepo.Setup(x => x.GetByIdAsync(fakeId))
+                     .ReturnsAsync((EmailTemplate?)null);
+
+            // Act
+            var result = await _handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Errors.Should().NotBeNull();
+            result.Errors.Should().Contain(e => e.Code == AppErrors.EmailTemplateNotFound.Code);
+
+            _mockRepo.Verify(x => x.GetByIdAsync(fakeId), Times.Once);
+        }
+
+        [Fact]
+        public async Task Handle_Should_ReturnFailure_When_Template_IsDeleted()
+        {
+            // Arrange
+            string existingId = "tpl-deleted";
+            var query = new GetEmailAutoTemplateByIdQuery { TemplateId = existingId };
+
+            var deletedEntity = new EmailTemplate
+            {
+                TemplateId = existingId,
+                TemplateName = "DELETED",
+                Subject = "Deleted Subject",
+                Status = EmailTemplateStatus.Deleted
+            };
+
+            _mockRepo.Setup(x => x.GetByIdAsync(existingId))
+                     .ReturnsAsync(deletedEntity);
+
+            // Act
+            var result = await _handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Errors.Should().NotBeNull();
+            result.Errors.Should().Contain(e => e.Code == AppErrors.EmailTemplateNotFound.Code);
+
+            _mockRepo.Verify(x => x.GetByIdAsync(existingId), Times.Once);
+        }
+    }
+}

@@ -2,15 +2,15 @@
 using FluentValidation;
 using Moq;
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Tokki.Application.Common.Models;
+using Tokki.Application.IRepositories;
+using Tokki.Application.IServices;
 using Tokki.Application.UseCases.Accounts.Commands.SendEmailVerificationOtp;
 using Tokki.Application.UseCases.Otps.Commands.SendOtpForEmailVerification;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
-using Tokki.Application.IRepositories; // Nhớ thêm dòng này để dùng IAccountRepository
 using Tokki.UnitTests.Common.Bases;
 using Tokki.UnitTests.Common.TestData;
 using Xunit;
@@ -21,21 +21,16 @@ namespace Tokki.UnitTests.Features.Otps.Commands
     {
         private readonly SendGeneralOtpCommandHandler _handler;
         private readonly Mock<IValidator<SendEmailVerificationOtpCommand>> _mockValidator;
-
-        // 1. Khai báo thêm Mock cho Account Repository
         private readonly Mock<IAccountRepository> _mockAccountRepo;
 
         public SendEmailVerificationOtpCommandHandlerTests()
         {
             _mockValidator = new Mock<IValidator<SendEmailVerificationOtpCommand>>();
-
-            // 2. Khởi tạo Mock
             _mockAccountRepo = new Mock<IAccountRepository>();
 
-            // 3. Cập nhật Constructor khớp với thay đổi bên file Handler
             _handler = new SendGeneralOtpCommandHandler(
                 _mockOtpRepo.Object,
-                _mockAccountRepo.Object, // <--- THÊM VÀO ĐÂY (Vị trí số 2)
+                _mockAccountRepo.Object,
                 _mockEmailService.Object,
                 _mockValidator.Object,
                 _mockSystemConfigRepo.Object,
@@ -46,62 +41,74 @@ namespace Tokki.UnitTests.Features.Otps.Commands
         [Fact]
         public async Task Handle_Should_ReturnFailure_When_AccountIsBanned()
         {
-            // 1. Arrange
+            // Arrange
             var command = OtpTestData.GetEmailVerificationCommand();
 
-            // Giả lập: Tìm thấy tài khoản đang bị BANNED
             var bannedAccount = new Account
             {
                 Email = command.Email,
-                Status = AccountStatus.Banned // <--- Quan trọng
-                                              // Không có IsDeleted
+                Status = AccountStatus.Banned
             };
 
             _mockAccountRepo.Setup(x => x.GetByEmailAsync(command.Email))
                             .ReturnsAsync(bannedAccount);
 
-            // 2. Act
+            // Act
             var result = await _handler.Handle(command, CancellationToken.None);
 
-            // 3. Assert
+            // Assert
             result.IsSuccess.Should().BeFalse();
+            result.StatusCode.Should().Be(400);
             result.Errors.Should().Contain(e => e.Code == AppErrors.AccountUnavailable.Code);
 
-            // Verify: Không được gửi email
-            _mockEmailService.Verify(x => x.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            _mockEmailService.Verify(
+                x => x.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
+                Times.Never
+            );
+
+            _mockOtpRepo.Verify(x => x.AddAsync(It.IsAny<Otp>()), Times.Never);
+            _mockOtpRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]
         public async Task Handle_Should_ReturnFailure_When_AccountIsActive()
         {
-            // 1. Arrange
+            // Arrange
             var command = OtpTestData.GetEmailVerificationCommand();
 
-            // Giả lập: Tài khoản đã ACTIVE (Đã đăng ký rồi)
             var activeAccount = new Account
             {
                 Email = command.Email,
-                Status = AccountStatus.Active // <--- Quan trọng
+                Status = AccountStatus.Active
             };
 
             _mockAccountRepo.Setup(x => x.GetByEmailAsync(command.Email))
                             .ReturnsAsync(activeAccount);
 
-            // 2. Act
+            // Act
             var result = await _handler.Handle(command, CancellationToken.None);
 
-            // 3. Assert
+            // Assert
             result.IsSuccess.Should().BeFalse();
+            result.StatusCode.Should().Be(400);
             result.Errors.Should().Contain(e => e.Code == AppErrors.EmailAlreadyExists.Code);
+
+            _mockEmailService.Verify(
+                x => x.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
+                Times.Never
+            );
+
+            _mockOtpRepo.Verify(x => x.AddAsync(It.IsAny<Otp>()), Times.Never);
+            _mockOtpRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]
-        public async Task Handle_Should_Success_When_AccountIsInactive()
+        public async Task Handle_Should_ReturnFailure_When_AccountIsInactive()
         {
-            // 1. Arrange
+            // Arrange
+            // LƯU Ý: theo handler hiện tại, Inactive cũng bị chặn (AccountUnavailable)
             var command = OtpTestData.GetEmailVerificationCommand();
 
-            // Giả lập: Tài khoản INACTIVE (Đăng ký nhưng chưa verify -> Cho phép gửi lại OTP)
             var inactiveAccount = new Account
             {
                 Email = command.Email,
@@ -109,21 +116,102 @@ namespace Tokki.UnitTests.Features.Otps.Commands
             };
 
             _mockAccountRepo.Setup(x => x.GetByEmailAsync(command.Email))
-                            .ReturnsAsync(inactiveAccount); // Tìm thấy account inactive
+                            .ReturnsAsync(inactiveAccount);
 
-            // Setup các phần khác để chạy thành công
-            _mockOtpRepo.Setup(x => x.GetLatestValidOtpAsync(It.IsAny<string>(), It.IsAny<OtpType>()))
-                        .ReturnsAsync((Otp?)null);
-            _mockIdGenerator.Setup(x => x.Generate(It.IsAny<int>())).Returns("otp-123");
-
-            // 2. Act
+            // Act
             var result = await _handler.Handle(command, CancellationToken.None);
 
-            // 3. Assert
-            result.IsSuccess.Should().BeTrue(); // Phải thành công
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.StatusCode.Should().Be(400);
+            result.Errors.Should().Contain(e => e.Code == AppErrors.AccountUnavailable.Code);
 
-            // Verify: Email service PHẢI được gọi
-            _mockEmailService.Verify(x => x.SendEmailAsync(command.Email, It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+            _mockEmailService.Verify(
+                x => x.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
+                Times.Never
+            );
+
+            _mockOtpRepo.Verify(x => x.AddAsync(It.IsAny<Otp>()), Times.Never);
+            _mockOtpRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Handle_Should_Success_When_AccountNotExists_And_NoRateLimit()
+        {
+            // Arrange
+            var command = OtpTestData.GetEmailVerificationCommand();
+
+            // Muốn success => account phải null
+            _mockAccountRepo.Setup(x => x.GetByEmailAsync(command.Email))
+                            .ReturnsAsync((Account?)null);
+
+            _mockOtpRepo.Setup(x => x.GetLatestValidOtpAsync(command.Email, OtpType.VerifyEmail))
+                        .ReturnsAsync((Otp?)null);
+
+            _mockSystemConfigRepo.Setup(x => x.GetValueByKeyAsync("OTP_EXPIRATION_SECONDS"))
+                                 .ReturnsAsync("300");
+
+            _mockIdGenerator.Setup(x => x.Generate(15)).Returns("otp-123");
+
+            // Act
+            var result = await _handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.StatusCode.Should().Be(200);
+            result.Data.Should().Be("Mã OTP đã được gửi đến email của bạn.");
+
+            _mockOtpRepo.Verify(x => x.AddAsync(It.Is<Otp>(o =>
+                o.OtpId == "otp-123" &&
+                o.Email == command.Email &&
+                o.Type == OtpType.VerifyEmail &&
+                o.Status == OtpStatus.Active &&
+                !string.IsNullOrEmpty(o.OtpCode) &&
+                o.OtpCode.Length == 6
+            )), Times.Once);
+
+            _mockOtpRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+
+            _mockEmailService.Verify(
+                x => x.SendEmailAsync(command.Email, It.IsAny<string>(), It.IsAny<string>()),
+                Times.Once
+            );
+        }
+
+        [Fact]
+        public async Task Handle_Should_ReturnFailure_When_RateLimitExceeded()
+        {
+            // Arrange
+            var command = OtpTestData.GetEmailVerificationCommand();
+
+            _mockAccountRepo.Setup(x => x.GetByEmailAsync(command.Email))
+                            .ReturnsAsync((Account?)null);
+
+            // OTP vừa tạo cách đây 10s => bị rate limit (min 60s)
+            var recentOtp = new Otp
+            {
+                Email = command.Email,
+                Type = OtpType.VerifyEmail,
+                CreatedAt = DateTime.UtcNow.AddHours(7).AddSeconds(-10),
+                Status = OtpStatus.Active
+            };
+
+            _mockOtpRepo.Setup(x => x.GetLatestValidOtpAsync(command.Email, OtpType.VerifyEmail))
+                        .ReturnsAsync(recentOtp);
+
+            // Act
+            var result = await _handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.StatusCode.Should().Be(429);
+
+            _mockOtpRepo.Verify(x => x.AddAsync(It.IsAny<Otp>()), Times.Never);
+            _mockOtpRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+            _mockEmailService.Verify(
+                x => x.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
+                Times.Never
+            );
         }
     }
 }

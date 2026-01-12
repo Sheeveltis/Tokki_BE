@@ -1,98 +1,173 @@
-﻿//using FluentAssertions;
-//using Moq;
-//using System;
-//using System.Threading;
-//using System.Threading.Tasks;
-//using Tokki.Application.Common.Models; // Để dùng AppErrors
-//using Tokki.Domain.Entities;
-//using Tokki.UnitTests.Common.Bases;
-//using Tokki.UnitTests.Common.TestData;
-//using Xunit;
+﻿using FluentAssertions;
+using Moq;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Tokki.Application.Common.Models;
+using Tokki.Domain.Entities;
+using Tokki.Domain.Enums;
+using Tokki.UnitTests.Common.Bases;
+using Tokki.UnitTests.Common.TestData;
+using Xunit;
 
-//namespace Tokki.UnitTests.Features.EmailTemplates.Commands
-//{
-//    public class CreateEmailTemplateCommandHandlerTests : EmailTemplateTestBase
-//    {
-//        [Fact]
-//        public async Task Handle_Should_ReturnFailure_When_TemplateKeyDuplicated()
-//        {
-//            // 1. Arrange (Chuẩn bị dữ liệu)
-//            var command = EmailTemplateTestData.GetValidCreateEmailTemplateCommand();
-//            var existingTemplate = EmailTemplateTestData.GetExistingEmailTemplate();
+namespace Tokki.UnitTests.Features.EmailTemplates.Commands
+{
+    public class CreateEmailAutoTemplateCommandHandlerTests : EmailTemplateTestBase
+    {
+        [Fact]
+        public async Task Handle_Should_ReturnFailure_When_TemplateNameDuplicated_And_NotDeleted()
+        {
+            // Arrange
+            var command = EmailTemplateTestData.GetValidCreateEmailAutoTemplateCommand();
+            var existing = EmailTemplateTestData.GetExistingTemplateByName(command.TemplateName, EmailTemplateStatus.Draft);
 
-//            // Giả lập Repository: Tìm thấy key này đã tồn tại trong DB
-//            _mockRepo.Setup(x => x.GetByKeyAsync(command.TemplateKey))
-//                     .ReturnsAsync(existingTemplate);
+            _mockRepo.Setup(x => x.GetByNameAsync(command.TemplateName))
+                     .ReturnsAsync(existing);
 
-//            // 2. Act (Thực hiện hành động)
-//            var result = await _handler.Handle(command, CancellationToken.None);
+            // Act
+            var result = await _handler.Handle(command, CancellationToken.None);
 
-//            // 3. Assert (Kiểm tra kết quả)
-//            result.IsSuccess.Should().BeFalse();
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Errors.Should().Contain(e => e.Code == AppErrors.EmailTemplateKeyDuplicated.Code);
 
-//            // Kiểm tra lỗi trả về có đúng là EmailTemplateKeyDuplicated không
-//            result.Errors.Should().Contain(e => e.Code == AppErrors.EmailTemplateKeyDuplicated.Code);
+            _mockRepo.Verify(x => x.AddAsync(It.IsAny<EmailTemplate>()), Times.Never);
+            _mockRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
 
-//            // Đảm bảo không gọi hàm AddAsync
-//            _mockRepo.Verify(x => x.AddAsync(It.IsAny<EmailTemplate>()), Times.Never);
-//        }
+            // Vì fail ngay ở check name, không cần check logic
+            _mockRepo.Verify(x => x.GetByTypeValueTargetAsync(It.IsAny<EmailTemplateType>(), It.IsAny<int>(), It.IsAny<UserTargetGroup>()), Times.Never);
+        }
 
-//        [Fact]
-//        public async Task Handle_Should_ReturnSuccess_When_InputIsValid()
-//        {
-//            // 1. Arrange
-//            var command = EmailTemplateTestData.GetValidCreateEmailTemplateCommand();
+        [Fact]
+        public async Task Handle_Should_Continue_When_TemplateNameDuplicated_But_Deleted()
+        {
+            // Arrange
+            var command = EmailTemplateTestData.GetValidCreateEmailAutoTemplateCommand();
 
-//            // Giả lập Repository: Chưa có key này (trả về null)
-//            _mockRepo.Setup(x => x.GetByKeyAsync(command.TemplateKey))
-//                     .ReturnsAsync((EmailTemplate?)null);
+            // Name trùng nhưng status Deleted => được phép tạo mới
+            var deleted = EmailTemplateTestData.GetExistingTemplateByName(command.TemplateName, EmailTemplateStatus.Deleted);
 
-//            // Giả lập ID Generator sinh ra ID
-//            string generatedId = "template-new-01";
-//            _mockIdGen.Setup(x => x.Generate(15)).Returns(generatedId);
+            _mockRepo.Setup(x => x.GetByNameAsync(command.TemplateName))
+                     .ReturnsAsync(deleted);
 
-//            // 2. Act
-//            var result = await _handler.Handle(command, CancellationToken.None);
+            // Logic không trùng
+            _mockRepo.Setup(x => x.GetByTypeValueTargetAsync(command.Type, command.Value, command.TargetGroup))
+                     .ReturnsAsync((EmailTemplate?)null);
 
-//            // 3. Assert
-//            result.IsSuccess.Should().BeTrue();
-//            result.StatusCode.Should().Be(201);
-//            result.Data.Should().Be(generatedId); // Kiểm tra ID trả về
+            _mockIdGen.Setup(x => x.Generate(15)).Returns("tpl-new-01");
 
-//            // Kiểm tra hàm AddAsync được gọi đúng 1 lần với dữ liệu chính xác
-//            _mockRepo.Verify(x => x.AddAsync(It.Is<EmailTemplate>(t =>
-//                t.TemplateId == generatedId &&
-//                t.TemplateKey == command.TemplateKey &&
-//                t.Subject == command.Subject &&
-//                t.Body == command.Body
-//            )), Times.Once);
+            // Act
+            var result = await _handler.Handle(command, CancellationToken.None);
 
-//            // Kiểm tra hàm SaveChangesAsync được gọi
-//            _mockRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
-//        }
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.StatusCode.Should().Be(201);
+            result.Data.Should().Be("tpl-new-01");
+            result.Message.Should().Be("Tạo template thành công!");
 
-//        [Fact]
-//        public async Task Handle_Should_ThrowException_When_DatabaseFails()
-//        {
-//            // Lưu ý: Trong code Handler của bạn KHÔNG có try-catch block.
-//            // Nên nếu DB lỗi, nó sẽ ném Exception ra ngoài thay vì trả về Result Error.
-//            // Test này kiểm tra việc ném Exception đó.
+            _mockRepo.Verify(x => x.AddAsync(It.Is<EmailTemplate>(t =>
+                t.TemplateId == "tpl-new-01" &&
+                t.TemplateName == command.TemplateName &&
+                t.Type == command.Type &&
+                t.Value == command.Value &&
+                t.TargetGroup == command.TargetGroup &&
+                t.Status == EmailTemplateStatus.Draft &&
+                t.Subject == command.Subject &&
+                t.Body == command.Body &&
+                t.Description == command.Description &&
+                t.CreateAt != default &&
+                t.UpdatedAt != default
+            )), Times.Once);
 
-//            // 1. Arrange
-//            var command = EmailTemplateTestData.GetValidCreateEmailTemplateCommand();
+            _mockRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        }
 
-//            _mockRepo.Setup(x => x.GetByKeyAsync(command.TemplateKey))
-//                     .ReturnsAsync((EmailTemplate?)null);
+        [Fact]
+        public async Task Handle_Should_ReturnFailure_When_TypeValueTargetDuplicated_And_NotDeleted()
+        {
+            // Arrange
+            var command = EmailTemplateTestData.GetValidCreateEmailAutoTemplateCommand();
 
-//            // Giả lập lỗi khi lưu xuống DB
-//            _mockRepo.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
-//                     .ThrowsAsync(new Exception("DB Connection Timeout"));
+            // Name không trùng
+            _mockRepo.Setup(x => x.GetByNameAsync(command.TemplateName))
+                     .ReturnsAsync((EmailTemplate?)null);
 
-//            // 2. Act & Assert
-//            // Mong đợi hành động này sẽ ném ra Exception
-//            await _handler.Invoking(h => h.Handle(command, CancellationToken.None))
-//                          .Should().ThrowAsync<Exception>()
-//                          .WithMessage("DB Connection Timeout");
-//        }
-//    }
-//}
+            // Logic trùng và not deleted => fail
+            var existingLogic = EmailTemplateTestData.GetExistingTemplateByLogic(command.Type, command.Value, command.TargetGroup, EmailTemplateStatus.Draft);
+
+            _mockRepo.Setup(x => x.GetByTypeValueTargetAsync(command.Type, command.Value, command.TargetGroup))
+                     .ReturnsAsync(existingLogic);
+
+            // Act
+            var result = await _handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Errors.Should().Contain(e => e.Code == AppErrors.EmailTemplateKeyDuplicated.Code);
+
+            _mockRepo.Verify(x => x.AddAsync(It.IsAny<EmailTemplate>()), Times.Never);
+            _mockRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Handle_Should_ReturnSuccess_When_InputIsValid()
+        {
+            // Arrange
+            var command = EmailTemplateTestData.GetValidCreateEmailAutoTemplateCommand();
+
+            _mockRepo.Setup(x => x.GetByNameAsync(command.TemplateName))
+                     .ReturnsAsync((EmailTemplate?)null);
+
+            _mockRepo.Setup(x => x.GetByTypeValueTargetAsync(command.Type, command.Value, command.TargetGroup))
+                     .ReturnsAsync((EmailTemplate?)null);
+
+            _mockIdGen.Setup(x => x.Generate(15)).Returns("tpl-new-02");
+
+            // Act
+            var result = await _handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.StatusCode.Should().Be(201);
+            result.Data.Should().Be("tpl-new-02");
+            result.Message.Should().Be("Tạo template thành công!");
+
+            _mockRepo.Verify(x => x.AddAsync(It.Is<EmailTemplate>(t =>
+                t.TemplateId == "tpl-new-02" &&
+                t.TemplateName == command.TemplateName &&
+                t.Type == command.Type &&
+                t.Value == command.Value &&
+                t.TargetGroup == command.TargetGroup &&
+                t.Status == EmailTemplateStatus.Draft &&
+                t.Subject == command.Subject &&
+                t.Body == command.Body &&
+                t.Description == command.Description
+            )), Times.Once);
+
+            _mockRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task Handle_Should_ThrowException_When_SaveChangesFails()
+        {
+            // Arrange
+            var command = EmailTemplateTestData.GetValidCreateEmailAutoTemplateCommand();
+
+            _mockRepo.Setup(x => x.GetByNameAsync(command.TemplateName))
+                     .ReturnsAsync((EmailTemplate?)null);
+
+            _mockRepo.Setup(x => x.GetByTypeValueTargetAsync(command.Type, command.Value, command.TargetGroup))
+                     .ReturnsAsync((EmailTemplate?)null);
+
+            _mockIdGen.Setup(x => x.Generate(15)).Returns("tpl-new-03");
+
+            _mockRepo.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+                     .ThrowsAsync(new Exception("DB Connection Timeout"));
+
+            // Act & Assert
+            await _handler.Invoking(h => h.Handle(command, CancellationToken.None))
+                          .Should().ThrowAsync<Exception>()
+                          .WithMessage("DB Connection Timeout");
+        }
+    }
+}

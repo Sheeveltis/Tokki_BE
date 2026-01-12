@@ -1,110 +1,331 @@
-﻿//using FluentAssertions;
-//using Moq;
-//using System;
-//using System.Collections.Generic;
-//using System.Threading;
-//using System.Threading.Tasks;
-//using Tokki.Application.Common.Models;
-//using Tokki.Application.UseCases.EmailTemplates.Commands.UpdateEmailTemplate;
-//using Tokki.Application.UseCases.EmailTemplates.Handlers;
-//using Tokki.Domain.Entities;
-//using Tokki.UnitTests.Common.Bases;
-//using Tokki.UnitTests.Common.TestData;
-//using Xunit;
+﻿using FluentAssertions;
+using Moq;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Tokki.Application.Common.Models;
+using Tokki.Application.UseCases.EmailTemplates.Commands.UpdateEmailTemplate;
+using Tokki.Domain.Entities;
+using Tokki.Domain.Enums;
+using Tokki.UnitTests.Common.Bases;
+using Xunit;
 
-//namespace Tokki.UnitTests.Features.EmailTemplates.Commands
-//{
-//    public class UpdateEmailTemplateCommandHandlerTests : EmailTemplateTestBase
-//    {
-//        // Khai báo Handler riêng cho class test này
-//        private readonly UpdateEmailTemplateCommandHandler _handler;
+namespace Tokki.UnitTests.Features.EmailTemplates.Commands
+{
+    public class UpdateEmailAutoTemplateCommandHandlerTests : EmailTemplateTestBase
+    {
+        private readonly UpdateEmailAutoTemplateCommandHandler _handler;
 
-//        public UpdateEmailTemplateCommandHandlerTests()
-//        {
-//            // Khởi tạo UpdateHandler sử dụng _mockRepo từ Base class
-//            _handler = new UpdateEmailTemplateCommandHandler(_mockRepo.Object);
-//        }
+        public UpdateEmailAutoTemplateCommandHandlerTests()
+        {
+            _handler = new UpdateEmailAutoTemplateCommandHandler(_mockRepo.Object);
 
-//        [Fact]
-//        public async Task Handle_Should_ReturnFailure_When_TemplateNotFound()
-//        {
-//            // 1. Arrange
-//            var command = EmailTemplateTestData.GetUpdateCommandWithNonExistentId();
+            _mockRepo.Setup(x => x.UpdateAsync(It.IsAny<EmailTemplate>()))
+                     .Returns(Task.CompletedTask);
 
-//            // Giả lập Repository: Tìm ID không thấy -> trả về null
-//            _mockRepo.Setup(x => x.GetByIdAsync(command.TemplateId))
-//                     .ReturnsAsync((EmailTemplate?)null);
+            _mockRepo.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+                     .Returns(Task.CompletedTask);
+        }
 
-//            // 2. Act
-//            var result = await _handler.Handle(command, CancellationToken.None);
+        [Fact]
+        public async Task Handle_Should_ReturnFailure_When_TemplateNotFound()
+        {
+            // Arrange
+            var command = new UpdateEmailAutoTemplateCommand
+            {
+                TemplateId = "tpl-not-found",
+                Subject = "New Subject"
+            };
 
-//            // 3. Assert
-//            result.IsSuccess.Should().BeFalse();
-//            // Kiểm tra lỗi trả về có đúng Code "EmailTemplate.NotFound" (tương ứng AppErrors.EmailTemplateNotFound)
-//            result.Errors.Should().Contain(e => e.Code == AppErrors.EmailTemplateNotFound.Code);
+            _mockRepo.Setup(x => x.GetByIdAsync(command.TemplateId))
+                     .ReturnsAsync((EmailTemplate?)null);
 
-//            // Đảm bảo không gọi Update hay SaveChanges
-//            _mockRepo.Verify(x => x.UpdateAsync(It.IsAny<EmailTemplate>()), Times.Never);
-//            _mockRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
-//        }
+            // Act
+            var result = await _handler.Handle(command, CancellationToken.None);
 
-//        [Fact]
-//        public async Task Handle_Should_ReturnSuccess_When_UpdateIsValid()
-//        {
-//            // 1. Arrange
-//            string existingId = "template-exist-01";
-//            var command = EmailTemplateTestData.GetValidUpdateEmailTemplateCommand(existingId);
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Errors.Should().Contain(e => e.Code == AppErrors.EmailTemplateNotFound.Code);
 
-//            // Tạo entity cũ đang nằm trong DB
-//            var existingEntity = new EmailTemplate
-//            {
-//                TemplateId = existingId,
-//                Subject = "Subject Cũ",
-//                Body = "Body Cũ",
-//                Description = "Desc Cũ",
-//                UpdatedAt = DateTime.UtcNow.AddDays(-1) // Thời gian cũ
-//            };
+            _mockRepo.Verify(x => x.UpdateAsync(It.IsAny<EmailTemplate>()), Times.Never);
+            _mockRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        }
 
-//            // Giả lập Repository: Tìm thấy entity
-//            _mockRepo.Setup(x => x.GetByIdAsync(existingId))
-//                     .ReturnsAsync(existingEntity);
+        [Fact]
+        public async Task Handle_Should_ReturnSuccess_WithNoUpdate_When_NoValidDataToUpdate()
+        {
+            // Arrange
+            var command = new UpdateEmailAutoTemplateCommand
+            {
+                TemplateId = "tpl-01"
+                // không truyền gì để đổi
+            };
 
-//            // 2. Act
-//            var result = await _handler.Handle(command, CancellationToken.None);
+            var existing = new EmailTemplate
+            {
+                TemplateId = "tpl-01",
+                TemplateName = "Name 01",
+                Type = EmailTemplateType.VipExpiringReminder,
+                Value = 7,
+                TargetGroup = UserTargetGroup.VipUsers,
+                Status = EmailTemplateStatus.Draft,
+                Subject = "Subject",
+                Body = "Body",
+                Description = "Desc",
+                UpdatedAt = DateTime.UtcNow.AddHours(7).AddDays(-1)
+            };
 
-//            // 3. Assert
-//            result.IsSuccess.Should().BeTrue();
-//            result.StatusCode.Should().Be(200);
-//            result.Message.Should().Be("Cập nhật template thành công!");
+            _mockRepo.Setup(x => x.GetByIdAsync(command.TemplateId))
+                     .ReturnsAsync(existing);
 
-//            // Kiểm tra xem Entity đã được cập nhật giá trị mới từ Command chưa
-//            existingEntity.Subject.Should().Be(command.Subject);
-//            existingEntity.Body.Should().Be(command.Body);
-//            existingEntity.Description.Should().Be(command.Description);
+            // Act
+            var result = await _handler.Handle(command, CancellationToken.None);
 
-//            // Kiểm tra hàm UpdateAsync và SaveChangesAsync đã được gọi
-//            _mockRepo.Verify(x => x.UpdateAsync(existingEntity), Times.Once);
-//            _mockRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
-//        }
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.StatusCode.Should().Be(200);
+            result.Data.Should().Be(existing.TemplateId);
+            result.Message.Should().Be("Không có dữ liệu hợp lệ để cập nhật!");
 
-//        [Fact]
-//        public async Task Handle_Should_ThrowException_When_DatabaseSaveFails()
-//        {
-//            // 1. Arrange
-//            string existingId = "template-exist-01";
-//            var command = EmailTemplateTestData.GetValidUpdateEmailTemplateCommand(existingId);
-//            var existingEntity = new EmailTemplate { TemplateId = existingId };
+            _mockRepo.Verify(x => x.UpdateAsync(It.IsAny<EmailTemplate>()), Times.Never);
+            _mockRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        }
 
-//            _mockRepo.Setup(x => x.GetByIdAsync(existingId)).ReturnsAsync(existingEntity);
+        [Fact]
+        public async Task Handle_Should_ReturnFailure_When_TemplateNameDuplicated()
+        {
+            // Arrange
+            var command = new UpdateEmailAutoTemplateCommand
+            {
+                TemplateId = "tpl-01",
+                TemplateName = "New Name"
+            };
 
-//            // Giả lập lỗi khi gọi SaveChanges
-//            _mockRepo.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
-//                     .ThrowsAsync(new Exception("Database deadlock"));
+            var template = new EmailTemplate
+            {
+                TemplateId = "tpl-01",
+                TemplateName = "Old Name",
+                Type = EmailTemplateType.VipExpiringReminder,
+                Value = 7,
+                TargetGroup = UserTargetGroup.VipUsers,
+                Status = EmailTemplateStatus.Draft,
+                Subject = "S",
+                Body = "B",
+                Description = "D",
+                UpdatedAt = DateTime.UtcNow.AddHours(7).AddDays(-1)
+            };
 
-//            // 2. Act & Assert
-//            await _handler.Invoking(h => h.Handle(command, CancellationToken.None))
-//                          .Should().ThrowAsync<Exception>()
-//                          .WithMessage("Database deadlock");
-//        }
-//    }
-//}
+            // existingByName khác TemplateId và Status != Deleted => duplicated
+            var duplicated = new EmailTemplate
+            {
+                TemplateId = "tpl-other",
+                TemplateName = "New Name",
+                Status = EmailTemplateStatus.Draft
+            };
+
+            _mockRepo.Setup(x => x.GetByIdAsync(command.TemplateId))
+                     .ReturnsAsync(template);
+
+            _mockRepo.Setup(x => x.GetByNameAsync("New Name"))
+                     .ReturnsAsync(duplicated);
+
+            // Act
+            var result = await _handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Errors.Should().Contain(e => e.Code == AppErrors.EmailTemplateKeyDuplicated.Code);
+
+            _mockRepo.Verify(x => x.UpdateAsync(It.IsAny<EmailTemplate>()), Times.Never);
+            _mockRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+
+            // dừng tại check name => không cần check config
+            _mockRepo.Verify(x => x.GetByTypeValueTargetAsync(It.IsAny<EmailTemplateType>(), It.IsAny<int>(), It.IsAny<UserTargetGroup>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Handle_Should_ReturnFailure_When_ConfigDuplicated()
+        {
+            // Arrange
+            var command = new UpdateEmailAutoTemplateCommand
+            {
+                TemplateId = "tpl-01",
+                Value = 10 // đổi config
+            };
+
+            var template = new EmailTemplate
+            {
+                TemplateId = "tpl-01",
+                TemplateName = "Name 01",
+                Type = EmailTemplateType.VipExpiringReminder,
+                Value = 7,
+                TargetGroup = UserTargetGroup.VipUsers,
+                Status = EmailTemplateStatus.Draft,
+                Subject = "S",
+                Body = "B",
+                Description = "D",
+                UpdatedAt = DateTime.UtcNow.AddHours(7).AddDays(-1)
+            };
+
+            var duplicatedConfig = new EmailTemplate
+            {
+                TemplateId = "tpl-other",
+                Status = EmailTemplateStatus.Draft
+            };
+
+            _mockRepo.Setup(x => x.GetByIdAsync(command.TemplateId))
+                     .ReturnsAsync(template);
+
+            // name không đổi => không check name
+            // config đổi => check config
+            _mockRepo.Setup(x => x.GetByTypeValueTargetAsync(template.Type, 10, template.TargetGroup))
+                     .ReturnsAsync(duplicatedConfig);
+
+            // Act
+            var result = await _handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Errors.Should().Contain(e => e.Code == AppErrors.EmailTemplateKeyDuplicated.Code);
+
+            _mockRepo.Verify(x => x.UpdateAsync(It.IsAny<EmailTemplate>()), Times.Never);
+            _mockRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Handle_Should_ReturnSuccess_When_UpdateSubjectBodyDescription()
+        {
+            // Arrange
+            var command = new UpdateEmailAutoTemplateCommand
+            {
+                TemplateId = "tpl-01",
+                Subject = "New Subject",
+                Body = "New Body",
+                Description = "New Desc"
+            };
+
+            var template = new EmailTemplate
+            {
+                TemplateId = "tpl-01",
+                TemplateName = "Name 01",
+                Type = EmailTemplateType.VipExpiringReminder,
+                Value = 7,
+                TargetGroup = UserTargetGroup.VipUsers,
+                Status = EmailTemplateStatus.Draft,
+                Subject = "Old Subject",
+                Body = "Old Body",
+                Description = "Old Desc",
+                UpdatedAt = DateTime.UtcNow.AddHours(7).AddDays(-1)
+            };
+
+            _mockRepo.Setup(x => x.GetByIdAsync(command.TemplateId))
+                     .ReturnsAsync(template);
+
+            EmailTemplate? updatedEntity = null;
+            _mockRepo.Setup(x => x.UpdateAsync(It.IsAny<EmailTemplate>()))
+                     .Callback<EmailTemplate>(t => updatedEntity = t)
+                     .Returns(Task.CompletedTask);
+
+            var beforeVn = DateTime.UtcNow.AddHours(7);
+
+            // Act
+            var result = await _handler.Handle(command, CancellationToken.None);
+
+            var afterVn = DateTime.UtcNow.AddHours(7);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.StatusCode.Should().Be(200);
+            result.Data.Should().Be(template.TemplateId);
+            result.Message.Should().Be("Cập nhật template thành công!");
+
+            _mockRepo.Verify(x => x.UpdateAsync(It.IsAny<EmailTemplate>()), Times.Once);
+            _mockRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+
+            updatedEntity.Should().NotBeNull();
+            updatedEntity!.Subject.Should().Be("New Subject");
+            updatedEntity.Body.Should().Be("New Body");
+            updatedEntity.Description.Should().Be("New Desc");
+
+            updatedEntity.UpdatedAt.Should().BeOnOrAfter(beforeVn);
+            updatedEntity.UpdatedAt.Should().BeOnOrBefore(afterVn);
+        }
+
+        [Fact]
+        public async Task Handle_Should_ReturnSuccess_When_UpdateStatus()
+        {
+            // Arrange
+            var command = new UpdateEmailAutoTemplateCommand
+            {
+                TemplateId = "tpl-01",
+                Status = EmailTemplateStatus.Active
+            };
+
+            var template = new EmailTemplate
+            {
+                TemplateId = "tpl-01",
+                TemplateName = "Name 01",
+                Type = EmailTemplateType.VipExpiringReminder,
+                Value = 7,
+                TargetGroup = UserTargetGroup.VipUsers,
+                Status = EmailTemplateStatus.Draft,
+                Subject = "S",
+                Body = "B",
+                Description = "D",
+                UpdatedAt = DateTime.UtcNow.AddHours(7).AddDays(-1)
+            };
+
+            _mockRepo.Setup(x => x.GetByIdAsync(command.TemplateId))
+                     .ReturnsAsync(template);
+
+            // Act
+            var result = await _handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.StatusCode.Should().Be(200);
+            result.Message.Should().Be("Cập nhật template thành công!");
+
+            template.Status.Should().Be(EmailTemplateStatus.Active);
+
+            _mockRepo.Verify(x => x.UpdateAsync(It.IsAny<EmailTemplate>()), Times.Once);
+            _mockRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+
+        [Fact]
+        public async Task Handle_Should_ThrowException_When_SaveChangesFails()
+        {
+            // Arrange
+            var command = new UpdateEmailAutoTemplateCommand
+            {
+                TemplateId = "tpl-01",
+                Subject = "New Subject"
+            };
+
+            var template = new EmailTemplate
+            {
+                TemplateId = "tpl-01",
+                TemplateName = "Name 01",
+                Type = EmailTemplateType.VipExpiringReminder,
+                Value = 7,
+                TargetGroup = UserTargetGroup.VipUsers,
+                Status = EmailTemplateStatus.Draft,
+                Subject = "Old Subject",
+                Body = "B",
+                Description = "D"
+            };
+
+            _mockRepo.Setup(x => x.GetByIdAsync(command.TemplateId))
+                     .ReturnsAsync(template);
+
+            _mockRepo.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+                     .ThrowsAsync(new Exception("Database deadlock"));
+
+            // Act & Assert
+            await _handler.Invoking(h => h.Handle(command, CancellationToken.None))
+                          .Should().ThrowAsync<Exception>()
+                          .WithMessage("Database deadlock");
+        }
+    }
+}
