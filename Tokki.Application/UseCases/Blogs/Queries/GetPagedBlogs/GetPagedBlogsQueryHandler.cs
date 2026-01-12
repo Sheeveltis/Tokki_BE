@@ -60,7 +60,7 @@ namespace Tokki.Application.UseCases.Blogs.Queries.GetPagedBlogs
                     ThumbnailUrl = blog.ThumbnailUrl,
                     ShortDescription = blog.ShortDescription,
                     ViewCount = blog.ViewCount,
-                    Status = blog.Status.GetDescription(),
+                    Status = blog.Status,
                     CreatedAt = blog.CreatedAt,
 
                     CategoryId = blog.CategoryId,

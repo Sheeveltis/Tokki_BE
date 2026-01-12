@@ -17,7 +17,7 @@ namespace Tokki.Application.UseCases.Blogs.DTOs
         public string ShortDescription { get; set; } = string.Empty;
         public int ViewCount { get; set; }
 
-        public string Status { get; set; }
+        public BlogStatus Status { get; set; }
 
         public DateTimeOffset CreatedAt { get; set; }
         public BlogAuthorDTO Author { get; set; } = new();

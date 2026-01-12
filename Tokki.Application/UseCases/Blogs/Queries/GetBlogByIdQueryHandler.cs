@@ -44,7 +44,7 @@ namespace Tokki.Application.UseCases.Blogs.Queries
                 Content = blog.Content,
                 ShortDescription = blog.ShortDescription,
                 ViewCount = blog.ViewCount,
-                Status = blog.Status.GetDescription(),
+                Status = blog.Status,
                 CreatedAt = blog.CreatedAt,
 
                 Author = new BlogAuthorDTO
