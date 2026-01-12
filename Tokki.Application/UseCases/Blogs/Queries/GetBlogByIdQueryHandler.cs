@@ -14,10 +14,14 @@ namespace Tokki.Application.UseCases.Blogs.Queries
     public class GetBlogByIdQueryHandler : IRequestHandler<GetBlogByIdQuery, OperationResult<BlogDetailDTO>>
     {
         private readonly IBlogRepository _blogRepository;
+        private readonly IAccountRepository _accountRepository; 
 
-        public GetBlogByIdQueryHandler(IBlogRepository blogRepository)
+        public GetBlogByIdQueryHandler(
+            IBlogRepository blogRepository,
+            IAccountRepository accountRepository) 
         {
             _blogRepository = blogRepository;
+            _accountRepository = accountRepository;
         }
 
         public async Task<OperationResult<BlogDetailDTO>> Handle(GetBlogByIdQuery request, CancellationToken cancellationToken)
@@ -28,6 +32,8 @@ namespace Tokki.Application.UseCases.Blogs.Queries
             {
                 return OperationResult<BlogDetailDTO>.Failure(AppErrors.BlogNotFound, 404, OperationMessages.NotFound("Bài viết"));
             }
+
+            var authorInfo = await _accountRepository.GetBasicInfoAsync(blog.AuthorId);
 
             var response = new BlogDetailDTO
             {
@@ -40,9 +46,16 @@ namespace Tokki.Application.UseCases.Blogs.Queries
                 ViewCount = blog.ViewCount,
                 Status = blog.Status.GetDescription(),
                 CreatedAt = blog.CreatedAt,
-                AuthorId = blog.AuthorId,
+
+                Author = new BlogAuthorDTO
+                {
+                    Id = blog.AuthorId,
+                    FullName = authorInfo?.FullName ?? "Người dùng ẩn danh",
+                    AvatarUrl = authorInfo?.AvatarUrl
+                },
+
                 CategoryId = blog.CategoryId,
-                CategoryName = blog.Category?.Name ?? "N/A", // Null check an toàn
+                CategoryName = blog.Category?.Name ?? "N/A",
                 Tags = blog.Tags.Select(t => t.Name).ToList()
             };
 
