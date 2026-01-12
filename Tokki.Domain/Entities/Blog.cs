@@ -35,10 +35,10 @@ namespace Tokki.Domain.Entities
 
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
         public DateTimeOffset? UpdatedAt { get; set; }
-
         public string AuthorId { get; set; }
 
-
+        [ForeignKey("AuthorId")]
+        public virtual Account? Author { get; set; }
         [ForeignKey("Category")]
         public string CategoryId { get; set; } = string.Empty;
         public virtual Category? Category { get; set; }
