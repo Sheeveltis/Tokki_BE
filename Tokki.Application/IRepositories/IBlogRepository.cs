@@ -25,5 +25,6 @@ namespace Tokki.Application.IRepositories
         Task<bool> ExistsAsync(string blogId);
         // Transaction
         Task SaveChangesAsync(CancellationToken cancellationToken);
+        Task<bool> IncreaseViewCountAsync(string blogId);
     }
 }

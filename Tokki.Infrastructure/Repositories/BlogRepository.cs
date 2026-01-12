@@ -143,5 +143,12 @@ namespace Tokki.Infrastructure.Repositories
                                  .AsNoTracking() 
                                  .AnyAsync(b => b.Id  == blogId && b.Status != BlogStatus.Hidden);
         }
+        public async Task<bool> IncreaseViewCountAsync(string blogId)
+        {
+            var rowsAffected = await _context.Database.ExecuteSqlRawAsync(
+                "UPDATE Blogs SET ViewCount = ViewCount + 1 WHERE Id = {0}", blogId
+            );
+            return rowsAffected > 0;
+        }
     }
 }
