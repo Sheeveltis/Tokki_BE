@@ -30,6 +30,11 @@ namespace Tokki.Application.IRepositories
         Task<int> CountUnlockedTitlesAsync(string userId);
         Task<int> CountSessionsAsync(string userId);
         Task<int> CountSocialLoginsAsync(string userId);
+        /// <summary>
+        /// Kho - hàm của Kho dùng lấy thông tin author vs comment.
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
         Task<AccountBasicInfoDTO?> GetBasicInfoAsync(string userId);
     }
 }
