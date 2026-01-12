@@ -1,7 +1,12 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using Tokki.Application.UseCases.Blogs.Commands.ApproveBlog;
 using Tokki.Application.UseCases.Blogs.Commands.CreateBlog;
 using Tokki.Application.UseCases.Blogs.Commands.DeleteBlog;
+using Tokki.Application.UseCases.Blogs.Commands.RejectBlog;
+using Tokki.Application.UseCases.Blogs.Commands.SubmitBlogForApproval;
 using Tokki.Application.UseCases.Blogs.Commands.UpdateBlog;
 using Tokki.Application.UseCases.Blogs.Queries;
 using Tokki.Application.UseCases.Blogs.Queries.GetPagedBlogs;
@@ -31,13 +36,18 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
-        [HttpPost]
+        [HttpPost()]
+        [Authorize(Roles = "Admin, Staff")]
         public async Task<IActionResult> Create([FromBody] CreateBlogCommand command)
         {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? User.FindFirst("sub")?.Value;
+            command.CreatedBy = userId!;
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
         }
         [HttpPut("{id}")]
+        [Authorize(Roles ="Admin, Staff")]
         public async Task<IActionResult> Update(string id, [FromBody] UpdateBlogCommand command)
         {
             if (id != command.Id)
@@ -49,10 +59,47 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("admin/delete/{id}")]
+        [Authorize(Roles = "Admin")] 
         public async Task<IActionResult> Delete(string id)
         {
             var command = new DeleteBlogCommand { Id = id };
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
+
+        /// <summary>
+        /// Dành cho Author (Staff): Gửi bài viết đi phê duyệt
+        /// </summary>
+        [HttpPost("staff/submit-approval/{id}")]
+        [Authorize(Roles ="Staff")] 
+        public async Task<IActionResult> SubmitForApproval(string id)
+        {
+            var command = new SubmitBlogForApprovalCommand { BlogId = id };
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        /// <summary>
+        /// Dành cho Moderator: Phê duyệt bài viết (Publish)
+        /// </summary>
+        [HttpPost("moderator/approve/{id}")]
+        [Authorize(Roles = "Moderator")] 
+        public async Task<IActionResult> Approve(string id)
+        {
+            var command = new ApproveBlogCommand { BlogId = id };
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        /// <summary>
+        /// Dành cho Moderator: Từ chối bài viết (Reject)
+        /// </summary>
+        [HttpPost("moderator/reject")]
+        [Authorize(Roles = "Moderator")] 
+        public async Task<IActionResult> Reject([FromBody] RejectBlogCommand command)
+        {
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
         }
