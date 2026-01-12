@@ -1,60 +1,71 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Text;
-//using System.Threading.Tasks;
-//using Microsoft.Extensions.Logging;
-//using Moq;
-//using Tokki.Application.IRepositories;
-//using Tokki.Application.IServices;
-//using Tokki.Application.UseCases.Topics.Commands.CreateTopic;
-//using Tokki.Application.UseCases.Topics.Commands.DeleteTopic;
-//using Tokki.Application.UseCases.Topics.Commands.UpdateTopic;
-//using Tokki.Application.UseCases.Topics.Queries.GetById;
-//using Tokki.Application.UseCases.Topics.Queries;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using Moq;
+using System.Security.Claims;
+using Tokki.Application.IRepositories;
+using Tokki.Application.IServices;
 
-//namespace Tokki.UnitTests.Common.Bases
-//{
-//    public class TopicTestBase
-//    {
-//        protected readonly Mock<ITopicRepository> _mockRepo;
-//        protected readonly Mock<IIdGeneratorService> _mockIdGen;
-//        protected readonly Mock<ILogger<CreateTopicCommandHandler>> _mockCreateLogger;
-//        protected readonly Mock<ILogger<UpdateTopicCommandHandler>> _mockUpdateLogger;
-//        protected readonly Mock<ILogger<DeleteTopicCommandHandler>> _mockDeleteLogger;
+namespace Tokki.UnitTests.Common.Bases
+{
+    public abstract class TopicTestBase
+    {
+        protected const string DefaultUserId = "user-test-01";
 
-//        protected readonly CreateTopicCommandHandler _createHandler;
-//        protected readonly UpdateTopicCommandHandler _updateHandler;
-//        protected readonly DeleteTopicCommandHandler _deleteHandler;
-//        protected readonly GetTopicByIdQueryHandler _getByIdHandler;
-//        protected readonly GetAllTopicsQueryHandler _getAllHandler;
+        protected readonly Mock<ITopicRepository> _mockTopicRepo;
+        protected readonly Mock<IVocabularyRepository> _mockVocabRepo;
+        protected readonly Mock<IVocabularyTopicRepository> _mockVocabTopicRepo;
 
-//        public TopicTestBase()
-//        {
-//            _mockRepo = new Mock<ITopicRepository>();
-//            _mockIdGen = new Mock<IIdGeneratorService>();
-//            _mockCreateLogger = new Mock<ILogger<CreateTopicCommandHandler>>();
-//            _mockUpdateLogger = new Mock<ILogger<UpdateTopicCommandHandler>>();
-//            _mockDeleteLogger = new Mock<ILogger<DeleteTopicCommandHandler>>();
+        protected readonly Mock<IAccountRepository> _mockAccountRepo;
+        protected readonly Mock<IEmailService> _mockEmailService;
+        protected readonly Mock<IIdGeneratorService> _mockIdGen;
 
-//            _createHandler = new CreateTopicCommandHandler(
-//                _mockRepo.Object,
-//                _mockIdGen.Object,
-//                _mockCreateLogger.Object
-//            );
+        protected readonly Mock<IHttpContextAccessor> _mockHttpContextAccessor;
 
-//            _updateHandler = new UpdateTopicCommandHandler(
-//                _mockRepo.Object,
-//                _mockUpdateLogger.Object
-//            );
+        protected readonly Mock<ILogger<Tokki.Application.UseCases.Topics.Commands.CreateTopic.CreateTopicCommandHandler>> _mockCreateTopicLogger;
+        protected readonly Mock<ILogger<Tokki.Application.UseCases.Topics.Commands.CreateTopicByStaff.CreateTopicByStaffCommandHandler>> _mockCreateTopicByStaffLogger;
+        protected readonly Mock<ILogger<Tokki.Application.UseCases.Topics.Commands.DeleteTopic.DeleteTopicCommandHandler>> _mockDeleteTopicLogger;
+        protected readonly Mock<ILogger<Tokki.Application.UseCases.Topics.Commands.UpdateTopic.UpdateTopicCommandHandler>> _mockUpdateTopicLogger;
+        protected readonly Mock<ILogger<Tokki.Application.UseCases.Topics.Commands.ApproveTopic.ApproveTopicCommandHandler>> _mockApproveLogger;
+        protected readonly Mock<ILogger<Tokki.Application.UseCases.Topics.Commands.RejectTopic.RejectTopicCommandHandler>> _mockRejectLogger;
+        protected readonly Mock<ILogger<Tokki.Application.UseCases.Topics.Commands.SubmitTopicForApproval.SubmitTopicForApprovalCommandHandler>> _mockSubmitLogger;
 
-//            _deleteHandler = new DeleteTopicCommandHandler(
-//                _mockRepo.Object,
-//                _mockDeleteLogger.Object
-//            );
+        protected TopicTestBase()
+        {
+            _mockTopicRepo = new Mock<ITopicRepository>(MockBehavior.Loose);
+            _mockVocabRepo = new Mock<IVocabularyRepository>(MockBehavior.Loose);
+            _mockVocabTopicRepo = new Mock<IVocabularyTopicRepository>(MockBehavior.Loose);
 
-//            _getByIdHandler = new GetTopicByIdQueryHandler(_mockRepo.Object);
-//            _getAllHandler = new GetAllTopicsQueryHandler(_mockRepo.Object);
-//        }
-//    }
-//}
+            _mockAccountRepo = new Mock<IAccountRepository>(MockBehavior.Loose);
+            _mockEmailService = new Mock<IEmailService>(MockBehavior.Loose);
+            _mockIdGen = new Mock<IIdGeneratorService>(MockBehavior.Loose);
+
+            _mockHttpContextAccessor = new Mock<IHttpContextAccessor>(MockBehavior.Loose);
+
+            _mockCreateTopicLogger = new Mock<ILogger<Tokki.Application.UseCases.Topics.Commands.CreateTopic.CreateTopicCommandHandler>>();
+            _mockCreateTopicByStaffLogger = new Mock<ILogger<Tokki.Application.UseCases.Topics.Commands.CreateTopicByStaff.CreateTopicByStaffCommandHandler>>();
+            _mockDeleteTopicLogger = new Mock<ILogger<Tokki.Application.UseCases.Topics.Commands.DeleteTopic.DeleteTopicCommandHandler>>();
+            _mockUpdateTopicLogger = new Mock<ILogger<Tokki.Application.UseCases.Topics.Commands.UpdateTopic.UpdateTopicCommandHandler>>();
+            _mockApproveLogger = new Mock<ILogger<Tokki.Application.UseCases.Topics.Commands.ApproveTopic.ApproveTopicCommandHandler>>();
+            _mockRejectLogger = new Mock<ILogger<Tokki.Application.UseCases.Topics.Commands.RejectTopic.RejectTopicCommandHandler>>();
+            _mockSubmitLogger = new Mock<ILogger<Tokki.Application.UseCases.Topics.Commands.SubmitTopicForApproval.SubmitTopicForApprovalCommandHandler>>();
+
+            SetupAuthenticatedUser(DefaultUserId);
+        }
+
+        protected void SetupAuthenticatedUser(string userId)
+        {
+            var claims = new[] { new Claim(ClaimTypes.NameIdentifier, userId) };
+            var identity = new ClaimsIdentity(claims, "TestAuth");
+            var principal = new ClaimsPrincipal(identity);
+
+            var context = new DefaultHttpContext { User = principal };
+
+            _mockHttpContextAccessor.Setup(x => x.HttpContext).Returns(context);
+        }
+
+        protected void SetupUnauthenticatedUser()
+        {
+            _mockHttpContextAccessor.Setup(x => x.HttpContext).Returns(new DefaultHttpContext());
+        }
+    }
+}
