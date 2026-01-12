@@ -11,7 +11,6 @@ namespace Tokki.Application.Common.Models
         public static readonly Error ServerError = new("App.ServerError", "Lỗi hệ thống, vui lòng thử lại sau.");
         public static readonly Error ValidationFailed = new("App.ValidationFailed", "Dữ liệu đầu vào không hợp lệ.");
         public static readonly Error BadRequest = new("App.BadRequest", "Yêu cầu không hợp lệ.");
-
         // ============================================
         // NHÓM 2: AUTHENTICATION & USER
         // ============================================
@@ -56,7 +55,11 @@ namespace Tokki.Application.Common.Models
         // ============================================
         public static readonly Error BlogNotFound = new("Blog.NotFound", OperationMessages.NotFound("Blog"));
         public static readonly Error CannotDeleteOthersBlog = new("Blog.UnauthorizedDelete", "Bạn không được xóa bài của người khác.");
-
+        public static readonly Error BlogUnauthorized = new("Blog.Unauthorized", "Bạn không có quyền thao tác với bài viết này.");
+        public static readonly Error BlogTitleDuplicated = new("Blog.TitleDuplicated", "Tiêu đề bài viết đã tồn tại.");
+        public static readonly Error BlogSlugDuplicated = new("Blog.SlugDuplicated", "Slug bài viết đã tồn tại.");
+        public static readonly Error BlogInvalidPending = new("Blog.InvalidPending", "Bài viết không ở trạng thái chờ phê duyệt.");
+        public static readonly Error IsNotAuthor = new("Blog.IsNotAuthor", "Bạn không phải là tác giả của bài viết này.");
         // ============================================
         // NHÓM 4: CATEGORY
         // ============================================
