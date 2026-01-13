@@ -1,6 +1,8 @@
 ﻿using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
+using Tokki.Application.IServices;
+using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.QuestionBanks.Commands.UpdateQuestionBank
@@ -8,22 +10,28 @@ namespace Tokki.Application.UseCases.QuestionBanks.Commands.UpdateQuestionBank
     public class UpdateQuestionBankCommandHandler : IRequestHandler<UpdateQuestionBankCommand, OperationResult<string>>
     {
         private readonly IQuestionBankRepository _questionBankRepository;
+        private readonly IQuestionOptionRepository _questionOptionRepository;
         private readonly IQuestionTypeRepository _questionTypeRepository;
         private readonly IPassageRepository _passageRepository;
+        private readonly IIdGeneratorService _idGeneratorService;
 
         public UpdateQuestionBankCommandHandler(
             IQuestionBankRepository questionBankRepository,
+            IQuestionOptionRepository questionOptionRepository,
             IQuestionTypeRepository questionTypeRepository,
-            IPassageRepository passageRepository)
+            IPassageRepository passageRepository,
+            IIdGeneratorService idGeneratorService)
         {
             _questionBankRepository = questionBankRepository;
+            _questionOptionRepository = questionOptionRepository;
             _questionTypeRepository = questionTypeRepository;
             _passageRepository = passageRepository;
+            _idGeneratorService = idGeneratorService;
         }
 
         public async Task<OperationResult<string>> Handle(UpdateQuestionBankCommand request, CancellationToken cancellationToken)
         {
-            var questionBank = await _questionBankRepository.GetByIdWithDetailsAsync(request.QuestionBankId, cancellationToken);
+            var questionBank = await _questionBankRepository.GetByIdWithDetailsAsync(request.QuestionBankId.Trim(), cancellationToken);
             if (questionBank == null)
             {
                 return OperationResult<string>.Failure(
@@ -33,7 +41,6 @@ namespace Tokki.Application.UseCases.QuestionBanks.Commands.UpdateQuestionBank
                 );
             }
 
-            // Chỉ được update khi DB đang Draft
             if (questionBank.Status != QuestionBankStatus.Draft)
             {
                 return OperationResult<string>.Failure(
@@ -43,22 +50,12 @@ namespace Tokki.Application.UseCases.QuestionBanks.Commands.UpdateQuestionBank
                 );
             }
 
-            // Xác định QuestionTypeId cuối cùng sẽ lưu
+            // final QuestionTypeId
             var finalQuestionTypeId = string.IsNullOrWhiteSpace(request.QuestionTypeId)
                 ? questionBank.QuestionTypeId
                 : request.QuestionTypeId.Trim();
 
-            if (string.IsNullOrWhiteSpace(finalQuestionTypeId))
-            {
-                return OperationResult<string>.Failure(
-                    new List<Error> { AppErrors.ValidationFailed },
-                    400,
-                    "Không xác định được QuestionTypeId để kiểm tra kỹ năng."
-                );
-            }
-
-            // Lấy QuestionType mới (final) để biết skill mới
-            var newQuestionType = await _questionTypeRepository.GetByIdAsync(finalQuestionTypeId, cancellationToken);
+            var newQuestionType = await _questionTypeRepository.GetByIdAsync(finalQuestionTypeId.Trim(), cancellationToken);
             if (newQuestionType == null)
             {
                 return OperationResult<string>.Failure(
@@ -79,55 +76,113 @@ namespace Tokki.Application.UseCases.QuestionBanks.Commands.UpdateQuestionBank
 
             var newSkill = newQuestionType.Skill;
 
-            // --- CHECK ĐỔI SKILL LIÊN QUAN OPTIONS ---
-            var isChangingQuestionType =
-                !string.IsNullOrWhiteSpace(request.QuestionTypeId) &&
-                !string.Equals(questionBank.QuestionTypeId, finalQuestionTypeId, StringComparison.OrdinalIgnoreCase);
-
-            if (isChangingQuestionType)
+            // old skill
+            QuestionSkill? oldSkill = null;
+            if (!string.IsNullOrWhiteSpace(questionBank.QuestionTypeId))
             {
-                // Lấy skill hiện tại theo QuestionTypeId cũ (không tin hoàn toàn vào navigation)
-                QuestionSkill? oldSkill = null;
-                if (!string.IsNullOrWhiteSpace(questionBank.QuestionTypeId))
+                var oldQuestionType = await _questionTypeRepository.GetByIdAsync(questionBank.QuestionTypeId.Trim(), cancellationToken);
+                oldSkill = oldQuestionType?.Skill;
+            }
+
+            // Backstop rule theo skill
+            if (newSkill == QuestionSkill.Listening && string.IsNullOrWhiteSpace(request.MediaUrl))
+            {
+                return OperationResult<string>.Failure(
+                    new List<Error> { AppErrors.ValidationFailed },
+                    400,
+                    "Câu hỏi Listening bắt buộc phải có MediaUrl."
+                );
+            }
+
+            if (newSkill == QuestionSkill.Writing && request.Options != null && request.Options.Any())
+            {
+                return OperationResult<string>.Failure(
+                    new List<Error> { AppErrors.WritingNoOptions },
+                    400,
+                    AppErrors.WritingNoOptions.Description
+                );
+            }
+
+            // Backstop rule theo chuyển skill
+            if (oldSkill.HasValue)
+            {
+                // Reading -> Writing: bắt buộc options rỗng để xóa đáp án cũ
+                if (oldSkill.Value == QuestionSkill.Reading && newSkill == QuestionSkill.Writing)
                 {
-                    var oldQuestionType = await _questionTypeRepository.GetByIdAsync(questionBank.QuestionTypeId.Trim(), cancellationToken);
-                    oldSkill = oldQuestionType?.Skill;
+                    if (request.Options != null && request.Options.Any())
+                    {
+                        return OperationResult<string>.Failure(
+                            new List<Error> { AppErrors.ValidationFailed },
+                            400,
+                            "Đọc sang Viết: Options phải truyền rỗng để xóa toàn bộ đáp án cũ."
+                        );
+                    }
                 }
 
-                var hasOptions = questionBank.QuestionOptions != null && questionBank.QuestionOptions.Any();
-
-                // Từ Reading/Listening -> Writing: nếu đã có options thì chặn
-                if (newSkill == QuestionSkill.Writing && hasOptions)
+                // Listening -> Reading: bắt buộc options rỗng để xóa đáp án cũ, và phải có content
+                if (oldSkill.Value == QuestionSkill.Listening && newSkill == QuestionSkill.Reading)
                 {
-                    return OperationResult<string>.Failure(
-                        new List<Error> { AppErrors.ValidationFailed },
-                        400,
-                        "Không thể chuyển sang Writing vì câu hỏi đang có đáp án trắc nghiệm. Vui lòng xóa đáp án trước khi đổi loại câu hỏi."
-                    );
+                    if (request.Options != null && request.Options.Any())
+                    {
+                        return OperationResult<string>.Failure(
+                            new List<Error> { AppErrors.ValidationFailed },
+                            400,
+                            "Nghe sang Đọc: Options phải truyền rỗng để xóa toàn bộ đáp án cũ."
+                        );
+                    }
+
+                    if (string.IsNullOrWhiteSpace(request.Content))
+                    {
+                        return OperationResult<string>.Failure(
+                            new List<Error> { AppErrors.ValidationFailed },
+                            400,
+                            "Nghe sang Đọc: Content là bắt buộc."
+                        );
+                    }
                 }
 
-                // Từ Writing -> Reading/Listening: nếu chưa có options thì chặn (vì endpoint này không tạo options)
-                if (newSkill != QuestionSkill.Writing && !hasOptions)
+                // Writing -> Listening: phải có MediaUrl
+                if (oldSkill.Value == QuestionSkill.Writing && newSkill == QuestionSkill.Listening)
                 {
-                    return OperationResult<string>.Failure(
-                        new List<Error> { AppErrors.ValidationFailed },
-                        400,
-                        "Không thể chuyển sang câu hỏi trắc nghiệm vì hiện tại chưa có đáp án. Vui lòng thêm đáp án trắc nghiệm trước."
-                    );
+                    if (string.IsNullOrWhiteSpace(request.MediaUrl))
+                    {
+                        return OperationResult<string>.Failure(
+                            new List<Error> { AppErrors.ValidationFailed },
+                            400,
+                            "Viết sang Nghe: MediaUrl là bắt buộc."
+                        );
+                    }
                 }
 
-                // Nếu muốn chặt hơn: chỉ cho phép đổi skill khi oldSkill xác định rõ
-                // (tùy bạn, đoạn này có thể bỏ)
-                if (oldSkill == null)
+                // Writing -> Reading: phải có Content
+                if (oldSkill.Value == QuestionSkill.Writing && newSkill == QuestionSkill.Reading)
                 {
-                    // Không bắt buộc, nhưng giúp tránh dữ liệu lộn xộn
-                    // return OperationResult<string>.Failure(...);
+                    if (string.IsNullOrWhiteSpace(request.Content))
+                    {
+                        return OperationResult<string>.Failure(
+                            new List<Error> { AppErrors.ValidationFailed },
+                            400,
+                            "Viết sang Đọc: Content là bắt buộc."
+                        );
+                    }
+                }
+
+                // Reading -> Listening: phải có MediaUrl (đã check theo skill, giữ lại cho rõ)
+                if (oldSkill.Value == QuestionSkill.Reading && newSkill == QuestionSkill.Listening)
+                {
+                    if (string.IsNullOrWhiteSpace(request.MediaUrl))
+                    {
+                        return OperationResult<string>.Failure(
+                            new List<Error> { AppErrors.ValidationFailed },
+                            400,
+                            "Đọc sang Nghe: MediaUrl là bắt buộc."
+                        );
+                    }
                 }
             }
 
-            // --- Validate Passage theo skill mới (nếu có PassageId) ---
+            // Validate Passage theo newSkill (nếu có PassageId)
             var finalPassageId = string.IsNullOrWhiteSpace(request.PassageId) ? null : request.PassageId.Trim();
-
             if (finalPassageId != null)
             {
                 var passage = await _passageRepository.GetByIdAsync(finalPassageId, cancellationToken);
@@ -160,6 +215,7 @@ namespace Tokki.Application.UseCases.QuestionBanks.Commands.UpdateQuestionBank
 
             try
             {
+                // Update question
                 questionBank.PassageId = finalPassageId;
                 questionBank.QuestionTypeId = finalQuestionTypeId;
 
@@ -168,6 +224,34 @@ namespace Tokki.Application.UseCases.QuestionBanks.Commands.UpdateQuestionBank
                 questionBank.Explanation = request.Explanation;
 
                 await _questionBankRepository.UpdateAsync(questionBank);
+
+                // Update answers
+                if (newSkill == QuestionSkill.Writing)
+                {
+                    // Writing => xóa toàn bộ đáp án
+                    await _questionOptionRepository.DeleteByQuestionBankIdAsync(questionBank.QuestionBankId, cancellationToken);
+                }
+                else
+                {
+                    // Reading/Listening => replace-all (nếu request.Options rỗng thì sẽ xóa hết và không add lại)
+                    await _questionOptionRepository.DeleteByQuestionBankIdAsync(questionBank.QuestionBankId, cancellationToken);
+
+                    if (request.Options != null && request.Options.Any())
+                    {
+                        var options = request.Options.Select(o => new QuestionOption
+                        {
+                            OptionId = _idGeneratorService.GenerateCustom(10),
+                            QuestionBankId = questionBank.QuestionBankId,
+                            KeyOption = o.KeyOption.Trim(),
+                            Content = o.Content,
+                            ImageUrl = o.ImageUrl,
+                            IsCorrect = o.IsCorrect
+                        }).ToList();
+
+                        await _questionOptionRepository.AddRangeAsync(options);
+                    }
+                }
+
                 await _questionBankRepository.SaveChangesAsync(cancellationToken);
 
                 return OperationResult<string>.Success(
