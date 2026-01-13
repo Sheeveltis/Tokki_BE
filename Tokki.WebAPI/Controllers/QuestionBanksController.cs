@@ -11,6 +11,7 @@ using Tokki.Application.UseCases.QuestionBanks.Commands.UpdateQuestionBank;
 using Tokki.Application.UseCases.QuestionBanks.Queries.GetByQuestionTypeId;
 using Tokki.Application.UseCases.QuestionBanks.Queries.GetQuestionBankById;
 using Tokki.Application.UseCases.QuestionBanks.Queries.GetQuestionBanks;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Api.Controllers
 {
@@ -118,24 +119,23 @@ namespace Tokki.Api.Controllers
 
             return Ok(result);
         }
-        [HttpGet("admin/by-question-type/{questionTypeId}")]
-        public async Task<IActionResult> GetByQuestionTypeId([FromRoute] string questionTypeId, CancellationToken cancellationToken)
-        {
-            var query = new GetQuestionBanksByQuestionTypeIdQuery
-            {
-                QuestionTypeId = questionTypeId
-            };
 
-            var result = await _mediator.Send(query, cancellationToken);
-
-            if (!result.IsSuccess)
+        [HttpGet("question-type/{questionTypeId}")]
+            public async Task<IActionResult> GetByQuestionTypeId(
+            string questionTypeId,
+            [FromQuery] QuestionBankStatus? status)
             {
-                return StatusCode(result.StatusCode, result);
+                var query = new GetQuestionBanksByQuestionTypeIdQuery
+                {
+                    QuestionTypeId = questionTypeId,
+                    Status = status
+                };
+
+                var result = await _mediator.Send(query);
+                return result.IsSuccess ? Ok(result) : StatusCode(result.StatusCode, result);
             }
 
-            return Ok(result);
-        }
-        [HttpPut("admin/activate")]
+    [HttpPut("admin/activate")]
         public async Task<IActionResult> ActivateQuestionBanks(
             [FromBody] ActivateQuestionBanksCommand command)
         {

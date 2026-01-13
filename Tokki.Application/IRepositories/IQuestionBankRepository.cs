@@ -33,6 +33,9 @@ namespace Tokki.Application.IRepositories
 
         Task UpdateRangeAsync(IEnumerable<QuestionBank> questionBanks);
         Task<bool> AnyUsingPassageAsync(string passageId, CancellationToken cancellationToken = default);
-
+        Task<IEnumerable<QuestionBank>> GetByQuestionTypeIdAsync(
+            string questionTypeId,
+            QuestionBankStatus? status,
+            CancellationToken cancellationToken = default);
     }
 }

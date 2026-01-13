@@ -2,6 +2,7 @@
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.QuestionBanks.DTOs;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.QuestionBanks.Queries.GetByQuestionTypeId
 {
@@ -19,12 +20,11 @@ namespace Tokki.Application.UseCases.QuestionBanks.Queries.GetByQuestionTypeId
             GetQuestionBanksByQuestionTypeIdQuery request,
             CancellationToken cancellationToken)
         {
-
-
             var items = await _questionBankRepository.GetByQuestionTypeIdAsync(
-      request.QuestionTypeId,
-      cancellationToken
-  );
+                request.QuestionTypeId,
+                request.Status,
+                cancellationToken
+            );
 
             var dtos = items.Select(q => new QuestionBankByQuestionTypeDto
             {

@@ -26,7 +26,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.Queries
         public async Task Handle_Should_ReturnSuccess_And_MapDtos_And_OrderOptions()
         {
             // Arrange
-            var query = QuestionBankTestData.GetByQuestionTypeIdQuery("qt-01");
+            var query = QuestionBankTestData.GetByQuestionTypeIdQuery("qt-01", QuestionBankStatus.Draft);
 
             var qb = QuestionBankTestData.BuildQuestionBank(
                 id: "qb-01",
@@ -37,12 +37,15 @@ namespace Tokki.UnitTests.Features.QuestionBanks.Queries
                 questionType: QuestionBankTestData.BuildQuestionType("qt-01", QuestionSkill.Reading, true, "Reading"),
                 options: new List<QuestionOption>
                 {
-                    QuestionBankTestData.BuildOption("o2", "qb-01", "2", "B", false),
-                    QuestionBankTestData.BuildOption("o1", "qb-01", "1", "A", true),
+            QuestionBankTestData.BuildOption("o2", "qb-01", "2", "B", false),
+            QuestionBankTestData.BuildOption("o1", "qb-01", "1", "A", true),
                 });
 
             _mockQuestionBankRepo
-                .Setup(x => x.GetByQuestionTypeIdAsync("qt-01", It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetByQuestionTypeIdAsync(
+                    "qt-01",
+                    QuestionBankStatus.Draft,
+                    It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new List<QuestionBank> { qb });
 
             // Act
@@ -63,6 +66,12 @@ namespace Tokki.UnitTests.Features.QuestionBanks.Queries
             dto.Options[1].KeyOption.Should().Be("2");
 
             result.Message.Should().Be("Tìm thấy 1 câu hỏi.");
+
+            _mockQuestionBankRepo.Verify(x => x.GetByQuestionTypeIdAsync(
+                "qt-01",
+                QuestionBankStatus.Draft,
+                It.IsAny<CancellationToken>()), Times.Once);
         }
+
     }
 }

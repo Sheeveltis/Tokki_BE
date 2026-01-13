@@ -149,5 +149,27 @@ namespace Tokki.Infrastructure.Repositories
                 .AsNoTracking()
                 .AnyAsync(q => q.PassageId == passageId && q.Status != QuestionBankStatus.Deleted, cancellationToken);
         }
+        public async Task<IEnumerable<QuestionBank>> GetByQuestionTypeIdAsync(
+    string questionTypeId,
+    QuestionBankStatus? status,
+    CancellationToken cancellationToken = default)
+        {
+            var query = _context.QuestionBank
+                .Include(q => q.Passage)
+                .Include(q => q.QuestionType)
+                .Include(q => q.QuestionOptions)
+                .Where(q => q.QuestionTypeId == questionTypeId);
+
+            // nếu có truyền status thì lọc, không truyền thì lấy tất cả status
+            if (status.HasValue)
+            {
+                query = query.Where(q => q.Status == status.Value);
+            }
+
+            return await query
+                .OrderByDescending(q => q.CreatedAt)
+                .ThenByDescending(q => q.QuestionBankId)
+                .ToListAsync(cancellationToken);
+        }
     }
 }
