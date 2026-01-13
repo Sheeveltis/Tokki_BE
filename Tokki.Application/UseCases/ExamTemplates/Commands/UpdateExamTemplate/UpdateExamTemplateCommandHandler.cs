@@ -42,11 +42,6 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate
                 examTemplate.Type = request.Type.Value;
             }
 
-            if (request.Status.HasValue)
-            {
-                examTemplate.Status = request.Status.Value;
-            }
-
             await _examTemplateRepository.UpdateAsync(examTemplate);
             await _examTemplateRepository.SaveChangesAsync(cancellationToken);
 

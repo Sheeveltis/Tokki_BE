@@ -1,14 +1,15 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Tokki.Application.UseCases.ExamTemplates.Commands.CreateExamTemplate;
 using Tokki.Application.UseCases.ExamTemplates.Commands.AddTemplateParts; 
+using Tokki.Application.UseCases.ExamTemplates.Commands.CreateExamTemplate;
 using Tokki.Application.UseCases.ExamTemplates.Commands.DeleteExamTemplate;
 using Tokki.Application.UseCases.ExamTemplates.Commands.DuplicateExamTemplate;
 using Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate;
+using Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplateStatus;
+using Tokki.Application.UseCases.ExamTemplates.Commands.UpdateTemplatePart;
 using Tokki.Application.UseCases.ExamTemplates.Queries.GetAdminExamTemplates;
 using Tokki.Application.UseCases.ExamTemplates.Queries.GetExamTemplateById;
-using Tokki.Application.UseCases.ExamTemplates.Commands.UpdateTemplatePart;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -63,6 +64,15 @@ namespace Tokki.WebAPI.Controllers
         public async Task<IActionResult> UpdateTemplatePart(string id, [FromBody] UpdateExamTemplatePartCommand command)
         {
             command.TemplatePartId = id;
+            var result = await _mediator.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpPatch("{id}/status")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateExamTemplateStatus(string id, [FromBody] UpdateExamTemplateStatusCommand command)
+        {
+            command.ExamTemplateId = id;
             var result = await _mediator.Send(command);
             return StatusCode(result.StatusCode, result);
         }
