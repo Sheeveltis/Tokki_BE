@@ -23,6 +23,8 @@ namespace Tokki.Domain.Entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public ExamTemplateStatus Status { get; set; } = ExamTemplateStatus.Draft;
+        [MaxLength(500)]
+        public string? RejectReason { get; set; }
 
         public virtual ICollection<TemplatePart> TemplateParts { get; set; } = new List<TemplatePart>();
         public virtual ICollection<Exam> Exams { get; set; } = new List<Exam>();

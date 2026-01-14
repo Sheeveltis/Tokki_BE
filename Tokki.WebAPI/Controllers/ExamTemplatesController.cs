@@ -1,13 +1,17 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Tokki.Application.UseCases.ExamTemplates.Commands.AddTemplateParts; 
+using Tokki.Application.UseCases.ExamTemplates.Commands.AddTemplateParts;
+using Tokki.Application.UseCases.ExamTemplates.Commands.ApproveExamTemplate;
 using Tokki.Application.UseCases.ExamTemplates.Commands.CreateExamTemplate;
 using Tokki.Application.UseCases.ExamTemplates.Commands.DeleteExamTemplate;
 using Tokki.Application.UseCases.ExamTemplates.Commands.DuplicateExamTemplate;
+using Tokki.Application.UseCases.ExamTemplates.Commands.RejectExamTemplate;
+using Tokki.Application.UseCases.ExamTemplates.Commands.SubmitExamTemplate;
 using Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate;
 using Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplateStatus;
 using Tokki.Application.UseCases.ExamTemplates.Commands.UpdateTemplatePart;
+using Tokki.Application.UseCases.ExamTemplates.DTOs;
 using Tokki.Application.UseCases.ExamTemplates.Queries.GetAdminExamTemplates;
 using Tokki.Application.UseCases.ExamTemplates.Queries.GetExamTemplateById;
 
@@ -73,6 +77,36 @@ namespace Tokki.WebAPI.Controllers
         public async Task<IActionResult> UpdateExamTemplateStatus(string id, [FromBody] UpdateExamTemplateStatusCommand command)
         {
             command.ExamTemplateId = id;
+            var result = await _mediator.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+        [HttpPost("{id}/submit")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> SubmitForApproval(string id)
+        {
+            var command = new SubmitExamTemplateCommand { ExamTemplateId = id };
+            var result = await _mediator.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpPost("{id}/approve")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ApproveExamTemplate(string id)
+        {
+            var command = new ApproveExamTemplateCommand { ExamTemplateId = id };
+            var result = await _mediator.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpPost("{id}/reject")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> RejectExamTemplate(string id, [FromBody] RejectReasonDto dto)
+        {
+            var command = new RejectExamTemplateCommand
+            {
+                ExamTemplateId = id,
+                Reason = dto.Reason
+            };
             var result = await _mediator.Send(command);
             return StatusCode(result.StatusCode, result);
         }

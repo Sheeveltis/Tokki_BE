@@ -3,10 +3,17 @@ using Tokki.Application.Common.Models;
 using Tokki.Application.UseCases.QuestionBanks.DTOs;
 using Tokki.Domain.Enums;
 
-public class GetQuestionBanksByQuestionTypeIdQuery
-        : IRequest<OperationResult<List<QuestionBankByQuestionTypeDto>>>
+namespace Tokki.Application.UseCases.QuestionBanks.Queries.GetByQuestionTypeId
 {
-    public string QuestionTypeId { get; set; } = string.Empty;
+    public class GetQuestionBanksByQuestionTypeIdQuery
+        : IRequest<OperationResult<List<QuestionBankByQuestionTypeDto>>>
+    {
+        public string QuestionTypeId { get; set; } = string.Empty;
 
-    public QuestionBankStatus? Status { get; set; }
+        public QuestionBankStatus? Status { get; set; }
+
+        // NEW: filter theo audit
+        public string? CreateBy { get; set; }
+        public string? ApprovedBy { get; set; }
+    }
 }
