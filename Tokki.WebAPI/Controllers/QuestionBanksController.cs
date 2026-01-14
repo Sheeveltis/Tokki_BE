@@ -1,13 +1,20 @@
-﻿using MediatR;
+﻿using System.Security.Claims;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CognitiveServices.Speech.Transcription;
 using Tokki.Application.UseCases.QuestionBanks.Commands.ActivateQuestionBanks;
+using Tokki.Application.UseCases.QuestionBanks.Commands.ApproveQuestionBank;
 using Tokki.Application.UseCases.QuestionBanks.Commands.CreateQuestionBank;
+using Tokki.Application.UseCases.QuestionBanks.Commands.CreateQuestionBankByStaff;
 using Tokki.Application.UseCases.QuestionBanks.Commands.DeleteQuestionBank;
 using Tokki.Application.UseCases.QuestionBanks.Commands.QuestionOptions.Create;
 using Tokki.Application.UseCases.QuestionBanks.Commands.QuestionOptions.Delete;
 using Tokki.Application.UseCases.QuestionBanks.Commands.QuestionOptions.Update;
+using Tokki.Application.UseCases.QuestionBanks.Commands.RejectQuestionBank;
+using Tokki.Application.UseCases.QuestionBanks.Commands.SubmitQuestionBankForApproval;
 using Tokki.Application.UseCases.QuestionBanks.Commands.UpdateQuestionBank;
+using Tokki.Application.UseCases.QuestionBanks.DTOs;
 using Tokki.Application.UseCases.QuestionBanks.Queries.GetByQuestionTypeId;
 using Tokki.Application.UseCases.QuestionBanks.Queries.GetQuestionBankById;
 using Tokki.Application.UseCases.QuestionBanks.Queries.GetQuestionBanks;
@@ -33,20 +40,44 @@ namespace Tokki.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateQuestionBank([FromBody] CreateQuestionBankCommand command)
         {
-            var result = await _mediator.Send(command);
+            var userId =
+                User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? User.FindFirst("sub")?.Value;
 
-            if (!result.IsSuccess)
+            if (string.IsNullOrWhiteSpace(userId))
             {
-                return StatusCode(result.StatusCode, result);
+                // Tuỳ convention của bạn: Unauthorized hoặc OperationResult Failure
+                return Unauthorized(new { message = "Không xác định được người dùng từ token." });
             }
 
+            command.CreateBy = userId.Trim();
+
+            var result = await _mediator.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+  
+
+        [HttpPost("staff")]
+        [Authorize(Roles = "Staff")]
+        public async Task<IActionResult> CreateQuestionBankByStaff([FromBody] CreateQuestionBankByStaffCommand command)
+        {
+            var userId =
+                User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? User.FindFirst("sub")?.Value;
+
+            if (string.IsNullOrWhiteSpace(userId))
+                return Unauthorized(new { message = "Không xác định được người dùng từ token." });
+
+            command.CreateBy = userId.Trim();
+
+            var result = await _mediator.Send(command);
             return StatusCode(result.StatusCode, result);
         }
 
-        /// <summary>
-        /// Cập nhật thông tin câu hỏi
-        /// </summary>
-        [HttpPut("update")]
+    /// <summary>
+    /// Cập nhật thông tin câu hỏi
+    /// </summary>
+    [HttpPut("update")]
         public async Task<IActionResult> UpdateQuestionBank([FromBody] UpdateQuestionBankCommand command)
         {
             var result = await _mediator.Send(command);
@@ -59,10 +90,54 @@ namespace Tokki.Api.Controllers
             return Ok(result);
         }
 
+        // POST: api/question-banks/submit-approval
+        [HttpPut("submit-to-approval")]
+        [Authorize(Roles = "Staff")]
+        public async Task<IActionResult> SubmitForApproval([FromBody] SubmitApprovalRequest body)
+        {
+            var userId =
+                User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? User.FindFirst("sub")?.Value;
+
+            if (string.IsNullOrWhiteSpace(userId))
+                return Unauthorized(new { message = "Không xác định được người dùng từ token." });
+
+            var command = new SubmitQuestionBankForApprovalCommand
+            {
+                QuestionBankIds = body?.QuestionBankIds ?? new List<string>(),
+                SubmittedBy = userId.Trim()
+            };
+
+            var result = await _mediator.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
+
+       
+        [HttpPut("approve")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ApproveQuestionBanks([FromBody] ApproveQuestionBanksCommand command)
+        {
+            // command.QuestionBankIds sẽ được bind từ JSON body
+            var result = await _mediator.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        // PUT: api/question-banks/reject
+        [HttpPut("reject")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> RejectQuestionBanks([FromBody] RejectQuestionBanksCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
         /// <summary>
         /// Xóa câu hỏi theo ID
         /// </summary>
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+
         public async Task<IActionResult> DeleteQuestionBank(string id)
         {
             var command = new DeleteQuestionBankCommand
@@ -84,6 +159,7 @@ namespace Tokki.Api.Controllers
         /// Lấy chi tiết câu hỏi theo ID
         /// </summary>
         [HttpGet("{id}")]
+
         public async Task<IActionResult> GetQuestionBankById(string id)
         {
             var query = new GetQuestionBankByIdQuery
@@ -119,23 +195,27 @@ namespace Tokki.Api.Controllers
 
             return Ok(result);
         }
-
         [HttpGet("question-type/{questionTypeId}")]
-            public async Task<IActionResult> GetByQuestionTypeId(
-            string questionTypeId,
-            [FromQuery] QuestionBankStatus? status)
+        public async Task<IActionResult> GetByQuestionTypeId(
+            [FromRoute] string questionTypeId,
+            [FromQuery] QuestionBankStatus? status,
+            [FromQuery] string? createBy,
+            [FromQuery] string? approvedBy)
+        {
+            var query = new GetQuestionBanksByQuestionTypeIdQuery
             {
-                var query = new GetQuestionBanksByQuestionTypeIdQuery
-                {
-                    QuestionTypeId = questionTypeId,
-                    Status = status
-                };
+                QuestionTypeId = questionTypeId?.Trim() ?? string.Empty,
+                Status = status,
+                CreateBy = string.IsNullOrWhiteSpace(createBy) ? null : createBy.Trim(),
+                ApprovedBy = string.IsNullOrWhiteSpace(approvedBy) ? null : approvedBy.Trim()
+            };
 
-                var result = await _mediator.Send(query);
-                return result.IsSuccess ? Ok(result) : StatusCode(result.StatusCode, result);
-            }
+            var result = await _mediator.Send(query);
+            return StatusCode(result.StatusCode, result);
+        }
 
-    [HttpPut("admin/activate")]
+
+        [HttpPut("admin/activate")]
         public async Task<IActionResult> ActivateQuestionBanks(
             [FromBody] ActivateQuestionBanksCommand command)
         {
