@@ -1,10 +1,13 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using System.Net;
 using System.Security.Claims;
+using System.Text;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
+using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.QuestionBanks.Commands.ApproveQuestionBank
@@ -52,7 +55,7 @@ namespace Tokki.Application.UseCases.QuestionBanks.Commands.ApproveQuestionBank
             var ids = (request.QuestionBankIds ?? new List<string>())
                 .Where(x => !string.IsNullOrWhiteSpace(x))
                 .Select(x => x.Trim())
-                .Distinct()
+                .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
             if (ids.Count == 0)
@@ -67,19 +70,31 @@ namespace Tokki.Application.UseCases.QuestionBanks.Commands.ApproveQuestionBank
             var now = DateTime.UtcNow.AddHours(7);
             var approvedIds = new List<string>();
 
+            // Danh sách QB thực sự được approve trong lần gọi này (để gom mail)
+            var approvedThisBatchForMail = new List<QuestionBank>();
+
             try
             {
+                // NEW: lấy full details 1 lần
+                var qbs = await _questionBankRepository.GetByIdsWithDetailsAsync(ids, cancellationToken);
+                var qbMap = qbs.ToDictionary(x => x.QuestionBankId, StringComparer.OrdinalIgnoreCase);
+
+                // Check missing
+                var missingIds = ids.Where(id => !qbMap.ContainsKey(id)).ToList();
+                if (missingIds.Count > 0)
+                {
+                    return OperationResult<List<string>>.Failure(
+                        new List<Error> { AppErrors.QuestionBankNotFound },
+                        404,
+                        $"Không tìm thấy QuestionBankId: {string.Join(", ", missingIds)}"
+                    );
+                }
+
+                var toUpdate = new List<QuestionBank>();
+
                 foreach (var qbId in ids)
                 {
-                    var qb = await _questionBankRepository.GetByIdAsync(qbId, cancellationToken);
-                    if (qb == null)
-                    {
-                        return OperationResult<List<string>>.Failure(
-                            new List<Error> { AppErrors.QuestionBankNotFound },
-                            404,
-                            $"Không tìm thấy QuestionBankId: {qbId}"
-                        );
-                    }
+                    var qb = qbMap[qbId];
 
                     if (qb.Status == QuestionBankStatus.Deleted)
                     {
@@ -90,7 +105,7 @@ namespace Tokki.Application.UseCases.QuestionBanks.Commands.ApproveQuestionBank
                         );
                     }
 
-                    // Idempotent
+                    // Idempotent: Active coi như ok, không gửi mail lại
                     if (qb.Status == QuestionBankStatus.Active)
                     {
                         approvedIds.Add(qb.QuestionBankId);
@@ -111,25 +126,25 @@ namespace Tokki.Application.UseCases.QuestionBanks.Commands.ApproveQuestionBank
                     qb.ApprovedBy = currentUserId.Trim();
                     qb.ApprovedDate = now;
 
-                    await _questionBankRepository.UpdateAsync(qb);
+                    toUpdate.Add(qb);
                     approvedIds.Add(qb.QuestionBankId);
 
-                    // Email cho người tạo
+                    // Gom mail theo CreateBy (chỉ những item approve thực sự)
                     if (!string.IsNullOrWhiteSpace(qb.CreateBy))
                     {
-                        var creator = await _accountRepository.GetByIdAsync(qb.CreateBy);
-                        if (creator != null && !string.IsNullOrWhiteSpace(creator.Email))
-                        {
-                            await SendApproveEmailAsync(
-                                creator.Email,
-                                creator.FullName,
-                                qb.QuestionBankId
-                            );
-                        }
+                        approvedThisBatchForMail.Add(qb);
                     }
                 }
 
+                if (toUpdate.Count > 0)
+                {
+                    await _questionBankRepository.UpdateRangeAsync(toUpdate);
+                }
+
                 await _questionBankRepository.SaveChangesAsync(cancellationToken);
+
+                // Gửi mail sau khi DB đã commit
+                await SendBatchApproveEmailsAsync(approvedThisBatchForMail, cancellationToken);
 
                 return OperationResult<List<string>>.Success(
                     approvedIds,
@@ -149,27 +164,120 @@ namespace Tokki.Application.UseCases.QuestionBanks.Commands.ApproveQuestionBank
             }
         }
 
-        private async Task SendApproveEmailAsync(string toEmail, string fullName, string questionBankId)
+        private async Task SendBatchApproveEmailsAsync(
+            List<QuestionBank> approvedQbs,
+            CancellationToken cancellationToken)
         {
-            var subject = "[Tokki] Câu hỏi của bạn đã được phê duyệt";
+            if (approvedQbs == null || approvedQbs.Count == 0) return;
 
-            var safeName = string.IsNullOrWhiteSpace(fullName) ? toEmail : fullName;
+            var groups = approvedQbs
+                .Where(q => !string.IsNullOrWhiteSpace(q.CreateBy))
+                .GroupBy(q => q.CreateBy!.Trim(), StringComparer.OrdinalIgnoreCase);
 
-            var body = $@"
-                <div style='font-family: Arial, sans-serif; padding: 20px;'>
-                    <h2>Xin chào {safeName},</h2>
-                    <p>
-                        Câu hỏi <strong>{questionBankId}</strong> của bạn đã được <strong>phê duyệt</strong>
-                        và hiện đang <strong>hoạt động</strong> trên hệ thống Tokki.
-                    </p>
-                    <hr />
-                    <p style='font-size: 12px; color: gray;'>
-                        Đây là email tự động từ hệ thống Tokki, vui lòng không trả lời email này.
-                    </p>
-                </div>
-            ";
+            foreach (var g in groups)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
 
-            await _emailService.SendEmailAsync(toEmail, subject, body);
+                var creatorId = g.Key;
+
+                try
+                {
+                    var creator = await _accountRepository.GetByIdAsync(creatorId);
+                    if (creator == null || string.IsNullOrWhiteSpace(creator.Email))
+                        continue;
+
+                    var subject = "[Tokki] Danh sách câu hỏi đã được phê duyệt";
+                    var body = BuildBatchApproveEmailBody(
+                        fullName: creator.FullName,
+                        email: creator.Email,
+                        qbs: g.ToList()
+                    );
+
+                    await _emailService.SendEmailAsync(creator.Email, subject, body);
+                }
+                catch (Exception ex)
+                {
+                    // Không fail request vì DB đã commit; chỉ log để theo dõi
+                    _logger.LogError(ex, "Send batch approve email failed. CreateBy={CreateBy} Count={Count}", creatorId, g.Count());
+                }
+            }
+        }
+
+        private string BuildBatchApproveEmailBody(string fullName, string email, List<QuestionBank> qbs)
+        {
+            var safeName = string.IsNullOrWhiteSpace(fullName) ? email : fullName;
+
+            var sb = new StringBuilder();
+            sb.Append($@"
+<div style='font-family: Arial, sans-serif; padding: 20px;'>
+  <h2>Xin chào {WebUtility.HtmlEncode(safeName)},</h2>
+  <p>Các câu hỏi dưới đây của bạn đã được <strong>phê duyệt</strong> và chuyển sang <strong>Active</strong>:</p>
+  <hr />
+  <ol>
+");
+
+            foreach (var qb in qbs
+                         .OrderByDescending(x => x.ApprovedDate ?? DateTime.MinValue)
+                         .ThenByDescending(x => x.QuestionBankId))
+            {
+                var questionTypeName = qb.QuestionType?.Name ?? qb.QuestionTypeId ?? "(Không xác định)";
+                var passageTitle = qb.Passage?.Title ?? qb.PassageId ?? "(Không có passage)";
+
+                sb.Append("<li style='margin-bottom: 16px;'>");
+                sb.Append($"<div><strong>ID:</strong> {WebUtility.HtmlEncode(qb.QuestionBankId)}</div>");
+                sb.Append($"<div><strong>QuestionType:</strong> {WebUtility.HtmlEncode(questionTypeName)}</div>");
+                sb.Append($"<div><strong>Passage:</strong> {WebUtility.HtmlEncode(passageTitle)}</div>");
+
+                if (!string.IsNullOrWhiteSpace(qb.Content))
+                    sb.Append($"<div><strong>Content:</strong> {WebUtility.HtmlEncode(qb.Content)}</div>");
+
+                if (!string.IsNullOrWhiteSpace(qb.MediaUrl))
+                    sb.Append($"<div><strong>MediaUrl:</strong> {WebUtility.HtmlEncode(qb.MediaUrl)}</div>");
+
+                if (!string.IsNullOrWhiteSpace(qb.Explanation))
+                    sb.Append($"<div><strong>Explanation:</strong> {WebUtility.HtmlEncode(qb.Explanation)}</div>");
+
+                sb.Append(BuildOptionsHtml(qb));
+                sb.Append("</li>");
+            }
+
+            sb.Append(@"
+  </ol>
+  <hr />
+  <p style='font-size: 12px; color: gray;'>
+    Đây là email tự động từ hệ thống Tokki, vui lòng không trả lời email này.
+  </p>
+</div>
+");
+
+            return sb.ToString();
+        }
+
+        private static string BuildOptionsHtml(QuestionBank qb)
+        {
+            if (qb.QuestionOptions == null || qb.QuestionOptions.Count == 0)
+            {
+                return "<div><strong>Đáp án:</strong> (Không có)</div>";
+            }
+
+            var sb = new StringBuilder();
+            sb.Append("<div style='margin-top:8px;'><strong>Đáp án</strong><ol>");
+
+            foreach (var o in qb.QuestionOptions.OrderBy(x => x.KeyOption))
+            {
+                var content = WebUtility.HtmlEncode(o.Content ?? string.Empty);
+
+                var imgPart = string.IsNullOrWhiteSpace(o.ImageUrl)
+                    ? string.Empty
+                    : $"<div><em>ImageUrl:</em> {WebUtility.HtmlEncode(o.ImageUrl)}</div>";
+
+                var correctTag = o.IsCorrect ? " <strong>(Đáp án đúng)</strong>" : string.Empty;
+
+                sb.Append($"<li><strong>{WebUtility.HtmlEncode(o.KeyOption)}</strong>: {content}{correctTag}{imgPart}</li>");
+            }
+
+            sb.Append("</ol></div>");
+            return sb.ToString();
         }
     }
 }

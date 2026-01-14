@@ -37,5 +37,9 @@ namespace Tokki.Application.IRepositories
             string questionTypeId,
             QuestionBankStatus? status,
             CancellationToken cancellationToken = default);
+        Task<List<QuestionBank>> GetByIdsWithDetailsAsync(
+        IEnumerable<string> questionBankIds,
+        CancellationToken cancellationToken = default);
+
     }
 }

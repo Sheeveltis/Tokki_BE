@@ -170,5 +170,26 @@ namespace Tokki.Infrastructure.Repositories
                 .ThenByDescending(q => q.QuestionBankId)
                 .ToListAsync(cancellationToken);
         }
+        public async Task<List<QuestionBank>> GetByIdsWithDetailsAsync(
+            IEnumerable<string> questionBankIds,
+            CancellationToken cancellationToken = default)
+                {
+                    var ids = (questionBankIds ?? Enumerable.Empty<string>())
+                        .Where(x => !string.IsNullOrWhiteSpace(x))
+                        .Select(x => x.Trim())
+                        .Distinct()
+                        .ToList();
+
+                    if (ids.Count == 0) return new List<QuestionBank>();
+
+                    return await _context.QuestionBank
+                        .AsSplitQuery()
+                        .Include(q => q.Passage)
+                        .Include(q => q.QuestionType)
+                        .Include(q => q.QuestionOptions)
+                        .Where(q => ids.Contains(q.QuestionBankId))
+                        .ToListAsync(cancellationToken);
+                }
+
     }
 }
