@@ -16,6 +16,12 @@ namespace Tokki.Domain.Enums
         Published = 1,
 
         [Description("Đã xóa")]
-        Deleted = 2
+        Deleted = 2,
+
+        [Description("Chờ phê duyệt")]
+        PendingApproval = 3,
+
+        [Description("Từ chối")]
+        Rejected = 4
     }
 }
