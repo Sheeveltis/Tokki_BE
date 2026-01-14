@@ -13,19 +13,16 @@ namespace Tokki.Application.UseCases.QuestionBanks.Commands.CreateQuestionBank
         {
             _questionTypeRepository = questionTypeRepository;
 
-            RuleFor(x => x.Content)
-                .NotEmpty()
-                .WithName("Nội dung câu hỏi");
-
             RuleFor(x => x.QuestionTypeId)
                 .NotEmpty()
                 .WithName("Loại câu hỏi");
 
+            // NOTE: Bỏ RuleFor(x => x.Content).NotEmpty() để đồng bộ với Update
             // Validate theo QuestionType.Skill trong DB
-            RuleFor(x => x).CustomAsync(ValidateOptionsByQuestionTypeSkillAsync);
+            RuleFor(x => x).CustomAsync(ValidateByQuestionTypeSkillAsync);
         }
 
-        private async Task ValidateOptionsByQuestionTypeSkillAsync(
+        private async Task ValidateByQuestionTypeSkillAsync(
             CreateQuestionBankCommand model,
             ValidationContext<CreateQuestionBankCommand> context,
             CancellationToken cancellationToken)
@@ -50,7 +47,18 @@ namespace Tokki.Application.UseCases.QuestionBanks.Commands.CreateQuestionBank
 
             var skill = questionType.Skill;
 
-            // Writing: không được có options
+            // ===== Đồng bộ rule giống Update =====
+            if (skill == QuestionSkill.Listening && string.IsNullOrWhiteSpace(model.MediaUrl))
+            {
+                context.AddFailure(nameof(CreateQuestionBankCommand.MediaUrl), "Câu hỏi Listening bắt buộc phải có MediaUrl.");
+            }
+
+            if (skill == QuestionSkill.Reading && string.IsNullOrWhiteSpace(model.Content))
+            {
+                context.AddFailure(nameof(CreateQuestionBankCommand.Content), "Câu hỏi Reading bắt buộc phải có Content.");
+            }
+
+            // ===== Options rules (giữ như cũ) =====
             if (skill == QuestionSkill.Writing)
             {
                 if (model.Options != null && model.Options.Any())
@@ -60,7 +68,6 @@ namespace Tokki.Application.UseCases.QuestionBanks.Commands.CreateQuestionBank
                 return;
             }
 
-            // Reading/Listening: bắt buộc 2-4 options
             if (model.Options == null || model.Options.Count < 2 || model.Options.Count > 4)
             {
                 context.AddFailure(nameof(CreateQuestionBankCommand.Options), AppErrors.QuestionBankInvalidOptions.Description);

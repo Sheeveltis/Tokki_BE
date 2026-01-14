@@ -1,8 +1,11 @@
-﻿using MediatR;
+﻿using System.Security.Claims;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CognitiveServices.Speech.Transcription;
 using Tokki.Application.UseCases.QuestionBanks.Commands.ActivateQuestionBanks;
 using Tokki.Application.UseCases.QuestionBanks.Commands.CreateQuestionBank;
+using Tokki.Application.UseCases.QuestionBanks.Commands.CreateQuestionBankByStaff;
 using Tokki.Application.UseCases.QuestionBanks.Commands.DeleteQuestionBank;
 using Tokki.Application.UseCases.QuestionBanks.Commands.QuestionOptions.Create;
 using Tokki.Application.UseCases.QuestionBanks.Commands.QuestionOptions.Delete;
@@ -33,20 +36,43 @@ namespace Tokki.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateQuestionBank([FromBody] CreateQuestionBankCommand command)
         {
-            var result = await _mediator.Send(command);
+            var userId =
+                User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? User.FindFirst("sub")?.Value;
 
-            if (!result.IsSuccess)
+            if (string.IsNullOrWhiteSpace(userId))
             {
-                return StatusCode(result.StatusCode, result);
+                // Tuỳ convention của bạn: Unauthorized hoặc OperationResult Failure
+                return Unauthorized(new { message = "Không xác định được người dùng từ token." });
             }
 
+            command.CreateBy = userId.Trim();
+
+            var result = await _mediator.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+  
+
+        [HttpPost("staff")]
+        public async Task<IActionResult> CreateQuestionBankByStaff([FromBody] CreateQuestionBankByStaffCommand command)
+        {
+            var userId =
+                User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? User.FindFirst("sub")?.Value;
+
+            if (string.IsNullOrWhiteSpace(userId))
+                return Unauthorized(new { message = "Không xác định được người dùng từ token." });
+
+            command.CreateBy = userId.Trim();
+
+            var result = await _mediator.Send(command);
             return StatusCode(result.StatusCode, result);
         }
 
-        /// <summary>
-        /// Cập nhật thông tin câu hỏi
-        /// </summary>
-        [HttpPut("update")]
+    /// <summary>
+    /// Cập nhật thông tin câu hỏi
+    /// </summary>
+    [HttpPut("update")]
         public async Task<IActionResult> UpdateQuestionBank([FromBody] UpdateQuestionBankCommand command)
         {
             var result = await _mediator.Send(command);

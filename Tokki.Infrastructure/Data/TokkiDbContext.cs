@@ -467,25 +467,57 @@ namespace Tokki.Infrastructure.Data
             {
                 entity.HasKey(qb => qb.QuestionBankId);
 
-             
+                // Enum -> int
                 entity.Property(qb => qb.Status)
                       .HasConversion<int>();
 
+                // ===== NEW FIELDS: CreateBy / ApprovedBy / ApprovedDate =====
+                entity.Property(qb => qb.CreateBy)
+                      .HasMaxLength(15);
 
+                entity.Property(qb => qb.ApprovedBy)
+                      .HasMaxLength(15);
+
+                entity.Property(qb => qb.ApprovedDate)
+                      .HasColumnType("datetime2(0)");
+
+                // (Tuỳ chọn) index để query nhanh
+                entity.HasIndex(qb => qb.CreateBy);
+                entity.HasIndex(qb => qb.ApprovedBy);
+                entity.HasIndex(qb => qb.ApprovedDate);
+
+                // ===== RELATIONSHIPS =====
+
+                // QuestionBank -> Passage (Many-to-One)
                 entity.HasOne(qb => qb.Passage)
                       .WithMany(p => p.QuestionBank)
                       .HasForeignKey(qb => qb.PassageId)
                       .OnDelete(DeleteBehavior.Restrict);
 
+                // QuestionBank -> QuestionType (Many-to-One)
                 entity.HasOne(qb => qb.QuestionType)
                       .WithMany(qt => qt.QuestionBank)
                       .HasForeignKey(qb => qb.QuestionTypeId)
                       .OnDelete(DeleteBehavior.Restrict);
 
+                // QuestionBank -> QuestionOptions (One-to-Many)
                 entity.HasMany(qb => qb.QuestionOptions)
                       .WithOne(qo => qo.QuestionBank)
                       .HasForeignKey(qo => qo.QuestionBankId)
                       .OnDelete(DeleteBehavior.Cascade);
+
+                // ===== NEW: FK to Accounts(UserId) =====
+                entity.HasOne(qb => qb.CreatedByAccount)
+                      .WithMany()
+                      .HasForeignKey(qb => qb.CreateBy)
+                      .HasPrincipalKey(a => a.UserId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(qb => qb.ApprovedByAccount)
+                      .WithMany()
+                      .HasForeignKey(qb => qb.ApprovedBy)
+                      .HasPrincipalKey(a => a.UserId)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
 
             modelBuilder.Entity<QuestionOption>(entity =>
