@@ -4,13 +4,17 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CognitiveServices.Speech.Transcription;
 using Tokki.Application.UseCases.QuestionBanks.Commands.ActivateQuestionBanks;
+using Tokki.Application.UseCases.QuestionBanks.Commands.ApproveQuestionBank;
 using Tokki.Application.UseCases.QuestionBanks.Commands.CreateQuestionBank;
 using Tokki.Application.UseCases.QuestionBanks.Commands.CreateQuestionBankByStaff;
 using Tokki.Application.UseCases.QuestionBanks.Commands.DeleteQuestionBank;
 using Tokki.Application.UseCases.QuestionBanks.Commands.QuestionOptions.Create;
 using Tokki.Application.UseCases.QuestionBanks.Commands.QuestionOptions.Delete;
 using Tokki.Application.UseCases.QuestionBanks.Commands.QuestionOptions.Update;
+using Tokki.Application.UseCases.QuestionBanks.Commands.RejectQuestionBank;
+using Tokki.Application.UseCases.QuestionBanks.Commands.SubmitQuestionBankForApproval;
 using Tokki.Application.UseCases.QuestionBanks.Commands.UpdateQuestionBank;
+using Tokki.Application.UseCases.QuestionBanks.DTOs;
 using Tokki.Application.UseCases.QuestionBanks.Queries.GetByQuestionTypeId;
 using Tokki.Application.UseCases.QuestionBanks.Queries.GetQuestionBankById;
 using Tokki.Application.UseCases.QuestionBanks.Queries.GetQuestionBanks;
@@ -54,6 +58,7 @@ namespace Tokki.Api.Controllers
   
 
         [HttpPost("staff")]
+        [Authorize(Roles = "Staff")]
         public async Task<IActionResult> CreateQuestionBankByStaff([FromBody] CreateQuestionBankByStaffCommand command)
         {
             var userId =
@@ -85,10 +90,54 @@ namespace Tokki.Api.Controllers
             return Ok(result);
         }
 
+        // POST: api/question-banks/submit-approval
+        [HttpPut("submit-to-approval")]
+        [Authorize(Roles = "Staff")]
+        public async Task<IActionResult> SubmitForApproval([FromBody] SubmitApprovalRequest body)
+        {
+            var userId =
+                User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? User.FindFirst("sub")?.Value;
+
+            if (string.IsNullOrWhiteSpace(userId))
+                return Unauthorized(new { message = "Không xác định được người dùng từ token." });
+
+            var command = new SubmitQuestionBankForApprovalCommand
+            {
+                QuestionBankIds = body?.QuestionBankIds ?? new List<string>(),
+                SubmittedBy = userId.Trim()
+            };
+
+            var result = await _mediator.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
+
+       
+        [HttpPut("approve")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ApproveQuestionBanks([FromBody] ApproveQuestionBanksCommand command)
+        {
+            // command.QuestionBankIds sẽ được bind từ JSON body
+            var result = await _mediator.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        // PUT: api/question-banks/reject
+        [HttpPut("reject")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> RejectQuestionBanks([FromBody] RejectQuestionBanksCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
         /// <summary>
         /// Xóa câu hỏi theo ID
         /// </summary>
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+
         public async Task<IActionResult> DeleteQuestionBank(string id)
         {
             var command = new DeleteQuestionBankCommand
@@ -110,6 +159,7 @@ namespace Tokki.Api.Controllers
         /// Lấy chi tiết câu hỏi theo ID
         /// </summary>
         [HttpGet("{id}")]
+
         public async Task<IActionResult> GetQuestionBankById(string id)
         {
             var query = new GetQuestionBankByIdQuery
