@@ -195,23 +195,27 @@ namespace Tokki.Api.Controllers
 
             return Ok(result);
         }
-
         [HttpGet("question-type/{questionTypeId}")]
-            public async Task<IActionResult> GetByQuestionTypeId(
-            string questionTypeId,
-            [FromQuery] QuestionBankStatus? status)
+        public async Task<IActionResult> GetByQuestionTypeId(
+            [FromRoute] string questionTypeId,
+            [FromQuery] QuestionBankStatus? status,
+            [FromQuery] string? createBy,
+            [FromQuery] string? approvedBy)
+        {
+            var query = new GetQuestionBanksByQuestionTypeIdQuery
             {
-                var query = new GetQuestionBanksByQuestionTypeIdQuery
-                {
-                    QuestionTypeId = questionTypeId,
-                    Status = status
-                };
+                QuestionTypeId = questionTypeId?.Trim() ?? string.Empty,
+                Status = status,
+                CreateBy = string.IsNullOrWhiteSpace(createBy) ? null : createBy.Trim(),
+                ApprovedBy = string.IsNullOrWhiteSpace(approvedBy) ? null : approvedBy.Trim()
+            };
 
-                var result = await _mediator.Send(query);
-                return result.IsSuccess ? Ok(result) : StatusCode(result.StatusCode, result);
-            }
+            var result = await _mediator.Send(query);
+            return StatusCode(result.StatusCode, result);
+        }
 
-    [HttpPut("admin/activate")]
+
+        [HttpPut("admin/activate")]
         public async Task<IActionResult> ActivateQuestionBanks(
             [FromBody] ActivateQuestionBanksCommand command)
         {
