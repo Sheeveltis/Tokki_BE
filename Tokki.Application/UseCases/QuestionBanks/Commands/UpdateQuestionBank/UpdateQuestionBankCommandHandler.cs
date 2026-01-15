@@ -56,10 +56,18 @@ namespace Tokki.Application.UseCases.QuestionBanks.Commands.UpdateQuestionBank
                 return OperationResult<string>.Failure(
                     new List<Error> { AppErrors.Forbidden },
                     403,
-                    "Chỉ được phép cập nhật khi câu hỏi đang ở trạng thái Draft."
+                    "Chỉ được phép cập nhật khi câu hỏi khi chưa được sử dung hoặc xóa."
                 );
             }
 
+            if (questionBank.Status != QuestionBankStatus.Rejected)
+            {
+                return OperationResult<string>.Failure(
+                    new List<Error> { AppErrors.Forbidden },
+                    403,
+                    "Chỉ được phép cập nhật khi câu hỏi khi chưa được sử dụng hoặc xóa."
+                );
+            }
             // ===== PATCH RULES (NEW) =====
             // - null => không update
             // - ""/whitespace => update thành ""
