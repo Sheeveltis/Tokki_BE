@@ -30,7 +30,7 @@ namespace Tokki.WebAPI.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, Staff")]
         public async Task<IActionResult> CreateExamTemplate([FromBody] CreateExamTemplateCommand command)
         {
             var result = await _mediator.Send(command);
@@ -38,7 +38,7 @@ namespace Tokki.WebAPI.Controllers
         }
 
         [HttpPost("TemplateParts")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, Staff")]
         public async Task<IActionResult> AddTemplateParts([FromBody] AddTemplatePartsCommand command)
         {
             var result = await _mediator.Send(command);
@@ -46,7 +46,7 @@ namespace Tokki.WebAPI.Controllers
         }
 
         [HttpPost("{id}/duplicate")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, Staff")]
         public async Task<IActionResult> DuplicateExamTemplate(string id)
         {
             var command = new DuplicateExamTemplateCommand(id);
@@ -55,7 +55,7 @@ namespace Tokki.WebAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, Staff")]
         public async Task<IActionResult> UpdateExamTemplate(string id, [FromBody] UpdateExamTemplateCommand command)
         {
             command.ExamTemplateId = id;
@@ -64,7 +64,7 @@ namespace Tokki.WebAPI.Controllers
         }
 
         [HttpPut("TemplateParts/{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, Staff")]
         public async Task<IActionResult> UpdateTemplatePart(string id, [FromBody] UpdateExamTemplatePartCommand command)
         {
             command.TemplatePartId = id;
@@ -112,7 +112,7 @@ namespace Tokki.WebAPI.Controllers
         }
 
         [HttpGet("admin")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, Staff")]
         public async Task<IActionResult> GetAdminExamTemplates([FromQuery] GetAdminExamTemplatesQuery query)
         {
             var result = await _mediator.Send(query);
@@ -120,6 +120,7 @@ namespace Tokki.WebAPI.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin, Staff")]
         public async Task<IActionResult> GetExamTemplateById(string id)
         {
             var query = new GetExamTemplateByIdQuery { ExamTemplateId = id };
@@ -128,7 +129,7 @@ namespace Tokki.WebAPI.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, Staff")]
         public async Task<IActionResult> DeleteExamTemplate(string id)
         {
             var command = new DeleteExamTemplateCommand(id);
