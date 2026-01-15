@@ -20,10 +20,14 @@ namespace Tokki.UnitTests.Features.QuestionBanks.Commands
 
         public UpdateQuestionBankCommandHandlerTests()
         {
+           
+
             _handler = new UpdateQuestionBankCommandHandler(
                 _mockQuestionBankRepo.Object,
+                _mockQuestionOptionRepo.Object, 
                 _mockQuestionTypeRepo.Object,
-                _mockPassageRepo.Object
+                _mockPassageRepo.Object,
+                _mockIdGenerator.Object         
             );
         }
 

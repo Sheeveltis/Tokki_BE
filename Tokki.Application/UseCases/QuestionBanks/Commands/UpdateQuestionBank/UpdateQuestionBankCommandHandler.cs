@@ -51,23 +51,16 @@ namespace Tokki.Application.UseCases.QuestionBanks.Commands.UpdateQuestionBank
                 );
             }
 
-            if (questionBank.Status != QuestionBankStatus.Draft)
+            if (questionBank.Status != QuestionBankStatus.Draft
+  && questionBank.Status != QuestionBankStatus.Rejected)
             {
                 return OperationResult<string>.Failure(
                     new List<Error> { AppErrors.Forbidden },
                     403,
-                    "Chỉ được phép cập nhật khi câu hỏi khi chưa được sử dung hoặc xóa."
+                    "Chỉ được phép cập nhật khi câu hỏi chưa được sử dụng hoặc xóa."
                 );
             }
 
-            if (questionBank.Status != QuestionBankStatus.Rejected)
-            {
-                return OperationResult<string>.Failure(
-                    new List<Error> { AppErrors.Forbidden },
-                    403,
-                    "Chỉ được phép cập nhật khi câu hỏi khi chưa được sử dụng hoặc xóa."
-                );
-            }
             // ===== PATCH RULES (NEW) =====
             // - null => không update
             // - ""/whitespace => update thành ""
