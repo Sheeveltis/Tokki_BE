@@ -17,12 +17,9 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.ApproveExamTemplate
         public async Task<OperationResult<bool>> Handle(ApproveExamTemplateCommand request, CancellationToken cancellationToken)
         {
             var examTemplate = await _examTemplateRepository.GetByIdAsync(request.ExamTemplateId, cancellationToken);
-
-            if (examTemplate == null)
-                return OperationResult<bool>.Failure("Không tìm thấy đề thi mẫu.");
+            if (examTemplate == null) return OperationResult<bool>.Failure("Không tìm thấy đề thi.");
 
             examTemplate.Status = ExamTemplateStatus.Published;
-            examTemplate.RejectReason = null; 
 
             await _examTemplateRepository.UpdateAsync(examTemplate);
             await _examTemplateRepository.SaveChangesAsync(cancellationToken);

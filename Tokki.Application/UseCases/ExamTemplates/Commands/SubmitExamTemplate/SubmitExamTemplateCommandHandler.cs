@@ -22,13 +22,16 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.SubmitExamTemplate
                 return OperationResult<bool>.Failure("Không tìm thấy đề thi mẫu.");
 
             if (examTemplate.Status != ExamTemplateStatus.Draft && examTemplate.Status != ExamTemplateStatus.Rejected)
-                return OperationResult<bool>.Failure("Chỉ có thể gửi duyệt khi đề thi ở trạng thái Nháp hoặc Đã bị từ chối.");
+            {
+                return OperationResult<bool>.Failure("Trạng thái hiện tại không thể gửi duyệt.");
+            }
 
             if (examTemplate.TemplateParts == null || !examTemplate.TemplateParts.Any())
-                return OperationResult<bool>.Failure("Đề thi chưa có phần thi nào. Vui lòng thêm nội dung trước khi gửi duyệt.");
+            {
+                return OperationResult<bool>.Failure("Đề thi chưa có nội dung phần thi.");
+            }
 
             examTemplate.Status = ExamTemplateStatus.PendingApproval;
-            examTemplate.RejectReason = null; 
 
             await _examTemplateRepository.UpdateAsync(examTemplate);
             await _examTemplateRepository.SaveChangesAsync(cancellationToken);

@@ -240,6 +240,31 @@ namespace Tokki.Infrastructure.Services
 
             await SendEmailAsync(toEmail, subject, body);
         }
+        public async Task SendExamTemplateRejectedAsync(string toEmail, string staffName, string examName, string reason)
+        {
+            var subject = $"[Tokki] Yêu cầu chỉnh sửa đề thi: {examName}";
+            var safeName = string.IsNullOrWhiteSpace(staffName) ? "Staff" : staffName;
+
+            var body = $@"
+            <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd;'>
+                <div style='background-color: #d9534f; color: white; padding: 15px; text-align: center; border-radius: 5px 5px 0 0;'>
+                    <h2 style='margin:0;'>Đề thi bị Từ chối</h2>
+                </div>
+                <div style='padding: 20px; background-color: #f9f9f9;'>
+                    <p>Xin chào <strong>{safeName}</strong>,</p>
+                    <p>Đề thi <strong>{examName}</strong> chưa đạt yêu cầu phê duyệt.</p>
+                    
+                    <div style='background-color: #fff; border-left: 4px solid #d9534f; padding: 10px; margin: 15px 0;'>
+                        <p style='margin: 0; color: #d9534f; font-weight: bold;'>Lý do:</p>
+                        <p style='margin: 5px 0 0 0;'>{reason}</p>
+                    </div>
+
+                    <p>Vui lòng truy cập hệ thống, nhấn nút <strong>'Mở lại chỉnh sửa'</strong> (Reset to Draft) để sửa lỗi và gửi lại.</p>
+                </div>
+            </div>";
+
+            await SendEmailAsync(toEmail, subject, body);
+        }
 
     }
 }

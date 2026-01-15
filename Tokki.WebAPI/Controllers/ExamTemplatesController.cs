@@ -7,6 +7,7 @@ using Tokki.Application.UseCases.ExamTemplates.Commands.CreateExamTemplate;
 using Tokki.Application.UseCases.ExamTemplates.Commands.DeleteExamTemplate;
 using Tokki.Application.UseCases.ExamTemplates.Commands.DuplicateExamTemplate;
 using Tokki.Application.UseCases.ExamTemplates.Commands.RejectExamTemplate;
+using Tokki.Application.UseCases.ExamTemplates.Commands.ResetExamTemplateToDraft;
 using Tokki.Application.UseCases.ExamTemplates.Commands.SubmitExamTemplate;
 using Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate;
 using Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplateStatus;
@@ -107,6 +108,15 @@ namespace Tokki.WebAPI.Controllers
                 ExamTemplateId = id,
                 Reason = dto.Reason
             };
+            var result = await _mediator.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpPost("{id}/reset-draft")]
+        [Authorize(Roles = "Staff,Admin")]
+        public async Task<IActionResult> ResetToDraft(string id)
+        {
+            var command = new ResetExamTemplateToDraftCommand { ExamTemplateId = id };
             var result = await _mediator.Send(command);
             return StatusCode(result.StatusCode, result);
         }
