@@ -3,7 +3,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CognitiveServices.Speech.Transcription;
 using System.Security.Claims;
+using Tokki.Application.Common.Models;
 using Tokki.Application.UseCases.Excel.Commands.AddVocabByExcel;
+using Tokki.Application.UseCases.Excel.Commands.ImportQuestionsFromExcel;
+using Tokki.Application.UseCases.Excel.DTOs;
 using Tokki.Application.UseCases.Excel.Queries.ExportVocabByTopic;
 using Tokki.Application.UseCases.LiveChat.Commands.CreateSupportChat;
 
@@ -64,6 +67,30 @@ namespace Tokki.WebAPI.Controllers
             }
 
             return BadRequest(result.Errors);
+        }
+        [HttpPost("import-questions")]
+        [Consumes("multipart/form-data")]
+        [Authorize(Roles = "Admin, Staff")]
+        public async Task<IActionResult> ImportQuestions([FromForm] ImportQuestionsFromExcelCommand command)
+        {
+            if (command.ExcelFile == null || command.ExcelFile.Length == 0)
+            {
+                var errorResult = OperationResult<ImportQuestionsResponse>.Failure(
+                    new Error("File.Empty", "Vui lòng tải lên file Excel."),
+                    400
+                );
+                return BadRequest(errorResult);
+            }
+            if (string.IsNullOrEmpty(command.QuestionTypeId))
+            {
+                var errorResult = OperationResult<ImportQuestionsResponse>.Failure(
+                    new Error("Validation.MissingQuestionType", "Vui lòng nhập QuestionTypeId."),
+                    400
+                );
+                return BadRequest(errorResult);
+            }
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
         }
     }
 }

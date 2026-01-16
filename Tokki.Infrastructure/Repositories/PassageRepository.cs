@@ -115,5 +115,15 @@ namespace Tokki.Infrastructure.Repositories
         {
             return await _context.SaveChangesAsync(cancellationToken) > 0;
         }
+        /// <summary>
+        /// Kho - dùng thêm đoạn văn hàng loạt
+        /// Chủ yếu là dùng bên excel
+        /// </summary>
+        /// <param name="passages"></param>
+        /// <returns></returns>
+        public async Task AddRangeAsync(IEnumerable<Passage> passages)
+        {
+            await _context.Passages.AddRangeAsync(passages);
+        }
     }
 }

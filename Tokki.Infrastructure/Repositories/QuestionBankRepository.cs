@@ -149,5 +149,55 @@ namespace Tokki.Infrastructure.Repositories
                 .AsNoTracking()
                 .AnyAsync(q => q.PassageId == passageId && q.Status != QuestionBankStatus.Deleted, cancellationToken);
         }
+        /// <summary>
+        /// Kho - Hàm lấy ngẫu nhiên câu hỏi theo Type và số lượng cần lấy
+        /// </summary>
+        /// <param name="questionTypeId"></param>
+        /// <param name="quantity"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns
+        public async Task<List<QuestionBank>> GetRandomQuestionsByTypeAsync(
+            string questionTypeId,
+            int quantity,
+            List<string> excludedIds,
+            CancellationToken cancellationToken)
+        {
+            var query = _context.QuestionBank
+                .Where(x => x.QuestionTypeId == questionTypeId
+                            && x.Status == QuestionBankStatus.Active);
+
+            if (excludedIds != null && excludedIds.Any())
+            {
+                query = query.Where(x => !excludedIds.Contains(x.QuestionBankId));
+            }
+
+            return await query
+                .OrderBy(r => Guid.NewGuid())
+                .Take(quantity)
+                .ToListAsync(cancellationToken);
+        }
+        /// <summary>
+        /// Kho - dùng thêm câu hỏi hàng loạt
+        /// Chủ yếu bên excel import
+        /// </summary>
+        /// <param name="questions"></param>
+        /// <returns></returns>
+        public async Task AddRangeAsync(IEnumerable<QuestionBank> questions)
+        {
+            await _context.QuestionBank.AddRangeAsync(questions);
+        }
+        /// <summary>
+        /// Kho - dùng để check có bị trùng content question bank hay ko
+        /// Chủ yếu bên excel import
+        /// </summary>
+        /// <param name="contents"></param>
+        /// <returns></returns>
+        public async Task<List<string>> GetExistingContentsAsync(List<string> contents)
+        {
+            return await _context.QuestionBank
+                .Where(q => q.Content != null && contents.Contains(q.Content))
+                .Select(q => q.Content!) 
+                .ToListAsync();
+        }
     }
 }

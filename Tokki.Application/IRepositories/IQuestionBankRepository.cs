@@ -34,5 +34,31 @@ namespace Tokki.Application.IRepositories
         Task UpdateRangeAsync(IEnumerable<QuestionBank> questionBanks);
         Task<bool> AnyUsingPassageAsync(string passageId, CancellationToken cancellationToken = default);
 
+        /// <summary>
+        /// Kho - Hàm lấy ngẫu nhiên câu hỏi theo Type và số lượng cần lấy
+        /// </summary>
+        /// <param name="questionTypeId"></param>
+        /// <param name="quantity"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<List<QuestionBank>> GetRandomQuestionsByTypeAsync(
+            string questionTypeId,
+            int quantity,
+            List<string> excludedIds,
+            CancellationToken cancellationToken);
+        /// <summary>
+        /// Kho - dùng thêm câu hỏi hàng loạt
+        /// Chủ yếu bên excel import
+        /// </summary>
+        /// <param name="questions"></param>
+        /// <returns></returns>
+        Task AddRangeAsync(IEnumerable<QuestionBank> questions);
+        /// <summary>
+        /// Kho - dùng để check có bị trùng content question bank hay ko
+        /// Chủ yếu bên excel import
+        /// </summary>
+        /// <param name="contents"></param>
+        /// <returns></returns>
+        Task<List<string>> GetExistingContentsAsync(List<string> contents);
     }
 }

@@ -252,6 +252,9 @@ namespace Tokki.Application.Common.Models
         public static readonly Error ExamTemplateInUse = new("ExamTemplate.InUse", "Mẫu đề thi đang được sử dụng, không thể xóa.");
         public static readonly Error ExamTemplateNoParts = new("ExamTemplate.NoParts", "Mẫu đề thi phải có ít nhất một phần.");
         public static readonly Error ExamTemplateCantDelete = new("ExamTemplate.CannotDelete", "Không thể xóa đề thi đang ở trạng thái Xuất bản (Published). Hãy hủy xuất bản về Nháp trước khi xóa.");
+        //Kho
+        public static readonly Error ExamTemplateInactive = new("ExamTemplate.Inactive", "Cấu trúc đề thi này chưa được công bố (Published).");
+        public static readonly Error ExamTemplateEmptyParts = new("ExamTemplate.EmptyParts", "Cấu trúc đề thi chưa được định nghĩa các phần (Parts).");
         // ============================================
         // NHÓM 22: TEMPLATE PART
         // ============================================
@@ -271,7 +274,10 @@ namespace Tokki.Application.Common.Models
         public static readonly Error ExamQuestionBankNotFound = new("Exam.QuestionBankNotFound", "Câu hỏi trong ngân hàng không tồn tại.");
         public static readonly Error ExamTemplateCannotUpdateInUse = new("ExamTemplate.CannotUpdateInUse", "Mẫu đề thi đã được sử dụng trong kỳ thi, không thể cập nhật. Vui lòng sử dụng chức năng Sao chép (Duplicate).");
         public static readonly Error ExamTemplateCannotUpdatePublished = new("ExamTemplate.CannotUpdatePublished", "Mẫu đề đã xuất bản chỉ có thể cập nhật khi chưa được sử dụng.");
-
+        //Kho
+        public static Error ExamNotEnoughQuestions(string typeId, int needed, int found)
+            => new("Exam.NotEnoughQuestions",
+            $"Ngân hàng câu hỏi loại '{typeId}' không đủ. Cần {needed} câu nhưng chỉ tìm thấy {found} câu khả dụng.");
         // ============================================
         // NHÓM 24: COMMENT
         // ============================================

@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using OfficeOpenXml;
+using System.Net;
+using System.Text;
 using Tokki.Application.IServices;
 using Tokki.Application.UseCases.Excel.DTOs;
 
@@ -7,6 +9,10 @@ namespace Application.Services
 {
     public class ExcelService : IExcelService
     {
+        public ExcelService()
+        {
+            ExcelPackage.License.SetNonCommercialPersonal("TokkiProject");
+        }
         public Task<List<VocabularyExcelDTO>> ExtractVocabularyDataAsync(IFormFile file)
         {
             var result = new List<VocabularyExcelDTO>();
@@ -77,6 +83,131 @@ namespace Application.Services
 
                 return Task.FromResult(package.GetAsByteArray());
             }
+        }
+        public async Task<QuestionBankImportDTO> ExtractQuestionBankDataAsync(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                throw new ArgumentException("File Excel không hợp lệ.");
+
+            var result = new QuestionBankImportDTO();
+
+            using (var stream = new MemoryStream())
+            {
+                await file.CopyToAsync(stream);
+                using (var package = new ExcelPackage(stream))
+                {
+                    if (package.Workbook.Worksheets.Count < 3)
+                        throw new ArgumentException("File Excel thiếu sheet (Yêu cầu: Passages, Questions, Options).");
+
+                    result.Passages = ReadPassages(package.Workbook.Worksheets[0]);
+                    result.Questions = ReadQuestions(package.Workbook.Worksheets[1]);
+                    result.Options = ReadOptions(package.Workbook.Worksheets[2]);
+                }
+            }
+            return result;
+        }
+
+
+        private List<ExcelPassageDTO> ReadPassages(ExcelWorksheet sheet)
+        {
+            var list = new List<ExcelPassageDTO>();
+            int rowCount = sheet.Dimension?.Rows ?? 0;
+            for (int row = 2; row <= rowCount; row++)
+            {
+                var refId = GetCellValue(sheet, row, 1);
+                if (string.IsNullOrEmpty(refId)) continue;
+
+                list.Add(new ExcelPassageDTO
+                {
+                    RowIndex = row,
+                    RefId = refId,
+                    Title = GetCellValue(sheet, row, 2), 
+                    Content = GetCellHtml(sheet.Cells[row, 3]),
+                    ImageUrl = GetCellValue(sheet, row, 4),
+                    MediaType = GetCellValue(sheet, row, 5),
+                    Status = GetCellValue(sheet, row, 6)
+                });
+            }
+            return list;
+        }
+
+        private List<ExcelQuestionDTO> ReadQuestions(ExcelWorksheet sheet)
+        {
+            var list = new List<ExcelQuestionDTO>();
+            int rowCount = sheet.Dimension?.Rows ?? 0;
+            for (int row = 2; row <= rowCount; row++)
+            {
+                var refId = GetCellValue(sheet, row, 1);
+                if (string.IsNullOrEmpty(refId)) continue;
+
+                list.Add(new ExcelQuestionDTO
+                {
+                    RowIndex = row,
+                    RefId = refId,
+                    RefPassageId = GetCellValue(sheet, row, 2),
+                    Content = GetCellHtml(sheet.Cells[row, 3]),
+                    Explanation = GetCellHtml(sheet.Cells[row, 4]),
+
+                    Status = GetCellValue(sheet, row, 5)
+                });
+            }
+            return list;
+        }
+
+        private List<ExcelOptionDTO> ReadOptions(ExcelWorksheet sheet)
+        {
+            var list = new List<ExcelOptionDTO>();
+            int rowCount = sheet.Dimension?.Rows ?? 0;
+            for (int row = 2; row <= rowCount; row++)
+            {
+                var refId = GetCellValue(sheet, row, 1);
+                if (string.IsNullOrEmpty(refId)) continue;
+
+                list.Add(new ExcelOptionDTO
+                {
+                    RowIndex = row,
+                    RefId = refId,
+                    RefQuestionId = GetCellValue(sheet, row, 2),
+                    KeyOption = GetCellValue(sheet, row, 3),
+                    Content = GetCellHtml(sheet.Cells[row, 4]),
+                    IsCorrectStr = GetCellValue(sheet, row, 5)
+                });
+            }
+            return list;
+        }
+        private string GetCellValue(ExcelWorksheet sheet, int row, int col)
+        {
+            var value = sheet.Cells[row, col].Text?.Trim();
+            if (string.IsNullOrEmpty(value) || value.Equals("NULL", StringComparison.OrdinalIgnoreCase))
+            {
+                return string.Empty;
+            }
+            return value;
+        }
+        private string GetCellHtml(ExcelRange cell)
+        {
+            if (cell.Value == null) return string.Empty;
+
+            if (cell.RichText.Count == 0)
+            {
+                var text = cell.Text?.Trim();
+                if (string.IsNullOrEmpty(text)) return string.Empty;
+                return WebUtility.HtmlEncode(text).Replace("\n", "<br/>");
+            }
+
+            var sb = new StringBuilder();
+
+            foreach (var part in cell.RichText)
+            {
+                string text = WebUtility.HtmlEncode(part.Text);
+                if (string.IsNullOrEmpty(text)) continue;
+                if (part.UnderLine) text = $"<u>{text}</u>";
+                if (part.Italic) text = $"<i>{text}</i>";
+                if (part.Bold) text = $"<b>{text}</b>";
+                if (part.Strike) text = $"<del>{text}</del>";
+                sb.Append(text);
+            }
+            return sb.ToString().Replace("\n", "<br/>");
         }
     }
 }

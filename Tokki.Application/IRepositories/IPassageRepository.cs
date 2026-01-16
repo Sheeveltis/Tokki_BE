@@ -22,5 +22,12 @@ namespace Tokki.Application.IRepositories
         Task DeleteAsync(Passage passage);
 
         Task<bool> SaveChangesAsync(CancellationToken cancellationToken = default);
+        /// <summary>
+        /// Kho - dùng thêm đoạn văn hàng loạt
+        /// Chủ yếu là dùng bên excel
+        /// </summary>
+        /// <param name="passages"></param>
+        /// <returns></returns>
+        Task AddRangeAsync(IEnumerable<Passage> passages);
     }
 }
