@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Tokki.Domain.Entities;
@@ -23,5 +24,15 @@ namespace Tokki.Application.IRepositories
             int pageSize,
             string? examTemplateId = null,
             CancellationToken cancellationToken = default);
+        /// <summary>
+        /// Kho - Tìm các Part thuộc về ExamTemplateId cụ thể
+        ///Sắp xếp theo QuestionFrom để đảm bảo thứ tự câu hỏi đúng logic (VD: Part 1 câu 1-5, Part 2 câu 6-10)
+        ///Nói chung là hỗ trợ cho tạo Exam từ ExamTemplate
+        /// </summary>
+        /// <param name="examTemplateId"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<List<TemplatePart>> GetByExamTemplateIdAsync(string examTemplateId, CancellationToken cancellationToken);
+
     }
 }

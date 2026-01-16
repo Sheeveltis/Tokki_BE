@@ -12,22 +12,16 @@ namespace Tokki.Application.UseCases.Exam.Commands.CreateExam
     {
         public CreateExamCommandValidator()
         {
-            RuleFor(x => x.ExamTemplateId)
-                    .NotEmpty()
-                    .WithName("Template bài test");
-
             RuleFor(x => x.Title)
-                    .NotEmpty()
-                    .MaximumLength(150)
-                    .WithName("Tiêu đề");
-
-            RuleFor(x => x.Type)
-                    .IsInEnum()
-                    .WithName("Loại bài test");
+                .NotEmpty()
+                .WithName("tên đề thi");
 
             RuleFor(x => x.Duration)
-                    .IsInEnum()
-                    .WithName("Thời gian");
+                .GreaterThan(0)
+                .WithName("Thời gian làm bài");
+
+            RuleFor(x => x.ExamTemplateId)
+                .NotEmpty().WithMessage("Phải chọn cấu trúc đề thi (ExamTemplate).");
         }
     }
 }
