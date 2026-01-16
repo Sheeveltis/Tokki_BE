@@ -24,7 +24,7 @@ namespace Tokki.WebAPI.Controllers
             _sender = sender;
         }
 
-        [HttpPost("add-vocab")]
+        [HttpPost("import/vocab")]
         [Consumes("multipart/form-data")]
         [Authorize(Roles = "Admin, Staff")]
         public async Task<IActionResult> ImportVocabularyByExcel(IFormFile file, [FromQuery] string? topicId)
@@ -54,21 +54,7 @@ namespace Tokki.WebAPI.Controllers
                 return StatusCode(500, ex.ToString());
             }
         }
-        [HttpGet("export-by-topic/{topicId}")]
-        [Authorize(Roles = "Admin, Staff")] 
-        public async Task<IActionResult> ExportVocabByTopic(string topicId)
-        {
-            var query = new ExportVocabByTopicQuery { TopicId = topicId };
-            var result = await _sender.Send(query);
-
-            if (result.IsSuccess)
-            {
-                return File(result.Data.FileContent, result.Data.ContentType, result.Data.FileName);
-            }
-
-            return BadRequest(result.Errors);
-        }
-        [HttpPost("import-questions")]
+        [HttpPost("import/questions")]
         [Consumes("multipart/form-data")]
         [Authorize(Roles = "Admin, Staff")]
         public async Task<IActionResult> ImportQuestions([FromForm] ImportQuestionsFromExcelCommand command)
@@ -92,5 +78,20 @@ namespace Tokki.WebAPI.Controllers
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
         }
+        [HttpGet("export/topic/{topicId}")]
+        [Authorize(Roles = "Admin, Staff")] 
+        public async Task<IActionResult> ExportVocabByTopic(string topicId)
+        {
+            var query = new ExportVocabByTopicQuery { TopicId = topicId };
+            var result = await _sender.Send(query);
+
+            if (result.IsSuccess)
+            {
+                return File(result.Data.FileContent, result.Data.ContentType, result.Data.FileName);
+            }
+
+            return BadRequest(result.Errors);
+        }
+      
     }
 }
