@@ -128,7 +128,7 @@ builder.Services.AddHostedService(provider =>
 builder.Services.Configure<GoogleAuthSettings>(
     builder.Configuration.GetSection("Authentication:Google"));
 
-
+builder.Services.AddHostedService<Tokki.Infrastructure.BackgroundJobs.VipExpirationWorker>();
 
 
 
