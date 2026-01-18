@@ -18,6 +18,8 @@ namespace Tokki.Domain.Enums
         [Description("Chờ phê duyệt")]
         PendingApproval = 3,
         [Description("Bị từ chối phê duyệt")]
-        Rejected = 4
+        Rejected = 4,
+        [Description("Câu hỏi đã được sử dụng trong đề.")]
+        Assigned = 5
     }
 }
