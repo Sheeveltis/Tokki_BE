@@ -53,6 +53,7 @@ namespace Tokki.Infrastructure.Data
         public DbSet<UserVocabProgress> UserVocabProgresses { get; set; }
         public DbSet<Game> Games { get; set; }
         public DbSet<GameMatchSession> GameMatchSessions { get; set; }
+        public DbSet<UserTopicProgress> UserTopicProgresses { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
