@@ -10,5 +10,6 @@
           string toName,
           string usernameOrEmail,
           string defaultPassword);
+        Task SendExamTemplateRejectedAsync(string toEmail, string staffName, string examName, string reason);
     }
 }

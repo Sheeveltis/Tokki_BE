@@ -1,20 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MediatR;
+﻿using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.UseCases.QuestionBanks.DTOs;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.QuestionBanks.Queries.GetByQuestionTypeId
 {
     public class GetQuestionBanksByQuestionTypeIdQuery
-       : IRequest<OperationResult<List<QuestionBankByQuestionTypeDto>>>
+        : IRequest<OperationResult<List<QuestionBankByQuestionTypeDto>>>
     {
         public string QuestionTypeId { get; set; } = string.Empty;
 
-        // cho phép filter active/inactive, nếu null thì lấy tất cả
-        public bool? IsActive { get; set; } = true;
+        public QuestionBankStatus? Status { get; set; }
+
+        // NEW: filter theo audit
+        public string? CreateBy { get; set; }
+        public string? ApprovedBy { get; set; }
     }
 }

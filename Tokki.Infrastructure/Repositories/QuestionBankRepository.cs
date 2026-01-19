@@ -31,37 +31,37 @@ namespace Tokki.Infrastructure.Repositories
         }
 
         public async Task<(IEnumerable<QuestionBank> items, int totalCount)> GetPagedAsync(
-            int pageNumber,
-            int pageSize,
-            string? searchTerm = null,
-            string? questionTypeId = null,
-            string? passageId = null,
-            QuestionBankStatus? status = null,
-            CancellationToken cancellationToken = default)
+     int pageNumber,
+     int pageSize,
+     string? searchTerm = null,
+     string? questionTypeId = null,
+     string? passageId = null,
+     QuestionBankStatus? status = null,
+     CancellationToken cancellationToken = default)
         {
             if (pageNumber < 1) pageNumber = 1;
             if (pageSize < 1) pageSize = 10;
 
-            // Query nền để filter + count (không Include cho nhẹ)
-            IQueryable<QuestionBank> baseQuery = _context.QuestionBank.AsQueryable();
+            IQueryable<QuestionBank> baseQuery = _context.QuestionBank.AsNoTracking();
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
+                searchTerm = searchTerm.Trim();
                 baseQuery = baseQuery.Where(q =>
                     (q.Content != null && q.Content.Contains(searchTerm)) ||
                     (q.Explanation != null && q.Explanation.Contains(searchTerm)));
+                // hoặc EF.Functions.Like nếu bạn muốn
             }
 
-          
-         
-
-            if (!string.IsNullOrEmpty(questionTypeId))
+            if (!string.IsNullOrWhiteSpace(questionTypeId))
             {
+                questionTypeId = questionTypeId.Trim();
                 baseQuery = baseQuery.Where(q => q.QuestionTypeId == questionTypeId);
             }
 
-            if (!string.IsNullOrEmpty(passageId))
+            if (!string.IsNullOrWhiteSpace(passageId))
             {
+                passageId = passageId.Trim();
                 baseQuery = baseQuery.Where(q => q.PassageId == passageId);
             }
 
@@ -72,8 +72,8 @@ namespace Tokki.Infrastructure.Repositories
 
             var totalCount = await baseQuery.CountAsync(cancellationToken);
 
-            // Query lấy items (Include đầy đủ)
             var items = await baseQuery
+                .AsSplitQuery()
                 .Include(q => q.Passage)
                 .Include(q => q.QuestionType)
                 .Include(q => q.QuestionOptions)
@@ -85,7 +85,6 @@ namespace Tokki.Infrastructure.Repositories
 
             return (items, totalCount);
         }
-
         public async Task<IEnumerable<QuestionBank>> GetByPassageIdAsync(string passageId, CancellationToken cancellationToken = default)
         {
             return await _context.QuestionBank
@@ -149,6 +148,49 @@ namespace Tokki.Infrastructure.Repositories
                 .AsNoTracking()
                 .AnyAsync(q => q.PassageId == passageId && q.Status != QuestionBankStatus.Deleted, cancellationToken);
         }
+        public async Task<IEnumerable<QuestionBank>> GetByQuestionTypeIdAsync(
+    string questionTypeId,
+    QuestionBankStatus? status,
+    CancellationToken cancellationToken = default)
+        {
+            var query = _context.QuestionBank
+                .Include(q => q.Passage)
+                .Include(q => q.QuestionType)
+                .Include(q => q.QuestionOptions)
+                .Where(q => q.QuestionTypeId == questionTypeId);
+
+            // nếu có truyền status thì lọc, không truyền thì lấy tất cả status
+            if (status.HasValue)
+            {
+                query = query.Where(q => q.Status == status.Value);
+            }
+
+            return await query
+                .OrderByDescending(q => q.CreatedAt)
+                .ThenByDescending(q => q.QuestionBankId)
+                .ToListAsync(cancellationToken);
+        }
+        public async Task<List<QuestionBank>> GetByIdsWithDetailsAsync(
+            IEnumerable<string> questionBankIds,
+            CancellationToken cancellationToken = default)
+                {
+                    var ids = (questionBankIds ?? Enumerable.Empty<string>())
+                        .Where(x => !string.IsNullOrWhiteSpace(x))
+                        .Select(x => x.Trim())
+                        .Distinct()
+                        .ToList();
+
+                    if (ids.Count == 0) return new List<QuestionBank>();
+
+                    return await _context.QuestionBank
+                        .AsSplitQuery()
+                        .Include(q => q.Passage)
+                        .Include(q => q.QuestionType)
+                        .Include(q => q.QuestionOptions)
+                        .Where(q => ids.Contains(q.QuestionBankId))
+                        .ToListAsync(cancellationToken);
+                }
+
         /// <summary>
         /// Kho - Hàm lấy ngẫu nhiên câu hỏi theo Type và số lượng cần lấy
         /// </summary>

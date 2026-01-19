@@ -13,6 +13,5 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate
         public string? Name { get; set; } = string.Empty;
         public string? Description { get; set; }
         public ExamType? Type { get; set; }
-        public ExamTemplateStatus? Status { get; set; }
     }
 }

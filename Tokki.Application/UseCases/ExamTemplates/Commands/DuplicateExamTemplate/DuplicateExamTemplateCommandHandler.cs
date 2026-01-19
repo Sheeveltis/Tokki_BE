@@ -6,6 +6,8 @@ using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
+using Microsoft.AspNetCore.Http; 
+using System.Security.Claims;
 
 namespace Tokki.Application.UseCases.ExamTemplates.Commands.DuplicateExamTemplate
 {
@@ -15,17 +17,20 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.DuplicateExamTemplat
         private readonly ITemplatePartRepository _templatePartRepository;
         private readonly IIdGeneratorService _idGeneratorService;
         private readonly ILogger<DuplicateExamTemplateCommandHandler> _logger;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public DuplicateExamTemplateCommandHandler(
             IExamTemplateRepository examTemplateRepository,
             ITemplatePartRepository templatePartRepository,
             IIdGeneratorService idGeneratorService,
-            ILogger<DuplicateExamTemplateCommandHandler> logger)
+            ILogger<DuplicateExamTemplateCommandHandler> logger,
+            IHttpContextAccessor httpContextAccessor)
         {
             _examTemplateRepository = examTemplateRepository;
             _templatePartRepository = templatePartRepository;
             _idGeneratorService = idGeneratorService;
             _logger = logger;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<OperationResult<string>> Handle(DuplicateExamTemplateCommand request, CancellationToken cancellationToken)
@@ -36,6 +41,10 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.DuplicateExamTemplat
 
             try
             {
+                var userId = _httpContextAccessor.HttpContext?.User?
+                    .FindFirst(ClaimTypes.NameIdentifier)?.Value
+                    ?? _httpContextAccessor.HttpContext?.User?.FindFirst("sub")?.Value;
+
                 string newName = await GenerateDuplicateNameAsync(originalTemplate.Name);
                 string newId = _idGeneratorService.GenerateCustom(10);
 
@@ -46,7 +55,8 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.DuplicateExamTemplat
                     Description = originalTemplate.Description, 
                     Type = originalTemplate.Type,               
                     Status = ExamTemplateStatus.Draft,          
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow.AddHours(7),
+                    CreatedBy = userId
                 };
 
                 await _examTemplateRepository.AddAsync(newTemplate);

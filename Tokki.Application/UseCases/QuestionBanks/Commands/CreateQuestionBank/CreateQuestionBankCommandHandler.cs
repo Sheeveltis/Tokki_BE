@@ -31,9 +31,17 @@ namespace Tokki.Application.UseCases.QuestionBanks.Commands.CreateQuestionBank
 
         public async Task<OperationResult<string>> Handle(CreateQuestionBankCommand request, CancellationToken cancellationToken)
         {
-            // Validator đã check null/empty + options theo skill.
-            // Handler vẫn cần lấy QuestionType để biết skill và để tạo options hay không.
-            var questionType = await _questionTypeRepository.GetByIdAsync(request.QuestionTypeId!.Trim(), cancellationToken);
+            var questionTypeId = request.QuestionTypeId?.Trim();
+            if (string.IsNullOrWhiteSpace(questionTypeId))
+            {
+                return OperationResult<string>.Failure(
+                    new List<Error> { AppErrors.ValidationFailed },
+                    400,
+                    "QuestionTypeId không hợp lệ."
+                );
+            }
+
+            var questionType = await _questionTypeRepository.GetByIdAsync(questionTypeId, cancellationToken);
             if (questionType == null)
             {
                 return OperationResult<string>.Failure(
@@ -43,12 +51,42 @@ namespace Tokki.Application.UseCases.QuestionBanks.Commands.CreateQuestionBank
                 );
             }
 
+            if (!questionType.IsActive)
+            {
+                return OperationResult<string>.Failure(
+                    new List<Error> { AppErrors.ValidationFailed },
+                    400,
+                    "Loại câu hỏi đang bị vô hiệu hóa."
+                );
+            }
+
             var skill = questionType.Skill;
 
-            // Validate Passage nếu có + check MediaType theo skill (nghiệp vụ)
-            if (!string.IsNullOrWhiteSpace(request.PassageId))
+            // ===== Đồng bộ rule giống Update =====
+            if (skill == QuestionSkill.Listening && string.IsNullOrWhiteSpace(request.MediaUrl))
             {
-                var passage = await _passageRepository.GetByIdAsync(request.PassageId.Trim(), cancellationToken);
+                return OperationResult<string>.Failure(
+                    new List<Error> { AppErrors.ValidationFailed },
+                    400,
+                    "Câu hỏi Listening bắt buộc phải có MediaUrl."
+                );
+            }
+
+            if (skill == QuestionSkill.Reading && string.IsNullOrWhiteSpace(request.Content))
+            {
+                return OperationResult<string>.Failure(
+                    new List<Error> { AppErrors.ValidationFailed },
+                    400,
+                    "Câu hỏi Reading bắt buộc phải có Content."
+                );
+            }
+
+            // ===== Validate Passage nếu có + check MediaType theo skill (đồng bộ với Update) =====
+            string? passageId = string.IsNullOrWhiteSpace(request.PassageId) ? null : request.PassageId.Trim();
+
+            if (!string.IsNullOrWhiteSpace(passageId))
+            {
+                var passage = await _passageRepository.GetByIdAsync(passageId, cancellationToken);
                 if (passage == null)
                 {
                     return OperationResult<string>.Failure(
@@ -62,7 +100,10 @@ namespace Tokki.Application.UseCases.QuestionBanks.Commands.CreateQuestionBank
                 {
                     QuestionSkill.Listening => passage.MediaType == PassageMediaType.Audio,
                     QuestionSkill.Reading => passage.MediaType == PassageMediaType.Text || passage.MediaType == PassageMediaType.Image,
-                    QuestionSkill.Writing => passage.MediaType == PassageMediaType.Text || passage.MediaType == PassageMediaType.Image,
+                    // CHANGED: Writing cho phép Audio giống Update
+                    QuestionSkill.Writing => passage.MediaType == PassageMediaType.Text
+                                             || passage.MediaType == PassageMediaType.Image
+                                             || passage.MediaType == PassageMediaType.Audio,
                     _ => false
                 };
 
@@ -81,16 +122,23 @@ namespace Tokki.Application.UseCases.QuestionBanks.Commands.CreateQuestionBank
                 var questionBankId = _idGeneratorService.GenerateCustom(10);
                 var vietnamNow = DateTime.UtcNow.AddHours(7);
 
+                // Normalize một số field giống tinh thần Update (trim + cho phép empty)
+                var mediaUrlNormalized = request.MediaUrl == null ? null : request.MediaUrl.Trim();
+                var explanationNormalized = request.Explanation; // có thể giữ nguyên format
+                var contentNormalized = request.Content ?? string.Empty;
+
                 var questionBank = new QuestionBank
                 {
                     QuestionBankId = questionBankId,
-                    PassageId = string.IsNullOrWhiteSpace(request.PassageId) ? null : request.PassageId.Trim(),
-                    QuestionTypeId = request.QuestionTypeId!.Trim(),
-                    Content = request.Content,
-                    MediaUrl = request.MediaUrl,
-                    Explanation = request.Explanation,
+                    PassageId = passageId,
+                    QuestionTypeId = questionTypeId,
+                    Content = contentNormalized,
+                    MediaUrl = mediaUrlNormalized,
+                    Explanation = explanationNormalized,
                     Status = QuestionBankStatus.Draft,
-                    CreatedAt = vietnamNow
+                    CreatedAt = vietnamNow,
+                    CreateBy = request.CreateBy
+
                 };
 
                 await _questionBankRepository.AddAsync(questionBank);

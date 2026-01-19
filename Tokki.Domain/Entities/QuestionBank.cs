@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations.Schema;
 using Tokki.Domain.Enums;
 
 namespace Tokki.Domain.Entities
@@ -26,17 +23,36 @@ namespace Tokki.Domain.Entities
 
         public string? Explanation { get; set; }
 
-
         public QuestionBankStatus Status { get; set; }
 
-        // Navigation
+        // ===== NEW: CreateBy / ApprovedBy / ApprovedDate =====
+
+        [MaxLength(15)]
+        public string? CreateBy { get; set; }
+
+        [MaxLength(15)]
+        public string? ApprovedBy { get; set; }
+
+        public DateTime? ApprovedDate { get; set; }
+
+        // ===== Navigation =====
+
         [ForeignKey(nameof(PassageId))]
         public virtual Passage? Passage { get; set; }
 
         [ForeignKey(nameof(QuestionTypeId))]
         public virtual QuestionType? QuestionType { get; set; }
+
         public DateTime CreatedAt { get; set; }
 
         public virtual ICollection<QuestionOption> QuestionOptions { get; set; } = new List<QuestionOption>();
+
+
+
+        [ForeignKey(nameof(CreateBy))]
+        public virtual Account? CreatedByAccount { get; set; }
+
+        [ForeignKey(nameof(ApprovedBy))]
+        public virtual Account? ApprovedByAccount { get; set; }
     }
 }

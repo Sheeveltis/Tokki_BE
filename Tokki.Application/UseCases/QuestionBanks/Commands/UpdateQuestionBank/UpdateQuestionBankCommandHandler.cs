@@ -1,6 +1,8 @@
 ﻿using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
+using Tokki.Application.IServices;
+using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.QuestionBanks.Commands.UpdateQuestionBank
@@ -8,22 +10,38 @@ namespace Tokki.Application.UseCases.QuestionBanks.Commands.UpdateQuestionBank
     public class UpdateQuestionBankCommandHandler : IRequestHandler<UpdateQuestionBankCommand, OperationResult<string>>
     {
         private readonly IQuestionBankRepository _questionBankRepository;
+        private readonly IQuestionOptionRepository _questionOptionRepository;
         private readonly IQuestionTypeRepository _questionTypeRepository;
         private readonly IPassageRepository _passageRepository;
+        private readonly IIdGeneratorService _idGeneratorService;
 
         public UpdateQuestionBankCommandHandler(
             IQuestionBankRepository questionBankRepository,
+            IQuestionOptionRepository questionOptionRepository,
             IQuestionTypeRepository questionTypeRepository,
-            IPassageRepository passageRepository)
+            IPassageRepository passageRepository,
+            IIdGeneratorService idGeneratorService)
         {
             _questionBankRepository = questionBankRepository;
+            _questionOptionRepository = questionOptionRepository;
             _questionTypeRepository = questionTypeRepository;
             _passageRepository = passageRepository;
+            _idGeneratorService = idGeneratorService;
         }
 
         public async Task<OperationResult<string>> Handle(UpdateQuestionBankCommand request, CancellationToken cancellationToken)
         {
-            var questionBank = await _questionBankRepository.GetByIdWithDetailsAsync(request.QuestionBankId, cancellationToken);
+            var qbId = request.QuestionBankId?.Trim();
+            if (string.IsNullOrWhiteSpace(qbId))
+            {
+                return OperationResult<string>.Failure(
+                    new List<Error> { AppErrors.ValidationFailed },
+                    400,
+                    "QuestionBankId không hợp lệ."
+                );
+            }
+
+            var questionBank = await _questionBankRepository.GetByIdWithDetailsAsync(qbId, cancellationToken);
             if (questionBank == null)
             {
                 return OperationResult<string>.Failure(
@@ -33,33 +51,90 @@ namespace Tokki.Application.UseCases.QuestionBanks.Commands.UpdateQuestionBank
                 );
             }
 
-            // Chỉ được update khi DB đang Draft
-            if (questionBank.Status != QuestionBankStatus.Draft)
+            // ===== RULE STATUS (UPDATED) =====
+            // - Draft / Active: allowed
+            // - Assigned: forbidden (nếu sai thì chỉ có xóa mềm)
+            // - Deleted: forbidden
+            if (questionBank.Status == QuestionBankStatus.Assigned)
             {
                 return OperationResult<string>.Failure(
                     new List<Error> { AppErrors.Forbidden },
                     403,
-                    "Chỉ được phép cập nhật khi câu hỏi đang ở trạng thái Draft."
+                    "Câu hỏi đang ở trạng thái Assigned (đã được sử dụng) nên không được phép cập nhật. Nếu nội dung sai, vui lòng xóa mềm."
                 );
             }
 
-            // Xác định QuestionTypeId cuối cùng sẽ lưu
-            var finalQuestionTypeId = string.IsNullOrWhiteSpace(request.QuestionTypeId)
-                ? questionBank.QuestionTypeId
-                : request.QuestionTypeId.Trim();
+            if (questionBank.Status == QuestionBankStatus.Deleted)
+            {
+                return OperationResult<string>.Failure(
+                    new List<Error> { AppErrors.Forbidden },
+                    403,
+                    "Câu hỏi đã bị xóa nên không được phép cập nhật."
+                );
+            }
+
+            if (questionBank.Status != QuestionBankStatus.Draft
+                && questionBank.Status != QuestionBankStatus.Active)
+            {
+                return OperationResult<string>.Failure(
+                    new List<Error> { AppErrors.Forbidden },
+                    403,
+                    "Chỉ được phép cập nhật khi câu hỏi ở trạng thái Draft hoặc Active."
+                );
+            }
+
+            // ===== PATCH RULES (NEW) =====
+            // - null => không update
+            // - ""/whitespace => update thành ""
+            static string PatchTextAllowEmpty(string? incoming, string current)
+                => incoming == null ? current : (string.IsNullOrWhiteSpace(incoming) ? string.Empty : incoming);
+
+            static string PatchTrimAllowEmpty(string? incoming, string current)
+                => incoming == null ? current : (incoming.Trim()); // Trim để "   " => ""
+
+            // PassageId special:
+            // - null => không update
+            // - ""/whitespace => clear (null)
+            // - value => trim + update
+            static string? PatchPassageId(string? incoming, string? current)
+            {
+                if (incoming == null) return current;
+                if (string.IsNullOrWhiteSpace(incoming)) return null; // gỡ passage
+                return incoming.Trim();
+            }
+
+            // old skill
+            var oldSkill = questionBank.QuestionType?.Skill;
+            if (oldSkill == null && !string.IsNullOrWhiteSpace(questionBank.QuestionTypeId))
+            {
+                var oldQt = await _questionTypeRepository.GetByIdAsync(questionBank.QuestionTypeId.Trim(), cancellationToken);
+                oldSkill = oldQt?.Skill;
+            }
+
+            // final values after patch
+            var finalQuestionTypeId = PatchTrimAllowEmpty(request.QuestionTypeId, questionBank.QuestionTypeId); // "" => ""
+            var finalPassageId = PatchPassageId(request.PassageId, questionBank.PassageId);                     // "" => null
+
+            var finalContent = PatchTextAllowEmpty(request.Content, questionBank.Content);
+            var finalMediaUrl = PatchTrimAllowEmpty(request.MediaUrl, questionBank.MediaUrl ?? string.Empty);
+            var finalExplanation = PatchTextAllowEmpty(request.Explanation, questionBank.Explanation ?? string.Empty);
+
+            // normalize nullable fields back to null where appropriate
+            // (MediaUrl/Explanation trong entity của bạn là nullable)
+            string? finalMediaUrlNullable = finalMediaUrl;        // "" được phép lưu ""
+            string? finalExplanationNullable = finalExplanation;  // "" được phép lưu ""
 
             if (string.IsNullOrWhiteSpace(finalQuestionTypeId))
             {
                 return OperationResult<string>.Failure(
                     new List<Error> { AppErrors.ValidationFailed },
                     400,
-                    "Không xác định được QuestionTypeId để kiểm tra kỹ năng."
+                    "QuestionTypeId sau patch không hợp lệ (rỗng)."
                 );
             }
 
-            // Lấy QuestionType mới (final) để biết skill mới
-            var newQuestionType = await _questionTypeRepository.GetByIdAsync(finalQuestionTypeId, cancellationToken);
-            if (newQuestionType == null)
+            var newQt = await _questionTypeRepository.GetByIdAsync(finalQuestionTypeId.Trim(), cancellationToken);
+            if (newQt == null)
             {
                 return OperationResult<string>.Failure(
                     new List<Error> { AppErrors.QuestionTypeNotFound },
@@ -68,7 +143,7 @@ namespace Tokki.Application.UseCases.QuestionBanks.Commands.UpdateQuestionBank
                 );
             }
 
-            if (!newQuestionType.IsActive)
+            if (!newQt.IsActive)
             {
                 return OperationResult<string>.Failure(
                     new List<Error> { AppErrors.ValidationFailed },
@@ -77,60 +152,241 @@ namespace Tokki.Application.UseCases.QuestionBanks.Commands.UpdateQuestionBank
                 );
             }
 
-            var newSkill = newQuestionType.Skill;
+            var newSkill = newQt.Skill;
 
-            // --- CHECK ĐỔI SKILL LIÊN QUAN OPTIONS ---
-            var isChangingQuestionType =
-                !string.IsNullOrWhiteSpace(request.QuestionTypeId) &&
-                !string.Equals(questionBank.QuestionTypeId, finalQuestionTypeId, StringComparison.OrdinalIgnoreCase);
+            // options semantics: null => no update; [] => delete; [..] => replace
+            var hasExistingOptions = questionBank.QuestionOptions != null && questionBank.QuestionOptions.Any();
+            var optionsProvided = request.Options != null;
+            var optionsCount = request.Options?.Count ?? 0;
 
-            if (isChangingQuestionType)
+            // ===== VALIDATE THEO SKILL CUỐI =====
+            if (newSkill == QuestionSkill.Listening && string.IsNullOrWhiteSpace(finalMediaUrlNullable))
             {
-                // Lấy skill hiện tại theo QuestionTypeId cũ (không tin hoàn toàn vào navigation)
-                QuestionSkill? oldSkill = null;
-                if (!string.IsNullOrWhiteSpace(questionBank.QuestionTypeId))
+                return OperationResult<string>.Failure(
+                    new List<Error> { AppErrors.ValidationFailed },
+                    400,
+                    "Câu hỏi Listening bắt buộc phải có MediaUrl."
+                );
+            }
+
+            if (newSkill == QuestionSkill.Reading && string.IsNullOrWhiteSpace(finalContent))
+            {
+                return OperationResult<string>.Failure(
+                    new List<Error> { AppErrors.ValidationFailed },
+                    400,
+                    "Câu hỏi Reading bắt buộc phải có Content."
+                );
+            }
+
+            if (newSkill == QuestionSkill.Writing)
+            {
+                // Writing không được có đáp án
+                if (optionsProvided && optionsCount > 0)
                 {
-                    var oldQuestionType = await _questionTypeRepository.GetByIdAsync(questionBank.QuestionTypeId.Trim(), cancellationToken);
-                    oldSkill = oldQuestionType?.Skill;
+                    return OperationResult<string>.Failure(
+                        new List<Error> { AppErrors.WritingNoOptions },
+                        400,
+                        AppErrors.WritingNoOptions.Description
+                    );
                 }
 
-                var hasOptions = questionBank.QuestionOptions != null && questionBank.QuestionOptions.Any();
-
-                // Từ Reading/Listening -> Writing: nếu đã có options thì chặn
-                if (newSkill == QuestionSkill.Writing && hasOptions)
+                // nếu DB đang có options mà không gửi options: [] để xóa => lỗi
+                if (hasExistingOptions && (!optionsProvided || optionsCount != 0))
                 {
                     return OperationResult<string>.Failure(
                         new List<Error> { AppErrors.ValidationFailed },
                         400,
-                        "Không thể chuyển sang Writing vì câu hỏi đang có đáp án trắc nghiệm. Vui lòng xóa đáp án trước khi đổi loại câu hỏi."
+                        "Chuyển sang Writing yêu cầu xóa toàn bộ đáp án: phải gửi options: []."
                     );
-                }
-
-                // Từ Writing -> Reading/Listening: nếu chưa có options thì chặn (vì endpoint này không tạo options)
-                if (newSkill != QuestionSkill.Writing && !hasOptions)
-                {
-                    return OperationResult<string>.Failure(
-                        new List<Error> { AppErrors.ValidationFailed },
-                        400,
-                        "Không thể chuyển sang câu hỏi trắc nghiệm vì hiện tại chưa có đáp án. Vui lòng thêm đáp án trắc nghiệm trước."
-                    );
-                }
-
-                // Nếu muốn chặt hơn: chỉ cho phép đổi skill khi oldSkill xác định rõ
-                // (tùy bạn, đoạn này có thể bỏ)
-                if (oldSkill == null)
-                {
-                    // Không bắt buộc, nhưng giúp tránh dữ liệu lộn xộn
-                    // return OperationResult<string>.Failure(...);
                 }
             }
 
-            // --- Validate Passage theo skill mới (nếu có PassageId) ---
-            var finalPassageId = string.IsNullOrWhiteSpace(request.PassageId) ? null : request.PassageId.Trim();
-
-            if (finalPassageId != null)
+            // ===== VALIDATE THEO CHUYỂN SKILL (theo rule bạn đã chốt trước đó) =====
+            if (oldSkill.HasValue)
             {
-                var passage = await _passageRepository.GetByIdAsync(finalPassageId, cancellationToken);
+                if (oldSkill.Value == QuestionSkill.Reading && newSkill == QuestionSkill.Writing)
+                {
+                    if (!optionsProvided || optionsCount != 0)
+                    {
+                        return OperationResult<string>.Failure(
+                            new List<Error> { AppErrors.ValidationFailed },
+                            400,
+                            "Đọc sang Viết: bắt buộc gửi options: [] để xóa toàn bộ đáp án cũ."
+                        );
+                    }
+                }
+
+                if (oldSkill.Value == QuestionSkill.Listening && newSkill == QuestionSkill.Reading)
+                {
+                    if (string.IsNullOrWhiteSpace(finalContent))
+                    {
+                        return OperationResult<string>.Failure(
+                            new List<Error> { AppErrors.ValidationFailed },
+                            400,
+                            "Nghe sang Đọc: Content là bắt buộc."
+                        );
+                    }
+
+                    if (!optionsProvided || optionsCount != 0)
+                    {
+                        return OperationResult<string>.Failure(
+                            new List<Error> { AppErrors.ValidationFailed },
+                            400,
+                            "Nghe sang Đọc: bắt buộc gửi options: [] để xóa toàn bộ đáp án cũ."
+                        );
+                    }
+                }
+
+                if (oldSkill.Value == QuestionSkill.Writing && newSkill == QuestionSkill.Reading)
+                {
+                    if (string.IsNullOrWhiteSpace(finalContent))
+                    {
+                        return OperationResult<string>.Failure(
+                            new List<Error> { AppErrors.ValidationFailed },
+                            400,
+                            "Viết sang Đọc: Content là bắt buộc."
+                        );
+                    }
+
+                    if (!optionsProvided || optionsCount < 2)
+                    {
+                        return OperationResult<string>.Failure(
+                            new List<Error> { AppErrors.ValidationFailed },
+                            400,
+                            "Viết sang Đọc: bắt buộc gửi tối thiểu 2 đáp án trong options."
+                        );
+                    }
+                }
+
+                if (oldSkill.Value == QuestionSkill.Writing && newSkill == QuestionSkill.Listening)
+                {
+                    if (string.IsNullOrWhiteSpace(finalMediaUrlNullable))
+                    {
+                        return OperationResult<string>.Failure(
+                            new List<Error> { AppErrors.ValidationFailed },
+                            400,
+                            "Viết sang Nghe: MediaUrl là bắt buộc."
+                        );
+                    }
+
+                    if (!optionsProvided || optionsCount < 2)
+                    {
+                        return OperationResult<string>.Failure(
+                            new List<Error> { AppErrors.ValidationFailed },
+                            400,
+                            "Viết sang Nghe: bắt buộc gửi tối thiểu 2 đáp án trong options."
+                        );
+                    }
+                }
+
+                if (oldSkill.Value == QuestionSkill.Reading && newSkill == QuestionSkill.Listening)
+                {
+                    if (string.IsNullOrWhiteSpace(finalMediaUrlNullable))
+                    {
+                        return OperationResult<string>.Failure(
+                            new List<Error> { AppErrors.ValidationFailed },
+                            400,
+                            "Đọc sang Nghe: MediaUrl là bắt buộc."
+                        );
+                    }
+                }
+            }
+
+            // ===== VALIDATE OPTIONS (khi request có gửi) =====
+            if (optionsProvided)
+            {
+                if (newSkill == QuestionSkill.Writing)
+                {
+                    if (optionsCount != 0)
+                    {
+                        return OperationResult<string>.Failure(
+                            new List<Error> { AppErrors.WritingNoOptions },
+                            400,
+                            AppErrors.WritingNoOptions.Description
+                        );
+                    }
+                }
+                else
+                {
+                    // options: [] => cho phép (xóa)
+                    // options có phần tử => validate trắc nghiệm
+                    if (optionsCount > 0)
+                    {
+                        if (optionsCount < 2 || optionsCount > 4)
+                        {
+                            return OperationResult<string>.Failure(
+                                new List<Error> { AppErrors.QuestionBankInvalidOptions },
+                                400,
+                                AppErrors.QuestionBankInvalidOptions.Description
+                            );
+                        }
+
+                        var validKeys = new HashSet<string> { "1", "2", "3", "4" };
+                        var keys = new List<string>();
+                        var correctCount = 0;
+
+                        foreach (var o in request.Options!)
+                        {
+                            var key = o.KeyOption?.Trim();
+                            if (string.IsNullOrWhiteSpace(key) || !validKeys.Contains(key))
+                            {
+                                return OperationResult<string>.Failure(
+                                    new List<Error> { AppErrors.QuestionBankInvalidKeyOption },
+                                    400,
+                                    AppErrors.QuestionBankInvalidKeyOption.Description
+                                );
+                            }
+                            keys.Add(key);
+
+                            var hasText = !string.IsNullOrWhiteSpace(o.Content);
+                            var hasImage = !string.IsNullOrWhiteSpace(o.ImageUrl);
+                            if (!hasText && !hasImage)
+                            {
+                                return OperationResult<string>.Failure(
+                                    new List<Error> { AppErrors.ValidationFailed },
+                                    400,
+                                    "Đáp án phải có nội dung text hoặc ảnh."
+                                );
+                            }
+
+                            if (o.IsCorrect) correctCount++;
+                        }
+
+                        if (keys.Distinct().Count() != keys.Count)
+                        {
+                            return OperationResult<string>.Failure(
+                                new List<Error> { AppErrors.QuestionBankDuplicateKeyOption },
+                                400,
+                                AppErrors.QuestionBankDuplicateKeyOption.Description
+                            );
+                        }
+
+                        if (correctCount == 0)
+                        {
+                            return OperationResult<string>.Failure(
+                                new List<Error> { AppErrors.QuestionBankNoCorrectAnswer },
+                                400,
+                                AppErrors.QuestionBankNoCorrectAnswer.Description
+                            );
+                        }
+
+                        if (correctCount > 1)
+                        {
+                            return OperationResult<string>.Failure(
+                                new List<Error> { AppErrors.QuestionBankMultipleCorrectAnswers },
+                                400,
+                                AppErrors.QuestionBankMultipleCorrectAnswers.Description
+                            );
+                        }
+                    }
+                }
+            }
+
+            // ===== VALIDATE PASSAGE THEO SKILL CUỐI (NEW RULES) =====
+            // finalPassageId == null => đã gỡ hoặc không có => bỏ qua validate
+            if (!string.IsNullOrWhiteSpace(finalPassageId))
+            {
+                var passage = await _passageRepository.GetByIdAsync(finalPassageId.Trim(), cancellationToken);
                 if (passage == null)
                 {
                     return OperationResult<string>.Failure(
@@ -143,8 +399,10 @@ namespace Tokki.Application.UseCases.QuestionBanks.Commands.UpdateQuestionBank
                 bool isMediaTypeValid = newSkill switch
                 {
                     QuestionSkill.Listening => passage.MediaType == PassageMediaType.Audio,
-                    QuestionSkill.Reading or QuestionSkill.Writing =>
-                        passage.MediaType == PassageMediaType.Text || passage.MediaType == PassageMediaType.Image,
+                    QuestionSkill.Reading => passage.MediaType == PassageMediaType.Text || passage.MediaType == PassageMediaType.Image,
+                    QuestionSkill.Writing => passage.MediaType == PassageMediaType.Text
+                                             || passage.MediaType == PassageMediaType.Image
+                                             || passage.MediaType == PassageMediaType.Audio,
                     _ => false
                 };
 
@@ -153,27 +411,49 @@ namespace Tokki.Application.UseCases.QuestionBanks.Commands.UpdateQuestionBank
                     return OperationResult<string>.Failure(
                         new List<Error> { AppErrors.PassageMediaTypeMismatch(passage.MediaType, newSkill) },
                         400,
-                        "Thất bại."
+                        $"Passage.MediaType ({passage.MediaType}) không hợp lệ cho kỹ năng {newSkill}."
                     );
                 }
             }
 
             try
             {
-                questionBank.PassageId = finalPassageId;
-                questionBank.QuestionTypeId = finalQuestionTypeId;
-
-                questionBank.Content = request.Content;
-                questionBank.MediaUrl = request.MediaUrl;
-                questionBank.Explanation = request.Explanation;
+                // Apply
+                questionBank.QuestionTypeId = finalQuestionTypeId.Trim();
+                questionBank.PassageId = finalPassageId; // "" => null (gỡ), null => giữ, value => update
+                questionBank.Content = finalContent;     // "" => lưu ""
+                questionBank.MediaUrl = finalMediaUrlNullable;       // "" => lưu ""
+                questionBank.Explanation = finalExplanationNullable; // "" => lưu ""
 
                 await _questionBankRepository.UpdateAsync(questionBank);
+
+                // options update only when provided
+                if (optionsProvided)
+                {
+                    await _questionOptionRepository.DeleteByQuestionBankIdAsync(questionBank.QuestionBankId, cancellationToken);
+
+                    if (optionsCount > 0)
+                    {
+                        var newOptions = request.Options!.Select(o => new QuestionOption
+                        {
+                            OptionId = _idGeneratorService.GenerateCustom(10),
+                            QuestionBankId = questionBank.QuestionBankId,
+                            KeyOption = o.KeyOption.Trim(),
+                            Content = o.Content,
+                            ImageUrl = o.ImageUrl,
+                            IsCorrect = o.IsCorrect
+                        }).ToList();
+
+                        await _questionOptionRepository.AddRangeAsync(newOptions);
+                    }
+                }
+
                 await _questionBankRepository.SaveChangesAsync(cancellationToken);
 
                 return OperationResult<string>.Success(
-                    request.QuestionBankId,
+                    questionBank.QuestionBankId,
                     200,
-                    "Cập nhật câu hỏi thành công"
+                    "Cập nhật câu hỏi thành công."
                 );
             }
             catch

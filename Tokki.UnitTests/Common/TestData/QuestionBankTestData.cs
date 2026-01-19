@@ -76,12 +76,14 @@ namespace Tokki.UnitTests.Common.TestData
             };
         }
 
-        public static GetQuestionBanksByQuestionTypeIdQuery GetByQuestionTypeIdQuery(string questionTypeId, bool? isActive = true)
+        public static GetQuestionBanksByQuestionTypeIdQuery GetByQuestionTypeIdQuery(
+    string questionTypeId,
+    QuestionBankStatus? status = null)
         {
             return new GetQuestionBanksByQuestionTypeIdQuery
             {
                 QuestionTypeId = questionTypeId,
-                IsActive = isActive
+                Status = status
             };
         }
 
