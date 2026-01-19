@@ -40,10 +40,10 @@ namespace Tokki.Infrastructure.Repositories
                 .AsNoTracking()
                 .Include(x => x.Vocabulary)
                 .Where(x => x.UserId == userId
-                            && x.Vocabulary.Status == VocabularyStatus.Active
-                            && x.NextReviewAt <= compareTime) 
-                .OrderBy(x => x.NextReviewAt) 
-                .Take(limit)
+                        && x.Vocabulary.Status == VocabularyStatus.Active
+                        && x.NextReviewAt <= compareTime)
+                .OrderBy(x => x.NextReviewAt)
+                .Take(limit)                 
                 .Select(x => new ReviewItemDTO
                 {
                     UserVocabProgressId = x.UserVocabProgressId,
@@ -58,7 +58,8 @@ namespace Tokki.Infrastructure.Repositories
                     AudioUrl = x.Vocabulary.AudioURL
                 });
 
-            return await query.ToListAsync(cancellationToken);
+            var resultList = await query.ToListAsync(cancellationToken);
+            return resultList.OrderBy(x => Guid.NewGuid()).ToList();
         }
     }
 }
