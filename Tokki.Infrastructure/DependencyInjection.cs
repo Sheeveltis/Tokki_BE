@@ -75,6 +75,8 @@ namespace Tokki.Infrastructure
             services.AddScoped<IMiniGameRepository, MiniGameRepository>();
             //Excel
             services.AddScoped<IExcelService, ExcelService>();
+            //User topic progress
+            services.AddScoped<IUserTopicProgressRepository, UserTopicProgressRepository>();
             return services;
         }
     }

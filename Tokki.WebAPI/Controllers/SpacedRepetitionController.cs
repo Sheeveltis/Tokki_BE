@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Tokki.Application.UseCases.UserTopicProgress.Commands.CompleteTopic;
 using Tokki.Application.UseCases.VocabSpacedRepetition.Commands.SubmitReview;
 using Tokki.Application.UseCases.VocabSpacedRepetition.DTOs;
 
@@ -41,6 +42,26 @@ namespace Tokki.WebAPI.Controllers
             };
 
             var result = await _sender.Send(command);
+
+            return StatusCode(result.StatusCode, result);
+        }
+        [HttpPost("complete-topic")]
+        public async Task<IActionResult> CompleteTopic([FromBody] CompleteTopicCommand command)
+        {
+            var userId = User.FindFirst("UserId")?.Value
+                           ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("Không xác định được người dùng.");
+            }
+            command.UserId = userId;
+
+            var result = await _sender.Send(command);
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
 
             return StatusCode(result.StatusCode, result);
         }
