@@ -142,5 +142,17 @@ namespace Tokki.WebAPI.Controllers
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
         }
+        [HttpPost("audio/passage")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UploadPassageAudio(IFormFile file)
+        {
+            var command = new Tokki.Application.UseCases.Cloudinary.Commands.UploadAudio.UploadAudioCommand
+            {
+                AudioFile = file,
+                FolderName = "tokki/audio/passage"
+            };
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
     }
 }
