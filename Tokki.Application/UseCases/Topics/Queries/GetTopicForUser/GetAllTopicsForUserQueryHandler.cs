@@ -8,51 +8,62 @@ using Tokki.Application.UseCases.Topics.DTOs;
 
 namespace Tokki.Application.UseCases.Topics.Queries.GetTopicForUser
 {
-    public class GetAllTopicsForUserQueryHandler : IRequestHandler<GetAllTopicsForUserQuery, OperationResult<PagedResult<TopicDto>>>
+    public class GetAllTopicsForUserQueryHandler : IRequestHandler<GetAllTopicsForUserQuery, OperationResult<PagedResult<UserTopicDto>>>
     {
-        private readonly ITopicRepository _repository;
+        private readonly ITopicRepository _topicRepository;
+        private readonly IUserTopicProgressRepository _progressRepository; 
 
-        public GetAllTopicsForUserQueryHandler(ITopicRepository repository)
+        public GetAllTopicsForUserQueryHandler(
+            ITopicRepository topicRepository,
+            IUserTopicProgressRepository progressRepository)
         {
-            _repository = repository;
+            _topicRepository = topicRepository;
+            _progressRepository = progressRepository;
         }
 
-        public async Task<OperationResult<PagedResult<TopicDto>>> Handle(GetAllTopicsForUserQuery request, CancellationToken cancellationToken)
+        public async Task<OperationResult<PagedResult<UserTopicDto>>> Handle(GetAllTopicsForUserQuery request, CancellationToken cancellationToken)
         {
-            // Lấy dữ liệu phân trang
-            var (items, totalCount) = await _repository.GetPagedForUserAsync(
+            var (items, totalCount) = await _topicRepository.GetPagedForUserAsync(
                   request.PageNumber,
                   request.PageSize,
                   request.SearchTerm,
                   request.Level
               );
 
-            var dtos = new List<TopicDto>();
+            var topicIds = items.Select(x => x.TopicId).ToList();
+
+            var progressList = await _progressRepository.GetByUserIdAndTopicIdsAsync(request.UserId, topicIds);
+
+            var dtos = new List<UserTopicDto>();
 
             foreach (var topic in items)
             {
-                // Đếm số vocabularies trong topic (ĐÃ CẬP NHẬT)
-                var vocabularyCount = await _repository.CountVocabulariesInTopicAsync(topic.TopicId);
+                var vocabularyCount = await _topicRepository.CountVocabulariesInTopicAsync(topic.TopicId);
 
-                dtos.Add(new TopicDto
+                var userProgress = progressList.FirstOrDefault(p => p.TopicId == topic.TopicId);
+                var isLearned = userProgress != null && userProgress.IsLearned;
+
+                dtos.Add(new UserTopicDto
                 {
                     TopicId = topic.TopicId,
                     TopicName = topic.TopicName,
-                    Description = topic.Description,                  
-                    Level=topic.Level,
-                    ImgUrl=topic.ImgUrl,
-                    VocabularyCount = vocabularyCount
+                    Description = topic.Description,
+                    Level = topic.Level,
+                    ImgUrl = topic.ImgUrl,
+                    VocabularyCount = vocabularyCount,
+                    Status = topic.Status,
+                    IsLearned = isLearned
                 });
             }
 
-            var pagedResult = PagedResult<TopicDto>.Create(
+            var pagedResult = PagedResult<UserTopicDto>.Create(
                 dtos,
                 totalCount,
                 request.PageNumber,
                 request.PageSize
             );
 
-            return OperationResult<PagedResult<TopicDto>>.Success(
+            return OperationResult<PagedResult<UserTopicDto>>.Success(
                 pagedResult,
                 200,
                 "Lấy danh sách chủ đề thành công"

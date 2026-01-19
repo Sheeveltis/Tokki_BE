@@ -63,12 +63,19 @@ namespace Tokki.WebAPI.Controllers
             [FromQuery] string? searchTerm = null,
             [FromQuery] TopicLevel? level = null)
         {
+            var userId = User.FindFirst("UserId")?.Value
+                        ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("Không xác định được người dùng.");
+            }
             var query = new GetAllTopicsForUserQuery
             {
                 PageNumber = pageNumber,
                 PageSize = pageSize,
                 SearchTerm = searchTerm,
-                Level = level
+                Level = level,
+                UserId = userId
             };
 
             var result = await _mediator.Send(query);
