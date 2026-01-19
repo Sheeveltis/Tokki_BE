@@ -2,6 +2,7 @@
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.Accounts.DTOs;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Accounts.Queries.GetAccount
 {
@@ -18,22 +19,18 @@ namespace Tokki.Application.UseCases.Accounts.Queries.GetAccount
             GetAllAccountsQuery request,
             CancellationToken cancellationToken)
         {
-            // Lấy tất cả accounts (hoặc dùng GetPagedAsync nếu muốn query trực tiếp từ DB)
-            var (allAccounts, totalBeforeFilter) = await _repository.GetPagedAsync(1, int.MaxValue);
+            var (allAccounts, _) = await _repository.GetPagedAsync(1, int.MaxValue);
 
-            // Apply filters
             var filteredAccounts = allAccounts.AsQueryable();
+
+            // CHỈ LẤY Role = User(0) và Vip(3)
+            filteredAccounts = filteredAccounts.Where(a =>
+                a.Role == AccountRole.User || a.Role == AccountRole.Vip);
 
             // Filter by Status
             if (request.Status.HasValue)
             {
                 filteredAccounts = filteredAccounts.Where(a => a.Status == request.Status.Value);
-            }
-
-            // Filter by Role
-            if (request.Role.HasValue)
-            {
-                filteredAccounts = filteredAccounts.Where(a => a.Role == request.Role.Value);
             }
 
             // Search by Name
@@ -78,18 +75,16 @@ namespace Tokki.Application.UseCases.Accounts.Queries.GetAccount
                 };
             }
 
-            // Sort by CreatedAt (mới nhất lên đầu)
+            // Sort newest first
             filteredAccounts = filteredAccounts.OrderByDescending(a => a.CreatedAt);
 
             var totalCount = filteredAccounts.Count();
 
-            // Apply pagination
             var pagedAccounts = filteredAccounts
                 .Skip((request.PageNumber - 1) * request.PageSize)
                 .Take(request.PageSize)
                 .ToList();
 
-            // Map to DTOs
             var dtos = pagedAccounts.Select(account => new AccountDto
             {
                 UserId = account.UserId,
@@ -113,7 +108,7 @@ namespace Tokki.Application.UseCases.Accounts.Queries.GetAccount
             return OperationResult<PagedResult<AccountDto>>.Success(
                 pagedResult,
                 200,
-                "Lấy danh sách tài khoản thành công"
+                "Lấy danh sách tài khoản (User/Vip) thành công"
             );
         }
     }
