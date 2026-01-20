@@ -17,6 +17,7 @@ using Tokki.Application.UseCases.Topics.Commands.ApproveTopic;
 using Tokki.Application.UseCases.Topics.Commands.RejectTopic;
 using Tokki.Application.UseCases.Topics.Commands.SubmitTopicForApproval;
 using Tokki.Application.UseCases.Topics.DTOs;
+using Tokki.Application.UseCases.Topics.Commands.UpdateTopicStatus;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -207,6 +208,24 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
+        [HttpPut("update-status")]
+        public async Task<IActionResult> UpdateTopicStatus([FromBody] UpdateTopicStatusCommand command)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return StatusCode(401, OperationResult<bool>.Failure(
+                    new List<Error> { AppErrors.UserUnauthorized },
+                    401,
+                    AppErrors.UserUnauthorized.Description
+                ));
+            }
+
+            command.UpdatedBy = userId;
+
+            var result = await _mediator.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
         [HttpPut("{topicId}/publish")]
         public async Task<IActionResult> Publish(string topicId)
         {
