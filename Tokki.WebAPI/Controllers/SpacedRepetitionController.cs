@@ -41,26 +41,26 @@ namespace Tokki.WebAPI.Controllers
             }
             return StatusCode(result.StatusCode, result);
         }
-        [HttpPost("complete-topic")]
-        public async Task<IActionResult> CompleteTopic([FromBody] CompleteTopicCommand command)
-        {
-            var userId = User.FindFirst("UserId")?.Value
-                           ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        //[HttpPost("complete-topic")]
+        //public async Task<IActionResult> CompleteTopic([FromBody] CompleteTopicCommand command)
+        //{
+        //    var userId = User.FindFirst("UserId")?.Value
+        //                   ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Unauthorized("Không xác định được người dùng.");
-            }
-            command.UserId = userId;
+        //    if (string.IsNullOrEmpty(userId))
+        //    {
+        //        return Unauthorized("Không xác định được người dùng.");
+        //    }
+        //    command.UserId = userId;
 
-            var result = await _sender.Send(command);
-            if (result.IsSuccess)
-            {
-                return Ok(result);
-            }
+        //    var result = await _sender.Send(command);
+        //    if (result.IsSuccess)
+        //    {
+        //        return Ok(result);
+        //    }
 
-            return StatusCode(result.StatusCode, result);
-        }
+        //    return StatusCode(result.StatusCode, result);
+        //}
         [HttpGet("vocab-for-review")]
         public async Task<IActionResult> GetNextVocabularyForReview(int limit = 100)
         {
