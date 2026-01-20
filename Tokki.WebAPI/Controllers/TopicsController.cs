@@ -3,21 +3,22 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Tokki.Application.Common.Models;
-using Tokki.Application.UseCases.Topics.Commands.CreateTopic;
-using Tokki.Application.UseCases.Topics.Commands.UpdateTopic;
-using Tokki.Application.UseCases.Topics.Commands.DeleteTopic;
-using Tokki.Application.UseCases.Topics.Queries.GetById;
-using Tokki.Application.UseCases.Topics.Queries;
-using Tokki.Domain.Enums;
 using Tokki.Application.UseCases.Topics.Commands.AddVocabulariesToTopic;
-using Tokki.Application.UseCases.Topics.Commands.RemoveVocabulariesFromTopic;
-using Tokki.Application.UseCases.Topics.Commands.PublishTopic;
-using Tokki.Application.UseCases.Topics.Commands.CreateTopicByStaff;
 using Tokki.Application.UseCases.Topics.Commands.ApproveTopic;
+using Tokki.Application.UseCases.Topics.Commands.CreateTopic;
+using Tokki.Application.UseCases.Topics.Commands.CreateTopicByStaff;
+using Tokki.Application.UseCases.Topics.Commands.DeleteTopic;
+using Tokki.Application.UseCases.Topics.Commands.PublishTopic;
 using Tokki.Application.UseCases.Topics.Commands.RejectTopic;
+using Tokki.Application.UseCases.Topics.Commands.RemoveVocabulariesFromTopic;
 using Tokki.Application.UseCases.Topics.Commands.SubmitTopicForApproval;
-using Tokki.Application.UseCases.Topics.DTOs;
+using Tokki.Application.UseCases.Topics.Commands.UpdateTopic;
 using Tokki.Application.UseCases.Topics.Commands.UpdateTopicStatus;
+using Tokki.Application.UseCases.Topics.DTOs;
+using Tokki.Application.UseCases.Topics.Queries;
+using Tokki.Application.UseCases.Topics.Queries.GetById;
+using Tokki.Application.UseCases.Topics.Queries.GetStudyVocabs;
+using Tokki.Domain.Enums;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -97,6 +98,40 @@ namespace Tokki.WebAPI.Controllers
 
             return StatusCode(result.StatusCode, result);
         }
+        /// <summary>
+        /// Kho - api dùng cho việc lấy danh sách từ vựng chưa học của user trong 1 topic  
+        /// </summary>
+        /// <param name="topicId"></param>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        [HttpGet("user/study")]
+        public async Task<IActionResult> GetStudyVocabs(
+        [FromQuery] string topicId,
+        [FromQuery] int count = 10)
+        {
+            var userId = User.FindFirst("UserId")?.Value
+                         ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("Không xác định được người dùng.");
+            }
+            var query = new GetStudyVocabsQuery
+            {
+                UserId = userId,
+                TopicId = topicId,
+                Count = count
+            };
+
+            var result = await _mediator.Send(query);
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+
+            return StatusCode(result.StatusCode, result);
+        }
+
 
         // Sửa lại URL template, bỏ {topicId} ra khỏi path
         [HttpPost("vocabularies")]

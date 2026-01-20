@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Tokki.Application.UseCases.UserTopicProgress.Commands.CompleteTopic;
-using Tokki.Application.UseCases.VocabSpacedRepetition.Commands.LearnNewVocab;
 using Tokki.Application.UseCases.VocabSpacedRepetition.Commands.SubmitReview;
 using Tokki.Application.UseCases.VocabSpacedRepetition.DTOs;
 
@@ -21,32 +20,10 @@ namespace Tokki.WebAPI.Controllers
             _sender = sender;
         }
         /// <summary>
-        /// Gọi API lần đầu khi user trả lời đúng từ vựng mới
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        [HttpPost("learn-new-vocab")]
-        public async Task<IActionResult> LearnNewVocab([FromBody] LearnNewVocabCommand request)
-        {
-            var userId = User.FindFirst("UserId")?.Value
-                         ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Unauthorized("Không xác định được người dùng.");
-            }
-
-            request.UserId = userId;
-
-            var result = await _sender.Send(request);
-
-            return StatusCode(result.StatusCode, result);
-        }
-        /// <summary>
         /// Gửi kết quả học (Nhớ/Quên) cho 1 từ vựng
         /// </summary>
         [HttpPost("submit")]
-        public async Task<IActionResult> SubmitReview([FromBody] SubmitReviewCommand request)
+        public async Task<IActionResult> SubmitReview([FromBody] SubmitReviewCommand command)
         {
             var userId = User.FindFirst("UserId")?.Value
                          ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -55,16 +32,13 @@ namespace Tokki.WebAPI.Controllers
             {
                 return Unauthorized("Không xác định được người dùng.");
             }
-
-            var command = new SubmitReviewCommand
-            {
-                UserId = userId,
-                VocabularyId = request.VocabularyId,
-                Quality = request.Quality
-            };
-
+            command.UserId = userId;
             var result = await _sender.Send(command);
 
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
             return StatusCode(result.StatusCode, result);
         }
         [HttpPost("complete-topic")]
