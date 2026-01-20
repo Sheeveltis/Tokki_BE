@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Tokki.Application.UseCases.UserTopicProgress.Commands.CompleteTopic;
+using Tokki.Application.UseCases.VocabSpacedRepetition.Commands.LearnNewVocab;
 using Tokki.Application.UseCases.VocabSpacedRepetition.Commands.SubmitReview;
 using Tokki.Application.UseCases.VocabSpacedRepetition.DTOs;
 
@@ -19,7 +20,28 @@ namespace Tokki.WebAPI.Controllers
         {
             _sender = sender;
         }
+        /// <summary>
+        /// Gọi API lần đầu khi user trả lời đúng từ vựng mới
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost("learn-new-vocab")]
+        public async Task<IActionResult> LearnNewVocab([FromBody] LearnNewVocabCommand request)
+        {
+            var userId = User.FindFirst("UserId")?.Value
+                         ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("Không xác định được người dùng.");
+            }
+
+            request.UserId = userId;
+
+            var result = await _sender.Send(request);
+
+            return StatusCode(result.StatusCode, result);
+        }
         /// <summary>
         /// Gửi kết quả học (Nhớ/Quên) cho 1 từ vựng
         /// </summary>

@@ -41,7 +41,6 @@ namespace Tokki.Application.UseCases.VocabSpacedRepetition.Commands.SubmitReview
                     VocabularyId = request.VocabularyId,
                     BoxLevel = BoxLevel.New,
                     Streak = 0,
-                    EaseFactor = 2.5,
                     CreatedAt = DateTime.UtcNow
                 };
 
