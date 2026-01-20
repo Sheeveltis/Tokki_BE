@@ -11,7 +11,7 @@ namespace Tokki.Application.UseCases.Topics.Queries.GetTopicForUser
     public class GetAllTopicsForUserQueryHandler : IRequestHandler<GetAllTopicsForUserQuery, OperationResult<PagedResult<UserTopicDto>>>
     {
         private readonly ITopicRepository _topicRepository;
-        private readonly IUserTopicProgressRepository _progressRepository; 
+        private readonly IUserTopicProgressRepository _progressRepository;
 
         public GetAllTopicsForUserQueryHandler(
             ITopicRepository topicRepository,
@@ -24,24 +24,24 @@ namespace Tokki.Application.UseCases.Topics.Queries.GetTopicForUser
         public async Task<OperationResult<PagedResult<UserTopicDto>>> Handle(GetAllTopicsForUserQuery request, CancellationToken cancellationToken)
         {
             var (items, totalCount) = await _topicRepository.GetPagedForUserAsync(
-                  request.PageNumber,
-                  request.PageSize,
-                  request.SearchTerm,
-                  request.Level
+                  request.PageNumber, request.PageSize, request.SearchTerm, request.Level
               );
-
-            var topicIds = items.Select(x => x.TopicId).ToList();
-
-            var progressList = await _progressRepository.GetByUserIdAndTopicIdsAsync(request.UserId, topicIds);
-
             var dtos = new List<UserTopicDto>();
-
             foreach (var topic in items)
             {
-                var vocabularyCount = await _topicRepository.CountVocabulariesInTopicAsync(topic.TopicId);
+                var totalVocab = await _topicRepository.CountVocabulariesInTopicAsync(topic.TopicId);
 
-                var userProgress = progressList.FirstOrDefault(p => p.TopicId == topic.TopicId);
-                var isLearned = userProgress != null && userProgress.IsLearned;
+                int progressPercent = 0;
+
+                if (!string.IsNullOrEmpty(request.UserId) && totalVocab > 0)
+                {
+                    var learnedCount = await _topicRepository.CountLearnedVocabulariesAsync(request.UserId, topic.TopicId);
+
+                    progressPercent = (int)((double)learnedCount / totalVocab * 100);
+
+                    if (progressPercent > 100) progressPercent = 100;
+                }
+                bool isLearned = (progressPercent == 100);
 
                 dtos.Add(new UserTopicDto
                 {
@@ -50,23 +50,19 @@ namespace Tokki.Application.UseCases.Topics.Queries.GetTopicForUser
                     Description = topic.Description,
                     Level = topic.Level,
                     ImgUrl = topic.ImgUrl,
-                    VocabularyCount = vocabularyCount,
+                    VocabularyCount = totalVocab,
                     Status = topic.Status,
+                    Progress = progressPercent,
                     IsLearned = isLearned
                 });
             }
 
             var pagedResult = PagedResult<UserTopicDto>.Create(
-                dtos,
-                totalCount,
-                request.PageNumber,
-                request.PageSize
+                dtos, totalCount, request.PageNumber, request.PageSize
             );
 
             return OperationResult<PagedResult<UserTopicDto>>.Success(
-                pagedResult,
-                200,
-                "Lấy danh sách chủ đề thành công"
+                pagedResult, 200, "Lấy danh sách chủ đề thành công"
             );
         }
     }

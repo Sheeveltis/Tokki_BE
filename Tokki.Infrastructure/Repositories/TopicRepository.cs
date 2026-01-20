@@ -177,5 +177,23 @@ namespace Tokki.Infrastructure.Repositories
                 .Select(t => t.TopicName)
                 .FirstOrDefaultAsync();
         }
+
+        /// <summary>
+        /// Kho - Này dùng cho việc tính toán tiến độ học từ vựng của topic đó tới đâu rồi
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="topicId"></param>
+        /// <returns></returns>
+        public async Task<int> CountLearnedVocabulariesAsync(string userId, string topicId)
+        {
+            var vocabIdsInTopic = _context.VocabularyTopics
+                .AsNoTracking()
+                .Where(vt => vt.TopicId == topicId)
+                .Select(vt => vt.VocabularyId);
+            return await _context.UserVocabProgresses
+                .AsNoTracking()
+                .CountAsync(uv => uv.UserId == userId
+                                  && vocabIdsInTopic.Contains(uv.VocabularyId));
+        }
     }
 }

@@ -37,5 +37,13 @@ namespace Tokki.Application.IRepositories
         /// <param name="topicId"></param>
         /// <returns></returns>
         Task<string?> GetTopicNameAsync(string topicId);
+
+        /// <summary>
+        /// Kho - Này dùng cho việc tính toán tiến độ học từ vựng của topic đó tới đâu rồi
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="topicId"></param>
+        /// <returns></returns>
+        Task<int> CountLearnedVocabulariesAsync(string userId, string topicId);
     }
 }
