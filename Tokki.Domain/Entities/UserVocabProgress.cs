@@ -23,7 +23,6 @@ namespace Tokki.Domain.Entities
         public DateTime NextReviewAt { get; set; }
         public DateTime? LastReviewedAt { get; set; }
         public double IntervalDays { get; set; } = 0;
-        public double EaseFactor { get; set; } = 2.5;
         public int Streak { get; set; } = 0;
         public bool IsMastered { get; set; } = false;
 
