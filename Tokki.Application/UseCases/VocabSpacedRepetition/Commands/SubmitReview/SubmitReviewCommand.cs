@@ -17,6 +17,6 @@ namespace Tokki.Application.UseCases.VocabSpacedRepetition.Commands.SubmitReview
 
         public string VocabularyId { get; set; } = string.Empty;
 
-        public QualityVocab Quality { get; set; }
+        public bool IsCorrect { get; set; }
     }
 }

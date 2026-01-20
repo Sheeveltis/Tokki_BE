@@ -12,24 +12,22 @@ namespace Tokki.Application.UseCases.VocabSpacedRepetition.Commands.SubmitReview
     {
         private readonly IUserVocabProgressRepository _repo;
         private readonly IIdGeneratorService _idGen;
+        private readonly IVocabularyRepository _vocabularyRepository;
 
-        public SubmitReviewCommandHandler(IUserVocabProgressRepository repo, IIdGeneratorService idGen)
+        public SubmitReviewCommandHandler(IUserVocabProgressRepository repo, IIdGeneratorService idGen, IVocabularyRepository vocabularyRepository)
         {
             _repo = repo;
             _idGen = idGen;
+            _vocabularyRepository = vocabularyRepository;
         }
 
         public async Task<OperationResult<ReviewResponse>> Handle(SubmitReviewCommand request, CancellationToken cancellationToken)
         {
             var progress = await _repo.GetByVocabIdAsync(request.UserId, request.VocabularyId, cancellationToken);
-
-            if (progress != null && progress.IsMastered)
+            var vocab = await _vocabularyRepository.GetByIdAsync(request.VocabularyId);
+            if(vocab == null)
             {
-                return OperationResult<ReviewResponse>.Success(new ReviewResponse
-                {
-                    VocabularyId = request.VocabularyId,
-                    IsMastered = true
-                });
+                return OperationResult<ReviewResponse>.Failure(AppErrors.VocabularyNotFound, 400);
             }
 
             if (progress == null)
@@ -39,51 +37,46 @@ namespace Tokki.Application.UseCases.VocabSpacedRepetition.Commands.SubmitReview
                     UserVocabProgressId = _idGen.Generate(15),
                     UserId = request.UserId,
                     VocabularyId = request.VocabularyId,
-                    BoxLevel = BoxLevel.New,
+
+                    BoxLevel = BoxLevel.Learning,
                     Streak = 0,
+
+                    IsMastered = false,
+
                     CreatedAt = DateTime.UtcNow
                 };
 
                 await _repo.AddAsync(progress, cancellationToken);
             }
 
-            CalculateLogic(progress, request.Quality);
-
+            CalculateLogic(progress, request.IsCorrect);
             progress.UpdatedAt = DateTime.UtcNow;
             progress.LastReviewedAt = DateTime.UtcNow;
-
             await _repo.SaveChangesAsync(cancellationToken);
 
             return OperationResult<ReviewResponse>.Success(new ReviewResponse
             {
                 VocabularyId = progress.VocabularyId,
-                IsMastered = progress.IsMastered
+                IsMastered = progress.IsMastered,
             });
         }
 
-        private void CalculateLogic(UserVocabProgress p, QualityVocab quality)
+        /// <summary>
+        /// Logic cốt lõi của hệ thống Leitner (Hộp thẻ nhớ)
+        /// </summary>
+        private void CalculateLogic(UserVocabProgress p, bool isCorrect)
         {
-            if (quality >= QualityVocab.Easy)
+            if (isCorrect)
             {
                 if (p.BoxLevel < BoxLevel.Mastered)
                 {
                     p.BoxLevel++;
 
-                    if (p.BoxLevel == BoxLevel.Mastered)
-                    {
-                        p.Streak = 0;       
-                        p.IntervalDays = 30; 
-                    }
-                    else
-                    {
-                        p.Streak = 0;
-                        p.IntervalDays = GetIntervalByLevel(p.BoxLevel);
-                    }
+                    p.Streak = 0;
                 }
                 else
                 {
                     p.Streak++;
-                    p.IntervalDays = 30;
 
                     if (p.Streak >= 2)
                     {
@@ -93,9 +86,13 @@ namespace Tokki.Application.UseCases.VocabSpacedRepetition.Commands.SubmitReview
             }
             else
             {
+
                 p.Streak = 0;
 
-                if (p.IsMastered) p.IsMastered = false;
+                if (p.IsMastered)
+                {
+                    p.IsMastered = false;
+                }
 
                 if (p.BoxLevel > BoxLevel.Learning)
                 {
@@ -105,25 +102,30 @@ namespace Tokki.Application.UseCases.VocabSpacedRepetition.Commands.SubmitReview
                 {
                     p.BoxLevel = BoxLevel.Learning;
                 }
+            }
 
+            if (p.IsMastered)
+            {
+                p.IntervalDays = 90;
+            }
+            else
+            {
                 p.IntervalDays = GetIntervalByLevel(p.BoxLevel);
             }
 
             if (p.IntervalDays < 1)
-                p.NextReviewAt = DateTime.UtcNow.AddMinutes(10);
+                p.NextReviewAt = DateTime.UtcNow.AddMinutes(10); 
             else
                 p.NextReviewAt = DateTime.UtcNow.AddDays(p.IntervalDays);
         }
-
         private double GetIntervalByLevel(BoxLevel level)
         {
             return level switch
             {
-                BoxLevel.New => 0,
-                BoxLevel.Learning => 1,
-                BoxLevel.Reviewing => 3,
-                BoxLevel.Mastering => 7,
-                BoxLevel.Advanced => 14,
+                BoxLevel.Learning => 1,     
+                BoxLevel.Reviewing => 3,   
+                BoxLevel.Mastering => 7,    
+                BoxLevel.Advanced => 14,    
                 BoxLevel.Mastered => 30,
                 _ => 1
             };
