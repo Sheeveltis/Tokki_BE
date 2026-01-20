@@ -34,6 +34,15 @@ namespace Tokki.Infrastructure.Repositories
         {
             await _context.SaveChangesAsync(cancellationToken);
         }
+        public async Task<List<string>> GetLearnedVocabIdsByTopicAsync(string userId, string topicId)
+        {
+            var query = from p in _context.UserVocabProgresses
+                        join vt in _context.VocabularyTopics on p.VocabularyId equals vt.VocabularyId
+                        where p.UserId == userId && vt.TopicId == topicId
+                        select p.VocabularyId;
+
+            return await query.ToListAsync();
+        }
         public async Task<List<ReviewItemDTO>> GetDueReviewsAsync(string userId, DateTime compareTime, int limit, CancellationToken cancellationToken = default)
         {
             var query = _context.UserVocabProgresses

@@ -195,5 +195,20 @@ namespace Tokki.Infrastructure.Repositories
                 .CountAsync(uv => uv.UserId == userId
                                   && vocabIdsInTopic.Contains(uv.VocabularyId));
         }
+        /// <summary>
+        /// Kho - Lấy tất cả từ vựng trong topic để tính toán lấy từ vựng phù hợp cho người dùng học
+        /// </summary>
+        /// <param name="topicId"></param>
+        /// <returns></returns>
+        public async Task<List<Vocabulary>> GetVocabulariesByTopicIdAsync(string topicId)
+        {
+            var query = from vt in _context.VocabularyTopics
+                        join v in _context.Vocabularies on vt.VocabularyId equals v.VocabularyId
+                        where vt.TopicId == topicId
+                        && v.Status == VocabularyStatus.Active 
+                        select v;
+
+            return await query.AsNoTracking().ToListAsync();
+        }
     }
 }

@@ -45,5 +45,11 @@ namespace Tokki.Application.IRepositories
         /// <param name="topicId"></param>
         /// <returns></returns>
         Task<int> CountLearnedVocabulariesAsync(string userId, string topicId);
+        /// <summary>
+        /// Kho - Lấy tất cả từ vựng trong topic để tính toán lấy từ vựng phù hợp cho người dùng học
+        /// </summary>
+        /// <param name="topicId"></param>
+        /// <returns></returns>
+        Task<List<Vocabulary>> GetVocabulariesByTopicIdAsync(string topicId);
     }
 }

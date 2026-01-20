@@ -16,5 +16,6 @@ namespace Tokki.Application.IRepositories
 
         Task SaveChangesAsync(CancellationToken cancellationToken);
         Task<List<ReviewItemDTO>> GetDueReviewsAsync(string userId, DateTime compareTime, int limit, CancellationToken cancellationToken = default);
+        Task<List<string>> GetLearnedVocabIdsByTopicAsync(string userId, string topicId);
     }
 }
