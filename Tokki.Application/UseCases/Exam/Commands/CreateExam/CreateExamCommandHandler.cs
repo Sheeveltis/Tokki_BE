@@ -40,80 +40,110 @@ namespace Tokki.Application.UseCases.Exam.Commands.CreateExam
 
         public async Task<OperationResult<string>> Handle(CreateExamCommand request, CancellationToken cancellationToken)
         {
-            var template = await _examTemplateRepository.GetByIdAsync(request.ExamTemplateId);
-            if (template == null)
+            // 1. Log bắt đầu request
+            _logger.LogInformation("Bắt đầu tạo Exam từ TemplateId: {ExamTemplateId}, Title: {Title}", request.ExamTemplateId, request.Title);
+
+            try
             {
-                return OperationResult<string>.Failure(AppErrors.ExamTemplateNotFound, 404);
-            }
-
-            if (template.Status != ExamTemplateStatus.Published)
-            {
-                return OperationResult<string>.Failure(AppErrors.ExamTemplateInactive, 400);
-            }
-
-            var parts = await _templatePartRepository.GetByExamTemplateIdAsync(template.ExamTemplateId, cancellationToken);
-            if (parts == null || !parts.Any())
-            {
-                return OperationResult<string>.Failure(AppErrors.ExamTemplateEmptyParts, 400);
-            }
-
-            var examId = _idGeneratorService.GenerateCustom(10);
-            var exam = new Domain.Entities.Exam
-            {
-                ExamId = examId,
-                ExamTemplateId = template.ExamTemplateId,
-                Title = request.Title,
-                Type = template.Type,
-                Status = (int)ExamStatus.Draft,
-                Duration = request.Duration,
-                ExamQuestions = new List<ExamQuestion>()
-            };
-
-            var allSelectedQuestionIds = new List<string>();
-
-            foreach (var part in parts)
-            {
-                int quantityNeeded = part.QuestionTo - part.QuestionFrom + 1;
-                if (quantityNeeded <= 0) continue;
-
-                var randomQuestions = await _questionBankRepository.GetRandomQuestionsByTypeAsync(
-                    part.QuestionTypeId,
-                    quantityNeeded,
-                    allSelectedQuestionIds,
-                    cancellationToken
-                );
-
-                if (randomQuestions.Count < quantityNeeded)
+                var template = await _examTemplateRepository.GetByIdAsync(request.ExamTemplateId);
+                if (template == null)
                 {
-                    return OperationResult<string>.Failure(
-                        AppErrors.ExamNotEnoughQuestions(
-                            part.QuestionTypeId,
-                            quantityNeeded,
-                            randomQuestions.Count
-                        ),
-                        400
+                    _logger.LogWarning("Thất bại: Không tìm thấy ExamTemplate với Id: {ExamTemplateId}", request.ExamTemplateId);
+                    return OperationResult<string>.Failure(AppErrors.ExamTemplateNotFound, 404);
+                }
+
+                if (template.Status != ExamTemplateStatus.Published)
+                {
+                    _logger.LogWarning("Thất bại: Template {ExamTemplateId} chưa được Publish (Status: {Status})", request.ExamTemplateId, template.Status);
+                    return OperationResult<string>.Failure(AppErrors.ExamTemplateInactive, 400);
+                }
+
+                var parts = await _templatePartRepository.GetByExamTemplateIdAsync(template.ExamTemplateId, cancellationToken);
+                if (parts == null || !parts.Any())
+                {
+                    _logger.LogWarning("Thất bại: Template {ExamTemplateId} không có phần (Part) nào.", request.ExamTemplateId);
+                    return OperationResult<string>.Failure(AppErrors.ExamTemplateEmptyParts, 400);
+                }
+
+                var examId = _idGeneratorService.GenerateCustom(10);
+                var exam = new Domain.Entities.Exam
+                {
+                    ExamId = examId,
+                    ExamTemplateId = template.ExamTemplateId,
+                    Title = request.Title,
+                    Type = template.Type,
+                    Status = (int)ExamStatus.Draft,
+                    Duration = request.Duration,
+                    ExamQuestions = new List<ExamQuestion>()
+                };
+
+                var allSelectedQuestionIds = new List<string>();
+
+                foreach (var part in parts)
+                {
+                    int quantityNeeded = part.QuestionTo - part.QuestionFrom + 1;
+
+                    // Log nhẹ để biết đang xử lý Part nào
+                    _logger.LogDebug("Đang xử lý Part: {TemplatePartId}, Cần lấy: {Quantity} câu hỏi loại {TypeId}", part.TemplatePartId, quantityNeeded, part.QuestionTypeId);
+
+                    if (quantityNeeded <= 0) continue;
+
+                    var randomQuestions = await _questionBankRepository.GetRandomQuestionsByTypeAsync(
+                        part.QuestionTypeId,
+                        quantityNeeded,
+                        allSelectedQuestionIds,
+                        cancellationToken
                     );
-                }
 
-                int currentQuestionNo = part.QuestionFrom;
-                foreach (var q in randomQuestions)
-                {
-                    allSelectedQuestionIds.Add(q.QuestionBankId); 
-                    var examQuestion = new ExamQuestion
+                    // LOGIC QUAN TRỌNG: Kiểm tra đủ câu hỏi không
+                    if (randomQuestions.Count < quantityNeeded)
                     {
-                        ExamId = examId,
-                        QuestionBankId = q.QuestionBankId,
-                        QuestionNo = currentQuestionNo,
-                        Score = part.Mark
-                    };
-                    exam.ExamQuestions.Add(examQuestion);
-                    currentQuestionNo++;
-                }
-            }
+                        _logger.LogError("LỖI NGHIỆP VỤ: Không đủ câu hỏi trong ngân hàng. TypeId: {TypeId}. Cần: {Needed}, Có sẵn: {Found}. Đã bỏ qua các ID: {ExcludedCount}",
+                            part.QuestionTypeId, quantityNeeded, randomQuestions.Count, allSelectedQuestionIds.Count);
 
-            await _examRepository.AddAsync(exam);
-            await _examRepository.SaveChangesAsync(cancellationToken);
-            return OperationResult<string>.Success(exam.ExamId, 201, OperationMessages.CreateSuccess("đề thi"));
+                        return OperationResult<string>.Failure(
+                            AppErrors.ExamNotEnoughQuestions(
+                                part.QuestionTypeId,
+                                quantityNeeded,
+                                randomQuestions.Count
+                            ),
+                            400
+                        );
+                    }
+
+                    int currentQuestionNo = part.QuestionFrom;
+                    foreach (var q in randomQuestions)
+                    {
+                        allSelectedQuestionIds.Add(q.QuestionBankId);
+                        var examQuestion = new ExamQuestion
+                        {
+                            ExamQuestionId = _idGeneratorService.GenerateCustom(10),
+                            ExamId = examId,
+                            QuestionBankId = q.QuestionBankId,
+                            QuestionNo = currentQuestionNo,
+                            Score = part.Mark
+                        };
+                        exam.ExamQuestions.Add(examQuestion);
+                        currentQuestionNo++;
+                    }
+                }
+
+                await _examRepository.AddAsync(exam);
+                await _examRepository.SaveChangesAsync(cancellationToken);
+
+                // Log thành công
+                _logger.LogInformation("TẠO ĐỀ THI THÀNH CÔNG. ExamId: {ExamId}, Tổng số câu: {TotalQuestions}", exam.ExamId, exam.ExamQuestions.Count);
+
+                return OperationResult<string>.Success(exam.ExamId, 201, OperationMessages.CreateSuccess("đề thi"));
+            }
+            catch (Exception ex)
+            {
+                // 2. Log lỗi Crash (Exception)
+                // Quan trọng: Truyền 'ex' vào tham số đầu tiên để lưu Stack Trace
+                _logger.LogError(ex, "LỖI HỆ THỐNG (CRASH) khi tạo Exam. TemplateId: {ExamTemplateId}. Error: {Message}", request.ExamTemplateId, ex.Message);
+
+                return OperationResult<string>.Failure("Đã xảy ra lỗi hệ thống khi tạo đề thi. Vui lòng thử lại sau.", 500);
+            }
         }
     }
 }

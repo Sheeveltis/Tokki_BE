@@ -117,7 +117,20 @@ namespace Tokki.WebAPI.Controllers
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
         }
-        
+        [HttpPost("image/title")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UploadTitle(IFormFile file)
+        {
+            var command = new UploadImageCommand
+            {
+                File = file,
+                FolderName = "tokki/image/title-icon"
+            };
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
+
         [HttpPost("audio/question")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> UploadQuestionAudio(IFormFile file)
