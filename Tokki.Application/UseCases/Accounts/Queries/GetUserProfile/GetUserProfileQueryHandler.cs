@@ -47,7 +47,7 @@ namespace Tokki.Application.UseCases.Accounts.Queries.GetUserProfile
                 Status = user.Status,
 
                 TotalXP = user.TotalXP,
-                CurrentStreak = user.CurrentStreak,
+                AchievedGoalStreak = user.AchievedGoalStreak,
                 MaxStreak = user.MaxStreak,
 
                 // "CurrentTitle" hiện tại trả CurrentTitleId (nếu muốn trả tên title thì cần join Title table)

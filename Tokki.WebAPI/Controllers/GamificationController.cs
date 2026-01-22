@@ -59,7 +59,7 @@ namespace Tokki.WebAPI.Controllers
                 XPInCurrentLevel = xpGainedInCurrentLevel,
                 MaxXPOfLevel = xpRequiredForThisLevelRange,
                 ProgressPercentage = Math.Round(((double)xpGainedInCurrentLevel / xpRequiredForThisLevelRange) * 100, 2),
-                Streak = user.CurrentStreak,
+                Streak = user.AchievedGoalStreak,
                 Title = user.CurrentTitle?.Name ?? "N/A"
             });
         }

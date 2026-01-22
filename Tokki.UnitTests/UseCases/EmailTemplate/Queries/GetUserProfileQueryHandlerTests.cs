@@ -69,7 +69,7 @@ namespace Tokki.UnitTests.Features.Accounts.Queries
                 Status = AccountStatus.Active,
 
                 TotalXP = 1000,
-                CurrentStreak = 5,
+                AchievedGoalStreak = 5,
                 MaxStreak = 10,
 
                 CurrentTitleId = "title-01",
@@ -107,7 +107,7 @@ namespace Tokki.UnitTests.Features.Accounts.Queries
             dto.Status.Should().Be(user.Status);
 
             dto.TotalXP.Should().Be(user.TotalXP);
-            dto.CurrentStreak.Should().Be(user.CurrentStreak);
+            dto.AchievedGoalStreak.Should().Be(user.AchievedGoalStreak);
             dto.MaxStreak.Should().Be(user.MaxStreak);
 
             dto.CurrentTitle.Should().Be(user.CurrentTitleId);

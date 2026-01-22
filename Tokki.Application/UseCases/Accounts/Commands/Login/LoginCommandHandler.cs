@@ -96,13 +96,13 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
             }
 
             // Cập nhật LastLoginAt / UpdatedAt (lưu giờ VN như bạn đang dùng)
+            await _gamificationService.CheckLoginGamificationAsync(user);
+            
             user.LastLoginAt = vietnamTimeNow;
             user.UpdatedAt = vietnamTimeNow;
 
             await _accountRepository.UpdateUserAsync(user);
-
-            await _gamificationService.CheckLoginGamificationAsync(user.UserId);
-
+            await _accountRepository.SaveChangesAsync(cancellationToken);
 
             // --- 5. TẠO TOKEN & SESSION ---
 

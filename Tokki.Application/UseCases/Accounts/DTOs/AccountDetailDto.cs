@@ -17,7 +17,7 @@ namespace Tokki.Application.UseCases.Accounts.DTOs
         public AccountStatus Status { get; set; }
         public DateTimeOffset? VipExpirationDate { get; set; }
         public long TotalXP { get; set; }
-        public int CurrentStreak { get; set; }
+        public int AchievedGoalStreak { get; set; }
         public int MaxStreak { get; set; }
         public DateTime? LastStreakDate { get; set; }
         public double DailyStudySeconds { get; set; }

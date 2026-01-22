@@ -75,7 +75,7 @@ namespace Tokki.UnitTests.Features.Accounts.Queries
                 Status = AccountStatus.Active,
                 VipExpirationDate = now.AddDays(30),
                 TotalXP = 1000,
-                CurrentStreak = 5,
+                AchievedGoalStreak = 5,
                 MaxStreak = 10,
                 LastStreakDate = now.Date,
                 DailyStudySeconds = 1200,
@@ -112,7 +112,7 @@ namespace Tokki.UnitTests.Features.Accounts.Queries
             dto.Status.Should().Be(account.Status);
             dto.VipExpirationDate.Should().Be(account.VipExpirationDate);
             dto.TotalXP.Should().Be(account.TotalXP);
-            dto.CurrentStreak.Should().Be(account.CurrentStreak);
+            dto.AchievedGoalStreak.Should().Be(account.AchievedGoalStreak);
             dto.MaxStreak.Should().Be(account.MaxStreak);
             dto.LastStreakDate.Should().Be(account.LastStreakDate);
             dto.DailyStudySeconds.Should().Be(account.DailyStudySeconds);

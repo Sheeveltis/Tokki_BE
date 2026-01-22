@@ -45,7 +45,7 @@ namespace Tokki.Domain.Entities
 
         public long TotalXP { get; set; } = 0; 
 
-        public int CurrentStreak { get; set; } = 0; 
+        public int AchievedGoalStreak { get; set; } = 0; 
         public int MaxStreak { get; set; } = 0;
         public DateTime? LastStreakDate { get; set; }
         public double DailyStudySeconds { get; set; } = 0;

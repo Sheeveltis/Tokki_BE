@@ -40,10 +40,12 @@ namespace Tokki.Infrastructure.Services
             user.CurrentTitleId = title.TitleId;
         }
 
-        public async Task CheckLoginGamificationAsync(string userId)
+        public async Task CheckLoginGamificationAsync(Account user)
         {
-            var user = await _accountRepository.GetByIdAsync(userId);
             if (user == null) return;
+
+            var vietnamNow = DateTime.UtcNow.AddHours(7);
+            HandleLazyReset(user, vietnamNow.Date, vietnamNow.Date.AddDays(-1));
 
             if (user.LastLoginAt.HasValue)
             {
@@ -59,69 +61,89 @@ namespace Tokki.Infrastructure.Services
                 }
             }
         }
-
         public async Task<bool> TrackStudyTimeAsync(string userId, double seconds)
         {
             var user = await _accountRepository.GetByIdAsync(userId);
             if (user == null) return false;
 
+            var vietnamNow = DateTime.UtcNow.AddHours(7);
+            var today = vietnamNow.Date;
+            var yesterday = today.AddDays(-1);
+
+            if (user.UpdatedAt.HasValue && user.UpdatedAt.Value.Date < today)
+            {
+                user.DailyStudySeconds = 0;
+
+                if (user.LastStreakDate.HasValue && user.LastStreakDate.Value.Date < yesterday)
+                {
+                    user.AchievedGoalStreak = 0; 
+                }
+            }
+
             user.DailyStudySeconds += seconds;
             bool isStreakCompletedNow = false;
-            DateTime vietnamNow = DateTime.UtcNow.AddHours(7);
 
-            bool completedToday = user.LastStreakDate.HasValue
-                      && user.LastStreakDate.Value.Date == vietnamNow.Date;
+            bool completedToday = user.LastStreakDate.HasValue && user.LastStreakDate.Value.Date == today;
 
             if (user.DailyStudySeconds >= TARGET_STUDY_SECONDS && !completedToday)
             {
                 isStreakCompletedNow = true;
 
-                var yesterday = vietnamNow.Date.AddDays(-1);
                 if (user.LastStreakDate.HasValue && user.LastStreakDate.Value.Date == yesterday)
                 {
-                    user.CurrentStreak++;
+                    user.AchievedGoalStreak++; 
                 }
                 else
                 {
-                    user.CurrentStreak = 1;
+                    user.AchievedGoalStreak = 1; 
                 }
 
-                if (user.CurrentStreak > user.MaxStreak)
+                if (user.AchievedGoalStreak > user.MaxStreak)
                 {
-                    user.MaxStreak = user.CurrentStreak;
+                    user.MaxStreak = user.AchievedGoalStreak;
                 }
 
-                user.LastStreakDate = vietnamNow.Date;
-
-                int oldLevel = LevelEngine.GetLevel(user.TotalXP);
+                user.LastStreakDate = today;
 
                 long bonusXP = 100;
                 user.TotalXP += bonusXP;
 
-                int newLevel = LevelEngine.GetLevel(user.TotalXP);
-
-                var history = new UserXpHistory
+                _context.UserXpHistories.Add(new UserXpHistory
                 {
                     Id = _idGenerator.Generate(),
                     UserId = user.UserId,
                     Amount = bonusXP,
-                    Action = "Daily Streak",
+                    Action = "Daily Streak Achievement",
                     CreatedAt = vietnamNow
-                };
-                _context.UserXpHistories.Add(history);
+                });
 
                 var bestTitle = await _titleRepository.GetTitleByXpAsync(user.TotalXP);
-
                 if (bestTitle != null && user.CurrentTitleId != bestTitle.TitleId)
                 {
-                    await UnlockAndEquipTitleAsync(user, bestTitle);
+                    user.CurrentTitleId = bestTitle.TitleId;
                 }
             }
+
+
+            user.UpdatedAt = vietnamNow;
 
             await _accountRepository.UpdateUserAsync(user);
             await _accountRepository.SaveChangesAsync(default);
 
-            return isStreakCompletedNow;
+            return isStreakCompletedNow;       
         }
+        private void HandleLazyReset(Account user, DateTime today, DateTime yesterday)
+        {
+            if (user.UpdatedAt.HasValue && user.UpdatedAt.Value.Date < today)
+            {
+                user.DailyStudySeconds = 0; 
+
+                if (user.LastStreakDate.HasValue && user.LastStreakDate.Value.Date < yesterday)
+                {
+                    user.AchievedGoalStreak = 0; 
+                }
+            }
+        }
+
     }
 }

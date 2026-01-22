@@ -16,7 +16,7 @@ namespace Tokki.Application.UseCases.Accounts.DTOs
         public AccountStatus Status { get; set; }
 
         public long TotalXP { get; set; }
-        public int CurrentStreak { get; set; }
+        public int AchievedGoalStreak { get; set; }
         public int MaxStreak { get; set; }
 
         public string? CurrentTitle { get; set; } // tối thiểu: CurrentTitleId

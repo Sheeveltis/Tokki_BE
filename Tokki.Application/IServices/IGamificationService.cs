@@ -1,8 +1,10 @@
-﻿namespace Tokki.Application.IServices
+﻿using Tokki.Domain.Entities;
+
+namespace Tokki.Application.IServices
 {
     public interface IGamificationService
     {
-        Task CheckLoginGamificationAsync(string userId);
+        Task CheckLoginGamificationAsync(Account user);
 
         Task<bool> TrackStudyTimeAsync(string userId, double seconds);
     }

@@ -43,7 +43,7 @@ namespace Tokki.Application.UseCases.Accounts.Queries.GetAccountDetailById
                     Status = account.Status,
                     VipExpirationDate = account.VipExpirationDate,
                     TotalXP = account.TotalXP,
-                    CurrentStreak = account.CurrentStreak,
+                    AchievedGoalStreak = account.AchievedGoalStreak,
                     MaxStreak = account.MaxStreak,
                     LastStreakDate = account.LastStreakDate,
                     DailyStudySeconds = account.DailyStudySeconds,
