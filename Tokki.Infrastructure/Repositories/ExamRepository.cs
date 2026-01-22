@@ -121,6 +121,21 @@ namespace Tokki.Infrastructure.Repositories
         {
             return await _context.SaveChangesAsync(cancellationToken) > 0;
         }
+        public async Task<Exam?> GetExamWithFullDetailsAsync(string examId, CancellationToken cancellationToken)
+        {
+            return await _context.Exams
+                .AsNoTracking()
+                .Include(e => e.ExamQuestions)
+                    .ThenInclude(eq => eq.QuestionBank)
+                        .ThenInclude(qb => qb.QuestionOptions) 
+                .Include(e => e.ExamQuestions)
+                    .ThenInclude(eq => eq.QuestionBank)
+                        .ThenInclude(qb => qb.Passage)         
+                .Include(e => e.ExamQuestions)
+                    .ThenInclude(eq => eq.QuestionBank)
+                        .ThenInclude(qb => qb.QuestionType)   
+                .FirstOrDefaultAsync(e => e.ExamId == examId, cancellationToken);
+        }
     }
 
 }
