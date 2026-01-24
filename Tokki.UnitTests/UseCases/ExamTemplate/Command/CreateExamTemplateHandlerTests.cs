@@ -4,16 +4,28 @@ using Tokki.Application.UseCases.ExamTemplates.Commands.CreateExamTemplate;
 using Tokki.Domain.Entities;
 using Tokki.UnitTests.Common.Bases;
 using Tokki.UnitTests.Common.TestData;
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims; 
 
 namespace Tokki.UnitTests.Features.ExamTemplates.Commands
 {
     public class CreateExamTemplateHandlerTests : ExamTemplateTestBase
     {
         private readonly CreateExamTemplateCommandHandler _handler;
+        private readonly Mock<IHttpContextAccessor> _mockHttpContextAccessor; 
 
         public CreateExamTemplateHandlerTests()
         {
-            _handler = new CreateExamTemplateCommandHandler(_mockExamTemplateRepo.Object, _mockIdGenerator.Object);
+            _mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
+
+            var context = new DefaultHttpContext();
+            var userId = "TEST_USER_ID";
+            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, userId) };
+
+            context.User = new ClaimsPrincipal(new ClaimsIdentity(claims, "TestAuth"));
+
+            _mockHttpContextAccessor.Setup(x => x.HttpContext).Returns(context);
+            _handler = new CreateExamTemplateCommandHandler(_mockExamTemplateRepo.Object, _mockIdGenerator.Object, _mockHttpContextAccessor.Object);
         }
 
         [Fact]

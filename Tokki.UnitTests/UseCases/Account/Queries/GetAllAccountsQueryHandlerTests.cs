@@ -123,6 +123,7 @@ namespace Tokki.UnitTests.Features.Accounts.Queries
             var query = new GetAllAccountsQuery
             {
                 Status = AccountStatus.Active,
+                //Role = AccountRole.User,
                 PageNumber = 1,
                 PageSize = 10
             };
