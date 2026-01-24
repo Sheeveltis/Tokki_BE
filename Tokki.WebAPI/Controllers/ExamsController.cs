@@ -33,6 +33,13 @@ namespace Tokki.WebAPI.Controllers
         }
         [HttpGet("admin")]
         [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> GetAllExamsForAdmin([FromQuery] GetExamsQuery query )
+        {
+            var result = await _sender.Send(query);
+            return StatusCode(result.StatusCode, result);
+        }
+        [HttpGet("admin/detail")]
+        [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> GetExamDetail(string id)
         {
             var query = new GetExamDetailQuery { ExamId = id };
