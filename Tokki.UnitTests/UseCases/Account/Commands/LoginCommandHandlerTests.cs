@@ -55,6 +55,10 @@ namespace Tokki.UnitTests.UseCases.Accounts
             _mockAccountRepo.Verify(x => x.UpdateUserAsync(It.IsAny<EntityAccount>()), Times.Once);
             _mockGamificationService.Verify(x => x.CheckLoginGamificationAsync(user), Times.Once);
 
+            _mockGamificationService.Verify(
+                x => x.CheckLoginGamificationAsync(It.Is<Tokki.Domain.Entities.Account>(a => a.UserId == user.UserId)),
+                Times.Once
+            );
             _mockEmailHistoryRepository.Verify(x =>
                 x.DeleteByUserAndTemplateTypeAsync(
                     user.UserId,
@@ -65,7 +69,7 @@ namespace Tokki.UnitTests.UseCases.Accounts
             );
 
             _mockAccountRepo.Verify(x => x.AddSessionAsync(It.IsAny<Session>()), Times.Once);
-            _mockAccountRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+            _mockAccountRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
         }
 
         // ==========================================

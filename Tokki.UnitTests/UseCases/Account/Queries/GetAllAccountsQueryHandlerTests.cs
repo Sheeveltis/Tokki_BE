@@ -33,44 +33,44 @@ namespace Tokki.UnitTests.Features.Accounts.Queries
             var now = DateTime.UtcNow;
 
             var accounts = new List<AccountEntity>
-            {
-                new AccountEntity
-                {
-                    UserId = "u1",
-                    Email = "a@tokki.vn",
-                    FullName = "A",
-                    PhoneNumber = "0901",
-                    Role = AccountRole.User,
-                    Status = AccountStatus.Active,
-                    CreatedAt = now.AddDays(-2),
-                    DateOfBirth = null,
-                    VipExpirationDate = null
-                },
-                new AccountEntity
-                {
-                    UserId = "u2",
-                    Email = "b@tokki.vn",
-                    FullName = "B",
-                    PhoneNumber = "0902",
-                    Role = AccountRole.Staff,
-                    Status = AccountStatus.Active,
-                    CreatedAt = now.AddDays(-1),
-                    DateOfBirth = now.AddYears(-20),
-                    VipExpirationDate = now.AddDays(10)
-                },
-                new AccountEntity
-                {
-                    UserId = "u3",
-                    Email = "c@tokki.vn",
-                    FullName = "C",
-                    PhoneNumber = "0903",
-                    Role = AccountRole.User,
-                    Status = AccountStatus.Inactive,
-                    CreatedAt = now,
-                    DateOfBirth = now.AddYears(-25),
-                    VipExpirationDate = now.AddDays(-1)
-                }
-            };
+    {
+        new AccountEntity
+        {
+            UserId = "u1",
+            Email = "a@tokki.vn",
+            FullName = "A",
+            PhoneNumber = "0901",
+            Role = AccountRole.User,
+            Status = AccountStatus.Active,
+            CreatedAt = now.AddDays(-2),
+            DateOfBirth = null,
+            VipExpirationDate = null
+        },
+        new AccountEntity
+        {
+            UserId = "u2",
+            Email = "b@tokki.vn",
+            FullName = "B",
+            PhoneNumber = "0902",
+            Role = AccountRole.Staff, // ✅ sẽ bị filter bỏ
+            Status = AccountStatus.Active,
+            CreatedAt = now.AddDays(-1),
+            DateOfBirth = now.AddYears(-20),
+            VipExpirationDate = now.AddDays(10)
+        },
+        new AccountEntity
+        {
+            UserId = "u3",
+            Email = "c@tokki.vn",
+            FullName = "C",
+            PhoneNumber = "0903",
+            Role = AccountRole.User,
+            Status = AccountStatus.Inactive,
+            CreatedAt = now,
+            DateOfBirth = now.AddYears(-25),
+            VipExpirationDate = now.AddDays(-1)
+        }
+    };
 
             _mockRepo.Setup(x => x.GetPagedAsync(1, int.MaxValue))
                      .ReturnsAsync((accounts, accounts.Count));
@@ -87,18 +87,19 @@ namespace Tokki.UnitTests.Features.Accounts.Queries
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
-            result.Message.Should().Be("Lấy danh sách tài khoản thành công");
+            result.Message.Should().Be("Lấy danh sách tài khoản (User/Vip) thành công");
 
             result.Data.Should().NotBeNull();
-            result.Data.Items.Should().HaveCount(3);
-            result.Data.TotalCount.Should().Be(3);
+
+            // ✅ chỉ còn u1, u3 (u2 staff bị loại)
+            result.Data.Items.Should().HaveCount(2);
+            result.Data.TotalCount.Should().Be(2);
             result.Data.PageNumber.Should().Be(1);
             result.Data.PageSize.Should().Be(10);
 
-            // Sort desc by CreatedAt => u3, u2, u1
+            // Sort desc by CreatedAt => u3, u1
             result.Data.Items[0].UserId.Should().Be("u3");
-            result.Data.Items[1].UserId.Should().Be("u2");
-            result.Data.Items[2].UserId.Should().Be("u1");
+            result.Data.Items[1].UserId.Should().Be("u1");
 
             _mockRepo.Verify(x => x.GetPagedAsync(1, int.MaxValue), Times.Once);
         }

@@ -85,8 +85,9 @@ namespace Tokki.UnitTests.Features.QuestionBanks.Commands
                 .Returns(Task.CompletedTask);
 
             _mockQuestionBankRepo
-                .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(true);
+         .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+         .ReturnsAsync(true);
+
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -94,13 +95,21 @@ namespace Tokki.UnitTests.Features.QuestionBanks.Commands
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
-            result.Message.Should().Be("Xóa câu hỏi thành công");
+            result.Message.Should().Be("Xóa QuestionBank thành công"); // ✅ đúng message handler
 
             qb.Status.Should().Be(QuestionBankStatus.Deleted);
 
-            _mockQuestionOptionRepo.Verify(x => x.DeleteByQuestionBankIdAsync("qb-01", It.IsAny<CancellationToken>()), Times.Once);
-            _mockQuestionBankRepo.Verify(x => x.UpdateAsync(It.IsAny<Tokki.Domain.Entities.QuestionBank>()), Times.Once);
-            _mockQuestionBankRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+            _mockQuestionOptionRepo.Verify(
+                x => x.DeleteByQuestionBankIdAsync("qb-01", It.IsAny<CancellationToken>()),
+                Times.Once);
+
+            _mockQuestionBankRepo.Verify(
+                x => x.UpdateAsync(It.Is<Tokki.Domain.Entities.QuestionBank>(q => q.QuestionBankId == "qb-01" && q.Status == QuestionBankStatus.Deleted)),
+                Times.Once);
+
+            _mockQuestionBankRepo.Verify(
+                x => x.SaveChangesAsync(It.IsAny<CancellationToken>()),
+                Times.Once);
         }
 
         [Fact]
