@@ -55,7 +55,7 @@ namespace Tokki.Application.UseCases.Blogs.Commands.CreateBlog
                     CategoryId = request.CategoryId,
                     Tags = tags,
                     CreatedAt = DateTimeOffset.UtcNow,
-                    AuthorId = "ACC-Gum",
+                    AuthorId = request.CreatedBy
                 };
 
                 await _blogRepository.AddAsync(blogEntity);

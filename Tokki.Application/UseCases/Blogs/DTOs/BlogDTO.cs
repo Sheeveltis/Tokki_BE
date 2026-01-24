@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Blogs.DTOs
 {
@@ -14,11 +15,20 @@ namespace Tokki.Application.UseCases.Blogs.DTOs
         public string? ThumbnailUrl { get; set; }
         public string ShortDescription { get; set; } = string.Empty;
         public int ViewCount { get; set; }
-        public string Status { get; set; }
+        public BlogStatus Status { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
-        public string AuthorId { get; set; } = string.Empty;
+
+        public BlogAuthorDTO Author { get; set; } = new();
+
         public string CategoryId { get; set; } = string.Empty;
         public string CategoryName { get; set; } = string.Empty;
         public List<string> Tags { get; set; } = new List<string>();
+    }
+
+    public class BlogAuthorDTO
+    {
+        public string Id { get; set; } = string.Empty;
+        public string FullName { get; set; } = string.Empty;
+        public string? AvatarUrl { get; set; }
     }
 }
