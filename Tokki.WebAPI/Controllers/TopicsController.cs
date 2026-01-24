@@ -16,6 +16,7 @@ using Tokki.Application.UseCases.Topics.Commands.UpdateTopic;
 using Tokki.Application.UseCases.Topics.Commands.UpdateTopicStatus;
 using Tokki.Application.UseCases.Topics.DTOs;
 using Tokki.Application.UseCases.Topics.Queries;
+using Tokki.Application.UseCases.Topics.Queries.CheckTopicCompletion;
 using Tokki.Application.UseCases.Topics.Queries.GetById;
 using Tokki.Application.UseCases.Topics.Queries.GetStudyVocabs;
 using Tokki.Domain.Enums;
@@ -105,6 +106,7 @@ namespace Tokki.WebAPI.Controllers
         /// <param name="count"></param>
         /// <returns></returns>
         [HttpGet("user/study")]
+        [Authorize]
         public async Task<IActionResult> GetStudyVocabs(
         [FromQuery] string topicId,
         [FromQuery] int count = 10)
@@ -129,6 +131,33 @@ namespace Tokki.WebAPI.Controllers
                 return Ok(result);
             }
 
+            return StatusCode(result.StatusCode, result);
+        }
+        /// <summary>
+        /// Kho - kiểm tra xem user đã hoàn thành topic chưa
+        /// </summary>
+        /// <param name="topicId"></param>
+        /// <returns></returns>
+        [HttpGet("user/completion-status")]
+        [Authorize]
+        public async Task<IActionResult> GetTopicCompletionStatus([FromQuery] string topicId)
+        {
+            var userId = User.FindFirst("UserId")?.Value
+                         ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("Không xác định được người dùng.");
+            }
+            var query = new CheckTopicCompletionQuery
+            {
+                TopicId = topicId,
+                UserId = userId
+            };
+            var result = await _mediator.Send(query);
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
             return StatusCode(result.StatusCode, result);
         }
 
