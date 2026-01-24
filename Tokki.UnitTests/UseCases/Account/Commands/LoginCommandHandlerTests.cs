@@ -53,7 +53,7 @@ namespace Tokki.UnitTests.UseCases.Accounts
             result.Data!.Token.Should().Be("fake-jwt-token");
 
             _mockAccountRepo.Verify(x => x.UpdateUserAsync(It.IsAny<EntityAccount>()), Times.Once);
-            _mockGamificationService.Verify(x => x.CheckLoginGamificationAsync(user.UserId), Times.Once);
+            _mockGamificationService.Verify(x => x.CheckLoginGamificationAsync(user), Times.Once);
 
             _mockEmailHistoryRepository.Verify(x =>
                 x.DeleteByUserAndTemplateTypeAsync(
