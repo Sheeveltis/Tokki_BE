@@ -71,25 +71,17 @@ namespace Tokki.UnitTests.Features.QuestionBanks.Commands
         }
 
         [Fact]
-        public async Task Handle_Should_ReturnForbidden_When_StatusNotDraftOrRejected()
+        public async Task Handle_Should_ReturnForbidden_When_StatusIsDeleted()
         {
-            // Arrange
             var command = BuildCommand(id: "qb-01");
-
-            var qb = QuestionBankTestData.BuildQuestionBank(
-                id: "qb-01",
-                status: QuestionBankStatus.Active,
-                questionTypeId: "qt-01"
-            );
+            var qb = QuestionBankTestData.BuildQuestionBank("qb-01", QuestionBankStatus.Deleted, "qt-01");
 
             _mockQuestionBankRepo
                 .Setup(x => x.GetByIdWithDetailsAsync("qb-01", It.IsAny<CancellationToken>()))
                 .ReturnsAsync(qb);
 
-            // Act
             var result = await _handler.Handle(command, CancellationToken.None);
 
-            // Assert
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(403);
             result.Errors.Should().Contain(e => e.Code == AppErrors.Forbidden.Code);
