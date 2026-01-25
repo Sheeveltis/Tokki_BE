@@ -3,9 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tokki.Application.UseCases.Exam.Commands.AddQuestionToExam;
 using Tokki.Application.UseCases.Exam.Commands.CreateExam;
-using Tokki.Application.UseCases.Exam.Commands.DeleteExam;
+using Tokki.Application.UseCases.Exam.Commands.RegenerateExamPart;
 using Tokki.Application.UseCases.Exam.Commands.RemoveQuestionFromExam;
-using Tokki.Application.UseCases.Exam.Commands.UpdateExam;
 using Tokki.Application.UseCases.Exam.Queries.GetExamById;
 using Tokki.Application.UseCases.Exam.Queries.GetExamDetailQuery;
 using Tokki.Application.UseCases.Exam.Queries.GetExams;
@@ -29,6 +28,18 @@ namespace Tokki.WebAPI.Controllers
         public async Task<IActionResult> CreateExam([FromBody] CreateExamCommand command)
         {
             var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+        [HttpPost("regenerate-part")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> RegenerateExamPart([FromBody] RegenerateExamPartCommand command)
+        {
+            var result = await _sender.Send(command);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
             return StatusCode(result.StatusCode, result);
         }
         [HttpGet("admin")]
