@@ -50,6 +50,7 @@ namespace Tokki.Application.UseCases.Exam.Queries.GetExamDetailQuery
             {
                 var partDto = new ExamPartDto
                 {
+                    TemplatePartId = part.TemplatePartId,
                     TemplatePartsTitle = $"[{part.QuestionFrom}~{part.QuestionTo}] {part.Instruction} (각 {part.Mark} 점)",
                     ExampleUrl = part.ExampleUrl,
                     Questions = new List<ExamQuestionDetailDto>()

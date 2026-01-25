@@ -21,6 +21,7 @@ namespace Tokki.Application.UseCases.Exam.DTOs
     public class ExamPartDto
     {
         // Format: [[QuestionFrom]~[QuestionTo]] [Instruction] (각 [Mark] 점)
+        public string TemplatePartId { get; set; }
         public string TemplatePartsTitle { get; set; }
         public string ExampleUrl { get; set; }
         public List<ExamQuestionDetailDto> Questions { get; set; } = new();

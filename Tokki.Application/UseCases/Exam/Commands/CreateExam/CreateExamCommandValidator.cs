@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FluentValidation;
-using Tokki.Application.UseCases.Exam.Commands.UpdateExam;
 
 namespace Tokki.Application.UseCases.Exam.Commands.CreateExam
 {
