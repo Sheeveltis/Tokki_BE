@@ -16,6 +16,7 @@ using Tokki.Application.UseCases.Accounts.Commands.UpdateProfile;
 using Tokki.Application.UseCases.Accounts.DTOs;
 using Tokki.Application.UseCases.Accounts.Queries.GetAccount;
 using Tokki.Application.UseCases.Accounts.Queries.GetAccountDetailById;
+using Tokki.Application.UseCases.Accounts.Queries.GetInternalUserVipAccounts;
 using Tokki.Application.UseCases.Accounts.Queries.GetMyLevel;
 using Tokki.Application.UseCases.Accounts.Queries.GetUserProfile;
 using Tokki.Application.UseCases.Blogs.Commands.CreateBlog;
@@ -157,6 +158,14 @@ namespace Tokki.WebAPI.Controllers
             var query = new GetMyLevelQuery { UserId = userId };
             var result = await _sender.Send(query, cancellationToken);
 
+            return StatusCode(result.StatusCode, result);
+        }
+        [HttpGet("internal/users-vip")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> GetInternalUserVipAccounts(
+    [FromQuery] GetInternalUserVipAccountsQuery query)
+        {
+            var result = await _sender.Send(query);
             return StatusCode(result.StatusCode, result);
         }
 
