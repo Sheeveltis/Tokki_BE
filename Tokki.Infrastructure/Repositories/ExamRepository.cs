@@ -83,14 +83,17 @@ namespace Tokki.Infrastructure.Repositories
             return (items, totalCount);
         }
 
-        public async Task<bool> IsTitleExistsAsync(string title, string? excludeId = null)
+        public async Task<bool> IsTitleExistsAsync(string title, string? excludeId = null, CancellationToken cancellationToken = default)
         {
-            var query = _context.Exams.Where(e => e.Title == title);
+            var query = _context.Exams.AsNoTracking() 
+                              .Where(e => e.Title == title);
+
             if (!string.IsNullOrEmpty(excludeId))
             {
                 query = query.Where(e => e.ExamId != excludeId);
             }
-            return await query.AnyAsync();
+
+            return await query.AnyAsync(cancellationToken);
         }
 
         public async Task<int> GetQuestionCountAsync(string examId, CancellationToken cancellationToken = default)

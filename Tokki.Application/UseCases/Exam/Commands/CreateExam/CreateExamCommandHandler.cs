@@ -1,10 +1,5 @@
 ﻿using MediatR;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
@@ -40,11 +35,16 @@ namespace Tokki.Application.UseCases.Exam.Commands.CreateExam
 
         public async Task<OperationResult<string>> Handle(CreateExamCommand request, CancellationToken cancellationToken)
         {
-            // 1. Log bắt đầu request
             _logger.LogInformation("Bắt đầu tạo Exam từ TemplateId: {ExamTemplateId}, Title: {Title}", request.ExamTemplateId, request.Title);
 
             try
             {
+                bool isDuplicate = await _examRepository.IsTitleExistsAsync(request.Title, null, cancellationToken);
+                if (isDuplicate)
+                {
+                    return OperationResult<string>.Failure($"Tên đề thi '{request.Title}' đã tồn tại. Vui lòng chọn tên khác.", 400);
+                }
+
                 var template = await _examTemplateRepository.GetByIdAsync(request.ExamTemplateId);
                 if (template == null)
                 {
@@ -80,8 +80,6 @@ namespace Tokki.Application.UseCases.Exam.Commands.CreateExam
                 foreach (var part in parts)
                 {
                     int quantityNeeded = part.QuestionTo - part.QuestionFrom + 1;
-
-
                     if (quantityNeeded <= 0) continue;
 
                     var randomQuestions = await _questionBankRepository.GetRandomQuestionsByTypeAsync(
@@ -103,6 +101,7 @@ namespace Tokki.Application.UseCases.Exam.Commands.CreateExam
                         );
                     }
 
+
                     int currentQuestionNo = part.QuestionFrom;
                     foreach (var q in randomQuestions)
                     {
@@ -122,10 +121,12 @@ namespace Tokki.Application.UseCases.Exam.Commands.CreateExam
 
                 await _examRepository.AddAsync(exam);
                 await _examRepository.SaveChangesAsync(cancellationToken);
+
                 return OperationResult<string>.Success(exam.ExamId, 201, OperationMessages.CreateSuccess("đề thi"));
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Lỗi khi tạo Exam");
                 return OperationResult<string>.Failure("Đã xảy ra lỗi hệ thống khi tạo đề thi. Vui lòng thử lại sau.", 500);
             }
         }

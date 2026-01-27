@@ -20,7 +20,7 @@ namespace Tokki.Application.IRepositories
             ExamStatus? status = null,
             string? examTemplateId = null,
             CancellationToken cancellationToken = default);
-        Task<bool> IsTitleExistsAsync(string title, string? excludeId = null);
+        Task<bool> IsTitleExistsAsync(string title, string? excludeId = null, CancellationToken cancellationToken = default);
         Task<int> GetQuestionCountAsync(string examId, CancellationToken cancellationToken = default);
         Task AddAsync(Exam exam);
         Task UpdateAsync(Exam exam);
