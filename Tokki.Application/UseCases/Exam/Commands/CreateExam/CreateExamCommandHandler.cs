@@ -48,20 +48,17 @@ namespace Tokki.Application.UseCases.Exam.Commands.CreateExam
                 var template = await _examTemplateRepository.GetByIdAsync(request.ExamTemplateId);
                 if (template == null)
                 {
-                    _logger.LogWarning("Thất bại: Không tìm thấy ExamTemplate với Id: {ExamTemplateId}", request.ExamTemplateId);
                     return OperationResult<string>.Failure(AppErrors.ExamTemplateNotFound, 404);
                 }
 
                 if (template.Status != ExamTemplateStatus.Published)
                 {
-                    _logger.LogWarning("Thất bại: Template {ExamTemplateId} chưa được Publish (Status: {Status})", request.ExamTemplateId, template.Status);
                     return OperationResult<string>.Failure(AppErrors.ExamTemplateInactive, 400);
                 }
 
                 var parts = await _templatePartRepository.GetByExamTemplateIdAsync(template.ExamTemplateId, cancellationToken);
                 if (parts == null || !parts.Any())
                 {
-                    _logger.LogWarning("Thất bại: Template {ExamTemplateId} không có phần (Part) nào.", request.ExamTemplateId);
                     return OperationResult<string>.Failure(AppErrors.ExamTemplateEmptyParts, 400);
                 }
 
@@ -74,6 +71,7 @@ namespace Tokki.Application.UseCases.Exam.Commands.CreateExam
                     Type = template.Type,
                     Status = (int)ExamStatus.Draft,
                     Duration = request.Duration,
+                    CreatedBy = request.CreatedBy,
                     ExamQuestions = new List<ExamQuestion>()
                 };
 
@@ -83,8 +81,6 @@ namespace Tokki.Application.UseCases.Exam.Commands.CreateExam
                 {
                     int quantityNeeded = part.QuestionTo - part.QuestionFrom + 1;
 
-                    // Log nhẹ để biết đang xử lý Part nào
-                    _logger.LogDebug("Đang xử lý Part: {TemplatePartId}, Cần lấy: {Quantity} câu hỏi loại {TypeId}", part.TemplatePartId, quantityNeeded, part.QuestionTypeId);
 
                     if (quantityNeeded <= 0) continue;
 
@@ -95,10 +91,8 @@ namespace Tokki.Application.UseCases.Exam.Commands.CreateExam
                         cancellationToken
                     );
 
-                    // LOGIC QUAN TRỌNG: Kiểm tra đủ câu hỏi không
                     if (randomQuestions.Count < quantityNeeded)
                     {
-                        _logger.LogError("LỖI NGHIỆP VỤ: Không đủ câu hỏi trong ngân hàng. TypeId: {TypeId}. Cần: {Needed}, Có sẵn: {Found}. Đã bỏ qua các ID: {ExcludedCount}",
                             part.QuestionTypeId, quantityNeeded, randomQuestions.Count, allSelectedQuestionIds.Count);
 
                         return OperationResult<string>.Failure(
@@ -130,18 +124,10 @@ namespace Tokki.Application.UseCases.Exam.Commands.CreateExam
 
                 await _examRepository.AddAsync(exam);
                 await _examRepository.SaveChangesAsync(cancellationToken);
-
-                // Log thành công
-                _logger.LogInformation("TẠO ĐỀ THI THÀNH CÔNG. ExamId: {ExamId}, Tổng số câu: {TotalQuestions}", exam.ExamId, exam.ExamQuestions.Count);
-
                 return OperationResult<string>.Success(exam.ExamId, 201, OperationMessages.CreateSuccess("đề thi"));
             }
             catch (Exception ex)
             {
-                // 2. Log lỗi Crash (Exception)
-                // Quan trọng: Truyền 'ex' vào tham số đầu tiên để lưu Stack Trace
-                _logger.LogError(ex, "LỖI HỆ THỐNG (CRASH) khi tạo Exam. TemplateId: {ExamTemplateId}. Error: {Message}", request.ExamTemplateId, ex.Message);
-
                 return OperationResult<string>.Failure("Đã xảy ra lỗi hệ thống khi tạo đề thi. Vui lòng thử lại sau.", 500);
             }
         }

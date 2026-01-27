@@ -31,6 +31,7 @@ namespace Tokki.Domain.Entities
         public ExamStatus Status { get; set; } = ExamStatus.Draft;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public string CreatedBy { get; set; } = string.Empty;
 
         // Navigation
         [ForeignKey(nameof(ExamTemplateId))]

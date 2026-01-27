@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using Tokki.Application.UseCases.Exam.Commands.AddQuestionToExam;
 using Tokki.Application.UseCases.Exam.Commands.CreateExam;
 using Tokki.Application.UseCases.Exam.Commands.RegenerateExamPart;
@@ -24,9 +25,17 @@ namespace Tokki.WebAPI.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> CreateExam([FromBody] CreateExamCommand command)
         {
+            var userId = User.FindFirst("UserId")?.Value
+                         ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("Không xác định được người dùng.");
+            }
+            command.CreatedBy = userId;
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
         }
