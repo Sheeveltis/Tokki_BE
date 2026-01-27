@@ -93,8 +93,6 @@ namespace Tokki.Application.UseCases.Exam.Commands.CreateExam
 
                     if (randomQuestions.Count < quantityNeeded)
                     {
-                            part.QuestionTypeId, quantityNeeded, randomQuestions.Count, allSelectedQuestionIds.Count);
-
                         return OperationResult<string>.Failure(
                             AppErrors.ExamNotEnoughQuestions(
                                 part.QuestionTypeId,
