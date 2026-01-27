@@ -9,7 +9,7 @@ using Tokki.Application.UseCases.Exam.DTOs;
 
 namespace Tokki.Application.UseCases.Exam.Queries.GetExamDetailQuery
 {
-    public class GetExamDetailQuery : IRequest<OperationResult<ExamDetailDto>>
+    public class GetExamDetailQuery : IRequest<OperationResult<ExamDetailDTO>>
     {
         public string ExamId { get; set; } = string.Empty;
     }

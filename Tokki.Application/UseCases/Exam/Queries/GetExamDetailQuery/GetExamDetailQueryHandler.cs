@@ -11,39 +11,45 @@ using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Exam.Queries.GetExamDetailQuery
 {
-    public class GetExamDetailQueryHandler : IRequestHandler<GetExamDetailQuery, OperationResult<ExamDetailDto>>
+    public class GetExamDetailQueryHandler : IRequestHandler<GetExamDetailQuery, OperationResult<ExamDetailDTO>>
     {
         private readonly IExamRepository _examRepo;
         private readonly ITemplatePartRepository _partRepo;
-
-        public GetExamDetailQueryHandler(IExamRepository examRepo, ITemplatePartRepository partRepo)
+        private readonly IExamTemplateRepository _templateRepo;
+        public GetExamDetailQueryHandler(IExamRepository examRepo, ITemplatePartRepository partRepo, IExamTemplateRepository templateRepo)
         {
             _examRepo = examRepo;
             _partRepo = partRepo;
+            _templateRepo = templateRepo;
         }
 
-        public async Task<OperationResult<ExamDetailDto>> Handle(GetExamDetailQuery request, CancellationToken cancellationToken)
+        public async Task<OperationResult<ExamDetailDTO>> Handle(GetExamDetailQuery request, CancellationToken cancellationToken)
         {
             var exam = await _examRepo.GetExamWithFullDetailsAsync(request.ExamId, cancellationToken);
 
             if (exam == null)
             {
-                return OperationResult<ExamDetailDto>.Failure("Không tìm thấy đề thi.", 404);
+                return OperationResult<ExamDetailDTO>.Failure("Không tìm thấy đề thi.", 404);
             }
+            var template = await _templateRepo.GetByIdAsync(exam.ExamTemplateId, cancellationToken);
 
             var parts = await _partRepo.GetByExamTemplateIdAsync(exam.ExamTemplateId, cancellationToken);
 
             var sortedParts = parts.OrderBy(p => p.QuestionFrom).ToList();
 
-            var result = new ExamDetailDto
+            var result = new ExamDetailDTO
             {
                 ExamId = exam.ExamId,
                 Title = exam.Title,
+                ExamTemplateId = exam.ExamTemplateId,
+                ExamTemplateName =  template.Name,
                 Duration = exam.Duration,
                 Type = exam.Type,
                 Status = exam.Status, 
                 CreatedAt = exam.CreatedAt,
-                TemplateParts = new List<ExamPartDto>()
+                CreatedBy = exam.CreatedBy,
+                TemplateParts = new List<ExamPartDto>(),
+                TotalQuestions = exam.ExamQuestions?.Count ?? 0,
             };
 
             foreach (var part in sortedParts)
@@ -96,7 +102,7 @@ namespace Tokki.Application.UseCases.Exam.Queries.GetExamDetailQuery
                 result.TemplateParts.Add(partDto);
             }
 
-            return OperationResult<ExamDetailDto>.Success(result);
+            return OperationResult<ExamDetailDTO>.Success(result, 200,OperationMessages.CreateSuccess("đề"));
         }
 
         private string MapSkillToMediaType(QuestionSkill? skill)
