@@ -241,5 +241,45 @@ namespace Tokki.Infrastructure.Repositories
                 .Select(q => q.Content!) 
                 .ToListAsync();
         }
+        /// <summary>
+        /// Kho - Lấy danh sách câu hỏi theo QuestionType 
+        /// Khác với của Kiệt vì nó đầy đủ Options theo format cần để update examQuestion
+        /// </summary>
+        /// <param name="questionTypeId"></param>
+        /// <param name="pageNumber"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="searchTerm"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public async Task<(IEnumerable<QuestionBank> Items, int TotalCount)> GetAvailableQuestionsByTypeAsync(
+        string questionTypeId,
+        int pageNumber,
+        int pageSize,
+        string? searchTerm,
+        CancellationToken token = default)
+        {
+            var query = _context.QuestionBank
+                .AsNoTracking()
+                .Include(x => x.QuestionOptions)
+                .Include(x => x.Passage)
+                .Include(x => x.QuestionType)
+                .Where(x => x.QuestionTypeId == questionTypeId
+                         && x.Status == QuestionBankStatus.Active);
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                query = query.Where(x => x.Content.Contains(searchTerm));
+            }
+
+            int totalCount = await query.CountAsync(token);
+
+            var items = await query
+                .OrderByDescending(x => x.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(token);
+
+            return (items, totalCount);
+        }
     }
 }

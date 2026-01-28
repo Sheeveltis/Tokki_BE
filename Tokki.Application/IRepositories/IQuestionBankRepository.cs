@@ -67,5 +67,21 @@ namespace Tokki.Application.IRepositories
         /// <param name="contents"></param>
         /// <returns></returns>
         Task<List<string>> GetExistingContentsAsync(List<string> contents);
+        /// <summary>
+        /// Kho - Lấy danh sách câu hỏi theo QuestionType 
+        /// Khác với của Kiệt vì nó đầy đủ Options theo format cần để update examQuestion
+        /// </summary>
+        /// <param name="questionTypeId"></param>
+        /// <param name="pageNumber"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="searchTerm"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        Task<(IEnumerable<QuestionBank> Items, int TotalCount)> GetAvailableQuestionsByTypeAsync(
+        string questionTypeId,
+        int pageNumber,
+        int pageSize,
+        string? searchTerm,
+        CancellationToken token = default);
     }
 }
