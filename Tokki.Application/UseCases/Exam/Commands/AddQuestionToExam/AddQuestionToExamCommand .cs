@@ -13,6 +13,5 @@ namespace Tokki.Application.UseCases.Exam.Commands.AddQuestionToExam
         public string ExamId { get; set; } = string.Empty;
         public string QuestionBankId { get; set; } = string.Empty;
         public int QuestionNo { get; set; }
-        public int Score { get; set; } = 2;
     }
 }
