@@ -10,5 +10,6 @@ namespace Tokki.Application.IRepositories
     public interface IMiniGameRepository
     {
         Task<List<Vocabulary>> GetRandomVocabulariesByTopicAsync(string topicId, int quantity, CancellationToken cancellationToken);
+        Task<List<Topic>> GetSolitaireTopicsWithVocabsAsync(CancellationToken token = default);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Tokki.Application.UseCases.MiniGame.Queries.MatchingCard;
+using Tokki.Application.UseCases.MiniGame.Queries.Solitaire;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -24,6 +25,16 @@ namespace Tokki.WebAPI.Controllers
                 Quantity = quantity
             };
 
+            var result = await _sender.Send(query);
+            return StatusCode(result.StatusCode, result);
+        }
+        [HttpGet("solitaire")]
+        public async Task<IActionResult> GetSolitaire([FromQuery] int quantity = 52)
+        {
+            var query = new GetSolitaireTopicsQuery
+            {
+                Quantity = quantity
+            };
             var result = await _sender.Send(query);
             return StatusCode(result.StatusCode, result);
         }

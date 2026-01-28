@@ -2,6 +2,7 @@
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Domain.Entities;
+using Tokki.Domain.Enums;
 using Tokki.Infrastructure.Data;
 
 namespace Tokki.Infrastructure.Repositories
@@ -26,6 +27,17 @@ namespace Tokki.Infrastructure.Repositories
                 .OrderBy(v => Guid.NewGuid())
                 .Take(quantity)
                 .ToListAsync(cancellationToken);
+        }
+        public async Task<List<Topic>> GetSolitaireTopicsWithVocabsAsync(CancellationToken token = default)
+        {
+            return await _context.Topics
+                .AsNoTracking()
+                .Where(t => t.Status == TopicStatus.Active && t.Type == TopicType.Solitaire)
+                .Include(t => t.VocabularyTopics.Where(vt => vt.Status == VocabularyTopicStatus.Active))
+                     .ThenInclude(vt => vt.Vocabulary)
+                .OrderBy(t => Guid.NewGuid())
+                .Take(50)
+                .ToListAsync(token);
         }
     }
 }

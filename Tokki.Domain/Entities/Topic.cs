@@ -25,6 +25,7 @@ namespace Tokki.Domain.Entities
         public DateTime? ApprovedDate { get; set; }
 
         public TopicStatus Status { get; set; } = TopicStatus.Active;
+        public TopicType Type { get; set; }
 
         public virtual ICollection<VocabularyTopic> VocabularyTopics { get; set; } = new List<VocabularyTopic>();
     }
