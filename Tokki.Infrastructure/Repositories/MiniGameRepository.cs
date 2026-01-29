@@ -32,7 +32,7 @@ namespace Tokki.Infrastructure.Repositories
         {
             return await _context.Topics
                 .AsNoTracking()
-                .Where(t => t.Status == TopicStatus.Active && t.Type == TopicType.Solitaire)
+                .Where(t => t.Status == TopicStatus.Active && t.TopicType == TopicType.Solitaire)
                 .Include(t => t.VocabularyTopics.Where(vt => vt.Status == VocabularyTopicStatus.Active))
                      .ThenInclude(vt => vt.Vocabulary)
                 .OrderBy(t => Guid.NewGuid())
