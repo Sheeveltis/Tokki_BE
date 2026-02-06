@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using System.Text.Json;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Tokki.Application.UseCases.Roadmap.DTOs;
 using Tokki.Application.IServices;
+using Tokki.Application.UseCases.Roadmap.DTOs;
 
 namespace Tokki.Infrastructure.Services
 {
@@ -14,86 +11,86 @@ namespace Tokki.Infrastructure.Services
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<AiRoadmapService> _logger;
+        private readonly string _apiKey;
 
-        // Bạn nên chuyển 2 key này vào appsettings.json sau này
-        private const string API_URL = "https://api.openai.com/v1/chat/completions";
-        private const string API_KEY = "YOUR_OPENAI_API_KEY"; // Thay key thật của bạn vào đây
-
-        public AiRoadmapService(HttpClient httpClient, ILogger<AiRoadmapService> logger)
+        private const string BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"; 
+        public AiRoadmapService(HttpClient httpClient, ILogger<AiRoadmapService> logger, IConfiguration configuration)
         {
             _httpClient = httpClient;
             _logger = logger;
+            _apiKey = configuration["AiSettings:ApiKey"];
         }
 
         public async Task<AiRoadmapResponse?> GenerateStudyPlanAsync(string target, int days, List<string> weaknesses)
         {
-            var weaknessStr = weaknesses != null && weaknesses.Count > 0
-                ? string.Join(", ", weaknesses)
-                : "None";
+            if (string.IsNullOrEmpty(_apiKey))
+            {
+                _logger.LogError("API Key chưa được cấu hình trong appsettings.json");
+                return null;
+            }
 
-            var systemPrompt = @"You are a TOPIK exam expert. Create a study roadmap.
-Output strictly in JSON format matching this structure:
-{
-  ""Assessment"": ""Review based on weaknesses"",
-  ""Weeks"": [
-    {
-      ""WeekIndex"": 1,
-      ""WeekGoal"": ""Goal of week"",
-      ""Days"": [
-        {
-          ""DayIndex"": 1,
-          ""Tasks"": [
-            { ""Title"": ""Task name"", ""TaskType"": ""LearnTheory"", ""Content"": ""HTML content"" },
-            { ""Title"": ""Practice"", ""TaskType"": ""VirtualQuiz"", ""Content"": ""JSON quiz data"" }
-          ]
-        },
-        ... (Day 7 MUST be TaskType: 'WeeklyExam')
-      ]
-    }
-  ]
-}";
+            var weaknessStr = (weaknesses != null && weaknesses.Count > 0) ? string.Join(", ", weaknesses) : "Không có";
 
-            var userPrompt = $"Create a {days}-day roadmap for target '{target}'. Weaknesses: {weaknessStr}.";
+            var promptText = $@"
+                Đóng vai chuyên gia TOPIK. Tạo lộ trình {days} ngày. Mục tiêu: {target}. Điểm yếu: {weaknessStr}.
+                Quan trọng: Chỉ trả về JSON thuần (no markdown), theo cấu trúc sau:
+                {{
+                  ""Assessment"": ""Nhận xét ngắn"",
+                  ""Weeks"": [
+                    {{
+                      ""WeekIndex"": 1,
+                      ""WeekGoal"": ""Mục tiêu tuần 1"",
+                      ""Days"": [
+                        {{
+                          ""DayIndex"": 1,
+                          ""Tasks"": [
+                             {{ ""Title"": ""Tên bài"", ""TaskType"": ""LearnTheory"", ""Content"": ""Nội dung HTML"" }},
+                             {{ ""Title"": ""Quiz"", ""TaskType"": ""VirtualQuiz"", ""Content"": ""JSON Quiz"" }}
+                          ]
+                        }}
+                      ]
+                    }}
+                  ]
+                }}
+            ";
 
             var requestBody = new
             {
-                model = "gpt-3.5-turbo", 
-                messages = new[]
-                {
-                    new { role = "system", content = systemPrompt },
-                    new { role = "user", content = userPrompt }
-                },
-                temperature = 0.7
+                contents = new[] { new { parts = new[] { new { text = promptText } } } },
+                generationConfig = new { responseMimeType = "application/json" } 
             };
 
             try
             {
-                var request = new HttpRequestMessage(HttpMethod.Post, API_URL);
-                request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", API_KEY);
-                request.Content = JsonContent.Create(requestBody);
+                var url = $"{BASE_URL}?key={_apiKey}";
+                _logger.LogInformation($"Đang gọi AI tới URL: {BASE_URL}");
 
-                var response = await _httpClient.SendAsync(request);
-                response.EnsureSuccessStatusCode();
+                var response = await _httpClient.PostAsJsonAsync(url, requestBody);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    _logger.LogError($"Lỗi gọi AI ({response.StatusCode}): {errorContent}");
+                    return null;
+                }
 
                 var jsonResponse = await response.Content.ReadFromJsonAsync<JsonElement>();
 
-                var contentString = jsonResponse.GetProperty("choices")[0]
-                                                .GetProperty("message")
-                                                .GetProperty("content")
-                                                .GetString();
+                if (jsonResponse.TryGetProperty("candidates", out var candidates) && candidates.GetArrayLength() > 0)
+                {
+                    var text = candidates[0].GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString();
 
-                if (string.IsNullOrEmpty(contentString)) return null;
+                    text = text.Replace("```json", "").Replace("```", "").Trim();
 
-                contentString = contentString.Replace("```json", "").Replace("```", "").Trim();
+                    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                    return JsonSerializer.Deserialize<AiRoadmapResponse>(text, options);
+                }
 
-                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                var roadmapData = JsonSerializer.Deserialize<AiRoadmapResponse>(contentString, options);
-
-                return roadmapData;
+                return null;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Lỗi khi gọi AI Service để tạo lộ trình.");
+                _logger.LogError(ex, "Exception khi gọi AI Service");
                 return null;
             }
         }

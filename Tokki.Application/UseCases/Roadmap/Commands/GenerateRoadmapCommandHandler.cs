@@ -110,7 +110,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                                         cancellationToken
                                     );
 
-                                    if (examResult.Success)
+                                    if (examResult.IsSuccess)
                                     {
                                         weekEntity.WeeklyExamId = examResult.Data;
                                     }
