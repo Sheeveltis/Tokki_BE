@@ -1,8 +1,9 @@
-﻿using MediatR;
+﻿using System.Security.Claims;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 using Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap;
+using Tokki.Application.UseCases.Roadmap.Queries.GetRoadmap;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -41,6 +42,31 @@ namespace Tokki.WebAPI.Controllers
             if (result.IsSuccess)
             {
                 return CreatedAtAction(nameof(GenerateRoadmap), new { id = result.Data }, result);
+            }
+
+            return BadRequest(result);
+        }
+
+        [HttpGet("current")]
+        public async Task<IActionResult> GetCurrentRoadmap()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("Không tìm thấy thông tin người dùng.");
+            }
+
+            var query = new GetRoadmapQuery(userId);
+            var result = await _mediator.Send(query);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+
+            if (result.StatusCode == 404)
+            {
+                return NotFound(result);
             }
 
             return BadRequest(result);

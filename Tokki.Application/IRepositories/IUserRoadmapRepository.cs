@@ -3,5 +3,6 @@
 public interface IUserRoadmapRepository
 {
     Task AddAsync(UserRoadmap roadmap);
-    Task SaveChangesAsync(CancellationToken cancellationToken);
+    Task <bool>SaveChangesAsync(CancellationToken cancellationToken);
+    Task<UserRoadmap?> GetActiveRoadmapByUserIdAsync(string userId, CancellationToken cancellationToken = default);
 }
