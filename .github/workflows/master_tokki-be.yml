@@ -27,7 +27,7 @@ jobs:
         run: dotnet build Tokki.WebAPI/Tokki.WebAPI.csproj --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish Tokki.WebAPI/Tokki.WebAPI.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp}}/myapp
+        run: dotnet publish Tokki.WebAPI/Tokki.WebAPI.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -64,4 +64,5 @@ jobs:
           package: .
 
           
+
 
