@@ -77,6 +77,8 @@ namespace Tokki.Infrastructure
             services.AddScoped<IExcelService, ExcelService>();
             //User topic progress
             services.AddScoped<IUserTopicProgressRepository, UserTopicProgressRepository>();
+            //Speaking
+            services.AddScoped<IPronunciationRuleRepository, PronunciationRuleRepository>();
             return services;
         }
     }
