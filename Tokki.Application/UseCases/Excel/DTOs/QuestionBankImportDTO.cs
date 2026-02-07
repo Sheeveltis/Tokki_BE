@@ -31,6 +31,8 @@ namespace Tokki.Application.UseCases.Excel.DTOs
         public string RefPassageId { get; set; }
         public string Content { get; set; }
         public string Explanation { get; set; }
+        public string MediaUrl { get; set; } 
+        public string MediaType { get; set; }
         public string Status { get; set; }
     }
 
@@ -41,6 +43,7 @@ namespace Tokki.Application.UseCases.Excel.DTOs
         public string RefQuestionId { get; set; }
         public string KeyOption { get; set; }
         public string Content { get; set; }
+        public string ImageUrl { get; set; }
         public string IsCorrectStr { get; set; }
     }
 }
