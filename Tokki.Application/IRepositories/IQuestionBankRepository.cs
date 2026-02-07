@@ -52,6 +52,7 @@ namespace Tokki.Application.IRepositories
             string questionTypeId,
             int quantity,
             List<string> excludedIds,
+            DifficultyLevel level,
             CancellationToken cancellationToken);
         /// <summary>
         /// Kho - dùng thêm câu hỏi hàng loạt

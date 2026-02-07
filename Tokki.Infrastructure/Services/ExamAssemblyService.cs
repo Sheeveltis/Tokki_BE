@@ -37,6 +37,7 @@ namespace Tokki.Infrastructure.Services
             string userId,
             int weekIndex,
             List<string> weakQuestionTypeIds,
+            DifficultyLevel targetLevel, 
             CancellationToken cancellationToken)
         {
             try
@@ -63,8 +64,8 @@ namespace Tokki.Infrastructure.Services
                     Title = examTitle,
                     Type = ExamType.WeeklyAssessment, 
                     Status = ExamStatus.Published, 
-                    Duration = 60, 
-                    CreatedBy = "AI_SYSTEM",
+                    Duration = 60,
+                    CreatedBy = userId,
                     CreatedAt = DateTime.UtcNow,
                     ExamQuestions = new List<ExamQuestion>()
                 };
@@ -84,6 +85,7 @@ namespace Tokki.Infrastructure.Services
                             part.QuestionTypeId,
                             quantityNeeded,
                             allSelectedQuestionIds,
+                            targetLevel,
                             cancellationToken
                         );
                     }
@@ -93,6 +95,7 @@ namespace Tokki.Infrastructure.Services
                             part.QuestionTypeId,
                             quantityNeeded,
                             allSelectedQuestionIds,
+                            targetLevel,
                             cancellationToken
                         );
                     }

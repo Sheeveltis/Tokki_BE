@@ -202,11 +202,13 @@ namespace Tokki.Infrastructure.Repositories
             string questionTypeId,
             int quantity,
             List<string> excludedIds,
+            DifficultyLevel level,
             CancellationToken cancellationToken)
         {
             var query = _context.QuestionBank
                 .Where(x => x.QuestionTypeId == questionTypeId
-                            && x.Status == QuestionBankStatus.Active);
+                            && x.Status == QuestionBankStatus.Active
+                            && x.QuestionType.Difficulty == level);
 
             if (excludedIds != null && excludedIds.Any())
             {

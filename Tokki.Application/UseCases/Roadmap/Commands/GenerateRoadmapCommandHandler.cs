@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Tokki.Application.Common.Models;
-using Tokki.Application.IRepositories; // Giả định bạn sẽ tạo Interface này
+using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
@@ -18,9 +18,6 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
         private readonly IExamAssemblyService _examAssemblyService;
         private readonly IIdGeneratorService _idGeneratorService;
         private readonly ILogger<GenerateRoadmapCommandHandler> _logger;
-
-        // Bạn cần Inject Repository hoặc DbContext ở đây
-        // Tôi dùng DbContext giả lập thông qua Interface Repository cho đúng chuẩn Clean Arch
         private readonly IUserRoadmapRepository _userRoadmapRepository;
 
         public GenerateRoadmapCommandHandler(
@@ -101,12 +98,18 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
 
                                 if (weekDto.WeekIndex == 1)
                                 {
-                                    var examTemplateId = "TEMPLATE_DEFAULT_ID"; 
+                                    var examTemplateId = "TEMPLATE_DEFAULT_ID";
+                                    DifficultyLevel targetLevel = DifficultyLevel.Easy;
+                                    if (request.TargetAim.Contains("II") || request.TargetAim.Contains("Intermediate"))
+                                    {
+                                        targetLevel = DifficultyLevel.Medium;
+                                    }
                                     var examResult = await _examAssemblyService.GenerateWeeklyExamAsync(
                                         examTemplateId,
                                         request.UserId,
                                         weekDto.WeekIndex,
                                         request.Weaknesses,
+                                        targetLevel,
                                         cancellationToken
                                     );
 

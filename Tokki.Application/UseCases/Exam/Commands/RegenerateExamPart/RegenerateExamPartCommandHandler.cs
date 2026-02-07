@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Domain.Entities;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Exam.Commands.RegenerateExamPart
 {
@@ -69,6 +70,7 @@ namespace Tokki.Application.UseCases.Exam.Commands.RegenerateExamPart
                     templatePart.QuestionTypeId,
                     quantityNeeded,
                     excludedQuestionBankIds,
+                    DifficultyLevel.Easy,
                     cancellationToken
                 );
 

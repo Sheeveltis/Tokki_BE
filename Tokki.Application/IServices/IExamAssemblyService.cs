@@ -17,6 +17,7 @@ namespace Tokki.Application.IServices
             string userId,
             int weekIndex,
             List<string> weakQuestionTypeIds, 
+            DifficultyLevel targetLevel,
             CancellationToken cancellationToken);
     }
 }
