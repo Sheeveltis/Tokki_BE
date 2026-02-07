@@ -34,5 +34,12 @@ namespace Tokki.Infrastructure.Repositories
                     .ThenInclude(w => w.DailyTasks)
                 .FirstOrDefaultAsync(r => r.UserId == userId && r.CurrentStatus == UserRoadmapStatus.Active, cancellationToken);
         }
+        public async Task<RoadmapDailyTask?> GetTaskByIdAsync(string taskId, CancellationToken cancellationToken = default)
+        {
+            return await _context.RoadmapDailyTasks
+                .Include(t => t.RoadmapWeek)
+                .ThenInclude(w => w.UserRoadmap)
+                .FirstOrDefaultAsync(t => t.TaskId == taskId, cancellationToken);
+        }
     }
 }

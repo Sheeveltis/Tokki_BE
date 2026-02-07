@@ -2,7 +2,9 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Tokki.Application.UseCases.Roadmap.Commands.CompleteTask;
 using Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap;
+using Tokki.Application.UseCases.Roadmap.DTOs;
 using Tokki.Application.UseCases.Roadmap.Queries.GetRoadmap;
 
 namespace Tokki.WebAPI.Controllers
@@ -69,6 +71,24 @@ namespace Tokki.WebAPI.Controllers
                 return NotFound(result);
             }
 
+            return BadRequest(result);
+        }
+
+        [HttpPost("complete")]
+        public async Task<IActionResult> CompleteTask([FromBody] CompleteTaskRequestDto request)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var command = new CompleteTaskCommand
+            {
+                TaskId = request.TaskId,
+                UserId = userId,
+                Performance = request.Performance
+            };
+
+            var result = await _mediator.Send(command);
+
+            if (result.IsSuccess) return Ok(result);
             return BadRequest(result);
         }
     }
