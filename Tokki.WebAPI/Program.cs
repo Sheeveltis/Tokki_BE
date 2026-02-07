@@ -1,21 +1,22 @@
 ﻿// 1. THÊM CÁC NAMESPACE NÀY
+using System.Globalization;
+using System.Text;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models; // Dùng cho Swagger
-using System.Globalization;
-using System.Text;
 using Tokki.Application;
 using Tokki.Application.Common.Helpers;
+using Tokki.Application.Common.Helpers.ValidationVietnameseLanguageManager;
 using Tokki.Application.IServices;
 using Tokki.Infrastructure;
 using Tokki.Infrastructure.BackgroundJobs; // Nơi chứa class JwtSettings
+using Tokki.Infrastructure.Services;
 using Tokki.WebAPI.Hubs;
 using Tokki.WebAPI.Middlewares;
 using Tokki.WebAPI.Services;
-using Tokki.Application.Common.Helpers.ValidationVietnameseLanguageManager;
 var builder = WebApplication.CreateBuilder(args);
 
 // ==========================================
@@ -130,6 +131,10 @@ builder.Services.Configure<GoogleAuthSettings>(
 
 builder.Services.AddHostedService<Tokki.Infrastructure.BackgroundJobs.VipExpirationWorker>();
 
+builder.Services.AddHttpClient<IAiRoadmapService, AiRoadmapService>();
+
+builder.Services.AddScoped<IUserRoadmapRepository, UserRoadmapRepository>();
+builder.Services.AddScoped<IExamAssemblyService, ExamAssemblyService>();
 
 
 builder.Services.AddMemoryCache(options =>

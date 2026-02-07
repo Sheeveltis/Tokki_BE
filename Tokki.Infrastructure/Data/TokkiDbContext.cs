@@ -54,6 +54,10 @@ namespace Tokki.Infrastructure.Data
         public DbSet<Game> Games { get; set; }
         public DbSet<GameMatchSession> GameMatchSessions { get; set; }
         public DbSet<UserTopicProgress> UserTopicProgresses { get; set; }
+        public DbSet<UserRoadmap> UserRoadmaps { get; set; }
+        public DbSet<RoadmapWeek> RoadmapWeeks { get; set; }
+        public DbSet<RoadmapDailyTask> RoadmapDailyTasks { get; set; }
+        public DbSet<RoadmapKnowledgeProfile> RoadmapKnowledgeProfiles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -713,7 +717,17 @@ namespace Tokki.Infrastructure.Data
                       .HasForeignKey(s => s.UserId)
                       .OnDelete(DeleteBehavior.Cascade);
             });
+            modelBuilder.Entity<UserRoadmap>()
+                    .Property(e => e.CurrentStatus)
+                    .HasConversion<int>();
 
+            modelBuilder.Entity<RoadmapWeek>()
+                    .Property(e => e.Status)
+                    .HasConversion<int>();
+
+            modelBuilder.Entity<RoadmapDailyTask>()
+                    .Property(e => e.TaskType)
+                    .HasConversion<int>();
         }
     }
 }
