@@ -1,0 +1,25 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.Json.Serialization;
+using System.Threading.Tasks;
+using MediatR;
+using Tokki.Application.Common.Models;
+using Tokki.Domain.Enums;
+
+namespace Tokki.Application.UseCases.EmailTemplates.Commands.CreateEmailCampaign
+{
+    public class CreateEmailCampaignByGroupCommand : IRequest<OperationResult<string>>
+    {
+        [JsonIgnore]
+        public string? CreatedBy { get; set; }
+        public string Subject { get; set; } = string.Empty;
+        public string Body { get; set; } = string.Empty;
+        public UserTargetGroup TargetGroup { get; set; }
+
+        public List<string>? SpecificEmails { get; set; }
+
+        public DateTimeOffset? ScheduledTime { get; set; }
+    }
+}

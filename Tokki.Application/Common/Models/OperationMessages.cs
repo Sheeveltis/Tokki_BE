@@ -40,5 +40,26 @@ namespace Tokki.Application.Common.Models
 
         public static string AlreadyExists(string target) =>
             $"{target} đã tồn tại trong hệ thống.";
+
+        public static string PaymentSuccess() =>
+            "Thanh toán thành công. Dịch vụ đã được kích hoạt.";
+
+        public static string PaymentPending() =>
+            "Giao dịch đang chờ xử lý.";
+
+        public static string InsufficientAmount(decimal received, decimal required) =>
+            $"Số tiền chuyển ({received:N0}) thấp hơn giá trị gói ({required:N0}).";
+        public static string ApprovalSuccess(string target) =>
+            $"Đã phê duyệt {target} thành công.";
+        public static string ApprovalFail(string target) =>
+            $"Không thể phê duyệt {target}. Vui lòng thử lại.";
+        public static string RejectSuccess(string target) =>
+            $"Đã từ chối phê duyệt {target} thành công.";
+        public static string RejectFail(string target) =>
+            $"Không thể từ chối phê duyệt {target}. Vui lòng thử lại.";
+        public static string PendingSuccess(string target) =>
+            $"Gửi {target} chờ phê duyệt thành công.";
+        public static string PendingFail(string target) =>
+            $"Không thể gửi {target} chờ phê duyệt. Vui lòng thử lại.";
     }
 }

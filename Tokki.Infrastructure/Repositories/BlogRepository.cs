@@ -137,5 +137,18 @@ namespace Tokki.Infrastructure.Repositories
         {
             await _context.SaveChangesAsync(cancellationToken);
         }
+        public async Task<bool> ExistsAsync(string blogId)
+        {
+            return await _context.Blogs
+                                 .AsNoTracking() 
+                                 .AnyAsync(b => b.Id  == blogId && b.Status != BlogStatus.Hidden);
+        }
+        public async Task<bool> IncreaseViewCountAsync(string blogId)
+        {
+            var rowsAffected = await _context.Database.ExecuteSqlRawAsync(
+                "UPDATE Blogs SET ViewCount = ViewCount + 1 WHERE Id = {0}", blogId
+            );
+            return rowsAffected > 0;
+        }
     }
 }

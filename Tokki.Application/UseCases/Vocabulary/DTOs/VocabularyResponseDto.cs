@@ -1,0 +1,13 @@
+using Tokki.Domain.Enums;
+
+namespace Tokki.Application.UseCases.Vocabulary.DTOs
+{
+    public class VocabularyResponseDto
+    {
+        public string VocabularyId { get; set; } = string.Empty;
+        public string Text { get; set; } = string.Empty;
+        public string Definition { get; set; } = string.Empty;
+        public string? Pronunciation { get; set; }
+        public VocabularyStatus Status { get; set; }
+    }
+}

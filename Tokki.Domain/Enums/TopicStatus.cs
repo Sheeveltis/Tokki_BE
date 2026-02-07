@@ -1,0 +1,21 @@
+﻿using System.ComponentModel;
+
+namespace Tokki.Domain.Enums
+{
+    public enum TopicStatus
+    {
+        [Description("Bản nháp")]
+        Draft = 0,
+
+        [Description("Đang hoạt động")]
+        Active = 1,
+
+        [Description("Đã xóa")]
+        Deleted = 2,
+       [Description("Chờ phê duyệt")]
+        PendingApproval = 3,
+        [Description("Bị từ chối phê duyệt")]
+        Rejected = 4
+        
+    }
+}

@@ -17,10 +17,10 @@ namespace Tokki.Application.UseCases.Blogs.DTOs
         public string ShortDescription { get; set; } = string.Empty;
         public int ViewCount { get; set; }
 
-        public string Status { get; set; }
+        public BlogStatus Status { get; set; }
 
         public DateTimeOffset CreatedAt { get; set; }
-        public string AuthorId { get; set; } = string.Empty;
+        public BlogAuthorDTO Author { get; set; } = new();
 
         public string CategoryId { get; set; } = string.Empty;
         public string CategoryName { get; set; } = string.Empty;

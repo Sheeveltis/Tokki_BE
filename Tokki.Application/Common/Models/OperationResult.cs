@@ -47,10 +47,23 @@ namespace Tokki.Application.Common.Models
                 Message = uiMessage
             };
         }
+        public static OperationResult<T> Failure(Error error, int statusCode = 400)
+        {
+            return new OperationResult<T>
+            {
+                IsSuccess = false,
+                Data = default,
+                Errors = new List<Error> { error },
+                StatusCode = statusCode,
+                Message = error.Description
+            };
+        }
 
         public static OperationResult<T> Failure(string errorMsg, int statusCode = 400)
         {
             return Failure(new Error("Error.Generic", errorMsg), statusCode, errorMsg);
         }
+
+
     }
 }
