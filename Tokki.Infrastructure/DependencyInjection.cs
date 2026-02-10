@@ -62,7 +62,7 @@ namespace Tokki.Infrastructure
             services.AddScoped<IPaymentRepository, PaymentRepository>();
 
             //TextToSpeech
-            services.AddScoped<ITextToSpeechService, TextToSpeechService>();
+            services.AddScoped<ISpeechService, SpeechService>();
             //Cloudinary 
             services.AddScoped<ICloudinaryService, CloudinaryService>();
             //Comment
@@ -77,6 +77,9 @@ namespace Tokki.Infrastructure
             services.AddScoped<IExcelService, ExcelService>();
             //User topic progress
             services.AddScoped<IUserTopicProgressRepository, UserTopicProgressRepository>();
+            //Pronunciation
+            services.AddScoped<IPronunciationRuleRepository, PronunciationRuleRepository>();
+            services.AddScoped<IAIPronunciationService, AIPronunciationService>();
             return services;
         }
     }
