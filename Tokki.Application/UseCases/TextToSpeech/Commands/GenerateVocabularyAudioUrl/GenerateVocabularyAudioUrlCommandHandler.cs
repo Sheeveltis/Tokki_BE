@@ -9,12 +9,12 @@ namespace Tokki.Application.UseCases.TextToSpeech.Commands.GenerateVocabularyAud
     public class GenerateVocabularyAudioUrlCommandHandler
         : IRequestHandler<GenerateVocabularyAudioUrlCommand, OperationResult<TextToSpeechUrlResponse>>
     {
-        private readonly ITextToSpeechService _ttsService;
+        private readonly ISpeechService _ttsService;
         private readonly ICloudinaryService _cloudinaryService;
         private readonly ILogger<GenerateVocabularyAudioUrlCommandHandler> _logger;
 
         public GenerateVocabularyAudioUrlCommandHandler(
-            ITextToSpeechService ttsService,
+            ISpeechService ttsService,
             ICloudinaryService cloudinaryService,
             ILogger<GenerateVocabularyAudioUrlCommandHandler> logger)
         {

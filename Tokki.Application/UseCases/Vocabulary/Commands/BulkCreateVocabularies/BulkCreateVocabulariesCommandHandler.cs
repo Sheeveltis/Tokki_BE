@@ -16,7 +16,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies
         private readonly IVocabularyRepository _vocabularyRepository;
         private readonly IVocabularyExampleRepository _vocabularyExampleRepository;
         private readonly IIdGeneratorService _idGenerator;
-        private readonly ITextToSpeechService _ttsService;
+        private readonly ISpeechService _ttsService;
         private readonly ICloudinaryService _cloudinaryService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<BulkCreateVocabulariesCommandHandler> _logger;
@@ -25,7 +25,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies
             IVocabularyRepository vocabularyRepository,
             IVocabularyExampleRepository vocabularyExampleRepository,
             IIdGeneratorService idGenerator,
-            ITextToSpeechService ttsService,
+            ISpeechService ttsService,
             ICloudinaryService cloudinaryService,
             IHttpContextAccessor httpContextAccessor,
             ILogger<BulkCreateVocabulariesCommandHandler> logger)
