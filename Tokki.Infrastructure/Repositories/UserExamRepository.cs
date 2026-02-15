@@ -71,17 +71,19 @@ namespace Tokki.Infrastructure.Repositories
                     .ThenInclude(uwa => uwa.Question)
                 .FirstOrDefaultAsync(ue => ue.UserExamId == userExamId, token);
         }
-        public async Task<UserExam?> GetReviewByIdAsync(string userExamId, CancellationToken token)
+        public async Task<UserExam?> GetReviewByIdAsync(string userExamId, CancellationToken cancellationToken)
         {
             return await _context.UserExams
                 .Include(ue => ue.Exam)
+                    .ThenInclude(e => e.ExamTemplate)
+                        .ThenInclude(et => et.TemplateParts)
                 .Include(ue => ue.UserExamAnswers)
                     .ThenInclude(ua => ua.Question)
                         .ThenInclude(q => q.QuestionOptions)
                 .Include(ue => ue.UserExamWritingAnswers)
-                    .ThenInclude(wa => wa.Question)
+                    .ThenInclude(uwa => uwa.Question)
                 .AsNoTracking() 
-                .FirstOrDefaultAsync(ue => ue.UserExamId == userExamId, token);
+                .FirstOrDefaultAsync(ue => ue.UserExamId == userExamId, cancellationToken);
         }
     }
 }

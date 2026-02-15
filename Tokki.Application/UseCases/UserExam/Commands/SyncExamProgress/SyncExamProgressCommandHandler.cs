@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
+using Tokki.Application.UseCases.UserExam.DTOs;
 
 namespace Tokki.Application.UseCases.UserExam.Commands.SyncExamProgress
 {
@@ -21,7 +22,10 @@ namespace Tokki.Application.UseCases.UserExam.Commands.SyncExamProgress
         {
             var session = await _repository.GetByIdAsync(request.UserExamId, token);
             if (session == null) return OperationResult<bool>.Failure("Không tìm thấy phiên làm bài", 404);
-
+            if (session.UserId != request.UserId)
+            {
+                return OperationResult<bool>.Failure("Bạn không có quyền lưu đáp án bài thi này.", 403);
+            }
             var mcqMap = session.UserExamAnswers.ToDictionary(x => x.UserExamAnswerId);
             var writingMap = session.UserExamWritingAnswers.ToDictionary(x => x.UserExamWritingAnswerId);
 
