@@ -17,5 +17,7 @@ namespace Tokki.Application.IRepositories
         Task AddSessionAsync(UserExam session, CancellationToken token);
         Task SaveChangesAsync(CancellationToken token);
         Task<UserExam?> GetReviewByIdAsync(string userExamId, CancellationToken token);
+        Task<List<UserExam>> GetExpiredSessionsAsync(CancellationToken token);
+        Task<UserExam?> GetByAnswerIdAsync(string userAnswerId, CancellationToken token);
     }
 }

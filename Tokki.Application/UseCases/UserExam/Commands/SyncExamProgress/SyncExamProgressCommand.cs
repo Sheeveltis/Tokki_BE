@@ -14,7 +14,6 @@ namespace Tokki.Application.UseCases.UserExam.Commands.SyncExamProgress
     {
         [JsonIgnore]
         public string UserId { get; set; } = string.Empty;
-        public string UserExamId { get; set; } = string.Empty;
         public List<AnswerSyncDto> Answers { get; set; } = new();
     }
 }

@@ -85,5 +85,29 @@ namespace Tokki.Infrastructure.Repositories
                 .AsNoTracking() 
                 .FirstOrDefaultAsync(ue => ue.UserExamId == userExamId, cancellationToken);
         }
+        public async Task<List<UserExam>> GetExpiredSessionsAsync(CancellationToken token)
+        {
+            var now = DateTime.UtcNow;
+            return await _context.UserExams
+                .Include(ue => ue.Exam)
+                .Where(ue => ue.Status == UserExamStatus.InProgress &&
+                             ue.StartTime.AddMinutes(ue.Exam.Duration + 2) < now) 
+                .ToListAsync(token);
+        }
+        public async Task<UserExam?> GetByAnswerIdAsync(string userAnswerId, CancellationToken token)
+        {
+            var userExamId = await _context.UserExamAnswers
+                .Where(a => a.UserExamAnswerId == userAnswerId)
+                .Select(a => a.UserExamId)
+                .FirstOrDefaultAsync(token)
+                ?? await _context.UserExamWritingAnswers
+                .Where(w => w.UserExamWritingAnswerId == userAnswerId)
+                .Select(w => w.UserExamId)
+                .FirstOrDefaultAsync(token);
+
+            if (string.IsNullOrEmpty(userExamId)) return null;
+
+            return await GetByIdAsync(userExamId, token);
+        }
     }
 }

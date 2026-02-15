@@ -20,12 +20,26 @@ namespace Tokki.Application.UseCases.UserExam.Commands.SyncExamProgress
         }
         public async Task<OperationResult<bool>> Handle(SyncExamProgressCommand request, CancellationToken token)
         {
-            var session = await _repository.GetByIdAsync(request.UserExamId, token);
-            if (session == null) return OperationResult<bool>.Failure("Không tìm thấy phiên làm bài", 404);
+            if (request.Answers == null || !request.Answers.Any())
+                return OperationResult<bool>.Success(true);
+
+            var incomingIds = request.Answers.Select(a => a.UserAnswerId).ToList();
+
+            var session = await _repository.GetByAnswerIdAsync(incomingIds.First(), token);
+
+            if (session == null)
+                return OperationResult<bool>.Failure("Không tìm thấy phiên làm bài liên quan.", 404);
+
             if (session.UserId != request.UserId)
             {
-                return OperationResult<bool>.Failure("Bạn không có quyền lưu đáp án bài thi này.", 403);
+                return OperationResult<bool>.Failure("Bạn không có quyền lưu đáp án cho bài thi này.", 403);
             }
+
+            if (session.Status != Tokki.Domain.Enums.UserExamStatus.InProgress)
+            {
+                return OperationResult<bool>.Failure("Bài thi đã kết thúc, không thể lưu thêm đáp án.", 400);
+            }
+
             var mcqMap = session.UserExamAnswers.ToDictionary(x => x.UserExamAnswerId);
             var writingMap = session.UserExamWritingAnswers.ToDictionary(x => x.UserExamWritingAnswerId);
 
@@ -36,7 +50,6 @@ namespace Tokki.Application.UseCases.UserExam.Commands.SyncExamProgress
                     if (mcq.SelectedOptionId != incoming.SelectedOptionId)
                     {
                         mcq.SelectedOptionId = incoming.SelectedOptionId;
-
                         var correctId = mcq.Question.QuestionOptions.FirstOrDefault(o => o.IsCorrect)?.OptionId;
                         mcq.IsCorrect = (mcq.SelectedOptionId == correctId);
                     }
