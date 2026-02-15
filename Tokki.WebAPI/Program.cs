@@ -1,12 +1,12 @@
 ﻿// 1. THÊM CÁC NAMESPACE NÀY
-using System.Globalization;
-using System.Text;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models; // Dùng cho Swagger
+using System.Globalization;
+using System.Text;
 using Tokki.Application;
 using Tokki.Application.Common.Helpers;
 using Tokki.Application.Common.Helpers.ValidationVietnameseLanguageManager;
@@ -14,6 +14,7 @@ using Tokki.Application.IServices;
 using Tokki.Infrastructure;
 using Tokki.Infrastructure.BackgroundJobs; // Nơi chứa class JwtSettings
 using Tokki.Infrastructure.Services;
+using Tokki.WebAPI.BackgroundServices;
 using Tokki.WebAPI.Hubs;
 using Tokki.WebAPI.Middlewares;
 using Tokki.WebAPI.Services;
@@ -101,6 +102,9 @@ builder.Services.AddAuthentication(options =>
 });
 builder.Services.AddHttpContextAccessor();
 
+
+//Cấu hình Background Service
+builder.Services.AddHostedService<ExamDeadlineWorker>();
 
 // 4. CẤU HÌNH FLUENTVALIDATION TIẾNG VIỆT (THÊM PHẦN NÀY)
 ValidatorOptions.Global.LanguageManager = new ValidationVietnameseLanguageManager();
