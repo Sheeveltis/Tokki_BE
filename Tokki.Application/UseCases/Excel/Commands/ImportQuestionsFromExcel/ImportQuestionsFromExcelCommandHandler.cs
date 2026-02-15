@@ -6,6 +6,8 @@ using Tokki.Application.IServices;
 using Tokki.Application.UseCases.Excel.DTOs;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Tokki.Application.UseCases.Excel.Commands.ImportQuestionsFromExcel
 {
@@ -16,6 +18,8 @@ namespace Tokki.Application.UseCases.Excel.Commands.ImportQuestionsFromExcel
         private readonly IIdGeneratorService _idGeneratorService;
         private readonly IExcelService _excelService;
         private readonly ILogger<ImportQuestionsFromExcelCommandHandler> _logger;
+
+        private static readonly Regex _whitespaceRegex = new Regex(@"\s+", RegexOptions.Compiled);
 
         public ImportQuestionsFromExcelCommandHandler(
             IQuestionBankRepository questionBankRepository,
@@ -33,6 +37,11 @@ namespace Tokki.Application.UseCases.Excel.Commands.ImportQuestionsFromExcel
 
         public async Task<OperationResult<ImportQuestionsResponse>> Handle(ImportQuestionsFromExcelCommand request, CancellationToken cancellationToken)
         {
+            var cleanQuestionTypeId = request.QuestionTypeId?.Trim();
+            if (string.IsNullOrEmpty(cleanQuestionTypeId))
+            {
+                return OperationResult<ImportQuestionsResponse>.Failure(new Error("Validation", "QuestionTypeId không được để trống."), 400);
+            }
 
             QuestionBankImportDTO excelData;
             try
@@ -44,48 +53,42 @@ namespace Tokki.Application.UseCases.Excel.Commands.ImportQuestionsFromExcel
                 return OperationResult<ImportQuestionsResponse>.Failure(new Error("Excel.ReadError", ex.Message), 400);
             }
 
+            foreach (var q in excelData.Questions)
+            {
+                q.Content = StandardizeText(q.Content);
+                q.Explanation = StandardizeText(q.Explanation);
+                q.MediaUrl = q.MediaUrl?.Trim();
+            }
+            foreach (var opt in excelData.Options)
+            {
+                opt.Content = StandardizeText(opt.Content);
+            }
+
             var response = new ImportQuestionsResponse();
             var passagesToInsert = new List<Passage>();
             var questionsToInsert = new List<QuestionBank>();
             var passageRefMap = new Dictionary<string, Passage>();
 
             var excelContents = excelData.Questions
-                                        .Where(q => !string.IsNullOrWhiteSpace(q.Content))
-                                        .Select(q => q.Content.Trim())
-                                        .Distinct()
-                                        .ToList();
+                                    .Where(q => !string.IsNullOrWhiteSpace(q.Content))
+                                    .Select(q => q.Content)
+                                    .Distinct()
+                                    .ToList();
 
-            var existingContents = await _questionBankRepository.GetExistingContentsAsync(excelContents);
-            var duplicateSet = new HashSet<string>(existingContents);
+            var existingQuestionDTOs = await _questionBankRepository.GetQuestionsByTypeAsync(cleanQuestionTypeId);
+
+            var existingSignatures = new HashSet<string>();
+            foreach (var dto in existingQuestionDTOs)
+            {
+                existingSignatures.Add(GenerateQuestionSignature(dto.Content, dto.MediaUrl, dto.OptionContents));
+            }
 
             foreach (var rawP in excelData.Passages)
             {
                 if (string.IsNullOrWhiteSpace(rawP.RefId)) continue;
+                if (string.IsNullOrWhiteSpace(rawP.MediaType)) continue;
 
-                if (string.IsNullOrWhiteSpace(rawP.MediaType))
-                {
-                    response.Errors.Add(new ImportedQuestionError
-                    {
-                        ExcelRowIndex = rawP.RowIndex,
-                        SheetName = "Passages",
-                        ContentSummary = Truncate(rawP.Title),
-                        ErrorReason = "MediaType bị trống."
-                    });
-                    continue;
-                }
-
-                if (!Enum.TryParse<PassageMediaType>(rawP.MediaType, true, out var validMediaType) ||
-                    !Enum.IsDefined(typeof(PassageMediaType), validMediaType))
-                {
-                    response.Errors.Add(new ImportedQuestionError
-                    {
-                        ExcelRowIndex = rawP.RowIndex,
-                        SheetName = "Passages",
-                        ContentSummary = Truncate(rawP.Title),
-                        ErrorReason = $"MediaType '{rawP.MediaType}' không hợp lệ."
-                    });
-                    continue;
-                }
+                if (!Enum.TryParse<PassageMediaType>(rawP.MediaType, true, out var validMediaType)) continue;
 
                 if (!passageRefMap.ContainsKey(rawP.RefId))
                 {
@@ -107,61 +110,62 @@ namespace Tokki.Application.UseCases.Excel.Commands.ImportQuestionsFromExcel
 
             foreach (var rawQ in excelData.Questions)
             {
-                if (string.IsNullOrWhiteSpace(rawQ.Explanation))
-                {
-                    response.Errors.Add(new ImportedQuestionError
-                    {
-                        ExcelRowIndex = rawQ.RowIndex,
-                        SheetName = "QuestionBanks",
-                        ContentSummary = Truncate(rawQ.Content),
-                        ErrorReason = "Thiếu giải thích (Explanation)."
-                    });
-                    continue;
-                }
+                if (string.IsNullOrWhiteSpace(rawQ.Explanation)) continue;
 
-                if (!string.IsNullOrWhiteSpace(rawQ.Content) && duplicateSet.Contains(rawQ.Content.Trim()))
-                {
-                    response.Errors.Add(new ImportedQuestionError
-                    {
-                        ExcelRowIndex = rawQ.RowIndex,
-                        SheetName = "QuestionBanks",
-                        ContentSummary = Truncate(rawQ.Content),
-                        ErrorReason = "Duplicate: Câu hỏi này đã tồn tại trong Database."
-                    });
-                    continue;
-                }
+                var linkedOptionsRaw = excelData.Options.Where(o => o.RefQuestionId == rawQ.RefId).ToList();
 
-                var linkedOptions = excelData.Options.Where(o => o.RefQuestionId == rawQ.RefId).ToList();
-
-                var invalidOption = linkedOptions.FirstOrDefault(o => o.IsCorrectStr != "0" && o.IsCorrectStr != "1");
+                var invalidOption = linkedOptionsRaw.FirstOrDefault(o => o.IsCorrectStr != "0" && o.IsCorrectStr != "1");
                 if (invalidOption != null)
                 {
-                    response.Errors.Add(new ImportedQuestionError
-                    {
-                        ExcelRowIndex = invalidOption.RowIndex,
-                        SheetName = "Options",
-                        ContentSummary = $"Key: {invalidOption.KeyOption}",
-                        ErrorReason = $"IsCorrect '{invalidOption.IsCorrectStr}' sai format."
-                    });
+                    response.Errors.Add(new ImportedQuestionError { ExcelRowIndex = invalidOption.RowIndex, SheetName = "Options", ContentSummary = $"Key: {invalidOption.KeyOption}", ErrorReason = $"IsCorrect '{invalidOption.IsCorrectStr}' sai format." });
                     continue;
                 }
 
-                bool hasCorrectAnswer = linkedOptions.Any(o => o.IsCorrectStr == "1");
-                if (!hasCorrectAnswer)
+                bool hasOptions = linkedOptionsRaw.Any();
+                bool hasCorrectAnswer = linkedOptionsRaw.Any(o => o.IsCorrectStr == "1");
+
+                if (hasOptions && !hasCorrectAnswer)
                 {
                     response.Errors.Add(new ImportedQuestionError
                     {
                         ExcelRowIndex = rawQ.RowIndex,
                         SheetName = "QuestionBanks",
                         ContentSummary = Truncate(rawQ.Content),
-                        ErrorReason = "Câu hỏi không có đáp án đúng nào."
+                        ErrorReason = "Câu hỏi trắc nghiệm nhưng không có đáp án đúng nào."
+                    });
+                    continue;
+                }
+                var currentOptionsForSig = linkedOptionsRaw.Select(o => o.Content).ToList();
+                var currentSignature = GenerateQuestionSignature(rawQ.Content, rawQ.MediaUrl, currentOptionsForSig);
+                if (existingSignatures.Contains(currentSignature))
+                {
+                    response.Errors.Add(new ImportedQuestionError
+                    {
+                        ExcelRowIndex = rawQ.RowIndex,
+                        SheetName = "QuestionBanks",
+                        ContentSummary = Truncate(rawQ.Content),
+                        ErrorReason = "Duplicate: Câu hỏi này đã tồn tại trong DB."
                     });
                     continue;
                 }
 
-                var realQuestionId = _idGeneratorService.GenerateCustom(10);
+                if (questionsToInsert.Any(q => {
+                    var qOptionContents = q.QuestionOptions.Select(o => o.Content).ToList();
+                    return GenerateQuestionSignature(q.Content, q.MediaUrl, qOptionContents) == currentSignature;
+                }))
+                {
+                    response.Errors.Add(new ImportedQuestionError
+                    {
+                        ExcelRowIndex = rawQ.RowIndex,
+                        SheetName = "QuestionBanks",
+                        ContentSummary = Truncate(rawQ.Content),
+                        ErrorReason = "Duplicate: Trùng lặp ngay trong file Excel."
+                    });
+                    continue;
+                }
 
-                // Link Passage
+                // --- TẠO ENTITY ---
+                var realQuestionId = _idGeneratorService.GenerateCustom(10);
                 Passage? linkedPassage = null;
                 if (!string.IsNullOrEmpty(rawQ.RefPassageId) && passageRefMap.ContainsKey(rawQ.RefPassageId))
                 {
@@ -172,7 +176,7 @@ namespace Tokki.Application.UseCases.Excel.Commands.ImportQuestionsFromExcel
                 {
                     QuestionBankId = realQuestionId,
                     PassageId = linkedPassage?.PassageId,
-                    QuestionTypeId = request.QuestionTypeId,
+                    QuestionTypeId = cleanQuestionTypeId,
                     Content = rawQ.Content,
                     Explanation = rawQ.Explanation,
                     MediaUrl = rawQ.MediaUrl,
@@ -181,7 +185,7 @@ namespace Tokki.Application.UseCases.Excel.Commands.ImportQuestionsFromExcel
                     QuestionOptions = new List<QuestionOption>()
                 };
 
-                foreach (var rawOpt in linkedOptions)
+                foreach (var rawOpt in linkedOptionsRaw)
                 {
                     questionEntity.QuestionOptions.Add(new QuestionOption
                     {
@@ -189,12 +193,13 @@ namespace Tokki.Application.UseCases.Excel.Commands.ImportQuestionsFromExcel
                         QuestionBankId = realQuestionId,
                         KeyOption = rawOpt.KeyOption,
                         Content = rawOpt.Content,
-                        ImageUrl = rawOpt.ImageUrl, 
+                        ImageUrl = rawOpt.ImageUrl,
                         IsCorrect = rawOpt.IsCorrectStr == "1"
                     });
                 }
 
                 questionsToInsert.Add(questionEntity);
+                existingSignatures.Add(currentSignature);
 
                 response.SuccessItems.Add(new ImportedQuestionSuccess
                 {
@@ -202,17 +207,8 @@ namespace Tokki.Application.UseCases.Excel.Commands.ImportQuestionsFromExcel
                     ExcelRefId = rawQ.RefId,
                     RealId = realQuestionId,
                     Content = rawQ.Content,
-                    LinkedPassage = linkedPassage != null ? new ImportedPassageInfo
-                    {
-                        Title = linkedPassage.Title,
-                        RealId = linkedPassage.PassageId
-                    } : null,
-                    Options = linkedOptions.Select(o => new ImportedOptionInfo
-                    {
-                        Key = o.KeyOption,
-                        Content = o.Content,
-                        IsCorrect = o.IsCorrectStr == "1"
-                    }).ToList()
+                    LinkedPassage = linkedPassage != null ? new ImportedPassageInfo { Title = linkedPassage.Title, RealId = linkedPassage.PassageId } : null,
+                    Options = linkedOptionsRaw.Select(o => new ImportedOptionInfo { Key = o.KeyOption, Content = o.Content, IsCorrect = o.IsCorrectStr == "1" }).ToList()
                 });
             }
 
@@ -220,9 +216,7 @@ namespace Tokki.Application.UseCases.Excel.Commands.ImportQuestionsFromExcel
             {
                 if (passagesToInsert.Any()) await _passageRepository.AddRangeAsync(passagesToInsert);
                 if (questionsToInsert.Any()) await _questionBankRepository.AddRangeAsync(questionsToInsert);
-
                 await _questionBankRepository.SaveChangesAsync(cancellationToken);
-
             }
             catch (Exception ex)
             {
@@ -230,15 +224,43 @@ namespace Tokki.Application.UseCases.Excel.Commands.ImportQuestionsFromExcel
             }
 
             return OperationResult<ImportQuestionsResponse>.Success(
-                response,
-                200,
-                $"Đã xử lý file Excel. Thành công: {response.TotalSuccess}, Lỗi: {response.TotalFailed}"
-            );
+                response, 200, $"Hoàn tất. Thành công: {response.TotalSuccess}, Lỗi: {response.TotalFailed}");
         }
 
-        private string Truncate(string input)
+        private string GenerateQuestionSignature(string? content, string? mediaUrl, IEnumerable<string> optionContents)
         {
-            return string.IsNullOrEmpty(input) ? "" : (input.Length > 30 ? input.Substring(0, 30) + "..." : input);
+            var contentStr = StandardizeText(content).ToLower();
+            var mediaStr = (mediaUrl ?? "").Trim().ToLower();
+
+            if (string.IsNullOrEmpty(contentStr) && string.IsNullOrEmpty(mediaStr) && (!optionContents.Any())) return "";
+
+            var sb = new StringBuilder();
+            sb.Append(contentStr);
+            sb.Append("|");
+            sb.Append(mediaStr);
+            sb.Append("|");
+
+            var sortedOptions = optionContents
+                                .Where(o => !string.IsNullOrWhiteSpace(o))
+                                .Select(o => StandardizeText(o).ToLower())
+                                .OrderBy(c => c)
+                                .ToList();
+
+            foreach (var opt in sortedOptions)
+            {
+                sb.Append(opt);
+                sb.Append("|");
+            }
+
+            return sb.ToString();
         }
+
+        private string StandardizeText(string? input)
+        {
+            if (string.IsNullOrEmpty(input)) return "";
+            return _whitespaceRegex.Replace(input, " ").Trim();
+        }
+
+        private string Truncate(string input) => string.IsNullOrEmpty(input) ? "" : (input.Length > 30 ? input.Substring(0, 30) + "..." : input);
     }
 }

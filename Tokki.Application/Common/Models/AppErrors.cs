@@ -1,4 +1,5 @@
-﻿using Tokki.Application.Common.Models;
+﻿using System.Net.NetworkInformation;
+using Tokki.Application.Common.Models;
 using Tokki.Domain.Enums;
 
 namespace Tokki.Application.Common.Models
@@ -277,6 +278,7 @@ namespace Tokki.Application.Common.Models
         public static readonly Error ExamQuestionBankNotFound = new("Exam.QuestionBankNotFound", "Câu hỏi trong ngân hàng không tồn tại.");
         public static readonly Error ExamTemplateCannotUpdateInUse = new("ExamTemplate.CannotUpdateInUse", "Mẫu đề thi đã được sử dụng trong kỳ thi, không thể cập nhật. Vui lòng sử dụng chức năng Sao chép (Duplicate).");
         public static readonly Error ExamTemplateCannotUpdatePublished = new("ExamTemplate.CannotUpdatePublished", "Mẫu đề đã xuất bản chỉ có thể cập nhật khi chưa được sử dụng.");
+        public static readonly Error ExamInvalid = new("Exam.Invalid", "Đề thi không hoạt động");
         //Kho
         public static Error ExamNotEnoughQuestions(string typeId, int needed, int found)
             => new("Exam.NotEnoughQuestions",
@@ -304,5 +306,9 @@ namespace Tokki.Application.Common.Models
         public static readonly Error GameNotFound = new("Game.NotFound","Game không tồn tại.");
         public static readonly Error GameNameDuplicated = new( "Game.NameDuplicated","Tên game đã tồn tại.");
         public static readonly Error GameResultNotFound = new( "GameResult.NotFound","Không tìm thấy kết quả trò chơi cho user.");
-  }
+        //Kho
+        //Exam
+
+    
+    }
 }
