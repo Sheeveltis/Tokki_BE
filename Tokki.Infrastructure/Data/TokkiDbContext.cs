@@ -60,6 +60,9 @@ namespace Tokki.Infrastructure.Data
         public DbSet<RoadmapKnowledgeProfile> RoadmapKnowledgeProfiles { get; set; }
         public DbSet<PronunciationRule> PronunciationRules { get; set; }
         public DbSet<PronunciationExample> PronunciationExamples { get; set; }
+        public DbSet<UserExam> UserExams { get; set; }
+        public DbSet<UserExamAnswer> UserExamAnswers { get; set; }
+        public DbSet<UserExamWritingAnswer> UserExamWritingAnswers { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

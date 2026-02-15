@@ -80,6 +80,8 @@ namespace Tokki.Infrastructure
             //Pronunciation
             services.AddScoped<IPronunciationRuleRepository, PronunciationRuleRepository>();
             services.AddScoped<IAIPronunciationService, AIPronunciationService>();
+            //User take exam
+            services.AddScoped<IUserExamRepository, UserExamRepository>();
             return services;
         }
     }
