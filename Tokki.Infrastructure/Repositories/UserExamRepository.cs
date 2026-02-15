@@ -1,13 +1,16 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+using Tokki.Application.Common.Mappings;
+using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
+using Tokki.Application.UseCases.UserExam.DTOs;
 using Tokki.Domain.Entities;
-using Tokki.Infrastructure.Data;
 using Tokki.Domain.Enums;
+using Tokki.Infrastructure.Data;
 
 namespace Tokki.Infrastructure.Repositories
 {
@@ -108,6 +111,50 @@ namespace Tokki.Infrastructure.Repositories
             if (string.IsNullOrEmpty(userExamId)) return null;
 
             return await GetByIdAsync(userExamId, token);
+        }
+        public async Task<PagedResult<UserExamActionDto>> GetPagedHistoryAsync(
+         string userId,
+         string? examId,
+         UserExamStatus? status,
+         int pageNumber,
+         int pageSize,
+         CancellationToken token)
+        {
+            var query = _context.UserExams
+                .AsNoTracking()
+                .Where(ue => ue.UserId == userId);
+
+            if (!string.IsNullOrEmpty(examId))
+                query = query.Where(ue => ue.ExamId == examId);
+
+            if (status.HasValue)
+                query = query.Where(ue => ue.Status == status.Value);
+
+            var dtoQuery = query
+                .OrderByDescending(ue => ue.StartTime)
+                .Select(ue => new UserExamActionDto
+                {
+                    UserExamId = ue.UserExamId,
+                    ExamId = ue.ExamId,
+                    ExamTitle = ue.Exam.Title,
+
+                    TotalScore = ue.Status == UserExamStatus.Completed ? (double?)ue.Score : null,
+
+                    MaxScore = ue.Exam.ExamTemplate != null
+                        ? (double?)ue.Exam.ExamTemplate.TemplateParts
+                            .Sum(p => p.Mark * (p.QuestionTo - p.QuestionFrom + 1))
+                        : null,
+
+                    Status = ue.Status.ToString(),
+
+                    LastAttempt = ue.SubmitTime ?? ue.StartTime,
+
+                    TimeRemaining = ue.Status == UserExamStatus.InProgress
+                        ? (ue.Exam.Duration * 60) - (int)EF.Functions.DateDiffSecond(ue.StartTime, DateTime.UtcNow)
+                        : 0
+                });
+
+            return await dtoQuery.ToPagedListAsync(pageNumber, pageSize);
         }
     }
 }

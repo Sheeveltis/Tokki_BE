@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Tokki.Application.Common.Models;
+using Tokki.Application.UseCases.UserExam.DTOs;
 using Tokki.Domain.Entities;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.IRepositories
 {
@@ -19,5 +22,12 @@ namespace Tokki.Application.IRepositories
         Task<UserExam?> GetReviewByIdAsync(string userExamId, CancellationToken token);
         Task<List<UserExam>> GetExpiredSessionsAsync(CancellationToken token);
         Task<UserExam?> GetByAnswerIdAsync(string userAnswerId, CancellationToken token);
+        Task<PagedResult<UserExamActionDto>> GetPagedHistoryAsync(
+            string userId,
+            string? examId,
+            UserExamStatus? status,
+            int pageNumber,
+            int pageSize,
+            CancellationToken token);
     }
 }

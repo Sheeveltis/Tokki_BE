@@ -9,6 +9,7 @@ using Tokki.Application.UseCases.UserExam.Commands.SyncExamProgress;
 using Tokki.Application.UseCases.UserExam.DTOs;
 using Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam;
 using Tokki.Application.UseCases.UserExam.Queries.GetUserExamReview;
+using Tokki.Application.UseCases.UserExam.Queries.GetUserExams;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -79,6 +80,26 @@ namespace Tokki.WebAPI.Controllers
 
             return Ok(result);
         }
+        [HttpGet("user/history")]
+        public async Task<ActionResult<OperationResult<UserTakeExamResponse>>> GetHistoryExam([FromQuery] GetUserExamsQuery command)
+        {
+            var userId = User.FindFirst("UserId")?.Value
+                       ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("Không xác định được người dùng.");
+            }
+            command.UserId = userId;
+            var result = await _sender.Send(command);
+
+            if (!result.IsSuccess)
+            {
+                return StatusCode(result.StatusCode, result);
+            }
+
+            return Ok(result);
+        }
         [HttpGet("user/detail/in-progress")]
         public async Task<ActionResult<OperationResult<UserTakeExamResponse>>> GetInProgressExam([FromQuery] GetInProgressExamQuery command)
         {
@@ -104,5 +125,6 @@ namespace Tokki.WebAPI.Controllers
 
             return Ok(result);
         }
+        
     }
 }
