@@ -18,6 +18,7 @@ using Tokki.WebAPI.BackgroundServices;
 using Tokki.WebAPI.Hubs;
 using Tokki.WebAPI.Middlewares;
 using Tokki.WebAPI.Services;
+using Tokki.Worker;
 var builder = WebApplication.CreateBuilder(args);
 
 // ==========================================
@@ -105,7 +106,7 @@ builder.Services.AddHttpContextAccessor();
 
 //Cấu hình Background Service
 builder.Services.AddHostedService<ExamDeadlineWorker>();
-
+builder.Services.AddHostedService<WordleGeneratorWorker>();
 // 4. CẤU HÌNH FLUENTVALIDATION TIẾNG VIỆT (THÊM PHẦN NÀY)
 ValidatorOptions.Global.LanguageManager = new ValidationVietnameseLanguageManager();
 ValidatorOptions.Global.LanguageManager.Enabled = true;
