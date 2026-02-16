@@ -33,7 +33,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="UseCases\MiniGame\Commands\" />
 	  <Folder Include="UseCases\Otps\DTOs\" />
 	  <Folder Include="UseCases\Otps\Queries\" />
 	  <Folder Include="UseCases\Vocabulary\Queries\SearchVocabulary\" />
