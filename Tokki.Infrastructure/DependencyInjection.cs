@@ -77,6 +77,27 @@ namespace Tokki.Infrastructure
             services.AddScoped<IExcelService, ExcelService>();
             //User topic progress
             services.AddScoped<IUserTopicProgressRepository, UserTopicProgressRepository>();
+            // ===== Gemini TOPIK Writing =====
+            // ===== Gemini TOPIK Writing =====
+            services.Configure<Tokki.Infrastructure.Services.Gemini.GeminiOptions>(
+                configuration.GetSection("Gemini"));
+
+            services.AddHttpClient("Gemini", (sp, http) =>
+            {
+                var opt = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<Tokki.Infrastructure.Services.Gemini.GeminiOptions>>().Value;
+                http.BaseAddress = new Uri(opt.BaseUrl);
+                http.Timeout = TimeSpan.FromSeconds(180);
+            });
+
+            // Thêm HttpClient cho download ảnh
+            services.AddHttpClient("ImageDownload", http =>
+            {
+                http.Timeout = TimeSpan.FromSeconds(60);
+                http.DefaultRequestHeaders.Add("User-Agent", "Tokki-TOPIK-Service/1.0");
+            });
+
+            services.AddScoped<Tokki.Infrastructure.Services.Gemini.GeminiRestClient>();
+            services.AddScoped<ITopikWritingGeminiPipeline, Tokki.Infrastructure.Services.Gemini.TopikWritingGeminiPipeline>();
             return services;
         }
     }
