@@ -11,9 +11,9 @@ namespace Tokki.Application.UseCases.UserExam.DTOs
         public string UserExamId { get; set; } = string.Empty;
         public string ExamId { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
-        public int Duration { get; set; } 
+        public int Duration { get; set; }
         public int TotalQuestions { get; set; }
-        public int TimeRemaining { get; set; } 
+        public int TimeRemaining { get; set; }
 
         public ExamSkillsDto Part { get; set; } = new();
     }
@@ -21,10 +21,8 @@ namespace Tokki.Application.UseCases.UserExam.DTOs
     public class ExamSkillsDto
     {
         public List<ExamPartDto> Listening { get; set; } = new();
-
         public List<ExamPartDto> Reading { get; set; } = new();
-
-        public List<ExamPartDto> Writing { get; set; } = new();
+        public List<ExamPartWritingDto> Writing { get; set; } = new();
     }
 
     public class ExamPartDto
@@ -41,7 +39,6 @@ namespace Tokki.Application.UseCases.UserExam.DTOs
     public class ExamQuestionDto
     {
         public string UserAnswerId { get; set; } = string.Empty;
-        public string QuestionId { get; set; } = string.Empty;
         public int QuestionNo { get; set; }
         public string Content { get; set; } = string.Empty;
 
@@ -62,5 +59,25 @@ namespace Tokki.Application.UseCases.UserExam.DTOs
         public string KeyOption { get; set; } = string.Empty; 
         public string Content { get; set; } = string.Empty; 
         public string? ImageUrl { get; set; }
+    }
+    public class ExamPartWritingDto
+    {
+        public string PartId { get; set; } = string.Empty;
+        public string PartName { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string? ExampleUrl { get; set; }
+        public List<ExamQuestionWritingDto> Questions { get; set; } = new();
+    }
+
+    public class ExamQuestionWritingDto
+    {
+        public string UserAnswerId { get; set; } = string.Empty;
+        public int QuestionNo { get; set; }
+        public string Content { get; set; } = string.Empty;
+        public string? MediaUrl { get; set; }
+        public string MediaType { get; set; } = "None";
+        public string? PassageContent { get; set; }
+        public string? PassageMediaUrl { get; set; }
+        public string? AnswerContent { get; set; }
     }
 }

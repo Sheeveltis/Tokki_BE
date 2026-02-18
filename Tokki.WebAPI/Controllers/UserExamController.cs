@@ -10,6 +10,7 @@ using Tokki.Application.UseCases.UserExam.DTOs;
 using Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam;
 using Tokki.Application.UseCases.UserExam.Queries.GetUserExamReview;
 using Tokki.Application.UseCases.UserExam.Queries.GetUserExams;
+using Tokki.Domain.Enums;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -81,24 +82,24 @@ namespace Tokki.WebAPI.Controllers
             return Ok(result);
         }
         [HttpGet("user/history")]
-        public async Task<ActionResult<OperationResult<UserTakeExamResponse>>> GetHistoryExam([FromQuery] GetUserExamsQuery command)
+        public async Task<IActionResult> GetHistoryExam([FromQuery] string? examId, [FromQuery] UserExamStatus? status, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             var userId = User.FindFirst("UserId")?.Value
                        ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            if (string.IsNullOrEmpty(userId))
+            if (string.IsNullOrEmpty(userId)) return Unauthorized("Không xác định người dùng.");
+
+            var command = new GetUserExamsQuery
             {
-                return Unauthorized("Không xác định được người dùng.");
-            }
-            command.UserId = userId;
+                UserId = userId,
+                ExamId = examId,
+                Status = status,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+
             var result = await _sender.Send(command);
-
-            if (!result.IsSuccess)
-            {
-                return StatusCode(result.StatusCode, result);
-            }
-
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
         [HttpGet("user/detail/in-progress")]
         public async Task<ActionResult<OperationResult<UserTakeExamResponse>>> GetInProgressExam([FromQuery] GetInProgressExamQuery command)

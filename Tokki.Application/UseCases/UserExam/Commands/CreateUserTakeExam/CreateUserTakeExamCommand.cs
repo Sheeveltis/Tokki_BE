@@ -10,7 +10,7 @@ using Tokki.Application.UseCases.UserExam.DTOs;
 
 namespace Tokki.Application.UseCases.UserExam.Commands.CreateUserTakeExam
 {
-    public class CreateUserTakeExamCommand : IRequest<OperationResult<UserTakeExamResponse>>
+    public class CreateUserTakeExamCommand : IRequest<OperationResult<CreateUserTakeExamResponse>>
     {
         public string ExamId { get; set; } = string.Empty;
         public bool IsShuffle { get; set; } = false;

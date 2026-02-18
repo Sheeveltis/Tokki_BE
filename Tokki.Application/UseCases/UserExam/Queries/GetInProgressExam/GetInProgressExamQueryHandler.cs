@@ -9,7 +9,6 @@ using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.UserExam.DTOs;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
 {
@@ -31,7 +30,7 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
 
             return OperationResult<UserTakeExamResponse>.Success(MapToResponse(session, false));
         }
-       
+
         private UserTakeExamResponse MapToResponse(Domain.Entities.UserExam session, bool isShuffleOptions)
         {
             var elapsedSeconds = (int)(DateTime.UtcNow - session.StartTime).TotalSeconds;
@@ -46,7 +45,7 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
                     AnswerId = a.UserExamAnswerId,
                     Question = a.Question,
                     IsWriting = false,
-                    SelectedOptionId = a.SelectedOptionId 
+                    SelectedOptionId = a.SelectedOptionId
                 };
 
             foreach (var w in session.UserExamWritingAnswers)
@@ -55,7 +54,7 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
                     AnswerId = w.UserExamWritingAnswerId,
                     Question = w.Question,
                     IsWriting = true,
-                    AnswerContent = w.AnswerContent 
+                    AnswerContent = w.AnswerContent
                 };
 
             var response = new UserTakeExamResponse
@@ -71,9 +70,14 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
 
             var parts = session.Exam.ExamTemplate.TemplateParts.OrderBy(p => p.QuestionFrom).ToList();
 
-            response.Part.Listening = parts.Where(p => p.Skill == QuestionSkill.Listening).Select(p => MapToPartDto(p, questionsMap, isShuffleOptions)).ToList();
-            response.Part.Reading = parts.Where(p => p.Skill == QuestionSkill.Reading).Select(p => MapToPartDto(p, questionsMap, isShuffleOptions)).ToList();
-            response.Part.Writing = parts.Where(p => p.Skill == QuestionSkill.Writing).Select(p => MapToPartDto(p, questionsMap, isShuffleOptions)).ToList();
+            response.Part.Listening = parts.Where(p => p.Skill == QuestionSkill.Listening)
+                                           .Select(p => MapToPartDto(p, questionsMap, isShuffleOptions)).ToList();
+
+            response.Part.Reading = parts.Where(p => p.Skill == QuestionSkill.Reading)
+                                         .Select(p => MapToPartDto(p, questionsMap, isShuffleOptions)).ToList();
+
+            response.Part.Writing = parts.Where(p => p.Skill == QuestionSkill.Writing)
+                                         .Select(p => MapToPartWritingDto(p, questionsMap)).ToList();
 
             return response;
         }
@@ -84,42 +88,67 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
 
             for (int i = part.QuestionFrom; i <= part.QuestionTo; i++)
             {
-                if (questionsMap.TryGetValue(i, out var item))
+                if (questionsMap.TryGetValue(i, out var item) && !item.IsWriting)
                 {
                     var q = item.Question;
-                    var options = !item.IsWriting
-                        ? q.QuestionOptions.Select(o => new ExamOptionDto
-                        {
-                            OptionId = o.OptionId,
-                            KeyOption = o.KeyOption,
-                            Content = o.Content,
-                            ImageUrl = o.ImageUrl
-                        }).ToList()
-                        : new List<ExamOptionDto>();
-
-                    if (shuffleOptions && !item.IsWriting && options.Count > 1)
+                    var options = q.QuestionOptions.Select(o => new ExamOptionDto
                     {
+                        OptionId = o.OptionId,
+                        KeyOption = o.KeyOption,
+                        Content = o.Content,
+                        ImageUrl = o.ImageUrl
+                    }).ToList();
+
+                    if (shuffleOptions && options.Count > 1)
                         options = options.OrderBy(x => Guid.NewGuid()).ToList();
-                    }
 
                     questionsDto.Add(new ExamQuestionDto
                     {
                         UserAnswerId = item.AnswerId,
-                        QuestionId = q.QuestionBankId,
                         QuestionNo = i,
                         Content = q.Content,
                         MediaUrl = q.MediaUrl,
                         MediaType = GetMediaType(q.MediaUrl),
                         PassageContent = q.Passage?.Content,
                         Options = options,
-
-                        SelectedOptionId = item.SelectedOptionId,
-                        AnswerContent = item.AnswerContent
+                        SelectedOptionId = item.SelectedOptionId
                     });
                 }
             }
 
             return new ExamPartDto
+            {
+                PartId = part.TemplatePartId,
+                PartName = part.PartTitle,
+                Description = part.Instruction ?? string.Empty,
+                ExampleUrl = part.ExampleUrl,
+                Questions = questionsDto
+            };
+        }
+
+        private ExamPartWritingDto MapToPartWritingDto(TemplatePart part, Dictionary<int, QuestionAnswerMetadata> questionsMap)
+        {
+            var questionsDto = new List<ExamQuestionWritingDto>();
+
+            for (int i = part.QuestionFrom; i <= part.QuestionTo; i++)
+            {
+                if (questionsMap.TryGetValue(i, out var item) && item.IsWriting)
+                {
+                    var q = item.Question;
+                    questionsDto.Add(new ExamQuestionWritingDto
+                    {
+                        UserAnswerId = item.AnswerId,
+                        QuestionNo = i,
+                        Content = q.Content,
+                        MediaUrl = q.MediaUrl,
+                        MediaType = GetMediaType(q.MediaUrl),
+                        PassageContent = q.Passage?.Content,
+                        AnswerContent = item.AnswerContent 
+                    });
+                }
+            }
+
+            return new ExamPartWritingDto
             {
                 PartId = part.TemplatePartId,
                 PartName = part.PartTitle,
@@ -143,7 +172,7 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
             public string AnswerId { get; set; } = string.Empty;
             public QuestionBank Question { get; set; } = null!;
             public bool IsWriting { get; set; }
-            public string? SelectedOptionId { get; set; } 
+            public string? SelectedOptionId { get; set; }
             public string? AnswerContent { get; set; }
         }
     }
