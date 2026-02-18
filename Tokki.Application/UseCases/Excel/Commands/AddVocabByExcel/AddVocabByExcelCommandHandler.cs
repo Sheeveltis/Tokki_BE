@@ -17,7 +17,7 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate
         private readonly IVocabularyTopicRepository _vocabTopicRepo;
         private readonly ICloudinaryService _cloudinaryService;
         private readonly ILogger<AddVocabByExcelCommandHandler> _logger;
-        private readonly ITextToSpeechService _ttsService;
+        private readonly ISpeechService _ttsService;
         private readonly IIdGeneratorService _idGenerator;
 
         public AddVocabByExcelCommandHandler(
@@ -25,7 +25,7 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate
             IVocabularyRepository vocabRepo,
             ICloudinaryService cloudinaryService,
             ILogger<AddVocabByExcelCommandHandler> logger,
-            ITextToSpeechService ttsService,
+            ISpeechService ttsService,
             IIdGeneratorService idGenerator,
             IVocabularyTopicRepository vocabTopicRepo)
         {

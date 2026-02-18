@@ -137,18 +137,19 @@ namespace Application.Services
             int rowCount = sheet.Dimension?.Rows ?? 0;
             for (int row = 2; row <= rowCount; row++)
             {
-                var refId = GetCellValue(sheet, row, 1);
+                var refId = GetCellValue(sheet, row, 1); 
                 if (string.IsNullOrEmpty(refId)) continue;
 
                 list.Add(new ExcelQuestionDTO
                 {
                     RowIndex = row,
+                    RefPassageId = GetCellValue(sheet, row, 2), 
                     RefId = refId,
-                    RefPassageId = GetCellValue(sheet, row, 2),
                     Content = GetCellHtml(sheet.Cells[row, 3]),
-                    Explanation = GetCellHtml(sheet.Cells[row, 4]),
-
-                    Status = GetCellValue(sheet, row, 5)
+                    Explanation = GetCellHtml(sheet.Cells[row, 4]), 
+                    MediaUrl = GetCellValue(sheet, row, 5),     
+                    MediaType = GetCellValue(sheet, row, 6),    
+                    Status = GetCellValue(sheet, row, 7)
                 });
             }
             return list;
@@ -160,17 +161,18 @@ namespace Application.Services
             int rowCount = sheet.Dimension?.Rows ?? 0;
             for (int row = 2; row <= rowCount; row++)
             {
-                var refId = GetCellValue(sheet, row, 1);
+                var refId = GetCellValue(sheet, row, 1); // OptionId
                 if (string.IsNullOrEmpty(refId)) continue;
 
                 list.Add(new ExcelOptionDTO
                 {
                     RowIndex = row,
                     RefId = refId,
-                    RefQuestionId = GetCellValue(sheet, row, 2),
-                    KeyOption = GetCellValue(sheet, row, 3),
-                    Content = GetCellHtml(sheet.Cells[row, 4]),
-                    IsCorrectStr = GetCellValue(sheet, row, 5)
+                    RefQuestionId = GetCellValue(sheet, row, 2), // QuestionBankId
+                    KeyOption = GetCellValue(sheet, row, 3),     // KeyOption (A, B, C...)
+                    Content = GetCellHtml(sheet.Cells[row, 4]),  // Content
+                    ImageUrl = GetCellValue(sheet, row, 5),      // [NEW] ImageUrl
+                    IsCorrectStr = GetCellValue(sheet, row, 6)   // IsCorrect
                 });
             }
             return list;
@@ -180,34 +182,59 @@ namespace Application.Services
             var value = sheet.Cells[row, col].Text?.Trim();
             if (string.IsNullOrEmpty(value) || value.Equals("NULL", StringComparison.OrdinalIgnoreCase))
             {
-                return string.Empty;
+                return null;
             }
             return value;
         }
         private string GetCellHtml(ExcelRange cell)
         {
-            if (cell.Value == null) return string.Empty;
+            var rawValue = cell.Value?.ToString()?.Trim();
 
-            if (cell.RichText.Count == 0)
+            if (string.IsNullOrEmpty(rawValue) || rawValue.Equals("NULL", StringComparison.OrdinalIgnoreCase))
             {
-                var text = cell.Text?.Trim();
-                if (string.IsNullOrEmpty(text)) return string.Empty;
-                return WebUtility.HtmlEncode(text).Replace("\n", "<br/>");
+                return null;
             }
 
-            var sb = new StringBuilder();
-
-            foreach (var part in cell.RichText)
+            if (cell.RichText.Count > 0)
             {
-                string text = WebUtility.HtmlEncode(part.Text);
-                if (string.IsNullOrEmpty(text)) continue;
-                if (part.UnderLine) text = $"<u>{text}</u>";
-                if (part.Italic) text = $"<i>{text}</i>";
-                if (part.Bold) text = $"<b>{text}</b>";
-                if (part.Strike) text = $"<del>{text}</del>";
-                sb.Append(text);
+                var sb = new StringBuilder();
+
+                foreach (var part in cell.RichText)
+                {
+                    var textPart = part.Text;
+                    if (string.IsNullOrEmpty(textPart)) continue;
+
+                    string encodedText = SanitizeHtml(textPart);
+
+                    if (part.UnderLine) encodedText = $"<u>{encodedText}</u>";
+                    if (part.Italic) encodedText = $"<i>{encodedText}</i>";
+                    if (part.Bold) encodedText = $"<b>{encodedText}</b>";
+                    if (part.Strike) encodedText = $"<del>{encodedText}</del>";
+
+                    encodedText = encodedText.Replace("\r\n", "<br/>").Replace("\n", "<br/>");
+
+                    sb.Append(encodedText);
+                }
+                return sb.ToString();
             }
-            return sb.ToString().Replace("\n", "<br/>");
+
+            return SanitizeHtml(rawValue)
+                     .Replace("\r\n", "<br/>")
+                     .Replace("\n", "<br/>");
+        }
+
+        /// <summary>
+        /// Hàm encode nhẹ: Chỉ xử lý ký tự HTML đặc biệt, giữ nguyên Tiếng Việt
+        /// </summary>
+        private string SanitizeHtml(string input)
+        {
+            if (string.IsNullOrEmpty(input)) return "";
+
+            return input.Replace("&", "&amp;")  
+                        .Replace("<", "&lt;")
+                        .Replace(">", "&gt;")
+                        .Replace("\"", "&quot;")
+                        .Replace("'", "&#39;");
         }
     }
 }

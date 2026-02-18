@@ -9,13 +9,16 @@ using System.Globalization;
 using System.Text;
 using Tokki.Application;
 using Tokki.Application.Common.Helpers;
+using Tokki.Application.Common.Helpers.ValidationVietnameseLanguageManager;
 using Tokki.Application.IServices;
 using Tokki.Infrastructure;
 using Tokki.Infrastructure.BackgroundJobs; // Nơi chứa class JwtSettings
+using Tokki.Infrastructure.Services;
+using Tokki.WebAPI.BackgroundServices;
 using Tokki.WebAPI.Hubs;
 using Tokki.WebAPI.Middlewares;
 using Tokki.WebAPI.Services;
-using Tokki.Application.Common.Helpers.ValidationVietnameseLanguageManager;
+using Tokki.Worker;
 var builder = WebApplication.CreateBuilder(args);
 
 // ==========================================
@@ -101,6 +104,9 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddHttpContextAccessor();
 
 
+//Cấu hình Background Service
+builder.Services.AddHostedService<ExamDeadlineWorker>();
+builder.Services.AddHostedService<WordleGeneratorWorker>();
 // 4. CẤU HÌNH FLUENTVALIDATION TIẾNG VIỆT (THÊM PHẦN NÀY)
 ValidatorOptions.Global.LanguageManager = new ValidationVietnameseLanguageManager();
 ValidatorOptions.Global.LanguageManager.Enabled = true;
@@ -130,6 +136,10 @@ builder.Services.Configure<GoogleAuthSettings>(
 
 builder.Services.AddHostedService<Tokki.Infrastructure.BackgroundJobs.VipExpirationWorker>();
 
+builder.Services.AddHttpClient<IAiRoadmapService, AiRoadmapService>();
+
+builder.Services.AddScoped<IUserRoadmapRepository, UserRoadmapRepository>();
+builder.Services.AddScoped<IExamAssemblyService, ExamAssemblyService>();
 
 
 builder.Services.AddMemoryCache(options =>

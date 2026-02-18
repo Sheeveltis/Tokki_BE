@@ -8,6 +8,7 @@ using Tokki.Application.IServices;
 using Tokki.Infrastructure.Data;
 using Tokki.Infrastructure.Repositories;
 using Tokki.Infrastructure.Services;
+using Tokki.Infrastructure.Services.Gemini;
 namespace Tokki.Infrastructure
 {
     public static class DependencyInjection
@@ -51,8 +52,9 @@ namespace Tokki.Infrastructure
             services.AddScoped<IGameRepository, GameRepository>();
             services.AddScoped<IGameMatchSessionRepository, GameMatchSessionRepository>();
             services.AddScoped<IEmailHistoryRepository, EmailHistoryRepository>();
-
-
+            services.AddScoped<IUserExamWritingAnswerRepository, UserExamWritingAnswerRepository>();
+            services.AddScoped<IQuestion51Pipeline,
+        Tokki.Infrastructure.Services.Gemini.Question51GeminiPipeline>();
             // Bạn cũng cần kiểm tra và đăng ký các Repository khác mà Command Handler đang yêu cầu:
             services.AddSingleton<IIdGeneratorService, IdGeneratorService>();
             services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
@@ -62,7 +64,7 @@ namespace Tokki.Infrastructure
             services.AddScoped<IPaymentRepository, PaymentRepository>();
 
             //TextToSpeech
-            services.AddScoped<ITextToSpeechService, TextToSpeechService>();
+            services.AddScoped<ISpeechService, SpeechService>();
             //Cloudinary 
             services.AddScoped<ICloudinaryService, CloudinaryService>();
             //Comment
@@ -78,7 +80,6 @@ namespace Tokki.Infrastructure
             //User topic progress
             services.AddScoped<IUserTopicProgressRepository, UserTopicProgressRepository>();
             // ===== Gemini TOPIK Writing =====
-            // ===== Gemini TOPIK Writing =====
             services.Configure<Tokki.Infrastructure.Services.Gemini.GeminiOptions>(
                 configuration.GetSection("Gemini"));
 
@@ -89,15 +90,22 @@ namespace Tokki.Infrastructure
                 http.Timeout = TimeSpan.FromSeconds(180);
             });
 
-            // Thêm HttpClient cho download ảnh
             services.AddHttpClient("ImageDownload", http =>
             {
                 http.Timeout = TimeSpan.FromSeconds(60);
                 http.DefaultRequestHeaders.Add("User-Agent", "Tokki-TOPIK-Service/1.0");
             });
+            services.AddScoped<IQuestion52Pipeline, Question52GeminiPipeline>();
+            services.AddScoped<IQuestion53Pipeline, Question53GeminiPipeline>();
+            services.AddScoped<IQuestion54Pipeline, Question54GeminiPipeline>();
 
             services.AddScoped<Tokki.Infrastructure.Services.Gemini.GeminiRestClient>();
             services.AddScoped<ITopikWritingGeminiPipeline, Tokki.Infrastructure.Services.Gemini.TopikWritingGeminiPipeline>();
+            //Pronunciation
+            services.AddScoped<IPronunciationRuleRepository, PronunciationRuleRepository>();
+            services.AddScoped<IAIPronunciationService, AIPronunciationService>();
+            //User take exam
+            services.AddScoped<IUserExamRepository, UserExamRepository>();
             return services;
         }
     }

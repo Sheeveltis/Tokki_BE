@@ -39,5 +39,38 @@ namespace Tokki.Infrastructure.Repositories
                 .Take(50)
                 .ToListAsync(token);
         }
+        public async Task<List<DailyWordle>> GetDailyWordlesByDateAsync(DateOnly date, CancellationToken token = default)
+        {
+            return await _context.DailyWordles
+                .Where(x => x.GameDate == date)
+                .OrderBy(x => x.Level) 
+                .ToListAsync(token);
+        }
+
+        public async Task<List<UserWordleProgress>> GetUserWordleProgressAsync(string userId, IEnumerable<string> dailyWordleIds, CancellationToken token = default)
+        {
+            if (dailyWordleIds == null || !dailyWordleIds.Any())
+            {
+                return new List<UserWordleProgress>();
+            }
+
+            return await _context.UserWordleProgress
+                .Where(x => x.UserId == userId && dailyWordleIds.Contains(x.DailyWordleId))
+                .ToListAsync(token);
+        }
+        public async Task<DailyWordle?> GetDailyWordleByIdAsync(string id, CancellationToken token = default)
+        {
+            return await _context.DailyWordles.FindAsync(new object[] { id }, token);
+        }
+
+        public void AddUserWordleProgress(UserWordleProgress progress)
+        {
+            _context.UserWordleProgress.Add(progress);
+        }
+
+        public async Task<int> SaveChangesAsync(CancellationToken token = default)
+        {
+            return await _context.SaveChangesAsync(token);
+        }
     }
 }

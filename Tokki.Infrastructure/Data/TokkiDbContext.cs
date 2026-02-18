@@ -54,7 +54,21 @@ namespace Tokki.Infrastructure.Data
         public DbSet<Game> Games { get; set; }
         public DbSet<GameMatchSession> GameMatchSessions { get; set; }
         public DbSet<UserTopicProgress> UserTopicProgresses { get; set; }
-
+        public DbSet<UserRoadmap> UserRoadmaps { get; set; }
+        public DbSet<RoadmapWeek> RoadmapWeeks { get; set; }
+        public DbSet<RoadmapDailyTask> RoadmapDailyTasks { get; set; }
+        public DbSet<RoadmapKnowledgeProfile> RoadmapKnowledgeProfiles { get; set; }
+        //Pronunciation
+        public DbSet<PronunciationRule> PronunciationRules { get; set; }
+        public DbSet<PronunciationExample> PronunciationExamples { get; set; }
+        //User take exam
+        public DbSet<UserExam> UserExams { get; set; }
+        public DbSet<UserExamAnswer> UserExamAnswers { get; set; }
+        public DbSet<UserExamWritingAnswer> UserExamWritingAnswers { get; set; }
+        //Wordle
+        public DbSet<DailyWordle> DailyWordles { get; set; }
+        public DbSet<WordleSentenceSubmission> WordleSentenceSubmissions { get; set; }
+        public DbSet<UserWordleProgress> UserWordleProgress { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -713,7 +727,17 @@ namespace Tokki.Infrastructure.Data
                       .HasForeignKey(s => s.UserId)
                       .OnDelete(DeleteBehavior.Cascade);
             });
+            modelBuilder.Entity<UserRoadmap>()
+                    .Property(e => e.CurrentStatus)
+                    .HasConversion<int>();
 
+            modelBuilder.Entity<RoadmapWeek>()
+                    .Property(e => e.Status)
+                    .HasConversion<int>();
+
+            modelBuilder.Entity<RoadmapDailyTask>()
+                    .Property(e => e.TaskType)
+                    .HasConversion<int>();
         }
     }
 }
