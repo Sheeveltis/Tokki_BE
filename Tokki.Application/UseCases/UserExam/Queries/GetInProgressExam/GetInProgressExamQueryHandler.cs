@@ -104,7 +104,7 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
 
                     questionsDto.Add(new ExamQuestionDto
                     {
-                        UserAnswerId = item.AnswerId,
+                        UserQuestionId = item.AnswerId,
                         QuestionNo = i,
                         Content = q.Content,
                         MediaUrl = q.MediaUrl,
@@ -137,13 +137,14 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
                     var q = item.Question;
                     questionsDto.Add(new ExamQuestionWritingDto
                     {
-                        UserAnswerId = item.AnswerId,
+                        UserQuestionId = item.AnswerId,
                         QuestionNo = i,
                         Content = q.Content,
                         MediaUrl = q.MediaUrl,
                         MediaType = GetMediaType(q.MediaUrl),
                         PassageContent = q.Passage?.Content,
-                        AnswerContent = item.AnswerContent 
+                        AnswerContent = item.AnswerContent,
+                        QuestionTypeCode = q.QuestionType?.Code
                     });
                 }
             }

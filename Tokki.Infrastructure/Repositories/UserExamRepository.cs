@@ -72,6 +72,7 @@ namespace Tokki.Infrastructure.Repositories
                         .ThenInclude(q => q.QuestionOptions)
                 .Include(ue => ue.UserExamWritingAnswers)
                     .ThenInclude(uwa => uwa.Question)
+                    .ThenInclude(q => q.QuestionType)
                 .FirstOrDefaultAsync(ue => ue.UserExamId == userExamId, token);
         }
         public async Task<UserExam?> GetReviewByIdAsync(string userExamId, CancellationToken cancellationToken)

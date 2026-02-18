@@ -38,7 +38,7 @@ namespace Tokki.Application.UseCases.UserExam.DTOs
 
     public class ExamQuestionDto
     {
-        public string UserAnswerId { get; set; } = string.Empty;
+        public string UserQuestionId { get; set; } = string.Empty;
         public int QuestionNo { get; set; }
         public string Content { get; set; } = string.Empty;
 
@@ -71,7 +71,7 @@ namespace Tokki.Application.UseCases.UserExam.DTOs
 
     public class ExamQuestionWritingDto
     {
-        public string UserAnswerId { get; set; } = string.Empty;
+        public string UserQuestionId { get; set; } = string.Empty;
         public int QuestionNo { get; set; }
         public string Content { get; set; } = string.Empty;
         public string? MediaUrl { get; set; }
@@ -79,5 +79,6 @@ namespace Tokki.Application.UseCases.UserExam.DTOs
         public string? PassageContent { get; set; }
         public string? PassageMediaUrl { get; set; }
         public string? AnswerContent { get; set; }
+        public string? QuestionTypeCode { get; set; }
     }
 }
