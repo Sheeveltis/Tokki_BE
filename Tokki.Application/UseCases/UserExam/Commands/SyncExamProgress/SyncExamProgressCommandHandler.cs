@@ -23,7 +23,7 @@ namespace Tokki.Application.UseCases.UserExam.Commands.SyncExamProgress
             if (request.Answers == null || !request.Answers.Any())
                 return OperationResult<bool>.Success(true);
 
-            var incomingIds = request.Answers.Select(a => a.UserAnswerId).ToList();
+            var incomingIds = request.Answers.Select(a => a.UserQuestionId).ToList();
 
             var session = await _repository.GetByAnswerIdAsync(incomingIds.First(), token);
 
@@ -45,7 +45,7 @@ namespace Tokki.Application.UseCases.UserExam.Commands.SyncExamProgress
 
             foreach (var incoming in request.Answers)
             {
-                if (mcqMap.TryGetValue(incoming.UserAnswerId, out var mcq))
+                if (mcqMap.TryGetValue(incoming.UserQuestionId, out var mcq))
                 {
                     if (mcq.SelectedOptionId != incoming.SelectedOptionId)
                     {
@@ -54,7 +54,7 @@ namespace Tokki.Application.UseCases.UserExam.Commands.SyncExamProgress
                         mcq.IsCorrect = (mcq.SelectedOptionId == correctId);
                     }
                 }
-                else if (writingMap.TryGetValue(incoming.UserAnswerId, out var writing))
+                else if (writingMap.TryGetValue(incoming.UserQuestionId, out var writing))
                 {
                     if (writing.AnswerContent != incoming.AnswerContent)
                     {
