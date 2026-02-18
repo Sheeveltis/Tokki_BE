@@ -50,7 +50,6 @@ namespace Tokki.Application.UseCases.UserExam.DTOs
 
         public List<ExamOptionDto> Options { get; set; } = new();
         public string? SelectedOptionId { get; set; } 
-        public string? AnswerContent { get; set; }
     }
 
     public class ExamOptionDto
