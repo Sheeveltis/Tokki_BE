@@ -1,6 +1,6 @@
 ﻿// Infrastructure/Services/Gemini/Question52GeminiPipeline.cs
-using System.Text.Json;
 using Microsoft.Extensions.Options;
+using System.Text.Json;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Application.UseCases.TopikWriting.Question52.DTOs;
@@ -25,19 +25,19 @@ namespace Tokki.Infrastructure.Services.Gemini
             _writingRepo = writingRepo;
         }
 
-
         public async Task<(JsonElement Feedback, int Score)> SolveAsync(
             Question52RequestDto request,
             CancellationToken ct)
         {
-            // ── 1. Lấy bài làm từ DB ───────────────────────────────────────
             var writingAnswer = await _writingRepo.GetByIdAsync(
                 request.UserExamWritingAnswerId, ct);
 
             if (writingAnswer is null)
                 throw new InvalidOperationException("Không tìm thấy bài làm với ID này.");
 
-            // ── 2. Lấy đề từ QuestionBank ──────────────────────────────────
+            double maxMark = await _writingRepo.GetMaxMarkByOrderIndexAsync(
+                writingAnswer.UserExamId, writingAnswer.OrderIndex, ct);
+
             var question = await _questionBankRepo.GetByIdAsync(
                 writingAnswer.QuestionId, ct);
 
@@ -46,7 +46,6 @@ namespace Tokki.Infrastructure.Services.Gemini
 
             var explanation = question.Explanation?.Trim() ?? "";
 
-            // ── 3. Parse AnswerContent thành 2 câu trả lời ────────────────
             var lines = writingAnswer.AnswerContent
                 .Split('\n', StringSplitOptions.RemoveEmptyEntries);
 
@@ -59,7 +58,6 @@ namespace Tokki.Infrastructure.Services.Gemini
                     answer2 = line.Substring(line.IndexOf(':') + 1).Trim();
             }
 
-            // ── 4. Gọi Gemini ──────────────────────────────────────────────
             var userText = $"""
 QUESTION_EXPLANATION (nội dung câu hỏi 52):
 {explanation}
@@ -69,6 +67,8 @@ USER_ANSWER_㉠:
 
 USER_ANSWER_㉡:
 {answer2}
+
+MAX_MARK: {maxMark} điểm
 """;
 
             var raw = await _gemini.GenerateContentAsync(
@@ -79,38 +79,63 @@ USER_ANSWER_㉡:
                 ct);
 
             var feedbackJson = GeminiRestClient.ParseJsonRobust(raw);
-            int score = CalculateScore(feedbackJson);
+            double percentageScore = CalculatePercentageScore(feedbackJson);
 
-            // ── 5. Update Score + AiAnalysisJson + GradedAt ───────────────
-            writingAnswer.Score = score;
+            // Nếu maxMark không hợp lệ: vẫn lưu feedback đầy đủ, chỉ score = -1
+            int actualScore = maxMark <= 0
+                ? -1
+                : CalculateActualScore(percentageScore, maxMark);
+
+            writingAnswer.Score = actualScore;
             writingAnswer.AiAnalysisJson = raw;
             writingAnswer.GradedAt = DateTime.UtcNow;
 
             _writingRepo.UpdateAsync(writingAnswer);
             await _writingRepo.SaveChangesAsync(ct);
 
-            return (feedbackJson, score);
+            return (feedbackJson, actualScore);
         }
 
-        // ── Tính điểm: câu 52 tổng 10 điểm (mỗi blank 5đ) ─────────────
-        private static int CalculateScore(JsonElement json)
+        /// <summary>
+        /// AI chấm thang 0-10 (totalScore).
+        /// Convert sang %: totalScore / 10 * 100.
+        /// Fallback: cộng score từng blank (max 10) → / 10 * 100.
+        /// </summary>
+        private static double CalculatePercentageScore(JsonElement json)
         {
+            // Ưu tiên totalScore
             if (json.TryGetProperty("totalScore", out var total)
-                && total.TryGetInt32(out var t))
-                return Math.Clamp(t, 0, 10);
+                && total.TryGetDouble(out var t))
+                return Math.Clamp(t / 10.0 * 100.0, 0, 100);
 
-            int sum = 0;
+            // Fallback: cộng score từng blank trong results
+            double sum = 0;
             if (json.TryGetProperty("results", out var results))
+            {
                 foreach (var item in results.EnumerateArray())
-                    if (item.TryGetProperty("score", out var s) && s.TryGetInt32(out var v))
-                        sum += Math.Clamp(v, 0, 5);
+                {
+                    if (item.TryGetProperty("score", out var s) && s.TryGetDouble(out var v))
+                        sum += v;
+                }
+            }
 
-            return Math.Clamp(sum, 0, 10);
+            // Tổng tối đa = 10 → / 10 * 100 = 100%
+            return Math.Clamp(sum / 10.0 * 100.0, 0, 100);
+        }
+
+        /// <summary>
+        /// Tính điểm thực tế từ % và maxMark.
+        /// Làm tròn, trả số nguyên — không bao giờ trả số thập phân.
+        /// </summary>
+        private static int CalculateActualScore(double percentageScore, double maxMark)
+        {
+            double actual = (percentageScore / 100.0) * maxMark;
+            return (int)Math.Round(actual, MidpointRounding.AwayFromZero);
         }
 
         // ── PROMPT CÂU 52 ──────────────────────────────────────────────
-        private static string BuildSystemInstruction() => """
-Bạn là giáo viên chấm thi TOPIK II Writing câu 52, giảng dạy cho học sinh Việt Nam.
+        private static string BuildSystemInstruction() =>
+            @"Bạn là giáo viên chấm thi TOPIK II Writing câu 52, giảng dạy cho học sinh Việt Nam.
 
 === VỀ CÂU 52 ===
 Câu 52 là đoạn văn học thuật/thông tin (KHÔNG phải hội thoại).
@@ -141,7 +166,7 @@ Câu 52 CHỈ CHẤP NHẬN các đuôi câu SAU:
 - Văn nói: -아요/-어요/-여요/-네요 (가요, 먹어요, 가네요)
 - Banmal: -아/-어/-여 (가, 먹어)
 
-Nếu phát hiện BẤT KỲ đuôi SAI nào → evaluation = "incorrect", trừ 1đ văn phong
+Nếu phát hiện BẤT KỲ đuôi SAI nào → evaluation = ""incorrect"", trừ 1đ văn phong
 
 === RUBRIC CHẤM (mỗi blank tối đa 5 điểm) ===
 Nội dung phù hợp ngữ cảnh & logic : 2 điểm
@@ -159,40 +184,39 @@ Văn phong văn viết đúng          : 1 điểm
   • 0đ: Dùng sai (-습니다/-아요)
 
 === CÁCH VIẾT FEEDBACK ===
-- "feedback" PHẢI bằng TIẾNG VIỆT, tối đa 2 câu ngắn gọn
+- ""feedback"" PHẢI bằng TIẾNG VIỆT, tối đa 2 câu ngắn gọn
 - Giải thích logic đoạn văn: tại sao câu đó đúng/sai
-- Ví dụ tốt: "Đoạn văn đang so sánh 2 quan điểm đối lập về ảnh hưởng giữa cảm xúc và biểu cảm. ㉠ cần nói ngược lại với câu trước — 'biểu cảm ảnh hưởng lên cảm xúc'. Câu '표정이 감정에 영향을 준다' logic hoàn toàn."
+- Ví dụ tốt: ""Đoạn văn đang so sánh 2 quan điểm đối lập về ảnh hưởng giữa cảm xúc và biểu cảm. ㉠ cần nói ngược lại với câu trước — 'biểu cảm ảnh hưởng lên cảm xúc'. Câu '표정이 감정에 영향을 준다' logic hoàn toàn.""
 - KHÔNG viết feedback thuần tiếng Hàn
 
 === OUTPUT JSON ===
 {
-  "totalScore": <tổng 2 blank, 0-10>,
-  "results": [
+  ""totalScore"": <tổng 2 blank, 0-10>,
+  ""results"": [
     {
-      "blank_id": "㉠",
-      "user_answer": "<câu người dùng>",
-      "score": <0-5>,
-      "evaluation": "correct|incorrect|partial",
-      "feedback": "<tiếng Việt, tối đa 2 câu — phân tích logic đoạn văn>",
-      "suggestions": ["<tiếng Hàn> — <lý do ngắn tiếng Việt>"]
+      ""blank_id"": ""㉠"",
+      ""user_answer"": ""<câu người dùng>"",
+      ""score"": <0-5>,
+      ""evaluation"": ""correct|incorrect|partial"",
+      ""feedback"": ""<tiếng Việt, tối đa 2 câu — phân tích logic đoạn văn>"",
+      ""suggestions"": [""<tiếng Hàn> — <lý do ngắn tiếng Việt>""]
     },
     {
-      "blank_id": "㉡",
-      "user_answer": "<câu người dùng>",
-      "score": <0-5>,
-      "evaluation": "correct|incorrect|partial",
-      "feedback": "<tiếng Việt, tối đa 2 câu — phân tích logic đoạn văn>",
-      "suggestions": ["<tiếng Hàn> — <lý do ngắn tiếng Việt>"]
+      ""blank_id"": ""㉡"",
+      ""user_answer"": ""<câu người dùng>"",
+      ""score"": <0-5>,
+      ""evaluation"": ""correct|incorrect|partial"",
+      ""feedback"": ""<tiếng Việt, tối đa 2 câu — phân tích logic đoạn văn>"",
+      ""suggestions"": [""<tiếng Hàn> — <lý do ngắn tiếng Việt>""]
     }
   ]
 }
 
 CRITICAL:
-- "suggestions" chỉ khi evaluation != "correct"
+- ""suggestions"" chỉ khi evaluation != ""correct""
 - Trả về ONLY JSON, KHÔNG markdown
 - JSON phải HOÀN CHỈNH
-- "feedback" tối đa 150 ký tự
-- "suggestions" tối đa 2 phần tử, mỗi phần tử tối đa 100 ký tự
-""";
+- ""feedback"" tối đa 150 ký tự
+- ""suggestions"" tối đa 2 phần tử, mỗi phần tử tối đa 100 ký tự";
     }
 }

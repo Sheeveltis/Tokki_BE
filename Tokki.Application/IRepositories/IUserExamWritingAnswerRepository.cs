@@ -11,5 +11,7 @@ namespace Tokki.Application.IRepositories
         Task<List<UserExamWritingAnswer>> GetByUserExamIdAsync(string userExamId, CancellationToken ct = default);
         Task UpdateAsync(UserExamWritingAnswer answer);
         Task<bool> SaveChangesAsync(CancellationToken ct = default);
+        Task<double> GetMaxMarkByOrderIndexAsync(string userExamId, int orderIndex, CancellationToken ct = default);
+
     }
 }

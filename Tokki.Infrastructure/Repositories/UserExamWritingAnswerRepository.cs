@@ -56,5 +56,31 @@ namespace Tokki.Infrastructure.Repositories
         {
             return await _context.SaveChangesAsync(ct) > 0;
         }
+        public async Task<double> GetMaxMarkByOrderIndexAsync(
+           string userExamId, int orderIndex, CancellationToken ct = default)
+        {
+            var mark = await _context.UserExamWritingAnswers
+                .Where(w => w.UserExamId == userExamId && w.OrderIndex == orderIndex)
+                .Join(
+                    _context.UserExams,
+                    w => w.UserExamId,
+                    ue => ue.UserExamId,
+                    (w, ue) => new { w.OrderIndex, ue.ExamId })
+                .Join(
+                    _context.Exams,
+                    x => x.ExamId,
+                    e => e.ExamId,
+                    (x, e) => new { x.OrderIndex, e.ExamTemplateId })
+                .Join(
+                    _context.TemplateParts,
+                    x => x.ExamTemplateId,
+                    tp => tp.ExamTemplateId,
+                    (x, tp) => new { x.OrderIndex, tp.QuestionFrom, tp.QuestionTo, tp.Mark })
+                .Where(x => x.OrderIndex >= x.QuestionFrom && x.OrderIndex <= x.QuestionTo)
+                .Select(x => x.Mark)
+                .FirstOrDefaultAsync(ct);
+
+            return mark;
+        }
     }
 }

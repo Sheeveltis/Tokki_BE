@@ -1,6 +1,6 @@
 ﻿// Infrastructure/Services/Gemini/Question54GeminiPipeline.cs
-using System.Text.Json;
 using Microsoft.Extensions.Options;
+using System.Text.Json;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Application.UseCases.TopikWriting.Question54.DTOs;
@@ -24,18 +24,20 @@ namespace Tokki.Infrastructure.Services.Gemini
             _questionBankRepo = questionBankRepo;
             _writingRepo = writingRepo;
         }
+
         public async Task<(JsonElement Feedback, int Score)> SolveAsync(
             Question54RequestDto request,
             CancellationToken ct)
         {
-            // ── 1. Lấy bài làm từ DB ───────────────────────────────────────
             var writingAnswer = await _writingRepo.GetByIdAsync(
                 request.UserExamWritingAnswerId, ct);
 
             if (writingAnswer is null)
                 throw new InvalidOperationException("Không tìm thấy bài làm với ID này.");
 
-            // ── 2. Lấy đề từ QuestionBank ──────────────────────────────────
+            double maxMark = await _writingRepo.GetMaxMarkByOrderIndexAsync(
+                writingAnswer.UserExamId, writingAnswer.OrderIndex, ct);
+
             var question = await _questionBankRepo.GetByIdAsync(
                 writingAnswer.QuestionId, ct);
 
@@ -43,17 +45,16 @@ namespace Tokki.Infrastructure.Services.Gemini
                 throw new InvalidOperationException("Không tìm thấy câu hỏi.");
 
             var explanation = question.Explanation?.Trim() ?? "";
-
-            // ── 3. Đếm số ký tự bài viết ───────────────────────────────────
             int charCount = writingAnswer.AnswerContent.Length;
 
-            // ── 4. Gọi Gemini ──────────────────────────────────────────────
             var userText = $"""
 QUESTION_EXPLANATION (nội dung câu hỏi 54 - essay prompt):
 {explanation}
 
 USER_ESSAY (bài luận của thí sinh - {charCount} ký tự):
 {writingAnswer.AnswerContent}
+
+MAX_MARK: {maxMark} điểm
 """;
 
             var raw = await _gemini.GenerateContentAsync(
@@ -64,46 +65,65 @@ USER_ESSAY (bài luận của thí sinh - {charCount} ký tự):
                 ct);
 
             var feedbackJson = GeminiRestClient.ParseJsonRobust(raw);
-            int score = CalculateScore(feedbackJson);
+            double percentageScore = CalculatePercentageScore(feedbackJson);
 
-            // ── 5. Update Score + AiAnalysisJson + GradedAt ───────────────
-            writingAnswer.Score = score;
+            // Nếu maxMark không hợp lệ: vẫn lưu feedback đầy đủ, chỉ score = -1
+            int actualScore = maxMark <= 0
+                ? -1
+                : CalculateActualScore(percentageScore, maxMark);
+
+            writingAnswer.Score = actualScore;
             writingAnswer.AiAnalysisJson = raw;
             writingAnswer.GradedAt = DateTime.UtcNow;
 
             _writingRepo.UpdateAsync(writingAnswer);
             await _writingRepo.SaveChangesAsync(ct);
 
-            return (feedbackJson, score);
+            return (feedbackJson, actualScore);
         }
 
-        // ── Tính điểm: câu 54 tổng 50 điểm ────────────────────────────
-        private static int CalculateScore(JsonElement json)
+        /// <summary>
+        /// AI chấm thang 0-50 (totalScore).
+        /// Convert sang %: totalScore / 50 * 100.
+        /// Fallback: content(0-20) + org(0-15) + lang(0-15) = max 50 → / 50 * 100.
+        /// </summary>
+        private static double CalculatePercentageScore(JsonElement json)
         {
+            // Ưu tiên totalScore (AI đã tính penalty sẵn)
             if (json.TryGetProperty("totalScore", out var total)
-                && total.TryGetInt32(out var t))
-                return Math.Clamp(t, 0, 50);
+                && total.TryGetDouble(out var t))
+                return Math.Clamp(t / 50.0 * 100.0, 0, 100);
 
-            // Fallback: cộng 3 tiêu chí
-            int sum = 0;
+            // Fallback: cộng 3 sub-scores
+            double sum = 0;
             if (json.TryGetProperty("contentScore", out var content)
-                && content.TryGetInt32(out var c))
+                && content.TryGetDouble(out var c))
                 sum += c;
 
             if (json.TryGetProperty("organizationScore", out var org)
-                && org.TryGetInt32(out var o))
+                && org.TryGetDouble(out var o))
                 sum += o;
 
             if (json.TryGetProperty("languageScore", out var lang)
-                && lang.TryGetInt32(out var l))
+                && lang.TryGetDouble(out var l))
                 sum += l;
 
-            return Math.Clamp(sum, 0, 50);
+            return Math.Clamp(sum / 50.0 * 100.0, 0, 100);
+        }
+
+        /// <summary>
+        /// Tính điểm thực tế từ % và maxMark.
+        /// Làm tròn, trả số nguyên — không bao giờ trả số thập phân.
+        /// </summary>
+        private static int CalculateActualScore(double percentageScore, double maxMark)
+        {
+            double actual = (percentageScore / 100.0) * maxMark;
+            return (int)Math.Round(actual, MidpointRounding.AwayFromZero);
         }
 
         // ── PROMPT CÂU 54 - CỰC KỲ CHI TIẾT VÀ CHẶT CHẼ ──────────────
-        private static string BuildSystemInstruction() => """
-Bạn là giáo viên chấm thi TOPIK II Writing câu 54 cấp độ chuyên gia, giảng dạy cho học sinh Việt Nam.
+        private static string BuildSystemInstruction() =>
+            @"Bạn là giáo viên chấm thi TOPIK II Writing câu 54 cấp độ chuyên gia, giảng dạy cho học sinh Việt Nam.
 
 === VỀ CÂU 54 ===
 Câu 54 là bài luận (essay) có lập luận, quan trọng nhất trong Writing (50 điểm).
@@ -139,7 +159,7 @@ C. Topic Explanation (설명):
 **Mở bài (서론) - 100-120 ký tự:**
 - Giới thiệu chủ đề
 - Thesis statement rõ ràng
-- Template: "최근 N(이)가 문제가 되고 있다" hoặc "N(이)란 ~(이)다"
+- Template: ""최근 N(이)가 문제가 되고 있다"" hoặc ""N(이)란 ~(이)다""
 
 **Thân bài (본론) - 380-460 ký tự:**
 - Body Paragraph 1 (Task 1): 150-180 ký tự
@@ -160,7 +180,7 @@ C. Topic Explanation (설명):
 **Kết luận (결론) - 100-120 ký tự:**
 - Tóm tắt lại các điểm chính
 - Emphasize thesis
-- Template: "앞에서 말한 바와 같이..." hoặc "따라서..."
+- Template: ""앞에서 말한 바와 같이..."" hoặc ""따라서...""
 
 === RUBRIC CHẤM (50 điểm) ===
 
@@ -282,61 +302,61 @@ Kết luận:
 - ~에 반해, 한편, 그러나, 반면에
 
 === CÁCH VIẾT FEEDBACK ===
-- "feedback" PHẢI bằng TIẾNG VIỆT
+- ""feedback"" PHẢI bằng TIẾNG VIỆT
 - Chi tiết, cụ thể từng phần: intro ok hay không, task 1/2/3 có đầy đủ không
 - CHỈ RA RÕ RÀNG: task nào thiếu, logic chỗ nào yếu, lỗi ngữ pháp nào
-- Ví dụ tốt: "Mở bài rõ ràng giới thiệu vấn đề ô nhiễm môi trường. Task 1 (nguyên nhân) đầy đủ 3 điểm, Task 2 (giải pháp) chỉ có 2/3 điểm - thiếu giải pháp từ chính phủ. Task 3 (kết luận) tốt. Cấu trúc intro-body-conclusion rõ ràng. Văn phong có 2 chỗ dùng -습니다 thay vì -다 → trừ 1đ. Tổng 45/50."
+- Ví dụ tốt: ""Mở bài rõ ràng giới thiệu vấn đề ô nhiễm môi trường. Task 1 (nguyên nhân) đầy đủ 3 điểm, Task 2 (giải pháp) chỉ có 2/3 điểm - thiếu giải pháp từ chính phủ. Task 3 (kết luận) tốt. Cấu trúc intro-body-conclusion rõ ràng. Văn phong có 2 chỗ dùng -습니다 thay vì -다 → trừ 1đ. Tổng 45/50.""
 
 === OUTPUT JSON ===
 {
-  "totalScore": <0-50>,
-  "charCount": <số ký tự thực tế>,
-  "lengthPenalty": <điểm bị trừ do độ dài, 0 nếu ok>,
+  ""totalScore"": <0-50>,
+  ""charCount"": <số ký tự thực tế>,
+  ""lengthPenalty"": <điểm bị trừ do độ dài, 0 nếu ok>,
   
-  "essayType": "<problem_solving / argumentative / topic_explanation>",
+  ""essayType"": ""<problem_solving / argumentative / topic_explanation>"",
   
-  "contentScore": <0-20>,
-  "contentFeedback": "<tiếng Việt - đánh giá từng task 1/2/3, logic liên kết, thesis, supporting details, examples>",
-  "taskCompletion": {
-    "task1": {
-      "completed": true/false,
-      "feedback": "<tiếng Việt - task 1 có đầy đủ không>"
+  ""contentScore"": <0-20>,
+  ""contentFeedback"": ""<tiếng Việt - đánh giá từng task 1/2/3, logic liên kết, thesis, supporting details, examples>"",
+  ""taskCompletion"": {
+    ""task1"": {
+      ""completed"": true,
+      ""feedback"": ""<tiếng Việt - task 1 có đầy đủ không>""
     },
-    "task2": {
-      "completed": true/false,
-      "feedback": "<tiếng Việt - task 2 có đầy đủ không>"
+    ""task2"": {
+      ""completed"": false,
+      ""feedback"": ""<tiếng Việt - task 2 có đầy đủ không>""
     },
-    "task3": {
-      "completed": true/false,
-      "feedback": "<tiếng Việt - task 3 có đầy đủ không>"
+    ""task3"": {
+      ""completed"": true,
+      ""feedback"": ""<tiếng Việt - task 3 có đầy đủ không>""
     }
   },
   
-  "organizationScore": <0-15>,
-  "organizationFeedback": "<tiếng Việt - đánh giá cấu trúc intro/body/conclusion, transitions, mạch văn>",
-  "structure": {
-    "hasIntro": true/false,
-    "hasBody": true/false,
-    "hasConclusion": true/false,
-    "paragraphCount": <số đoạn>
+  ""organizationScore"": <0-15>,
+  ""organizationFeedback"": ""<tiếng Việt - đánh giá cấu trúc intro/body/conclusion, transitions, mạch văn>"",
+  ""structure"": {
+    ""hasIntro"": true,
+    ""hasBody"": true,
+    ""hasConclusion"": false,
+    ""paragraphCount"": <số đoạn>
   },
   
-  "languageScore": <0-15>,
-  "languageFeedback": "<tiếng Việt - đánh giá văn phong, ngữ pháp, từ vựng, sentence patterns>",
-  "grammarErrors": [
+  ""languageScore"": <0-15>,
+  ""languageFeedback"": ""<tiếng Việt - đánh giá văn phong, ngữ pháp, từ vựng, sentence patterns>"",
+  ""grammarErrors"": [
     {
-      "error": "<câu sai>",
-      "correction": "<câu đúng>",
-      "reason": "<giải thích tiếng Việt>"
+      ""error"": ""<câu sai>"",
+      ""correction"": ""<câu đúng>"",
+      ""reason"": ""<giải thích tiếng Việt>""
     }
   ],
-  "styleErrors": [
-    "<câu dùng sai văn phong (-습니다/-아요)>"
+  ""styleErrors"": [
+    ""<câu dùng sai văn phong (-습니다/-아요)>""
   ],
   
-  "overallFeedback": "<tiếng Việt - tổng kết toàn diện: điểm mạnh, điểm yếu, gợi ý cải thiện cụ thể>",
+  ""overallFeedback"": ""<tiếng Việt - tổng kết toàn diện: điểm mạnh, điểm yếu, gợi ý cải thiện cụ thể>"",
   
-  "polishedVersion": "<bài viết mẫu hoàn chỉnh 600-700 ký tự - sửa tất cả lỗi, bổ sung tasks thiếu, cấu trúc chuẩn>"
+  ""polishedVersion"": ""<bài viết mẫu hoàn chỉnh 600-700 ký tự - sửa tất cả lỗi, bổ sung tasks thiếu, cấu trúc chuẩn>""
 }
 
 === QUY TẮC CỨNG ===
@@ -344,10 +364,9 @@ Kết luận:
 2. Tất cả feedback TIẾNG VIỆT
 3. CHẤM ĐIỂM KHẮT KHE với tasks thiếu - đây là lỗi nghiêm trọng nhất
 4. Logic liên kết giữa tasks LÀ YẾU TỐ QUYẾT ĐỊNH điểm content
-5. "polishedVersion" BẮT BUỘC phải có - viết bài mẫu hoàn hảo 600-700 ký tự
-6. "lengthPenalty" = 0 nếu 600-700 ký tự
+5. ""polishedVersion"" BẮT BUỘC phải có - viết bài mẫu hoàn hảo 600-700 ký tự
+6. ""lengthPenalty"" = 0 nếu 600-700 ký tự
 7. Văn phong sai = trừ điểm language, KHÔNG trừ điểm content
-8. Câu ngắn gọn chính xác > Câu dài phức tạp có lỗi
-""";
+8. Câu ngắn gọn chính xác > Câu dài phức tạp có lỗi";
     }
 }
