@@ -123,18 +123,8 @@ namespace Tokki.Infrastructure.Repositories
                     UserExamId = ue.UserExamId,
                     ExamId = ue.ExamId,
                     ExamTitle = ue.Exam.Title,
-
-                    TotalScore = ue.Status == UserExamStatus.Completed ? (double?)ue.Score : null,
-
-                    MaxScore = ue.Exam.ExamTemplate != null
-                        ? (double?)ue.Exam.ExamTemplate.TemplateParts
-                            .Sum(p => p.Mark * (p.QuestionTo - p.QuestionFrom + 1))
-                        : null,
-
                     Status = ue.Status.ToString(),
-
                     LastAttempt = ue.SubmitTime ?? ue.StartTime,
-
                     TimeRemaining = ue.Status == UserExamStatus.InProgress
                         ? (ue.Exam.Duration * 60) - (int)EF.Functions.DateDiffSecond(ue.StartTime, DateTime.UtcNow)
                         : 0
@@ -156,6 +146,57 @@ namespace Tokki.Infrastructure.Repositories
             return await _context.UserExamWritingAnswers
                 .Include(w => w.UserExam)
                 .FirstOrDefaultAsync(w => w.UserExamWritingAnswerId == answerId, token);
+        }
+        public async Task<UserExam?> GetResultWithDetailsAsync(string userExamId, CancellationToken token)
+        {
+            return await _context.UserExams
+                .Include(ue => ue.User)
+                .Include(ue => ue.Exam)
+                    .ThenInclude(e => e.ExamTemplate)
+                        .ThenInclude(et => et.TemplateParts)
+                .Include(ue => ue.UserExamAnswers)
+                .Include(ue => ue.UserExamWritingAnswers)
+                .FirstOrDefaultAsync(ue => ue.UserExamId == userExamId, token);
+        }
+        public async Task<UserExam?> GetSkillDetailResultAsync(string userExamId, CancellationToken token)
+        {
+            return await _context.UserExams
+                .Include(ue => ue.Exam)
+                    .ThenInclude(e => e.ExamTemplate)
+                        .ThenInclude(et => et.TemplateParts)
+                .Include(ue => ue.UserExamAnswers)
+                    .ThenInclude(ua => ua.Question)
+                        .ThenInclude(q => q.QuestionOptions)
+                .FirstOrDefaultAsync(ue => ue.UserExamId == userExamId, token);
+        }
+        public async Task<UserExam?> GetListeningDetailAsync(string userExamId, CancellationToken token)
+        {
+            return await _context.UserExams
+                .Include(ue => ue.Exam).ThenInclude(e => e.ExamTemplate).ThenInclude(et => et.TemplateParts)
+                .Include(ue => ue.UserExamAnswers)
+                    .ThenInclude(ua => ua.Question)
+                        .ThenInclude(q => q.QuestionOptions)
+                .FirstOrDefaultAsync(ue => ue.UserExamId == userExamId, token);
+        }
+
+        public async Task<UserExam?> GetReadingDetailAsync(string userExamId, CancellationToken token)
+        {
+            return await _context.UserExams
+                .Include(ue => ue.Exam).ThenInclude(e => e.ExamTemplate).ThenInclude(et => et.TemplateParts)
+                .Include(ue => ue.UserExamAnswers)
+                    .ThenInclude(ua => ua.Question).ThenInclude(q => q.QuestionOptions)
+                .Include(ue => ue.UserExamAnswers)
+                    .ThenInclude(ua => ua.Question).ThenInclude(q => q.Passage) 
+                .FirstOrDefaultAsync(ue => ue.UserExamId == userExamId, token);
+        }
+
+        public async Task<UserExam?> GetWritingDetailAsync(string userExamId, CancellationToken token)
+        {
+            return await _context.UserExams
+                .Include(ue => ue.Exam).ThenInclude(e => e.ExamTemplate).ThenInclude(et => et.TemplateParts)
+                .Include(ue => ue.UserExamWritingAnswers)
+                    .ThenInclude(uwa => uwa.Question).ThenInclude(q => q.Passage) 
+                .FirstOrDefaultAsync(ue => ue.UserExamId == userExamId, token);
         }
     }
 }

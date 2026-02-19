@@ -30,5 +30,9 @@ namespace Tokki.Application.IRepositories
             CancellationToken token);
         Task<UserExamAnswer?> GetMCQAnswerWithSessionAsync(string answerId, CancellationToken token);
         Task<UserExamWritingAnswer?> GetWritingAnswerWithSessionAsync(string answerId, CancellationToken token);
+        Task<UserExam?> GetResultWithDetailsAsync(string userExamId, CancellationToken token);
+        Task<UserExam?> GetListeningDetailAsync(string userExamId, CancellationToken token);
+        Task<UserExam?> GetReadingDetailAsync(string userExamId, CancellationToken token);
+        Task<UserExam?> GetWritingDetailAsync(string userExamId, CancellationToken token);
     }
 }
