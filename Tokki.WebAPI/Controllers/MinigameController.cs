@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Tokki.Application.UseCases.MiniGame.Commands.SubmitWordleGuess;
+using Tokki.Application.UseCases.MiniGame.Commands.SubmitWordleSentence;
 using Tokki.Application.UseCases.MiniGame.Queries.MatchingCard;
 using Tokki.Application.UseCases.MiniGame.Queries.Solitaire;
 using Tokki.Application.UseCases.MiniGame.Queries.Wordle;
@@ -51,6 +52,20 @@ namespace Tokki.WebAPI.Controllers
                 return Unauthorized("Không xác định được người dùng.");
             }
             command.UserId = userId;
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+        [HttpPost("wordle/submit-sentence")]
+        public async Task<IActionResult> SubmitSentence([FromBody] SubmitWordleSentenceCommand command)
+        {
+            var userId = User.FindFirst("UserId")?.Value
+                   ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("Không xác định được người dùng.");
+            }
+            command.UserId = userId;
+
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
         }
