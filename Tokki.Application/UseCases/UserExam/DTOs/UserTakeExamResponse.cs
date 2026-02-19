@@ -27,11 +27,20 @@ namespace Tokki.Application.UseCases.UserExam.DTOs
 
     public class ExamPartDto
     {
-        public string PartId { get; set; } = string.Empty; 
-        public string PartName { get; set; } = string.Empty; 
-        public string Description { get; set; } = string.Empty; 
-
+        public string PartId { get; set; } = string.Empty;
+        public string PartName { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
         public string? ExampleUrl { get; set; }
+
+        public List<QuestionGroupDto> QuestionGroups { get; set; } = new();
+    }
+
+    public class QuestionGroupDto
+    {
+        public string? SharedMediaUrl { get; set; }
+        public string SharedMediaType { get; set; } = "None";
+        public string? SharedPassageContent { get; set; }
+        public string? SharedPassageMediaUrl { get; set; }
 
         public List<ExamQuestionDto> Questions { get; set; } = new();
     }
@@ -42,29 +51,36 @@ namespace Tokki.Application.UseCases.UserExam.DTOs
         public int QuestionNo { get; set; }
         public string Content { get; set; } = string.Empty;
 
-        public string? MediaUrl { get; set; } 
-        public string MediaType { get; set; } = "None"; 
-
-        public string? PassageContent { get; set; }
-        public string? PassageMediaUrl { get; set; } 
-
         public List<ExamOptionDto> Options { get; set; } = new();
-        public string? SelectedOptionId { get; set; } 
+        public string? SelectedOptionId { get; set; }
     }
 
     public class ExamOptionDto
     {
         public string OptionId { get; set; } = string.Empty;
-        public string KeyOption { get; set; } = string.Empty; 
-        public string Content { get; set; } = string.Empty; 
+        public string KeyOption { get; set; } = string.Empty;
+        public string Content { get; set; } = string.Empty;
         public string? ImageUrl { get; set; }
     }
+
+
     public class ExamPartWritingDto
     {
         public string PartId { get; set; } = string.Empty;
         public string PartName { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string? ExampleUrl { get; set; }
+
+        public List<QuestionWritingGroupDto> QuestionGroups { get; set; } = new();
+    }
+
+    public class QuestionWritingGroupDto
+    {
+        public string? SharedMediaUrl { get; set; }
+        public string SharedMediaType { get; set; } = "None";
+        public string? SharedPassageContent { get; set; }
+        public string? SharedPassageMediaUrl { get; set; }
+
         public List<ExamQuestionWritingDto> Questions { get; set; } = new();
     }
 
@@ -73,10 +89,7 @@ namespace Tokki.Application.UseCases.UserExam.DTOs
         public string UserQuestionId { get; set; } = string.Empty;
         public int QuestionNo { get; set; }
         public string Content { get; set; } = string.Empty;
-        public string? MediaUrl { get; set; }
-        public string MediaType { get; set; } = "None";
-        public string? PassageContent { get; set; }
-        public string? PassageMediaUrl { get; set; }
+
         public string? AnswerContent { get; set; }
         public string? QuestionTypeCode { get; set; }
     }

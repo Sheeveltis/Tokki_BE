@@ -1,8 +1,9 @@
 ﻿using MediatR;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
@@ -84,7 +85,8 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
 
         private ExamPartDto MapToPartDto(TemplatePart part, Dictionary<int, QuestionAnswerMetadata> questionsMap, bool shuffleOptions)
         {
-            var questionsDto = new List<ExamQuestionDto>();
+            var groups = new List<QuestionGroupDto>();
+            QuestionGroupDto? currentGroup = null;
 
             for (int i = part.QuestionFrom; i <= part.QuestionTo; i++)
             {
@@ -102,17 +104,33 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
                     if (shuffleOptions && options.Count > 1)
                         options = options.OrderBy(x => Guid.NewGuid()).ToList();
 
-                    questionsDto.Add(new ExamQuestionDto
+                    var questionDto = new ExamQuestionDto
                     {
                         UserQuestionId = item.AnswerId,
                         QuestionNo = i,
                         Content = q.Content,
-                        MediaUrl = q.MediaUrl,
-                        MediaType = GetMediaType(q.MediaUrl),
-                        PassageContent = q.Passage?.Content,
-                        Options = options,
-                        SelectedOptionId = item.SelectedOptionId
-                    });
+                        SelectedOptionId = item.SelectedOptionId,
+                        Options = options
+                    };
+
+                    bool isSameGroup = currentGroup != null &&
+                                       currentGroup.SharedMediaUrl == q.MediaUrl &&
+                                       currentGroup.SharedPassageContent == q.Passage?.Content;
+
+                    if (!isSameGroup)
+                    {
+                        currentGroup = new QuestionGroupDto
+                        {
+                            SharedMediaUrl = q.MediaUrl,
+                            SharedMediaType = GetMediaType(q.MediaUrl),
+                            SharedPassageContent = q.Passage?.Content,
+                            SharedPassageMediaUrl = null,
+                            Questions = new List<ExamQuestionDto>()
+                        };
+                        groups.Add(currentGroup);
+                    }
+
+                    currentGroup.Questions.Add(questionDto);
                 }
             }
 
@@ -122,30 +140,49 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
                 PartName = part.PartTitle,
                 Description = part.Instruction ?? string.Empty,
                 ExampleUrl = part.ExampleUrl,
-                Questions = questionsDto
+                QuestionGroups = groups
             };
         }
 
         private ExamPartWritingDto MapToPartWritingDto(TemplatePart part, Dictionary<int, QuestionAnswerMetadata> questionsMap)
         {
-            var questionsDto = new List<ExamQuestionWritingDto>();
+            var groups = new List<QuestionWritingGroupDto>();
+            QuestionWritingGroupDto? currentGroup = null;
 
             for (int i = part.QuestionFrom; i <= part.QuestionTo; i++)
             {
                 if (questionsMap.TryGetValue(i, out var item) && item.IsWriting)
                 {
                     var q = item.Question;
-                    questionsDto.Add(new ExamQuestionWritingDto
+
+                    var questionDto = new ExamQuestionWritingDto
                     {
                         UserQuestionId = item.AnswerId,
                         QuestionNo = i,
                         Content = q.Content,
-                        MediaUrl = q.MediaUrl,
-                        MediaType = GetMediaType(q.MediaUrl),
-                        PassageContent = q.Passage?.Content,
                         AnswerContent = item.AnswerContent,
                         QuestionTypeCode = q.QuestionType?.Code
-                    });
+                    };
+
+                    // THUẬT TOÁN GOM NHÓM CHO WRITING
+                    bool isSameGroup = currentGroup != null &&
+                                       currentGroup.SharedMediaUrl == q.MediaUrl &&
+                                       currentGroup.SharedPassageContent == q.Passage?.Content;
+
+                    if (!isSameGroup)
+                    {
+                        currentGroup = new QuestionWritingGroupDto
+                        {
+                            SharedMediaUrl = q.MediaUrl,
+                            SharedMediaType = GetMediaType(q.MediaUrl),
+                            SharedPassageContent = q.Passage?.Content,
+                            SharedPassageMediaUrl = null,
+                            Questions = new List<ExamQuestionWritingDto>()
+                        };
+                        groups.Add(currentGroup);
+                    }
+
+                    currentGroup.Questions.Add(questionDto);
                 }
             }
 
@@ -155,7 +192,7 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
                 PartName = part.PartTitle,
                 Description = part.Instruction ?? string.Empty,
                 ExampleUrl = part.ExampleUrl,
-                Questions = questionsDto
+                QuestionGroups = groups
             };
         }
 
