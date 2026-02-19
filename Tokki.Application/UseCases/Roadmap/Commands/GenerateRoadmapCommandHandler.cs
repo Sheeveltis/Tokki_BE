@@ -156,7 +156,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi nghiêm trọng khi tạo Roadmap");
-                return OperationResult<string>.Failure("Lỗi hệ thống. Vui lòng thử lại sau.", 500);
+                // Log chi tiết hơn để debug
             }
         }
     }
