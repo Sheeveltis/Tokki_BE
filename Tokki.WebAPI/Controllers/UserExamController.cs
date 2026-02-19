@@ -85,6 +85,15 @@ namespace Tokki.WebAPI.Controllers
         [HttpPost("user/submit")]
         public async Task<ActionResult<OperationResult<SubmitExamResponse>>> SubmitExam([FromBody] SubmitUserExamCommand command)
         {
+
+            var userId = User.FindFirst("UserId")?.Value
+                      ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("Không xác định được người dùng.");
+            }
+            command.UserId = userId;
             var result = await _sender.Send(command);
 
             if (!result.IsSuccess)

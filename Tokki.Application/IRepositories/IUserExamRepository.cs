@@ -28,7 +28,7 @@ namespace Tokki.Application.IRepositories
             int pageNumber,
             int pageSize,
             CancellationToken token);
-        Task<UserExamAnswer?> GetMCQAnswerWithSessionAsync(string answerId, CancellationToken token);
+        Task<List<UserExamAnswer>> GetMCQAnswersByIdsAsync(List<string> ids, CancellationToken token);
         Task<UserExamWritingAnswer?> GetWritingAnswerWithSessionAsync(string answerId, CancellationToken token);
         Task<UserExam?> GetResultWithDetailsAsync(string userExamId, CancellationToken token);
         Task<UserExam?> GetListeningDetailAsync(string userExamId, CancellationToken token);
