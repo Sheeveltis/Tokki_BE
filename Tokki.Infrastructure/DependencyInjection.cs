@@ -8,7 +8,7 @@ using Tokki.Application.IServices;
 using Tokki.Infrastructure.Data;
 using Tokki.Infrastructure.Repositories;
 using Tokki.Infrastructure.Services;
-using Tokki.Infrastructure.Services.Gemini;
+using Tokki.Infrastructure.Services.WritingAi;
 namespace Tokki.Infrastructure
 {
     public static class DependencyInjection
@@ -54,7 +54,7 @@ namespace Tokki.Infrastructure
             services.AddScoped<IEmailHistoryRepository, EmailHistoryRepository>();
             services.AddScoped<IUserExamWritingAnswerRepository, UserExamWritingAnswerRepository>();
             services.AddScoped<IQuestion51Pipeline,
-        Tokki.Infrastructure.Services.Gemini.Question51GeminiPipeline>();
+        Tokki.Infrastructure.Services.WritingAi.Question51GeminiPipeline>();
             // Bạn cũng cần kiểm tra và đăng ký các Repository khác mà Command Handler đang yêu cầu:
             services.AddSingleton<IIdGeneratorService, IdGeneratorService>();
             services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));

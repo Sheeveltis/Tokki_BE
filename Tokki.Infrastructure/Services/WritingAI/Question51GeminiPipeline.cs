@@ -6,7 +6,7 @@ using Tokki.Application.IServices;
 using Tokki.Application.UseCases.TopikWriting.Question51.DTOs;
 using Tokki.Infrastructure.Configurations;
 
-namespace Tokki.Infrastructure.Services.Gemini
+namespace Tokki.Infrastructure.Services.WritingAi
 {
     public sealed class Question51GeminiPipeline : IQuestion51Pipeline
     {

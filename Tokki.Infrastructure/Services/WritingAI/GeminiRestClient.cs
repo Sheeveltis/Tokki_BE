@@ -4,7 +4,7 @@ using System.Text.Json;
 using System.Text;
 using Tokki.Infrastructure.Configurations;
 
-namespace Tokki.Infrastructure.Services.Gemini
+namespace Tokki.Infrastructure.Services.WritingAi
 {
     public sealed class GeminiRestClient
     {
