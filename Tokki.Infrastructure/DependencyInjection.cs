@@ -73,6 +73,8 @@ namespace Tokki.Infrastructure
             services.AddScoped<IUserVocabProgressRepository, UserVocabProgressRepository>();
             //Mini game
             services.AddScoped<IMiniGameRepository, MiniGameRepository>();
+            services.AddScoped<IWordleRepository, WordleRepository>();
+            services.AddScoped<IAIWordleService, AIWordleService>();
             //Excel
             services.AddScoped<IExcelService, ExcelService>();
             //User topic progress
