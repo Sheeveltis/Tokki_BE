@@ -13,6 +13,7 @@ using Tokki.Application.Common.Helpers.ValidationVietnameseLanguageManager;
 using Tokki.Application.IServices;
 using Tokki.Infrastructure;
 using Tokki.Infrastructure.BackgroundJobs; // Nơi chứa class JwtSettings
+using Tokki.Infrastructure.Configurations;
 using Tokki.Infrastructure.Services;
 using Tokki.WebAPI.BackgroundServices;
 using Tokki.WebAPI.Hubs;
@@ -107,6 +108,8 @@ builder.Services.AddHttpContextAccessor();
 //Cấu hình Background Service
 builder.Services.AddHostedService<ExamDeadlineWorker>();
 builder.Services.AddHostedService<WordleGeneratorWorker>();
+//Cấu hình cho tùy chọn apikey gemini 
+builder.Services.Configure<GeminiOptions>(builder.Configuration.GetSection("Gemini"));
 // 4. CẤU HÌNH FLUENTVALIDATION TIẾNG VIỆT (THÊM PHẦN NÀY)
 ValidatorOptions.Global.LanguageManager = new ValidationVietnameseLanguageManager();
 ValidatorOptions.Global.LanguageManager.Enabled = true;
