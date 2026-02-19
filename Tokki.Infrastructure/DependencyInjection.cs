@@ -60,7 +60,7 @@ namespace Tokki.Infrastructure
 
             services.AddScoped<ISePayService, SePayService>();
             services.AddScoped<IPaymentRepository, PaymentRepository>();
-
+            services.AddScoped<IKnowledgeBaseService, KnowledgeBaseService>();
             //TextToSpeech
             services.AddScoped<ITextToSpeechService, TextToSpeechService>();
             //Cloudinary 
