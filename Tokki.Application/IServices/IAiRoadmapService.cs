@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Tokki.Application.UseCases.Roadmap.DTOs; 
+using Tokki.Application.UseCases.Roadmap.DTOs;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.IServices
 {
@@ -13,6 +14,6 @@ namespace Tokki.Application.IServices
         /// <param name="days">Số ngày (30/60/90)</param>
         /// <param name="weaknesses">Danh sách điểm yếu (VD: Listening, Grammar)</param>
         /// <returns>Object chứa lộ trình hoặc null nếu lỗi</returns>
-        Task<AiRoadmapResponse?> GenerateStudyPlanAsync(string target, int days, List<string> weaknesses);
+        Task<AiRoadmapResponse?> GenerateStudyPlanAsync(TargetAimLevel target, int days, List<string> weaknesses);
     }
 }

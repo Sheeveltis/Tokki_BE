@@ -7,7 +7,7 @@ namespace Tokki.Domain.Entities
     public class KnowledgeMetadata
     {
         [Key]
-        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string Id { get; set; } 
 
         [Required]
         public string TargetId { get; set; } 

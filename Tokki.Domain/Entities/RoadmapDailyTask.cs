@@ -39,7 +39,7 @@ namespace Tokki.Domain.Entities
         public string? GrammarId { get; set; }
         [ForeignKey("GrammarId")]
         public virtual Grammar? Grammar { get; set; }
-
+        [Column(TypeName = "varchar(10)")] 
         public string? QuestionTypeId { get; set; }
         [ForeignKey("QuestionTypeId")]
         public virtual QuestionType? QuestionType { get; set; }

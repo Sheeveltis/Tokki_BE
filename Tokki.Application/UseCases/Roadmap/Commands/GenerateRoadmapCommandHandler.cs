@@ -100,7 +100,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                                 {
                                     var examTemplateId = "TEMPLATE_DEFAULT_ID";
                                     DifficultyLevel targetLevel = DifficultyLevel.Easy;
-                                    if (request.TargetAim.Contains("II") || request.TargetAim.Contains("Intermediate"))
+                                    if (request.TargetAim == TargetAimLevel.Topik_II)
                                     {
                                         targetLevel = DifficultyLevel.Medium;
                                     }

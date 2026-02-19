@@ -136,8 +136,10 @@ namespace Tokki.WebAPI.Controllers
             var templateId = template.ExamTemplateId;
 
             DifficultyLevel level = DifficultyLevel.Easy;
-            if (task.RoadmapWeek.UserRoadmap.TargetAim.Contains("II")) level = DifficultyLevel.Medium;
-
+            if (task.RoadmapWeek.UserRoadmap.TargetAim == TargetAimLevel.Topik_II)
+            {
+                level = DifficultyLevel.Medium;
+            }
             var result = await _examAssemblyService.GenerateWeeklyExamAsync(
                 templateId,
                 userId,

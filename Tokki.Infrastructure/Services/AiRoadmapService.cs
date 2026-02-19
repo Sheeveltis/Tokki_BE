@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Tokki.Application.IServices;
 using Tokki.Application.UseCases.Roadmap.DTOs;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Infrastructure.Services
 {
@@ -21,7 +22,7 @@ namespace Tokki.Infrastructure.Services
             _apiKey = configuration["AiSettings:ApiKey"];
         }
 
-        public async Task<AiRoadmapResponse?> GenerateStudyPlanAsync(string target, int days, List<string> weaknesses)
+        public async Task<AiRoadmapResponse?> GenerateStudyPlanAsync(TargetAimLevel target, int days, List<string> weaknesses)
         {
             if (string.IsNullOrEmpty(_apiKey))
             {

@@ -8,7 +8,7 @@ namespace Tokki.Domain.Entities
     public class Grammar
     {
         [Key]
-        public string GrammarId { get; set; } = Guid.NewGuid().ToString();
+        public string GrammarId { get; set; } 
 
         [Required]
         public string Title { get; set; }
@@ -18,10 +18,10 @@ namespace Tokki.Domain.Entities
 
         public string? Description { get; set; } 
 
-        public CurrentTopikLevel Level { get; set; } 
+        public CurrentTopikLevel Level { get; set; }
 
+        [Column(TypeName = "varchar(10)")]
         public string? RelatedQuestionTypeId { get; set; }
-
         [ForeignKey("RelatedQuestionTypeId")]
         public virtual QuestionType? RelatedQuestionType { get; set; }
 

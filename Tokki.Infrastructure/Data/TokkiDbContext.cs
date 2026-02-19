@@ -58,6 +58,8 @@ namespace Tokki.Infrastructure.Data
         public DbSet<RoadmapWeek> RoadmapWeeks { get; set; }
         public DbSet<RoadmapDailyTask> RoadmapDailyTasks { get; set; }
         public DbSet<RoadmapKnowledgeProfile> RoadmapKnowledgeProfiles { get; set; }
+        public DbSet<Grammar> Grammars { get; set; }
+        public DbSet<KnowledgeMetadata> KnowledgeMetadatas { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
