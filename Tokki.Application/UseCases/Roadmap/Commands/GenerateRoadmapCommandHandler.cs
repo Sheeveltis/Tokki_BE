@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Tokki.Application.Common.Models;
-using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
@@ -15,7 +14,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
     public class GenerateRoadmapCommandHandler : IRequestHandler<GenerateRoadmapCommand, OperationResult<string>>
     {
         private readonly IAiRoadmapService _aiRoadmapService;
-        private readonly IExamAssemblyService _examAssemblyService;
+        private readonly IExamAssemblyService _examAssemblyService; 
         private readonly IIdGeneratorService _idGeneratorService;
         private readonly ILogger<GenerateRoadmapCommandHandler> _logger;
         private readonly IUserRoadmapRepository _userRoadmapRepository;
@@ -42,11 +41,12 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
             {
                 var aiPlan = await _aiRoadmapService.GenerateStudyPlanAsync(
                     request.TargetAim,
+                    request.CurrentLevel, 
                     request.DurationDays,
                     request.Weaknesses
                 );
 
-                if (aiPlan == null || !aiPlan.Weeks.Any())
+                if (aiPlan == null || aiPlan.Weeks == null || !aiPlan.Weeks.Any())
                 {
                     return OperationResult<string>.Failure("AI không thể tạo lộ trình lúc này. Vui lòng thử lại.", 503);
                 }
@@ -57,10 +57,11 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                     UserRoadmapId = roadmapId,
                     UserId = request.UserId,
                     TargetAim = request.TargetAim,
+                    CurrentLevel = request.CurrentLevel,
                     DurationDays = request.DurationDays,
                     StartDate = DateTime.UtcNow,
                     EndDate = DateTime.UtcNow.AddDays(request.DurationDays),
-                    CurrentStatus = UserRoadmapStatus.Active,
+                    CurrentStatus = UserRoadmapStatus.Active, 
                     OverallAiAssessment = aiPlan.Assessment,
                     CreatedAt = DateTime.UtcNow
                 };
@@ -77,75 +78,62 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                         Status = weekDto.WeekIndex == 1 ? RoadmapWeekStatus.InProgress : RoadmapWeekStatus.Locked,
                         FromDate = roadmap.StartDate.AddDays((weekDto.WeekIndex - 1) * 7),
                         ToDate = roadmap.StartDate.AddDays(weekDto.WeekIndex * 7),
+                        DailyTasks = new List<RoadmapDailyTask>() 
                     };
-
                     foreach (var dayDto in weekDto.Days)
                     {
                         foreach (var taskDto in dayDto.Tasks)
                         {
+                            var taskId = _idGeneratorService.GenerateCustom(15);
                             var taskEntity = new RoadmapDailyTask
                             {
-                                TaskId = _idGeneratorService.GenerateCustom(15),
+                                TaskId = taskId,
                                 RoadmapWeekId = weekId,
                                 DayIndex = dayDto.DayIndex,
                                 Title = taskDto.Title,
+                                AiGeneratedContent = taskDto.Content, 
                                 IsCompleted = false
                             };
-
-                            if (taskDto.TaskType == "WeeklyExam")
+                          
+                            if (taskDto.TaskType == "LearnTheory")
                             {
-                                taskEntity.TaskType = RoadmapTaskType.WeeklyExam;
-
-                                if (weekDto.WeekIndex == 1)
-                                {
-                                    var examTemplateId = "TEMPLATE_DEFAULT_ID";
-                                    DifficultyLevel targetLevel = DifficultyLevel.Easy;
-                                    if (request.TargetAim == TargetAimLevel.Topik_II)
-                                    {
-                                        targetLevel = DifficultyLevel.Medium;
-                                    }
-                                    var examResult = await _examAssemblyService.GenerateWeeklyExamAsync(
-                                        examTemplateId,
-                                        request.UserId,
-                                        weekDto.WeekIndex,
-                                        request.Weaknesses,
-                                        targetLevel,
-                                        cancellationToken
-                                    );
-
-                                    if (examResult.IsSuccess)
-                                    {
-                                        weekEntity.WeeklyExamId = examResult.Data;
-                                    }
-                                }
+                                taskEntity.TaskType = RoadmapTaskType.LearnTheory;
+                                taskEntity.GrammarId = taskDto.GrammarId;
                             }
                             else if (taskDto.TaskType == "VirtualQuiz")
                             {
                                 taskEntity.TaskType = RoadmapTaskType.VirtualQuiz;
-                                taskEntity.AiGeneratedContent = taskDto.Content; 
+                                taskEntity.QuestionTypeId = taskDto.QuestionTypeId;
                             }
-                            else
+                            else if (taskDto.TaskType == "WeeklyExam")
                             {
-                                taskEntity.TaskType = RoadmapTaskType.LearnTheory;
-                                taskEntity.AiGeneratedContent = taskDto.Content; 
+                                taskEntity.TaskType = RoadmapTaskType.WeeklyExam;
+
+                                var examTemplateId = "TEMPLATE_DEFAULT_ID";
+                                DifficultyLevel targetLevel = DifficultyLevel.Easy;
+                                if (request.TargetAim == TargetAimLevel.Topik_II)
+                                {
+                                    targetLevel = DifficultyLevel.Medium;
+                                }
+                                var examResult = await _examAssemblyService.GenerateWeeklyExamAsync(
+                                    examTemplateId,
+                                    request.UserId,
+                                    weekDto.WeekIndex,
+                                    request.Weaknesses,
+                                    targetLevel,
+                                    cancellationToken
+                                );
+
+                                if (examResult.IsSuccess)
+                                {
+                                    taskEntity.ExamId = examResult.Data; 
+                                }
                             }
 
                             weekEntity.DailyTasks.Add(taskEntity);
                         }
                     }
                     roadmap.Weeks.Add(weekEntity);
-                }
-
-                foreach (var weakType in request.Weaknesses)
-                {
-                    roadmap.KnowledgeProfiles.Add(new RoadmapKnowledgeProfile
-                    {
-                        ProfileId = _idGeneratorService.GenerateCustom(15),
-                        UserRoadmapId = roadmapId,
-                        QuestionTypeId = weakType, 
-                        MasteryScore = 0,
-                        IsWeakness = true
-                    });
                 }
 
                 await _userRoadmapRepository.AddAsync(roadmap);
@@ -156,7 +144,9 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi nghiêm trọng khi tạo Roadmap");
-                // Log chi tiết hơn để debug
+                if (ex.InnerException != null) _logger.LogError($"Inner: {ex.InnerException.Message}");
+
+                return OperationResult<string>.Failure("Lỗi hệ thống. Vui lòng thử lại sau.", 500);
             }
         }
     }
