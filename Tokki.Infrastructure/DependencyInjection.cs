@@ -99,9 +99,10 @@ namespace Tokki.Infrastructure
             services.AddScoped<IQuestion52Pipeline, Question52GeminiPipeline>();
             services.AddScoped<IQuestion53Pipeline, Question53GeminiPipeline>();
             services.AddScoped<IQuestion54Pipeline, Question54GeminiPipeline>();
+            services.AddScoped<IWritingGradingBackgroundService, WritingGradingBackgroundService>();
 
-           // services.AddScoped<Tokki.Infrastructure.Services.Gemini.GeminiRestClient>();
-       //     services.AddScoped<ITopikWritingGeminiPipeline, Tokki.Infrastructure.Services.Gemini.TopikWritingGeminiPipeline>();
+            // services.AddScoped<Tokki.Infrastructure.Services.Gemini.GeminiRestClient>();
+            //     services.AddScoped<ITopikWritingGeminiPipeline, Tokki.Infrastructure.Services.Gemini.TopikWritingGeminiPipeline>();
             //Pronunciation
             services.AddScoped<IPronunciationRuleRepository, PronunciationRuleRepository>();
             services.AddScoped<IAIPronunciationService, AIPronunciationService>();

@@ -1,5 +1,7 @@
 ﻿// 1. THÊM CÁC NAMESPACE NÀY
 using FluentValidation;
+using Hangfire;
+using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -173,12 +175,38 @@ builder.Services.AddCors(options =>
     });
 });
 
+// ===== HANGFIRE CONFIGURATION =====
+builder.Services.AddHangfire(configuration => configuration
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseSqlServerStorage(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        new SqlServerStorageOptions
+        {
+            CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+            SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+            QueuePollInterval = TimeSpan.Zero,
+            UseRecommendedIsolationLevel = true,
+            DisableGlobalLocks = true
+        }));
+// Add Hangfire server
+builder.Services.AddHangfireServer(options =>
+{
+    options.WorkerCount = 5; // Số worker chạy đồng thời (tùy chỉnh theo server)
+});
+
 //SignalR
 builder.Services.AddSignalR();
 
 // ==========================================
 
 var app = builder.Build();
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[] { new HangfireAuthorizationFilter() },
+    DashboardTitle = "Tokki Background Jobs"
+});
 //ChatHub
 app.MapHub<ChatHub>("/chatHub");
 app.MapHub<VocabularyHub>("/vocabularyHub");
