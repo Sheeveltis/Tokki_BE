@@ -56,6 +56,7 @@ namespace Tokki.WebAPI.Controllers
         [HttpPut("sync/mcq")]
         public async Task<IActionResult> SyncMCQ([FromBody] SyncMCQProgressCommand command)
         {
+            command ??= new SyncMCQProgressCommand();
             var userId = User.FindFirst("UserId")?.Value
                        ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
