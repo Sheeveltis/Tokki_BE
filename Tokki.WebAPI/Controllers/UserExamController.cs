@@ -5,13 +5,16 @@ using System.Security.Claims;
 using Tokki.Application.Common.Models;
 using Tokki.Application.UseCases.UserExam.Commands.CreateUserTakeExam;
 using Tokki.Application.UseCases.UserExam.Commands.SubmitUserExam;
-using Tokki.Application.UseCases.UserExam.Commands.SyncExamProgress;
 using Tokki.Application.UseCases.UserExam.Commands.SyncMCQProgress;
 using Tokki.Application.UseCases.UserExam.Commands.SyncWritingProgress;
 using Tokki.Application.UseCases.UserExam.DTOs;
 using Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam;
+using Tokki.Application.UseCases.UserExam.Queries.GetListeningDetail;
+using Tokki.Application.UseCases.UserExam.Queries.GetReadingDetail;
+using Tokki.Application.UseCases.UserExam.Queries.GetUserExamResult;
 using Tokki.Application.UseCases.UserExam.Queries.GetUserExamReview;
 using Tokki.Application.UseCases.UserExam.Queries.GetUserExams;
+using Tokki.Application.UseCases.UserExam.Queries.GetWritingDetail;
 using Tokki.Domain.Enums;
 
 namespace Tokki.WebAPI.Controllers
@@ -124,18 +127,36 @@ namespace Tokki.WebAPI.Controllers
 
             return Ok(result);
         }
-        [HttpGet("user/review-exam")]
-        public async Task<ActionResult<OperationResult<UserExamReviewResponse>>> GetUserExamReview([FromQuery] GetUserExamReviewQuery command)
+        [HttpGet("{userExamId}/result")]
+        public async Task<IActionResult> GetExamResultOverview(string userExamId)
         {
-            var result = await _sender.Send(command);
-
-            if (!result.IsSuccess)
-            {
-                return StatusCode(result.StatusCode, result);
-            }
-
-            return Ok(result);
+            var query = new GetUserExamResultQuery { UserExamId = userExamId };
+            var result = await _sender.Send(query);
+            return StatusCode(result.StatusCode, result);
         }
-        
+        [HttpGet("{userExamId}/result/listening")]
+        public async Task<IActionResult> GetListeningDetail(string userExamId)
+        {
+            var query = new GetListeningDetailQuery { UserExamId = userExamId };
+            var result = await _sender.Send(query);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpGet("{userExamId}/result/reading")]
+        public async Task<IActionResult> GetReadingDetail(string userExamId)
+        {
+            var query = new GetReadingDetailQuery { UserExamId = userExamId };
+            var result = await _sender.Send(query);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpGet("{userExamId}/result/writing")]
+        public async Task<IActionResult> GetWritingDetail(string userExamId)
+        {
+            var query = new GetWritingDetailQuery { UserExamId = userExamId };
+            var result = await _sender.Send(query);
+            return StatusCode(result.StatusCode, result);
+        }
+
     }
 }
