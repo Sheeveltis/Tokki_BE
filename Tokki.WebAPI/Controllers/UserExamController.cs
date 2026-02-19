@@ -6,6 +6,8 @@ using Tokki.Application.Common.Models;
 using Tokki.Application.UseCases.UserExam.Commands.CreateUserTakeExam;
 using Tokki.Application.UseCases.UserExam.Commands.SubmitUserExam;
 using Tokki.Application.UseCases.UserExam.Commands.SyncExamProgress;
+using Tokki.Application.UseCases.UserExam.Commands.SyncMCQProgress;
+using Tokki.Application.UseCases.UserExam.Commands.SyncWritingProgress;
 using Tokki.Application.UseCases.UserExam.DTOs;
 using Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam;
 using Tokki.Application.UseCases.UserExam.Queries.GetUserExamReview;
@@ -26,7 +28,6 @@ namespace Tokki.WebAPI.Controllers
             _sender = sender;
         }
         [HttpPost("user/take-exam")]
-        [Authorize]
         public async Task<IActionResult> UserTakeExam(string examId, bool isShuffle = false)
         {
             var userId = User.FindFirst("UserId")?.Value
@@ -49,8 +50,8 @@ namespace Tokki.WebAPI.Controllers
             if (result.IsSuccess) return Ok(result);
             return StatusCode(result.StatusCode, result);
         }
-        [HttpPost("sync-progress")]
-        public async Task<ActionResult<OperationResult<bool>>> SyncProgress([FromBody] SyncExamProgressCommand command)
+        [HttpPut("sync/mcq")]
+        public async Task<IActionResult> SyncMCQ([FromBody] SyncMCQProgressCommand command)
         {
             var userId = User.FindFirst("UserId")?.Value
                        ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -59,14 +60,23 @@ namespace Tokki.WebAPI.Controllers
             {
                 return Unauthorized("Không xác định được người dùng.");
             }
+            command.UserId = userId;
             var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+        [HttpPut("sync/writing")]
+        public async Task<IActionResult> SyncWriting([FromBody] SyncWritingProgressCommand command)
+        {
+            var userId = User.FindFirst("UserId")?.Value
+                       ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            if (!result.IsSuccess)
+            if (string.IsNullOrEmpty(userId))
             {
-                return StatusCode(result.StatusCode, result);
+                return Unauthorized("Không xác định được người dùng.");
             }
-
-            return Ok(result);
+            command.UserId = userId;
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpPost("user/submit")]

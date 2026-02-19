@@ -98,21 +98,6 @@ namespace Tokki.Infrastructure.Repositories
                              ue.StartTime.AddMinutes(ue.Exam.Duration + 2) < now) 
                 .ToListAsync(token);
         }
-        public async Task<UserExam?> GetByAnswerIdAsync(string userAnswerId, CancellationToken token)
-        {
-            var userExamId = await _context.UserExamAnswers
-                .Where(a => a.UserExamAnswerId == userAnswerId)
-                .Select(a => a.UserExamId)
-                .FirstOrDefaultAsync(token)
-                ?? await _context.UserExamWritingAnswers
-                .Where(w => w.UserExamWritingAnswerId == userAnswerId)
-                .Select(w => w.UserExamId)
-                .FirstOrDefaultAsync(token);
-
-            if (string.IsNullOrEmpty(userExamId)) return null;
-
-            return await GetByIdAsync(userExamId, token);
-        }
         public async Task<PagedResult<UserExamActionDto>> GetPagedHistoryAsync(
          string userId,
          string? examId,
@@ -156,6 +141,21 @@ namespace Tokki.Infrastructure.Repositories
                 });
 
             return await dtoQuery.ToPagedListAsync(pageNumber, pageSize);
+        }
+        public async Task<UserExamAnswer?> GetMCQAnswerWithSessionAsync(string answerId, CancellationToken token)
+        {
+            return await _context.UserExamAnswers
+                .Include(a => a.UserExam)
+                .Include(a => a.Question)
+                    .ThenInclude(q => q.QuestionOptions) 
+                .FirstOrDefaultAsync(a => a.UserExamAnswerId == answerId, token);
+        }
+
+        public async Task<UserExamWritingAnswer?> GetWritingAnswerWithSessionAsync(string answerId, CancellationToken token)
+        {
+            return await _context.UserExamWritingAnswers
+                .Include(w => w.UserExam)
+                .FirstOrDefaultAsync(w => w.UserExamWritingAnswerId == answerId, token);
         }
     }
 }

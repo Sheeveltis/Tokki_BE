@@ -21,7 +21,6 @@ namespace Tokki.Application.IRepositories
         Task SaveChangesAsync(CancellationToken token);
         Task<UserExam?> GetReviewByIdAsync(string userExamId, CancellationToken token);
         Task<List<UserExam>> GetExpiredSessionsAsync(CancellationToken token);
-        Task<UserExam?> GetByAnswerIdAsync(string userAnswerId, CancellationToken token);
         Task<PagedResult<UserExamActionDto>> GetPagedHistoryAsync(
             string userId,
             string? examId,
@@ -29,5 +28,7 @@ namespace Tokki.Application.IRepositories
             int pageNumber,
             int pageSize,
             CancellationToken token);
+        Task<UserExamAnswer?> GetMCQAnswerWithSessionAsync(string answerId, CancellationToken token);
+        Task<UserExamWritingAnswer?> GetWritingAnswerWithSessionAsync(string answerId, CancellationToken token);
     }
 }

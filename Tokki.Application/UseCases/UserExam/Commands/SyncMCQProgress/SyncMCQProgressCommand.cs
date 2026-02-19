@@ -6,14 +6,14 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Tokki.Application.Common.Models;
-using Tokki.Application.UseCases.UserExam.DTOs;
 
-namespace Tokki.Application.UseCases.UserExam.Commands.SyncExamProgress
+namespace Tokki.Application.UseCases.UserExam.Commands.SyncMCQProgress
 {
-    public class SyncExamProgressCommand : IRequest<OperationResult<bool>>
+    public class SyncMCQProgressCommand : IRequest<OperationResult<bool>>
     {
         [JsonIgnore]
         public string UserId { get; set; } = string.Empty;
-        public List<AnswerSyncDto> Answers { get; set; } = new();
+        public string UserQuestionId { get; set; } = string.Empty;
+        public string? SelectedOptionId { get; set; }
     }
 }
