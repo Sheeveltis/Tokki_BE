@@ -1,8 +1,10 @@
 ﻿// Infrastructure/Services/Gemini/Question51GeminiPipeline.cs
 using System.Text.Json;
+using Microsoft.Extensions.Options;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Application.UseCases.TopikWriting.Question51.DTOs;
+using Tokki.Infrastructure.Configurations;
 
 namespace Tokki.Infrastructure.Services.Gemini
 {
@@ -13,11 +15,12 @@ namespace Tokki.Infrastructure.Services.Gemini
         private readonly IUserExamWritingAnswerRepository _writingRepo;
 
         public Question51GeminiPipeline(
-            GeminiRestClient gemini,
+            IHttpClientFactory httpClientFactory,
+            IOptions<GeminiOptions> options,
             IQuestionBankRepository questionBankRepo,
             IUserExamWritingAnswerRepository writingRepo)
         {
-            _gemini = gemini;
+            _gemini = new GeminiRestClient(httpClientFactory, options.Value.Writing);
             _questionBankRepo = questionBankRepo;
             _writingRepo = writingRepo;
         }

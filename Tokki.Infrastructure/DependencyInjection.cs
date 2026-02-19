@@ -82,16 +82,15 @@ namespace Tokki.Infrastructure
             //User topic progress
             services.AddScoped<IUserTopicProgressRepository, UserTopicProgressRepository>();
             // ===== Gemini TOPIK Writing =====
-            services.Configure<Tokki.Infrastructure.Services.Gemini.GeminiOptions>(
+            services.Configure<Tokki.Infrastructure.Configurations.GeminiOptions>(
                 configuration.GetSection("Gemini"));
 
-            services.AddHttpClient("Gemini", (sp, http) =>
+            services.AddHttpClient("Gemini", http =>
             {
-                var opt = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<Tokki.Infrastructure.Services.Gemini.GeminiOptions>>().Value;
-                http.BaseAddress = new Uri(opt.BaseUrl);
+                // KHÔNG set BaseAddress ở đây nữa vì mỗi feature có BaseUrl riêng
+                // BaseUrl sẽ được lấy từ GeminiConfig trong từng Pipeline
                 http.Timeout = TimeSpan.FromSeconds(180);
             });
-
             services.AddHttpClient("ImageDownload", http =>
             {
                 http.Timeout = TimeSpan.FromSeconds(60);
@@ -101,8 +100,8 @@ namespace Tokki.Infrastructure
             services.AddScoped<IQuestion53Pipeline, Question53GeminiPipeline>();
             services.AddScoped<IQuestion54Pipeline, Question54GeminiPipeline>();
 
-            services.AddScoped<Tokki.Infrastructure.Services.Gemini.GeminiRestClient>();
-            services.AddScoped<ITopikWritingGeminiPipeline, Tokki.Infrastructure.Services.Gemini.TopikWritingGeminiPipeline>();
+           // services.AddScoped<Tokki.Infrastructure.Services.Gemini.GeminiRestClient>();
+       //     services.AddScoped<ITopikWritingGeminiPipeline, Tokki.Infrastructure.Services.Gemini.TopikWritingGeminiPipeline>();
             //Pronunciation
             services.AddScoped<IPronunciationRuleRepository, PronunciationRuleRepository>();
             services.AddScoped<IAIPronunciationService, AIPronunciationService>();

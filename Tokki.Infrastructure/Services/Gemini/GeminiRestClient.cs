@@ -1,73 +1,24 @@
-﻿using Microsoft.Extensions.Options;
+﻿// Infrastructure/Services/Gemini/GeminiRestClient.cs
+using Microsoft.Extensions.Options;
 using System.Text.Json;
 using System.Text;
+using Tokki.Infrastructure.Configurations;
 
 namespace Tokki.Infrastructure.Services.Gemini
 {
     public sealed class GeminiRestClient
     {
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly GeminiOptions _opt;
+        private readonly GeminiConfig _config;
         private static readonly SemaphoreSlim _rateLimiter = new(1, 1);
         private static DateTime _lastRequestTime = DateTime.MinValue;
 
-        public GeminiRestClient(IHttpClientFactory httpClientFactory, IOptions<GeminiOptions> opt)
+        public GeminiRestClient(IHttpClientFactory httpClientFactory, GeminiConfig config)
         {
             _httpClientFactory = httpClientFactory;
-            _opt = opt.Value;
+            _config = config;
         }
 
-        public async Task<(string base64, string mimeType)> DownloadImageWithMimeAsync(
-      string imageUrl,
-      CancellationToken ct)
-        {
-            if (string.IsNullOrWhiteSpace(imageUrl))
-                throw new ArgumentException("Image URL không được rỗng.", nameof(imageUrl));
-
-            var http = _httpClientFactory.CreateClient("ImageDownload");
-
-            try
-            {
-                using var response = await http.GetAsync(imageUrl, ct);
-                response.EnsureSuccessStatusCode();
-
-                var imageBytes = await response.Content.ReadAsByteArrayAsync(ct);
-                var base64 = Convert.ToBase64String(imageBytes);
-
-                // ✅ Lấy MIME từ HTTP header
-                var mimeType = response.Content.Headers.ContentType?.MediaType
-                               ?? DetectMimeFromBytes(imageBytes)
-                               ?? "image/jpeg";
-
-                return (base64, mimeType);
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Không thể tải ảnh từ URL: {imageUrl}", ex);
-            }
-        }
-
-        private static string? DetectMimeFromBytes(byte[] bytes)
-        {
-            if (bytes.Length < 4) return null;
-
-            // PNG
-            if (bytes[0] == 0x89 && bytes[1] == 0x50 &&
-                bytes[2] == 0x4E && bytes[3] == 0x47)
-                return "image/png";
-
-            // JPEG
-            if (bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF)
-                return "image/jpeg";
-
-            // WebP
-            if (bytes.Length >= 12 &&
-                bytes[8] == 0x57 && bytes[9] == 0x45 &&
-                bytes[10] == 0x42 && bytes[11] == 0x50)
-                return "image/webp";
-
-            return null;
-        }
         public async Task<string> GenerateContentAsync(
             IEnumerable<object> parts,
             string systemInstruction,
@@ -90,11 +41,7 @@ namespace Tokki.Infrastructure.Services.Gemini
                 _rateLimiter.Release();
             }
 
-            var apiKey = !string.IsNullOrWhiteSpace(_opt.ApiKey)
-                ? _opt.ApiKey
-                : Environment.GetEnvironmentVariable("GEMINI_API_KEY");
-
-            if (string.IsNullOrWhiteSpace(apiKey))
+            if (string.IsNullOrWhiteSpace(_config.ApiKey))
                 throw new InvalidOperationException("Thiếu Gemini API key.");
 
             var body = new
@@ -119,8 +66,10 @@ namespace Tokki.Infrastructure.Services.Gemini
 
             for (int attempt = 0; attempt <= maxRetries; attempt++)
             {
-                using var req = new HttpRequestMessage(HttpMethod.Post, $"models/{_opt.Model}:generateContent");
-                req.Headers.TryAddWithoutValidation("x-goog-api-key", apiKey);
+                var baseUrl = _config.BaseUrl.TrimEnd('/');
+                var url = $"{baseUrl}/models/{_config.Model}:generateContent?key={_config.ApiKey}";
+
+                using var req = new HttpRequestMessage(HttpMethod.Post, url);
                 req.Content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");
 
                 using var resp = await http.SendAsync(req, ct);
@@ -167,7 +116,7 @@ namespace Tokki.Infrastructure.Services.Gemini
             if (cleaned.EndsWith("```")) cleaned = cleaned[..^3];
             cleaned = cleaned.Trim();
 
-            // ✅ Strategy 1: Try direct parse
+            // Strategy 1: Try direct parse
             try
             {
                 using var doc = JsonDocument.Parse(cleaned);
@@ -176,17 +125,14 @@ namespace Tokki.Infrastructure.Services.Gemini
             catch (JsonException ex)
             {
                 Console.WriteLine($"⚠️ JSON parse failed: {ex.Message}");
-                Console.WriteLine($"⚠️ Attempting to fix line breaks in strings...");
 
-                // ✅ Strategy 2: Fix line breaks inside string values
-                // This regex finds string values and replaces real newlines with \n
+                // Strategy 2: Fix line breaks in strings
                 var fixed1 = System.Text.RegularExpressions.Regex.Replace(
                     cleaned,
                     @"""([^""\\]*(?:\\.[^""\\]*)*)""",
                     match =>
                     {
                         var value = match.Groups[1].Value;
-                        // Replace real newlines with escaped newlines
                         value = value.Replace("\r\n", "\\n").Replace("\n", "\\n").Replace("\r", "\\n");
                         return $"\"{value}\"";
                     },
@@ -198,36 +144,15 @@ namespace Tokki.Infrastructure.Services.Gemini
                     using var doc = JsonDocument.Parse(fixed1);
                     return doc.RootElement.Clone();
                 }
-                catch (JsonException ex2)
-                {
-                    Console.WriteLine($"⚠️ Still failed after line break fix: {ex2.Message}");
-                }
+                catch { }
 
-                // ✅ Strategy 3: Fix Unicode escapes
-                var fixed2 = System.Text.RegularExpressions.Regex.Replace(
-                    fixed1,
-                    @"\\u(?![0-9A-Fa-f]{4})",
-                    ""
-                );
-
-                try
-                {
-                    using var doc = JsonDocument.Parse(fixed2);
-                    return doc.RootElement.Clone();
-                }
-                catch (JsonException ex3)
-                {
-                    Console.WriteLine($"⚠️ Still failed after unicode fix: {ex3.Message}");
-                }
-
-                // ✅ Strategy 4: Extract JSON object and apply all fixes
+                // Strategy 3: Extract JSON object
                 var start = cleaned.IndexOf('{');
                 var end = cleaned.LastIndexOf('}');
                 if (start >= 0 && end > start)
                 {
                     var slice = cleaned[start..(end + 1)];
 
-                    // Fix line breaks in strings
                     slice = System.Text.RegularExpressions.Regex.Replace(
                         slice,
                         @"""([^""\\]*(?:\\.[^""\\]*)*)""",
@@ -240,13 +165,6 @@ namespace Tokki.Infrastructure.Services.Gemini
                         System.Text.RegularExpressions.RegexOptions.Singleline
                     );
 
-                    // Fix unicode escapes
-                    slice = System.Text.RegularExpressions.Regex.Replace(
-                        slice,
-                        @"\\u(?![0-9A-Fa-f]{4})",
-                        ""
-                    );
-
                     try
                     {
                         using var doc = JsonDocument.Parse(slice);
@@ -255,32 +173,12 @@ namespace Tokki.Infrastructure.Services.Gemini
                     catch (JsonException ex4)
                     {
                         Console.WriteLine($"⚠️ Final strategy failed: {ex4.Message}");
-                        Console.WriteLine($"⚠️ Problematic JSON snippet (first 500 chars):");
-                        Console.WriteLine(slice.Substring(0, Math.Min(500, slice.Length)));
                         throw;
                     }
                 }
 
                 throw new JsonException($"All parsing strategies failed. Original error: {ex.Message}");
             }
-        }
-
-        private static string FixIncompleteJson(string json)
-        {
-            int openBraces = json.Count(c => c == '{');
-            int closeBraces = json.Count(c => c == '}');
-            int openBrackets = json.Count(c => c == '[');
-            int closeBrackets = json.Count(c => c == ']');
-
-            var result = json;
-
-            for (int i = 0; i < openBrackets - closeBrackets; i++)
-                result += "]";
-
-            for (int i = 0; i < openBraces - closeBraces; i++)
-                result += "}";
-
-            return result;
         }
     }
 }
