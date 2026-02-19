@@ -13,6 +13,11 @@ namespace Tokki.Application.UseCases.UserExam.Commands.SyncMCQProgress
     {
         [JsonIgnore]
         public string UserId { get; set; } = string.Empty;
+        public List<MCQAnswerDto> Answers { get; set; } = new();
+    }
+
+    public class MCQAnswerDto
+    {
         public string UserQuestionId { get; set; } = string.Empty;
         public string? SelectedOptionId { get; set; }
     }

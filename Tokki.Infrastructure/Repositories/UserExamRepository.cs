@@ -132,15 +132,15 @@ namespace Tokki.Infrastructure.Repositories
 
             return await dtoQuery.ToPagedListAsync(pageNumber, pageSize);
         }
-        public async Task<UserExamAnswer?> GetMCQAnswerWithSessionAsync(string answerId, CancellationToken token)
+        public async Task<List<UserExamAnswer>> GetMCQAnswersByIdsAsync(List<string> ids, CancellationToken token)
         {
             return await _context.UserExamAnswers
-                .Include(a => a.UserExam)
-                .Include(a => a.Question)
-                    .ThenInclude(q => q.QuestionOptions) 
-                .FirstOrDefaultAsync(a => a.UserExamAnswerId == answerId, token);
+                .Include(uq => uq.UserExam) 
+                .Include(uq => uq.Question)
+                    .ThenInclude(q => q.QuestionOptions)
+                .Where(uq => ids.Contains(uq.UserExamAnswerId))
+                .ToListAsync(token);
         }
-
         public async Task<UserExamWritingAnswer?> GetWritingAnswerWithSessionAsync(string answerId, CancellationToken token)
         {
             return await _context.UserExamWritingAnswers
