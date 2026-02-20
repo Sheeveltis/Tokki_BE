@@ -60,5 +60,34 @@ namespace Tokki.Application.Common.Helpers
                 Final = FinalConsonants[finalIndex]
             };
         }
+        public static HashSet<char> GetSubJamos(char jamo)
+        {
+            return jamo switch
+            {
+                'ㅘ' => new HashSet<char> { 'ㅗ', 'ㅏ' },
+                'ㅙ' => new HashSet<char> { 'ㅗ', 'ㅐ' },
+                'ㅚ' => new HashSet<char> { 'ㅗ', 'ㅣ' },
+                'ㅝ' => new HashSet<char> { 'ㅜ', 'ㅓ' },
+                'ㅞ' => new HashSet<char> { 'ㅜ', 'ㅔ' },
+                'ㅟ' => new HashSet<char> { 'ㅜ', 'ㅣ' },
+                'ㅢ' => new HashSet<char> { 'ㅡ', 'ㅣ' },
+
+                'ㄲ' => new HashSet<char> { 'ㄱ', 'ㄱ' },
+                'ㄳ' => new HashSet<char> { 'ㄱ', 'ㅅ' },
+                'ㄵ' => new HashSet<char> { 'ㄴ', 'ㅈ' },
+                'ㄶ' => new HashSet<char> { 'ㄴ', 'ㅎ' },
+                'ㄺ' => new HashSet<char> { 'ㄹ', 'ㄱ' },
+                'ㄻ' => new HashSet<char> { 'ㄹ', 'ㅁ' },
+                'ㄼ' => new HashSet<char> { 'ㄹ', 'ㅂ' },
+                'ㄽ' => new HashSet<char> { 'ㄹ', 'ㅅ' },
+                'ㄾ' => new HashSet<char> { 'ㄹ', 'ㅌ' },
+                'ㄿ' => new HashSet<char> { 'ㄹ', 'ㅍ' },
+                'ㅀ' => new HashSet<char> { 'ㄹ', 'ㅎ' },
+                'ㅄ' => new HashSet<char> { 'ㅂ', 'ㅅ' },
+                'ㅆ' => new HashSet<char> { 'ㅅ', 'ㅅ' },
+
+                _ => new HashSet<char> { jamo }
+            };
+        }
     }
 }
