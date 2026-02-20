@@ -72,5 +72,33 @@ namespace Tokki.Infrastructure.Repositories
         {
             return await _context.SaveChangesAsync(token);
         }
+        public async Task<WordleSentenceSubmission?> GetWordleSubmissionByIdAsync(string submissionId, CancellationToken token)
+        {
+            return await _context.WordleSentenceSubmissions
+                .FirstOrDefaultAsync(s => s.SubmissionId == submissionId, token);
+        }
+        public async Task<List<WordleSentenceSubmission>> GetTopPublicSentencesAsync(string dailyWordleId, int top, CancellationToken token)
+        {
+            return await _context.WordleSentenceSubmissions
+                .Include(s => s.User)
+                    .ThenInclude(u => u.CurrentTitle) 
+                .Include(s => s.SentenceLikes)
+                .Where(s => s.DailyWordleId == dailyWordleId && s.IsPublic)
+                .OrderByDescending(s => s.AiScore)
+                .ThenByDescending(s => s.LikeCount)
+                .ThenByDescending(s => s.CreatedAt)
+                .Take(top)
+                .AsNoTracking()
+                .ToListAsync(token);
+        }
+        public async Task<WordleSentenceLike?> GetLikeAsync(string userId, string submissionId, CancellationToken token)
+        {
+            return await _context.WordleSentenceLikes
+                .FirstOrDefaultAsync(l => l.UserId == userId && l.SubmissionId == submissionId, token);
+        }
+
+        public void AddLike(WordleSentenceLike like) => _context.WordleSentenceLikes.Add(like);
+
+        public void RemoveLike(WordleSentenceLike like) => _context.WordleSentenceLikes.Remove(like);
     }
 }

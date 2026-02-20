@@ -16,6 +16,11 @@ namespace Tokki.Application.IRepositories
         Task<DailyWordle?> GetDailyWordleByIdAsync(string id, CancellationToken token = default);
         void AddUserWordleProgress(UserWordleProgress progress);
         Task<int> SaveChangesAsync(CancellationToken token = default);
+        Task<WordleSentenceSubmission?> GetWordleSubmissionByIdAsync(string submissionId, CancellationToken token);
+        Task<List<WordleSentenceSubmission>> GetTopPublicSentencesAsync(string dailyWordleId, int top, CancellationToken token);
+        Task<WordleSentenceLike?> GetLikeAsync(string userId, string submissionId, CancellationToken token);
+        void AddLike(WordleSentenceLike like);
+        void RemoveLike(WordleSentenceLike like);
 
     }
 }

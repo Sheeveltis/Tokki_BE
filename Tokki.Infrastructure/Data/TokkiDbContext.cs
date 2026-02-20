@@ -69,6 +69,7 @@ namespace Tokki.Infrastructure.Data
         public DbSet<DailyWordle> DailyWordles { get; set; }
         public DbSet<WordleSentenceSubmission> WordleSentenceSubmissions { get; set; }
         public DbSet<UserWordleProgress> UserWordleProgress { get; set; }
+        public DbSet<WordleSentenceLike> WordleSentenceLikes { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
