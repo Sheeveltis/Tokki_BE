@@ -141,5 +141,93 @@ namespace Tokki.Infrastructure.Services
                 return null; 
             }
         }
+        public async Task<AiRoadmapResponse?> GenerateNextWeekPlanAsync(
+            TargetAimLevel target,
+            int nextWeekIndex,
+            int examScore,
+            List<string> detectedWeaknesses,
+            List<string> originalWeaknesses)
+        {
+            if (string.IsNullOrEmpty(_apiKey)) return null;
+
+            var weakContent = await _knowledgeBaseService.GetContentForWeaknessesAsync(detectedWeaknesses, CurrentTopikLevel.Level_1); 
+            var generalContent = await _knowledgeBaseService.GetGeneralContentForLevelAsync(CurrentTopikLevel.Level_1);
+
+            var menuJson = JsonSerializer.Serialize(new
+            {
+                ReviewItems = weakContent.Select(x => new { x.TargetId, x.DescriptionForAi, x.Type }), 
+                NewItems = generalContent.Select(x => new { x.TargetId, x.DescriptionForAi, x.Type })  
+            });
+
+            var strategy = "";
+            if (examScore < 50)
+                strategy = "Học viên thi TRƯỢT tuần trước (<50 điểm). Yêu cầu: 3 ngày đầu tuần chỉ dùng để ÔN TẬP LẠI (dùng ReviewItems). 3 ngày sau học kiến thức mới nhưng giảm tải. Tăng cường bài tập.";
+            else if (examScore < 70)
+                strategy = "Học viên đạt trung bình (50-70 điểm). Yêu cầu: Dành 1-2 ngày đầu ôn tập điểm yếu (ReviewItems), sau đó học tiếp lộ trình chuẩn.";
+            else
+                strategy = "Học viên xuất sắc (>80 điểm). Yêu cầu: Tăng tốc độ, tập trung vào kiến thức mới và khó hơn (NewItems).";
+
+            var promptText = $@"
+                Bạn là chuyên gia lập lộ trình TOPIK. Học viên chuẩn bị bước vào TUẦN THỨ {nextWeekIndex}.
+                Kết quả tuần trước: {examScore}/100.
+                
+                CHIẾN LƯỢC ĐIỀU CHỈNH: {strategy}
+
+                *** THÔNG TIN CỐ ĐỊNH ***
+                - Mục tiêu: {target}
+                - Ngày thứ 7 bắt buộc là: 'WeeklyExam' (Tiêu đề: Kiểm tra định kỳ tuần {nextWeekIndex}).
+                - Các ngày thường: Kết hợp 'LearnTheory' và 'VirtualQuiz'.
+
+                *** MENU DỮ LIỆU (CHỈ CHỌN TRONG NÀY) ***
+                {menuJson}
+
+                *** OUTPUT JSON FORMAT ***
+                (Trả về đúng cấu trúc JSON như các lần trước, chỉ chứa dữ liệu cho 1 tuần duy nhất là WeekIndex {nextWeekIndex})
+                {{
+                  ""Assessment"": ""Nhận xét ngắn gọn dựa trên điểm số cũ và lời khuyên cho tuần mới"",
+                  ""Weeks"": [ {{ ... }} ] 
+                }}
+            ";
+
+            return await CallGeminiApiAsync(promptText);  
+        }
+
+        private async Task<AiRoadmapResponse?> CallGeminiApiAsync(string promptText)
+        {
+            var requestBody = new { contents = new[] { new { parts = new[] { new { text = promptText } } } } };
+            try
+            {
+                var url = $"{BASE_URL}?key={_apiKey}";
+                var response = await _httpClient.PostAsJsonAsync(url, requestBody);
+
+                if (!response.IsSuccessStatusCode) return null;
+
+                using var jsonDoc = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+                var root = jsonDoc.RootElement;
+                if (root.TryGetProperty("candidates", out var candidates) && candidates.GetArrayLength() > 0)
+                {
+                    var text = candidates[0].GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString();
+                    if (!string.IsNullOrEmpty(text))
+                    {
+                        text = text.Replace("```json", "").Replace("```", "").Trim();
+                        int startIndex = text.IndexOf("{");
+                        int endIndex = text.LastIndexOf("}");
+                        if (startIndex >= 0 && endIndex > startIndex)
+                        {
+                            text = text.Substring(startIndex, endIndex - startIndex + 1);
+                        }
+
+                        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                        return JsonSerializer.Deserialize<AiRoadmapResponse>(text, options);
+                    }
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Gemini API Error");
+                return null;
+            }
+        }
     }
 }

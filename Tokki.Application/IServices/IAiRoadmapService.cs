@@ -15,5 +15,13 @@ namespace Tokki.Application.IServices
         /// <param name="weaknesses">Danh sách điểm yếu (VD: Listening, Grammar)</param>
         /// <returns>Object chứa lộ trình hoặc null nếu lỗi</returns>
         Task<AiRoadmapResponse?> GenerateStudyPlanAsync(TargetAimLevel target, CurrentTopikLevel currentLevel, int days, List<string> weaknesses);
+
+        Task<AiRoadmapResponse?> GenerateNextWeekPlanAsync(
+        TargetAimLevel target,
+        int nextWeekIndex,
+        int examScore, 
+        List<string> detectedWeaknesses, 
+        List<string> originalWeaknesses 
+    );
     }
 }
