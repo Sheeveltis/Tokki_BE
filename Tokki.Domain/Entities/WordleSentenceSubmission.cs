@@ -38,5 +38,6 @@ namespace Tokki.Domain.Entities
         public int LikeCount { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public virtual ICollection<WordleSentenceLike> SentenceLikes { get; set; } = new List<WordleSentenceLike>();
     }
 }
