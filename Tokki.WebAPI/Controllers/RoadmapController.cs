@@ -3,12 +3,13 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Tokki.Application.IServices; 
 using Tokki.Application.UseCases.Roadmap.Commands.CompleteTask;
+using Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek;
 using Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap;
 using Tokki.Application.UseCases.Roadmap.DTOs;
 using Tokki.Application.UseCases.Roadmap.Queries.GetRoadmap;
 using Tokki.Domain.Enums;
-using Tokki.Application.IServices; 
 using Tokki.Infrastructure.Data;
 
 namespace Tokki.WebAPI.Controllers
@@ -159,6 +160,36 @@ namespace Tokki.WebAPI.Controllers
             }
 
             return Ok(new { ExamId = result.Data, IsNew = true });
+        }
+
+        [HttpPost("next-week")]
+        public async Task<IActionResult> GenerateNextWeek([FromBody] GenerateNextWeekDTO request)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("Không tìm thấy thông tin người dùng.");
+            }
+
+            var command = new GenerateNextWeekCommand
+            {
+                UserId = userId,
+                FinishedWeekId = request.FinishedWeekId
+            };
+
+            var result = await _mediator.Send(command);
+
+            if (result.IsSuccess)
+            {
+                return Ok(new { message = "Đã tạo lộ trình tuần mới thành công!", status = 200 });
+            }
+
+            if (result.StatusCode == 200 && result.Message.Contains("hoàn thành"))
+            {
+                return Ok(new { message = result.Message, isFinished = true }); 
+            }
+
+            return BadRequest(result);
         }
     }
 }

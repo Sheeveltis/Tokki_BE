@@ -41,5 +41,29 @@ namespace Tokki.Infrastructure.Repositories
                 .ThenInclude(w => w.UserRoadmap)
                 .FirstOrDefaultAsync(t => t.TaskId == taskId, cancellationToken);
         }
+        public async Task<RoadmapWeek?> GetWeekByIdAsync(string weekId, CancellationToken cancellationToken)
+        {
+            return await _context.RoadmapWeeks
+                .Include(w => w.UserRoadmap)
+                .Include(w => w.WeeklyExam)
+                .FirstOrDefaultAsync(w => w.RoadmapWeekId == weekId, cancellationToken);
+        }
+
+        public async Task<RoadmapWeek?> GetWeekByIndexAsync(string roadmapId, int weekIndex, CancellationToken cancellationToken)
+        {
+            return await _context.RoadmapWeeks
+                .Include(w => w.DailyTasks)
+                .FirstOrDefaultAsync(w => w.UserRoadmapId == roadmapId && w.WeekIndex == weekIndex, cancellationToken);
+        }
+        public async Task<int> GetExamScoreAsync(string examId, string userId, CancellationToken cancellationToken = default)
+        {
+            var score = await _context.UserExams
+                .Where(ue => ue.ExamId == examId && ue.UserId == userId && ue.Status == 1)
+                .OrderByDescending(ue => ue.SubmitTime) 
+                .Select(ue => ue.Score)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            return score; 
+        }
     }
 }
