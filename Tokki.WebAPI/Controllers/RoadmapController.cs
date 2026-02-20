@@ -3,7 +3,8 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Tokki.Application.IServices; 
+using Tokki.Application.IServices;
+using Tokki.Application.UseCases.Exam.Commands.SubmitExam;
 using Tokki.Application.UseCases.Roadmap.Commands.CompleteTask;
 using Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek;
 using Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap;
@@ -187,6 +188,36 @@ namespace Tokki.WebAPI.Controllers
             if (result.StatusCode == 200 && result.Message.Contains("hoàn thành"))
             {
                 return Ok(new { message = result.Message, isFinished = true }); 
+            }
+
+            return BadRequest(result);
+        }
+
+        [HttpPost("submit-exam")]
+        public async Task<IActionResult> SubmitExam([FromBody] SubmitExamRequestDto request)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("Không tìm thấy thông tin người dùng.");
+            }
+
+            var command = new SubmitExamCommand
+            {
+                ExamId = request.ExamId,
+                UserId = userId,
+                Answers = request.Answers.Select(a => new UserAnswerDto
+                {
+                    QuestionId = a.QuestionId,
+                    SelectedOptionId = a.SelectedOptionId
+                }).ToList()
+            };
+
+            var result = await _mediator.Send(command);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result); 
             }
 
             return BadRequest(result);

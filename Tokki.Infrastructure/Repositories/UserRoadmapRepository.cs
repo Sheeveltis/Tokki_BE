@@ -85,5 +85,23 @@ namespace Tokki.Infrastructure.Repositories
                 .OrderByDescending(ue => ue.SubmitTime) 
                 .FirstOrDefaultAsync(cancellationToken);
         }
+        public async Task<List<ExamQuestion>> GetExamQuestionsForGradingAsync(string examId, CancellationToken cancellationToken = default)
+        {
+            return await _context.ExamQuestions
+                .Include(eq => eq.QuestionBank)
+                    .ThenInclude(qb => qb.QuestionOptions)
+                .Where(eq => eq.ExamId == examId)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task AddUserExamAsync(UserExam userExam)
+        {
+            await _context.UserExams.AddAsync(userExam);
+        }
+
+        public async Task AddUserExamDetailsAsync(List<UserExamDetail> details)
+        {
+            await _context.UserExamDetails.AddRangeAsync(details);
+        }
     }
 }
