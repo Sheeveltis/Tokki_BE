@@ -8,6 +8,7 @@ using Tokki.Application.UseCases.UserExam.Commands.SubmitUserExam;
 using Tokki.Application.UseCases.UserExam.Commands.SyncMCQProgress;
 using Tokki.Application.UseCases.UserExam.Commands.SyncWritingProgress;
 using Tokki.Application.UseCases.UserExam.DTOs;
+using Tokki.Application.UseCases.UserExam.Queries.CheckGradingStatus;
 using Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam;
 using Tokki.Application.UseCases.UserExam.Queries.GetListeningDetail;
 using Tokki.Application.UseCases.UserExam.Queries.GetReadingDetail;
@@ -136,6 +137,12 @@ namespace Tokki.WebAPI.Controllers
             }
 
             return Ok(result);
+        }
+        [HttpGet("{userExamId}/is-graded")]
+        public async Task<IActionResult> IsGraded(string userExamId)
+        {
+            var result = await _sender.Send(new CheckGradingStatusQuery { UserExamId = userExamId });
+            return Ok(result.Data?.IsGraded ?? false);
         }
         [HttpGet("{userExamId}/result")]
         public async Task<IActionResult> GetExamResultOverview(string userExamId)

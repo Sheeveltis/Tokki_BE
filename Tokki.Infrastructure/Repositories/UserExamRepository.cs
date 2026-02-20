@@ -198,5 +198,10 @@ namespace Tokki.Infrastructure.Repositories
                     .ThenInclude(uwa => uwa.Question).ThenInclude(q => q.Passage) 
                 .FirstOrDefaultAsync(ue => ue.UserExamId == userExamId, token);
         }
+        public async Task<bool> HasPendingWritingAnswersAsync(string userExamId, CancellationToken token)
+        {
+            return await _context.UserExamWritingAnswers
+                .AnyAsync(a => a.UserExamId == userExamId && a.Score == null, token);
+        }
     }
 }

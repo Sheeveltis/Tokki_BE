@@ -34,5 +34,6 @@ namespace Tokki.Application.IRepositories
         Task<UserExam?> GetListeningDetailAsync(string userExamId, CancellationToken token);
         Task<UserExam?> GetReadingDetailAsync(string userExamId, CancellationToken token);
         Task<UserExam?> GetWritingDetailAsync(string userExamId, CancellationToken token);
+        Task<bool> HasPendingWritingAnswersAsync(string userExamId, CancellationToken token);
     }
 }
