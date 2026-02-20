@@ -65,5 +65,25 @@ namespace Tokki.Infrastructure.Repositories
 
             return score; 
         }
+        public async Task<List<string>> GetWeakQuestionTypesFromExamAsync(string userExamId, CancellationToken cancellationToken = default)
+        {
+            var weakTypes = await _context.UserExamDetails
+                .Where(d => d.UserExamId == userExamId && d.IsCorrect == false) 
+                .GroupBy(d => d.QuestionTypeId)
+                .Select(g => new { TypeId = g.Key, Count = g.Count() })
+                .OrderByDescending(x => x.Count) 
+                .Take(3) 
+                .Select(x => x.TypeId)
+                .ToListAsync(cancellationToken);
+
+            return weakTypes;
+        }
+        public async Task<UserExam?> GetUserExamByExamIdAsync(string examId, string userId, CancellationToken cancellationToken = default)
+        {
+            return await _context.UserExams
+                .Where(ue => ue.ExamId == examId && ue.UserId == userId && ue.Status == 1)
+                .OrderByDescending(ue => ue.SubmitTime) 
+                .FirstOrDefaultAsync(cancellationToken);
+        }
     }
 }

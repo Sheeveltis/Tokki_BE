@@ -1,13 +1,10 @@
 ﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories; 
 using Tokki.Application.IServices;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
 {
@@ -48,20 +45,26 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
             }
 
             int score = 0;
-            if (!string.IsNullOrEmpty(currentWeek.WeeklyExamId))
-            {
-                score = await _repository.GetExamScoreAsync(currentWeek.WeeklyExamId, request.UserId, cancellationToken);
-            }
-
             List<string> detectedWeaknesses = new List<string>();
-            if (score < 50) detectedWeaknesses.Add("General Review"); 
+
+            var userExam = await _repository.GetUserExamByExamIdAsync(currentWeek.WeeklyExamId, request.UserId, cancellationToken);
+
+            if (userExam != null)
+            {
+                score = userExam.Score;
+
+                if (score < 70)
+                {
+                    detectedWeaknesses = await _repository.GetWeakQuestionTypesFromExamAsync(userExam.UserExamId, cancellationToken);
+                }
+            }
 
             var aiPlan = await _aiRoadmapService.GenerateNextWeekPlanAsync(
                 roadmap.TargetAim,
                 nextWeekIndex,
                 score,
-                detectedWeaknesses,
-                new List<string>() 
+                detectedWeaknesses, 
+                new List<string>()
             );
 
             if (aiPlan == null || !aiPlan.Weeks.Any())
