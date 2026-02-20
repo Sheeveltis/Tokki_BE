@@ -48,20 +48,19 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetUserExamResult
         private SkillScoreDto MapSkillScore(Domain.Entities.UserExam session, IEnumerable<Domain.Entities.TemplatePart> parts, QuestionSkill targetSkill)
         {
             var skillParts = parts.Where(p => p.Skill == targetSkill).ToList();
-
-            if (!skillParts.Any()) return new SkillScoreDto();
+            if (!skillParts.Any()) return new SkillScoreDto { IsGraded = true };
 
             double totalScore = 0;
             double maxScore = 0;
             int totalCorrect = 0;
             int totalQuestions = 0;
+            bool isGraded = true; 
 
             foreach (var part in skillParts)
             {
                 int from = part.QuestionFrom;
                 int to = part.QuestionTo;
                 int questionCount = to - from + 1;
-
                 double mark = part.Mark;
 
                 totalQuestions += questionCount;
@@ -73,8 +72,12 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetUserExamResult
                         .Where(a => a.OrderIndex >= from && a.OrderIndex <= to)
                         .ToList();
 
-                    totalCorrect += writingAnswers.Count(a => (a.Score ?? 0) > 0);
+                    if (writingAnswers.Count < questionCount || writingAnswers.Any(a => a.Score == null))
+                    {
+                        isGraded = false;
+                    }
 
+                    totalCorrect += writingAnswers.Count(a => (a.Score ?? 0) > 0);
                     totalScore += writingAnswers.Sum(a => a.Score ?? 0);
                 }
                 else
@@ -84,9 +87,7 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetUserExamResult
                         .ToList();
 
                     int correctCount = mcqAnswers.Count(a => a.IsCorrect ?? false);
-
                     totalCorrect += correctCount;
-
                     totalScore += correctCount * mark;
                 }
             }
@@ -96,7 +97,8 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetUserExamResult
                 TotalQuestions = totalQuestions,
                 CorrectAnswers = totalCorrect,
                 Score = totalScore,
-                MaxScore = maxScore
+                MaxScore = maxScore,
+                IsGraded = isGraded
             };
         }
     }
