@@ -12,6 +12,7 @@ namespace Tokki.Application.Common.Models
         public static readonly Error ServerError = new("App.ServerError", "Lỗi hệ thống, vui lòng thử lại sau.");
         public static readonly Error ValidationFailed = new("App.ValidationFailed", "Dữ liệu đầu vào không hợp lệ.");
         public static readonly Error BadRequest = new("App.BadRequest", "Yêu cầu không hợp lệ.");
+        public static readonly Error DatabaseError = new("App.DatabaseError", "Không thể lưu dữ liệu vào hệ thống."); 
         // ============================================
         // NHÓM 2: AUTHENTICATION & USER
         // ============================================
