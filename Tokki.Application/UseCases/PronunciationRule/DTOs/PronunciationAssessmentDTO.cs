@@ -20,7 +20,17 @@ namespace Tokki.Application.UseCases.PronunciationRule.DTOs
     {
         public string Word { get; set; } = string.Empty;
         public double AccuracyScore { get; set; }
-        public string ErrorType { get; set; } = string.Empty; 
-        public string? Phonemes { get; set; }     
+        public string ErrorType { get; set; } = string.Empty;
+        public string? Phonemes { get; set; }
+        public List<SyllableAssessmentDTO> Syllables { get; set; } = new();
+
+        public bool IsFeedback { get; set; } = false;
+        public string? RepairGuide { get; set; } 
+    }
+
+    public class SyllableAssessmentDTO
+    {
+        public string Syllable { get; set; } = string.Empty;
+        public double AccuracyScore { get; set; }
     }
 }

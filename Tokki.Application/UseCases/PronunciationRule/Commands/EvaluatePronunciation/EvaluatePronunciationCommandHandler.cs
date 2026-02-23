@@ -14,51 +14,49 @@ namespace Tokki.Application.UseCases.PronunciationRule.Commands.EvaluatePronunci
     public class EvaluatePronunciationCommandHandler : IRequestHandler<EvaluatePronunciationCommand, OperationResult<PronunciationResponse>>
     {
         private readonly ISpeechService _speechService;
-        private readonly IAIPronunciationService _aiService; // <-- Interface mới
+        private readonly IAIPronunciationService _aiService; 
         private readonly IPronunciationRuleRepository _ruleRepository;
-
+        private readonly IPronunciationExampleRepository _exampleRepository;
         public EvaluatePronunciationCommandHandler(
             ISpeechService speechService,
             IAIPronunciationService aiService,
-            IPronunciationRuleRepository ruleRepository)
+            IPronunciationRuleRepository ruleRepository,
+            IPronunciationExampleRepository exampleRepository)
         {
             _speechService = speechService;
             _aiService = aiService;
             _ruleRepository = ruleRepository;
+            _exampleRepository = exampleRepository;
         }
 
         public async Task<OperationResult<PronunciationResponse>> Handle(EvaluatePronunciationCommand request, CancellationToken cancellationToken)
         {
-            if (request.AudioFile == null || request.AudioFile.Length == 0)
-                return OperationResult<PronunciationResponse>.Failure("File không hợp lệ.", 400);
-
-            var rule = await _ruleRepository.GetByIdAsync(request.PronunciationRuleId);
-            string ruleContext = rule != null ? $"{rule.RuleName}: {rule.Description}" : "Không có quy tắc cụ thể";
-
-            try
+            var example = await _exampleRepository.GetByIdAsync(request.ExampleId);
+            if (example == null)
             {
-                using var stream = request.AudioFile.OpenReadStream();
-                var assessmentResult = await _speechService.AssessPronunciationAsync(stream, request.RawText);
-
-                string aiFeedback = await _aiService.GenerateFeedbackAsync(assessmentResult, request.RawText, ruleContext);
-
-                var response = new PronunciationResponse
-                {
-                    AccuracyScore = assessmentResult.AccuracyScore,
-                    FluencyScore = assessmentResult.FluencyScore,
-                    CompletenessScore = assessmentResult.CompletenessScore,
-                    ProsodyScore = assessmentResult.ProsodyScore,
-                    Words = assessmentResult.Words,
-
-                    AiFeedback = aiFeedback
-                };
-
-                return OperationResult<PronunciationResponse>.Success(response);
+                return OperationResult<PronunciationResponse>.Failure(new Error("EXAMPLE_NOT_FOUND", "Không tìm thấy nội dung mẫu."));
             }
-            catch (Exception ex)
+
+            using var stream = request.AudioFile.OpenReadStream();
+            var azureResult = await _speechService.AssessPronunciationAsync(stream, example.RawScript);
+
+            var rule = await _ruleRepository.GetByIdAsync(example.PronunciationRuleId);
+            string ruleContext = rule != null ? $"{rule.RuleName}: {rule.Description}" : "Quy tắc phát âm cơ bản";
+
+            var (feedback, finalScore) = await _aiService.GenerateFeedbackAsync(
+                azureResult,
+                example.RawScript,
+                ruleContext);
+
+            return OperationResult<PronunciationResponse>.Success(new PronunciationResponse
             {
-                return OperationResult<PronunciationResponse>.Failure($"Lỗi: {ex.Message}", 500);
-            }
+                AccuracyScore = finalScore,
+                AiFeedback = feedback,
+                Words = azureResult.Words,
+                FluencyScore = azureResult.FluencyScore,
+                CompletenessScore = azureResult.CompletenessScore,
+                ProsodyScore = azureResult.ProsodyScore
+            });
         }
     }
 }
