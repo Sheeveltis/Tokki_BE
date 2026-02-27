@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Tokki.Application.UseCases.PronunciationRule.Commands.CreatePronunciationRule;
+using Tokki.Application.UseCases.PronunciationRule.Queries.GetPronunciationRules;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -36,6 +37,14 @@ namespace Tokki.WebAPI.Controllers
             }
 
             return BadRequest(result);
+        }
+        [HttpGet("rules")]
+        public async Task<IActionResult> GetPronunciationRules()
+        {
+            var query = new GetPronunciationRulesQuery();
+            var result = await _sender.Send(query);
+
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
     }
 }
