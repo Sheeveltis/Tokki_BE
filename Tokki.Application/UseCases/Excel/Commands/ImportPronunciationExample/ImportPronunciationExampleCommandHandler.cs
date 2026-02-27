@@ -53,7 +53,7 @@ namespace Tokki.Application.UseCases.Excel.Commands.ImportPronunciationExample
                 return OperationResult<ImportExampleResponse>.Failure(new Error("EXCEL_EMPTY", "Không tìm thấy dữ liệu hợp lệ trong file Excel."));
             }
 
-            var newEntities = new List<PronunciationExample>();
+            var newEntities = new List<Domain.Entities.PronunciationExample>();
 
             foreach (var item in extractedData)
             {
@@ -70,7 +70,7 @@ namespace Tokki.Application.UseCases.Excel.Commands.ImportPronunciationExample
                         _logger.LogWarning(ex, "Lỗi TTS hoặc Cloudinary cho nội dung: {Text}", item.RawScript);
                     }
 
-                    var entity = new PronunciationExample
+                    var entity = new Domain.Entities.PronunciationExample
                     {
                         ExampleId = _idGenerator.Generate(10),
                         PronunciationRuleId = item.PronunciationRuleId,
