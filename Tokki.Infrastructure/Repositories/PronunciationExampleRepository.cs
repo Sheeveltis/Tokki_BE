@@ -24,5 +24,19 @@ namespace Tokki.Infrastructure.Repositories
             await _context.PronunciationExamples.AddRangeAsync(entities);
             await _context.SaveChangesAsync();
         }
+        public async Task<List<PronunciationExample>> GetExamplesByRuleIdAsync(string ruleId, CancellationToken cancellationToken = default)
+        {
+            return await _context.PronunciationExamples
+                .Where(e => e.PronunciationRuleId == ruleId && !e.IsDeleted)
+                .OrderBy(e => e.SortOrder)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<PronunciationExample?> GetDetailByIdAsync(string exampleId, CancellationToken cancellationToken = default)
+        {
+            return await _context.PronunciationExamples
+                .Include(e => e.PronunciationRule)
+                .FirstOrDefaultAsync(e => e.ExampleId == exampleId && !e.IsDeleted, cancellationToken);
+        }
     }
 }

@@ -38,5 +38,12 @@ namespace Tokki.Infrastructure.Repositories
             return await _context.PronunciationRules
                 .AnyAsync(r => r.RuleName == ruleName && !r.IsDeleted);
         }
+        public async Task<List<PronunciationRule>> GetAllActiveRulesAsync(CancellationToken cancellationToken = default)
+        {
+            return await _context.PronunciationRules
+                .Where(r => !r.IsDeleted)
+                .OrderBy(r => r.SortOrder)
+                .ToListAsync(cancellationToken);
+        }
     }
 }

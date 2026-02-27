@@ -16,5 +16,6 @@ namespace Tokki.Application.IRepositories
         Task<PronunciationRule?> GetByIdAsync(string id);
 
         Task<bool> IsRuleNameExistsAsync(string ruleName);
+        Task<List<PronunciationRule>> GetAllActiveRulesAsync(CancellationToken cancellationToken = default);
     }
 }

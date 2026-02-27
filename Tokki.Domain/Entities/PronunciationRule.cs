@@ -42,5 +42,6 @@ namespace Tokki.Domain.Entities
 
         [ForeignKey(nameof(UpdateBy))]
         public virtual Account? Updater { get; set; }
+        public int SortOrder { get; set; } = 0;
     }
 }

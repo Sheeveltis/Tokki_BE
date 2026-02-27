@@ -11,5 +11,7 @@ namespace Tokki.Application.IRepositories
     {
         Task AddRangeAsync(IEnumerable<PronunciationExample> entities);
         Task<PronunciationExample?> GetByIdAsync(string id);
+        Task<List<PronunciationExample>> GetExamplesByRuleIdAsync(string ruleId, CancellationToken cancellationToken = default);
+        Task<PronunciationExample?> GetDetailByIdAsync(string exampleId, CancellationToken cancellationToken = default);
     }
 }
