@@ -9,5 +9,6 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.CreateExamTemplate
         public string Name { get; set; } = string.Empty;
         public string? Description { get; set; }
         public ExamType Type { get; set; }
+        public string? CreatedBy { get; set; }
     }
 }

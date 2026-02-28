@@ -1,35 +1,27 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Tokki.Application.Common.Models;
-using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
-using Tokki.Domain.Entities;
+using Tokki.Application.UseCases.Exam.Commands.CreateExam;
+using Tokki.Application.UseCases.ExamTemplates.Commands.AddTemplateParts;
+using Tokki.Application.UseCases.ExamTemplates.Commands.CreateExamTemplate;
+using Tokki.Application.UseCases.ExamTemplates.DTOs;
 using Tokki.Domain.Enums;
+using Tokki.Infrastructure.Data;
 
 namespace Tokki.Infrastructure.Services
 {
     public class ExamAssemblyService : IExamAssemblyService
     {
-        private readonly IExamRepository _examRepository;
-        private readonly IExamTemplateRepository _examTemplateRepository;
-        private readonly ITemplatePartRepository _templatePartRepository;
-        private readonly IQuestionBankRepository _questionBankRepository;
-        private readonly IIdGeneratorService _idGeneratorService;
-        private readonly ILogger<ExamAssemblyService> _logger;
+        private readonly IMediator _mediator;
+        private readonly TokkiDbContext _context;
+        private const string AI_SYSTEM_ID = "AI_SYSTEM_ACCOUNT";
+        private const int QUESTIONS_PER_PART = 10; 
 
-        public ExamAssemblyService(
-            IExamRepository examRepository,
-            IExamTemplateRepository examTemplateRepository,
-            ITemplatePartRepository templatePartRepository,
-            IQuestionBankRepository questionBankRepository,
-            IIdGeneratorService idGeneratorService,
-            ILogger<ExamAssemblyService> logger)
+        public ExamAssemblyService(IMediator mediator, TokkiDbContext context)
         {
-            _examRepository = examRepository;
-            _examTemplateRepository = examTemplateRepository;
-            _templatePartRepository = templatePartRepository;
-            _questionBankRepository = questionBankRepository;
-            _idGeneratorService = idGeneratorService;
-            _logger = logger;
+            _mediator = mediator;
+            _context = context;
         }
 
         public async Task<OperationResult<string>> GenerateWeeklyExamAsync(
@@ -37,100 +29,124 @@ namespace Tokki.Infrastructure.Services
             string userId,
             int weekIndex,
             List<string> weakQuestionTypeIds,
-            DifficultyLevel targetLevel, 
+            DifficultyLevel targetLevel,
+            CancellationToken cancellationToken = default)
+        {
+            var createExamCmd = new CreateExamCommand
+            {
+                Title = $"Weekly Exam - Week {weekIndex} ({DateTime.UtcNow:dd/MM})",
+                Duration = 60, 
+                ExamTemplateId = templateId,
+                CreatedBy = userId 
+            };
+            var result = await _mediator.Send(createExamCmd, cancellationToken);
+
+            return result;
+        }
+        public async Task<OperationResult<string>> GenerateWeeklyExamFromScopeAsync(
+            string userId,
+            int weekIndex,
+            List<string> weeklyQuestionTypeIds,
             CancellationToken cancellationToken)
         {
-            try
+            var targetTypes = weeklyQuestionTypeIds.Distinct().ToList();
+            if (!targetTypes.Any()) return OperationResult<string>.Failure("Không có kiến thức nào trong tuần để kiểm tra.", 400);
+
+            var existingExamId = await FindMatchingExamAsync(targetTypes, cancellationToken);
+            if (!string.IsNullOrEmpty(existingExamId))
             {
-                var template = await _examTemplateRepository.GetByIdAsync(templateId);
-                if (template == null || template.Status != ExamTemplateStatus.Published)
-                {
-                    return OperationResult<string>.Failure("Cấu trúc đề thi không tồn tại hoặc chưa được kích hoạt.", 404);
-                }
-
-                var parts = await _templatePartRepository.GetByExamTemplateIdAsync(templateId, cancellationToken);
-                if (parts == null || !parts.Any())
-                {
-                    return OperationResult<string>.Failure("Cấu trúc đề thi bị trống.", 400);
-                }
-
-                var examId = _idGeneratorService.GenerateCustom(10);
-                var examTitle = $"Weekly Test W{weekIndex} - {DateTime.UtcNow:yyyyMMdd}-{userId.Substring(0, 4)}"; // Tự sinh Title unique
-
-                var exam = new Exam
-                {
-                    ExamId = examId,
-                    ExamTemplateId = templateId,
-                    Title = examTitle,
-                    Type = ExamType.WeeklyAssessment, 
-                    Status = ExamStatus.Published, 
-                    Duration = 60,
-                    CreatedBy = userId,
-                    CreatedAt = DateTime.UtcNow,
-                    ExamQuestions = new List<ExamQuestion>()
-                };
-
-                var allSelectedQuestionIds = new List<string>();
-
-                foreach (var part in parts)
-                {
-                    int quantityNeeded = part.QuestionTo - part.QuestionFrom + 1;
-                    if (quantityNeeded <= 0) continue;
-
-                    List<QuestionBank> selectedQuestions;
-
-                    if (weakQuestionTypeIds.Contains(part.QuestionTypeId))
-                    {
-                        selectedQuestions = await _questionBankRepository.GetRandomQuestionsByTypeAsync(
-                            part.QuestionTypeId,
-                            quantityNeeded,
-                            allSelectedQuestionIds,
-                            targetLevel,
-                            cancellationToken
-                        );
-                    }
-                    else
-                    {
-                        selectedQuestions = await _questionBankRepository.GetRandomQuestionsByTypeAsync(
-                            part.QuestionTypeId,
-                            quantityNeeded,
-                            allSelectedQuestionIds,
-                            targetLevel,
-                            cancellationToken
-                        );
-                    }
-
-                    if (selectedQuestions.Count < quantityNeeded)
-                    {
-                        _logger.LogWarning($"Không đủ câu hỏi cho Type {part.QuestionTypeId}. Cần {quantityNeeded}, có {selectedQuestions.Count}");
-                    }
-
-                    int currentQuestionNo = part.QuestionFrom;
-                    foreach (var q in selectedQuestions)
-                    {
-                        allSelectedQuestionIds.Add(q.QuestionBankId);
-                        exam.ExamQuestions.Add(new ExamQuestion
-                        {
-                            ExamQuestionId = _idGeneratorService.GenerateCustom(10),
-                            ExamId = examId,
-                            QuestionBankId = q.QuestionBankId,
-                            QuestionNo = currentQuestionNo,
-                            Score = part.Mark
-                        });
-                        currentQuestionNo++;
-                    }
-                }
-
-                await _examRepository.AddAsync(exam);
-                await _examRepository.SaveChangesAsync(cancellationToken);
-
-                return OperationResult<string>.Success(exam.ExamId, 201, "Đã tạo đề kiểm tra tuần thành công.");
+                return OperationResult<string>.Success(existingExamId);
             }
-            catch (Exception ex)
+
+            string templateName = $"AI Generated Template - Week {weekIndex} - {Guid.NewGuid().ToString().Substring(0, 8)}";
+
+            var createTemplateCmd = new CreateExamTemplateCommand
             {
-                _logger.LogError(ex, "Lỗi khi AI tạo Exam tuần");
-                return OperationResult<string>.Failure("Lỗi hệ thống khi tạo đề thi.", 500);
+                Name = templateName,
+                Description = "Cấu trúc đề thi được AI sinh tự động dựa trên lộ trình học.",
+                Type = ExamType.WeeklyAssessment, 
+            };
+
+            var templateResult = await _mediator.Send(createTemplateCmd, cancellationToken);
+            if (!templateResult.IsSuccess) return OperationResult<string>.Failure($"Lỗi tạo Template: {templateResult.Message}");
+
+            string newTemplateId = templateResult.Data;
+
+            var partsDto = new List<CreateTemplatePartDto>();
+            int currentQuestionIndex = 1;
+
+            foreach (var typeId in targetTypes)
+            {
+                var qType = await _context.QuestionTypes.FindAsync(typeId);
+                QuestionSkill skill = qType?.Skill ?? QuestionSkill.Reading;
+                partsDto.Add(new CreateTemplatePartDto
+                {
+                    PartTitle = $"Part for {typeId}",
+                    QuestionTypeId = typeId,
+                    Skill = skill,
+                    QuestionFrom = currentQuestionIndex,
+                    QuestionTo = currentQuestionIndex + QUESTIONS_PER_PART - 1,
+                    Mark = 1,
+                    Instruction = "Chọn đáp án đúng nhất."
+                });
+
+                currentQuestionIndex += QUESTIONS_PER_PART;
             }
+
+            var addPartsCmd = new AddTemplatePartsCommand
+            {
+                ExamTemplateId = newTemplateId,
+                Parts = partsDto
+            };
+
+            var partsResult = await _mediator.Send(addPartsCmd, cancellationToken);
+            if (!partsResult.IsSuccess) return OperationResult<string>.Failure($"Lỗi tạo Parts: {partsResult.Message}");
+
+            var templateEntity = await _context.ExamTemplates.FindAsync(newTemplateId);
+            if (templateEntity != null)
+            {
+                templateEntity.Status = ExamTemplateStatus.Published;
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+
+            var createExamCmd = new CreateExamCommand
+            {
+                Title = $"Weekly Exam - Week {weekIndex} ({DateTime.UtcNow:dd/MM})",
+                Duration = targetTypes.Count * 10, 
+                ExamTemplateId = newTemplateId,
+                CreatedBy = AI_SYSTEM_ID
+            };
+
+            var examResult = await _mediator.Send(createExamCmd, cancellationToken);
+
+            if (!examResult.IsSuccess) return OperationResult<string>.Failure($"Lỗi tạo Exam: {examResult.Message}");
+
+            return OperationResult<string>.Success(examResult.Data);
+        }
+        private async Task<string?> FindMatchingExamAsync(List<string> targetTypes, CancellationToken cancellationToken)
+        {
+            var candidateExams = await _context.Exams
+                .Where(e => e.Status == ExamStatus.Published)
+                .Select(e => new
+                {
+                    e.ExamId,
+                    Types = e.ExamQuestions.Select(eq => eq.QuestionBank.QuestionTypeId).Distinct().ToList(),
+                    QuestionCount = e.ExamQuestions.Count
+                })
+                .ToListAsync(cancellationToken);
+
+            foreach (var exam in candidateExams)
+            {
+                bool coversAllNeeded = !targetTypes.Except(exam.Types).Any();
+
+                bool noExtraTypes = !exam.Types.Except(targetTypes).Any();
+
+                if (coversAllNeeded && noExtraTypes && exam.QuestionCount >= 5)
+                {
+                    return exam.ExamId;
+                }
+            }
+            return null;
         }
     }
 }

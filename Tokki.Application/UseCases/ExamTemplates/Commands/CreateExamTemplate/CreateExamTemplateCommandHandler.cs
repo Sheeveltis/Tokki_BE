@@ -30,9 +30,14 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.CreateExamTemplate
             {
                 return OperationResult<string>.Failure("Tên đề thi mẫu đã tồn tại.");
             }
-            var userId = _httpContextAccessor.HttpContext?.User?
-                .FindFirst(ClaimTypes.NameIdentifier)?.Value
-                ?? _httpContextAccessor.HttpContext?.User?.FindFirst("sub")?.Value;
+            string userId = request.CreatedBy; 
+            if (string.IsNullOrEmpty(userId))
+            {
+                userId = _httpContextAccessor.HttpContext?.User?
+                    .FindFirst(ClaimTypes.NameIdentifier)?.Value
+                    ?? _httpContextAccessor.HttpContext?.User?.FindFirst("sub")?.Value;
+            }
+            if (string.IsNullOrEmpty(userId)) userId = "SYSTEM";
 
             var newId = _idGeneratorService.GenerateCustom(10);
 
