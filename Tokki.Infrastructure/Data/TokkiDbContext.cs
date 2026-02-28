@@ -62,6 +62,7 @@ namespace Tokki.Infrastructure.Data
         public DbSet<Grammar> Grammars { get; set; }
         public DbSet<KnowledgeMetadata> KnowledgeMetadatas { get; set; }
         public DbSet<ExamTemplateStructure> ExamTemplateStructures { get; set; }
+        public DbSet<UserWeakness> UserWeaknesses { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
