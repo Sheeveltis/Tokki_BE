@@ -61,6 +61,7 @@ namespace Tokki.Infrastructure.Data
         public DbSet<RoadmapKnowledgeProfile> RoadmapKnowledgeProfiles { get; set; }
         public DbSet<Grammar> Grammars { get; set; }
         public DbSet<KnowledgeMetadata> KnowledgeMetadatas { get; set; }
+        public DbSet<ExamTemplateStructure> ExamTemplateStructures { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

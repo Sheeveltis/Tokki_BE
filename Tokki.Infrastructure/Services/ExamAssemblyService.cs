@@ -6,6 +6,7 @@ using Tokki.Application.UseCases.Exam.Commands.CreateExam;
 using Tokki.Application.UseCases.ExamTemplates.Commands.AddTemplateParts;
 using Tokki.Application.UseCases.ExamTemplates.Commands.CreateExamTemplate;
 using Tokki.Application.UseCases.ExamTemplates.DTOs;
+using Tokki.Domain.Entities; 
 using Tokki.Domain.Enums;
 using Tokki.Infrastructure.Data;
 
@@ -15,138 +16,124 @@ namespace Tokki.Infrastructure.Services
     {
         private readonly IMediator _mediator;
         private readonly TokkiDbContext _context;
+        private readonly IIdGeneratorService _idGenerator;
         private const string AI_SYSTEM_ID = "AI_SYSTEM_ACCOUNT";
-        private const int QUESTIONS_PER_PART = 10; 
+        private const int QUESTIONS_PER_PART = 10;
 
-        public ExamAssemblyService(IMediator mediator, TokkiDbContext context)
+        public ExamAssemblyService(
+            IMediator mediator,
+            TokkiDbContext context,
+            IIdGeneratorService idGenerator)
         {
             _mediator = mediator;
             _context = context;
-        }
-
-        public async Task<OperationResult<string>> GenerateWeeklyExamAsync(
-            string templateId,
-            string userId,
-            int weekIndex,
-            List<string> weakQuestionTypeIds,
-            DifficultyLevel targetLevel,
-            CancellationToken cancellationToken = default)
-        {
-            var createExamCmd = new CreateExamCommand
-            {
-                Title = $"Weekly Exam - Week {weekIndex} ({DateTime.UtcNow:dd/MM})",
-                Duration = 60, 
-                ExamTemplateId = templateId,
-                CreatedBy = userId 
-            };
-            var result = await _mediator.Send(createExamCmd, cancellationToken);
-
-            return result;
+            _idGenerator = idGenerator;
         }
         public async Task<OperationResult<string>> GenerateWeeklyExamFromScopeAsync(
             string userId,
             int weekIndex,
             List<string> weeklyQuestionTypeIds,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken = default)
         {
-            var targetTypes = weeklyQuestionTypeIds.Distinct().ToList();
-            if (!targetTypes.Any()) return OperationResult<string>.Failure("Không có kiến thức nào trong tuần để kiểm tra.", 400);
+            var targetTypes = weeklyQuestionTypeIds.Distinct().OrderBy(x => x).ToList();
+            if (!targetTypes.Any()) return OperationResult<string>.Failure("Không có dạng bài nào để tạo đề.", 400);
+            string structureHash = string.Join("|", targetTypes);
 
-            var existingExamId = await FindMatchingExamAsync(targetTypes, cancellationToken);
-            if (!string.IsNullOrEmpty(existingExamId))
+            string templateIdToUse;
+
+            var existingStructure = await _context.ExamTemplateStructures
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.StructureHash == structureHash, cancellationToken);
+
+            if (existingStructure != null)
             {
-                return OperationResult<string>.Success(existingExamId);
+                templateIdToUse = existingStructure.ExamTemplateId;
             }
-
-            string templateName = $"AI Generated Template - Week {weekIndex} - {Guid.NewGuid().ToString().Substring(0, 8)}";
-
-            var createTemplateCmd = new CreateExamTemplateCommand
+            else
             {
-                Name = templateName,
-                Description = "Cấu trúc đề thi được AI sinh tự động dựa trên lộ trình học.",
-                Type = ExamType.WeeklyAssessment, 
-            };
+                string templateName = $"AI Auto-Gen: {structureHash.GetHashCode()} (Week {weekIndex})"; // Tên ngắn gọn
 
-            var templateResult = await _mediator.Send(createTemplateCmd, cancellationToken);
-            if (!templateResult.IsSuccess) return OperationResult<string>.Failure($"Lỗi tạo Template: {templateResult.Message}");
-
-            string newTemplateId = templateResult.Data;
-
-            var partsDto = new List<CreateTemplatePartDto>();
-            int currentQuestionIndex = 1;
-
-            foreach (var typeId in targetTypes)
-            {
-                var qType = await _context.QuestionTypes.FindAsync(typeId);
-                QuestionSkill skill = qType?.Skill ?? QuestionSkill.Reading;
-                partsDto.Add(new CreateTemplatePartDto
+                var createTemplateCmd = new CreateExamTemplateCommand
                 {
-                    PartTitle = $"Part for {typeId}",
-                    QuestionTypeId = typeId,
-                    Skill = skill,
-                    QuestionFrom = currentQuestionIndex,
-                    QuestionTo = currentQuestionIndex + QUESTIONS_PER_PART - 1,
-                    Mark = 1,
-                    Instruction = "Chọn đáp án đúng nhất."
-                });
+                    Name = templateName,
+                    Description = "Auto-generated by Adaptive Learning System",
+                    Type = ExamType.WeeklyAssessment, 
+                    CreatedBy = AI_SYSTEM_ID 
+                };
 
-                currentQuestionIndex += QUESTIONS_PER_PART;
-            }
+                var templateResult = await _mediator.Send(createTemplateCmd, cancellationToken);
+                if (!templateResult.IsSuccess) return OperationResult<string>.Failure($"Lỗi tạo Template: {templateResult.Message}");
 
-            var addPartsCmd = new AddTemplatePartsCommand
-            {
-                ExamTemplateId = newTemplateId,
-                Parts = partsDto
-            };
+                string newTemplateId = templateResult.Data;
 
-            var partsResult = await _mediator.Send(addPartsCmd, cancellationToken);
-            if (!partsResult.IsSuccess) return OperationResult<string>.Failure($"Lỗi tạo Parts: {partsResult.Message}");
+                var partsDto = new List<CreateTemplatePartDto>();
+                int currentQ = 1;
 
-            var templateEntity = await _context.ExamTemplates.FindAsync(newTemplateId);
-            if (templateEntity != null)
-            {
-                templateEntity.Status = ExamTemplateStatus.Published;
-                await _context.SaveChangesAsync(cancellationToken);
+                foreach (var typeId in targetTypes)
+                {
+                    var qType = await _context.QuestionTypes.FindAsync(typeId);
+                    QuestionSkill skill = qType?.Skill ?? QuestionSkill.Reading;
+
+                    partsDto.Add(new CreateTemplatePartDto
+                    {
+                        PartTitle = $"Section: {typeId}",
+                        QuestionTypeId = typeId,
+                        Skill = skill,
+                        QuestionFrom = currentQ,
+                        QuestionTo = currentQ + QUESTIONS_PER_PART - 1,
+                        Mark = 1,
+                        Instruction = "Choose the best answer."
+                    });
+                    currentQ += QUESTIONS_PER_PART;
+                }
+
+                var addPartsCmd = new AddTemplatePartsCommand
+                {
+                    ExamTemplateId = newTemplateId,
+                    Parts = partsDto
+                };
+                await _mediator.Send(addPartsCmd, cancellationToken);
+
+                var tpl = await _context.ExamTemplates.FindAsync(newTemplateId);
+                if (tpl != null)
+                {
+                    tpl.Status = ExamTemplateStatus.Published;
+                }
+
+                var newStructureRecord = new ExamTemplateStructure
+                {
+                    Id = _idGenerator.GenerateCustom(15),
+                    StructureHash = structureHash,
+                    ExamTemplateId = newTemplateId,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _context.ExamTemplateStructures.Add(newStructureRecord);
+                await _context.SaveChangesAsync(cancellationToken); 
+
+                templateIdToUse = newTemplateId;
             }
 
             var createExamCmd = new CreateExamCommand
             {
-                Title = $"Weekly Exam - Week {weekIndex} ({DateTime.UtcNow:dd/MM})",
+                Title = $"Weekly Exam - Week {weekIndex} - {DateTime.UtcNow:dd/MM}",
                 Duration = targetTypes.Count * 10, 
-                ExamTemplateId = newTemplateId,
+                ExamTemplateId = templateIdToUse,
                 CreatedBy = AI_SYSTEM_ID
             };
 
             var examResult = await _mediator.Send(createExamCmd, cancellationToken);
-
-            if (!examResult.IsSuccess) return OperationResult<string>.Failure($"Lỗi tạo Exam: {examResult.Message}");
-
-            return OperationResult<string>.Success(examResult.Data);
+            return examResult;
         }
-        private async Task<string?> FindMatchingExamAsync(List<string> targetTypes, CancellationToken cancellationToken)
+        public async Task<OperationResult<string>> GenerateWeeklyExamAsync(
+           string templateId,
+           string userId,
+           int weekIndex,
+           List<string> weakQuestionTypeIds,
+           DifficultyLevel targetLevel,
+           CancellationToken cancellationToken = default)
         {
-            var candidateExams = await _context.Exams
-                .Where(e => e.Status == ExamStatus.Published)
-                .Select(e => new
-                {
-                    e.ExamId,
-                    Types = e.ExamQuestions.Select(eq => eq.QuestionBank.QuestionTypeId).Distinct().ToList(),
-                    QuestionCount = e.ExamQuestions.Count
-                })
-                .ToListAsync(cancellationToken);
-
-            foreach (var exam in candidateExams)
-            {
-                bool coversAllNeeded = !targetTypes.Except(exam.Types).Any();
-
-                bool noExtraTypes = !exam.Types.Except(targetTypes).Any();
-
-                if (coversAllNeeded && noExtraTypes && exam.QuestionCount >= 5)
-                {
-                    return exam.ExamId;
-                }
-            }
-            return null;
+            return OperationResult<string>.Failure("Deprecated method");
         }
     }
 }
