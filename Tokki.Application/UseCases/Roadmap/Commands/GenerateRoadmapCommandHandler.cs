@@ -1,10 +1,7 @@
 ﻿using MediatR;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Tokki.Application.Common.Models;
+using Tokki.Application.IRepositories; 
 using Tokki.Application.IServices;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
@@ -18,18 +15,21 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
         private readonly IIdGeneratorService _idGeneratorService;
         private readonly ILogger<GenerateRoadmapCommandHandler> _logger;
         private readonly IUserRoadmapRepository _userRoadmapRepository;
+        private readonly IUserWeaknessRepository _userWeaknessRepository; 
 
         public GenerateRoadmapCommandHandler(
             IAiRoadmapService aiRoadmapService,
             IExamAssemblyService examAssemblyService,
             IIdGeneratorService idGeneratorService,
             IUserRoadmapRepository userRoadmapRepository,
+            IUserWeaknessRepository userWeaknessRepository, 
             ILogger<GenerateRoadmapCommandHandler> logger)
         {
             _aiRoadmapService = aiRoadmapService;
             _examAssemblyService = examAssemblyService;
             _idGeneratorService = idGeneratorService;
             _userRoadmapRepository = userRoadmapRepository;
+            _userWeaknessRepository = userWeaknessRepository;
             _logger = logger;
         }
 
@@ -67,6 +67,26 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                     Weeks = new List<RoadmapWeek>()
                 };
 
+                if (request.Weaknesses != null && request.Weaknesses.Any())
+                {
+                    foreach (var weakTypeId in request.Weaknesses)
+                    {
+                        var weaknessRecord = new UserWeakness
+                        {
+                            Id = _idGeneratorService.GenerateCustom(15),
+                            UserId = request.UserId,
+                            RoadmapId = roadmapId, 
+                            QuestionTypeId = weakTypeId,
+                            Status = 0, 
+                            InitialScore = 0,
+                            CurrentScore = 0,
+                            CreatedAt = DateTime.UtcNow
+                        };
+
+                        await _userWeaknessRepository.AddAsync(weaknessRecord, cancellationToken);
+                    }
+                }
+
                 int totalWeeks = (int)Math.Ceiling((double)request.DurationDays / 7);
 
                 for (int i = 1; i <= totalWeeks; i++)
@@ -90,6 +110,13 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                         if (weekDto != null)
                         {
                             weekEntity.WeekFocusGoal = weekDto.WeekGoal;
+
+                            var weeklyScope = weekDto.Days
+                                .SelectMany(d => d.Tasks)
+                                .Where(t => t.TaskType == "VirtualQuiz" && !string.IsNullOrEmpty(t.QuestionTypeId))
+                                .Select(t => t.QuestionTypeId)
+                                .Distinct()
+                                .ToList();
 
                             foreach (var dayDto in weekDto.Days)
                             {
@@ -119,18 +146,11 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                                     else if (taskDto.TaskType == "WeeklyExam")
                                     {
                                         taskEntity.TaskType = RoadmapTaskType.WeeklyExam;
-                                        var examTemplateId = "TEMPLATE_DEFAULT_ID";
-                                        DifficultyLevel targetLevel = DifficultyLevel.Easy;
-                                        if (request.TargetAim == TargetAimLevel.Topik_II)
-                                        {
-                                            targetLevel = DifficultyLevel.Medium;
-                                        }
-                                        var examResult = await _examAssemblyService.GenerateWeeklyExamAsync(
-                                            examTemplateId,
+
+                                        var examResult = await _examAssemblyService.GenerateWeeklyExamFromScopeAsync(
                                             request.UserId,
-                                            weekDto.WeekIndex,
-                                            request.Weaknesses,
-                                            targetLevel,
+                                            i,
+                                            weeklyScope, 
                                             cancellationToken
                                         );
 
@@ -144,7 +164,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                             }
                         }
                     }
-                    else 
+                    else
                     {
                         weekEntity.Status = RoadmapWeekStatus.Locked;
                         weekEntity.WeekFocusGoal = "Nội dung sẽ được cập nhật dựa trên kết quả tuần trước.";
@@ -155,6 +175,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
 
                 await _userRoadmapRepository.AddAsync(roadmap);
                 await _userRoadmapRepository.SaveChangesAsync(cancellationToken);
+                await _userWeaknessRepository.SaveChangesAsync(cancellationToken);
 
                 return OperationResult<string>.Success(roadmapId, 201, "Tạo lộ trình thành công (Week 1 sẵn sàng)!");
             }

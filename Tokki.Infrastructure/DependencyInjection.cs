@@ -51,6 +51,7 @@ namespace Tokki.Infrastructure
             services.AddScoped<IGameRepository, GameRepository>();
             services.AddScoped<IGameMatchSessionRepository, GameMatchSessionRepository>();
             services.AddScoped<IEmailHistoryRepository, EmailHistoryRepository>();
+            services.AddScoped<IUserWeaknessRepository, UserWeaknessRepository>();
 
 
             // Bạn cũng cần kiểm tra và đăng ký các Repository khác mà Command Handler đang yêu cầu:
