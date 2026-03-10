@@ -14,8 +14,6 @@ namespace Tokki.Application.UseCases.PronunciationRule.Commands.EvaluatePronunci
     {
         public IFormFile AudioFile { get; set; } = null!;
 
-        public string RawText { get; set; } = string.Empty;
-
-        public string PronunciationRuleId { get; set; } = string.Empty;
+        public string ExampleId { get; set; } = string.Empty;
     }
 }

@@ -37,7 +37,6 @@ namespace Tokki.Infrastructure.Services
             throw new Exception("Lỗi tạo Audio.");
         }
 
-        // --- Phần STT & Chấm điểm (SỬA LẠI ĐOẠN NÀY) ---
         public async Task<PronunciationAssessmentDTO> AssessPronunciationAsync(Stream audioStream, string referenceText)
         {
             byte[] pcmData = ConvertAudioToPcm16Khz(audioStream);
@@ -50,7 +49,9 @@ namespace Tokki.Infrastructure.Services
                 GradingSystem.HundredMark,
                 Granularity.Phoneme,
                 enableMiscue: true);
-            pronunciationConfig.PhonemeAlphabet = "IPA";
+
+            pronunciationConfig.EnableProsodyAssessment();
+
             var audioFormat = AudioStreamFormat.GetWaveFormatPCM(16000, 16, 1);
 
             using var convertedStream = new MemoryStream(pcmData);
@@ -59,8 +60,15 @@ namespace Tokki.Infrastructure.Services
             using var audioConfig = AudioConfig.FromStreamInput(audioInputStream);
 
             using var recognizer = new SpeechRecognizer(speechConfig, audioConfig);
-            pronunciationConfig.ApplyTo(recognizer);
 
+            var phraseList = PhraseListGrammar.FromRecognizer(recognizer);
+            phraseList.AddPhrase(referenceText);
+            foreach (var w in referenceText.Split(new[] { ' ', '.', ',', '?', '!' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                phraseList.AddPhrase(w);
+            }
+
+            pronunciationConfig.ApplyTo(recognizer);
             var result = await recognizer.RecognizeOnceAsync();
 
             if (result.Reason == ResultReason.RecognizedSpeech)
@@ -77,29 +85,40 @@ namespace Tokki.Infrastructure.Services
 
                 foreach (var word in assessmentResult.Words)
                 {
-                    dto.Words.Add(new WordAssessmentDTO
+                    var wordDto = new WordAssessmentDTO
                     {
                         Word = word.Word,
                         AccuracyScore = word.AccuracyScore,
                         ErrorType = word.ErrorType,
-                        Phonemes = word.Phonemes != null ? string.Join(".", word.Phonemes.Select(p => p.Phoneme)) : ""
-                    });
+                        Phonemes = word.Syllables != null
+                            ? string.Join(".", word.Syllables.Select(s => s.AccuracyScore))
+                            : string.Empty
+                    };
+
+                    if (word.Syllables != null)
+                    {
+                        foreach (var s in word.Syllables)
+                        {
+                            wordDto.Syllables.Add(new SyllableAssessmentDTO
+                            {
+                                Syllable = s.Syllable,
+                                AccuracyScore = s.AccuracyScore
+                            });
+                        }
+                    }
+
+                    dto.Words.Add(wordDto);
                 }
                 return dto;
             }
-            else if (result.Reason == ResultReason.NoMatch)
-            {
-                throw new Exception("Không nhận diện được giọng nói. Vui lòng nói to, rõ hơn.");
-            }
-            else if (result.Reason == ResultReason.Canceled)
-            {
-                var cancellation = CancellationDetails.FromResult(result);
-                throw new Exception($"Azure Error: {cancellation.ErrorDetails}");
-            }
 
-            throw new Exception("Lỗi không xác định.");
+            throw result.Reason switch
+            {
+                ResultReason.NoMatch => new Exception("Không nhận diện được giọng nói. Vui lòng nói rõ hơn."),
+                ResultReason.Canceled => new Exception($"Azure Error: {CancellationDetails.FromResult(result).ErrorDetails}"),
+                _ => new Exception("Lỗi không xác định khi gọi Azure Speech.")
+            };
         }
-
         private byte[] ConvertAudioToPcm16Khz(Stream inputStream)
         {
             try
@@ -109,8 +128,7 @@ namespace Tokki.Infrastructure.Services
                 var outFormat = new WaveFormat(16000, 16, 1);
 
                 using var resampler = new MediaFoundationResampler(reader, outFormat);
-                resampler.ResamplerQuality = 60; // Chất lượng cao nhất
-
+                resampler.ResamplerQuality = 60; 
                 using var outStream = new MemoryStream();
                 WaveFileWriter.WriteWavFileToStream(outStream, resampler);
 
