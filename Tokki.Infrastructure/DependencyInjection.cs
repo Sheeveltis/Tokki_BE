@@ -16,7 +16,7 @@ namespace Tokki.Infrastructure
         // Hàm này sẽ được gọi bên WebAPI
         public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
-            // 1. Đăng ký DbContext
+            // 1. Đăng ký DbContext-
             services.AddDbContext<TokkiDbContext>(options =>
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 

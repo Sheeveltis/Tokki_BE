@@ -75,7 +75,8 @@ namespace Tokki.Application.UseCases.Topics.Queries.GetById
 
                 Status = topic.Status,
                 VocabularyCount = activeVocabularies.Count,
-                Vocabularies = activeVocabularies
+                Vocabularies = activeVocabularies,
+                OrderIndex = topic.OrderIndex,
             };
 
             return OperationResult<TopicDetailDto>.Success(dto, 200, "Lấy thông tin chủ đề thành công");

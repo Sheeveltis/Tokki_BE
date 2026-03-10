@@ -293,5 +293,12 @@ namespace Tokki.Infrastructure.Repositories
                 .FirstOrDefaultAsync(v => v.VocabularyId == vocabularyId);
         }
 
+
+        public async Task<List<Vocabulary>> GetAllByTextAsync(string text)
+        {
+            return await _context.Vocabularies
+                .Where(v => v.Text.ToLower() == text.ToLower().Trim())
+                .ToListAsync();
+        }
     }
 }

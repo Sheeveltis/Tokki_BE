@@ -54,7 +54,6 @@ namespace Tokki.Application.UseCases.Accounts.Queries.GetInternalUserVipAccounts
                 filteredAccounts = request.VipStatus.Value switch
                 {
                     VipStatus.Active => filteredAccounts.Where(a => a.VipExpirationDate.HasValue && a.VipExpirationDate.Value > now),
-                    VipStatus.Expired => filteredAccounts.Where(a => a.VipExpirationDate.HasValue && a.VipExpirationDate.Value <= now),
                     VipStatus.NoVip => filteredAccounts.Where(a => !a.VipExpirationDate.HasValue),
                     _ => filteredAccounts
                 };

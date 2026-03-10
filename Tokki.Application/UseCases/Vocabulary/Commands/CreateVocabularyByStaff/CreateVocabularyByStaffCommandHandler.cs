@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
@@ -66,18 +67,22 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.CreateVocabularyByStaff
 
             try
             {
-                var existingVocab =
-                    await _vocabularyRepository.GetByTextAndDefinitionAsync(text, definition);
+                // ✅ Check trùng normalize: "Ở đâu" == "ở ĐÂU" == "Ở     ĐÂU"
+                var existingVocabs = await _vocabularyRepository.GetAllByTextAsync(text);
+                var normalizedDefinition = Normalize(definition);
 
-                if (existingVocab != null)
+                var isDuplicate = existingVocabs?.Any(v =>
+                    string.Equals(Normalize(v.Text), Normalize(text), StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(Normalize(v.Definition), normalizedDefinition, StringComparison.OrdinalIgnoreCase)
+                ) ?? false;
+
+                if (isDuplicate)
                 {
                     return OperationResult<VocabularyResponse>.Failure(
                         new List<Error>
                         {
-                            new Error(
-                                "Vocabulary.Duplicated",
-                                $"Từ vựng '{text}' với nghĩa '{definition}' đã tồn tại."
-                            )
+                            new Error("Vocabulary.Duplicated",
+                                $"Từ vựng '{text}' với nghĩa '{definition}' đã tồn tại.")
                         },
                         400,
                         $"Từ vựng '{text}' với nghĩa '{definition}' đã tồn tại trong hệ thống."
@@ -96,8 +101,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.CreateVocabularyByStaff
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex,
-                        "Không thể tạo audio cho vocabulary (Staff): {Text}", text);
+                    _logger.LogWarning(ex, "Không thể tạo audio cho vocabulary (Staff): {Text}", text);
                 }
 
                 var vocabulary = new Domain.Entities.Vocabulary
@@ -116,6 +120,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.CreateVocabularyByStaff
                 await _vocabularyRepository.AddAsync(vocabulary);
 
                 var exampleResponses = new List<VocabularyExampleResponse>();
+                var skippedExamples = new List<string>();
                 var seenSentences = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
                 if (request.Examples != null && request.Examples.Any())
@@ -123,9 +128,25 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.CreateVocabularyByStaff
                     foreach (var exampleDto in request.Examples)
                     {
                         var sentence = exampleDto.Sentence?.Trim();
-                        if (string.IsNullOrWhiteSpace(sentence)) continue;
 
-                        if (!seenSentences.Add(sentence)) continue;
+                        // ✅ Câu ví dụ có thể để trống, skip nếu trống
+                        if (string.IsNullOrWhiteSpace(sentence))
+                            continue;
+
+                        if (!seenSentences.Add(sentence))
+                        {
+                            skippedExamples.Add(sentence);
+                            continue;
+                        }
+
+                        var existingExample = await _vocabularyExampleRepository.GetBySentenceAsync(
+                            vocabulary.VocabularyId, sentence);
+
+                        if (existingExample != null)
+                        {
+                            skippedExamples.Add(sentence);
+                            continue;
+                        }
 
                         var example = new Domain.Entities.VocabularyExample
                         {
@@ -153,6 +174,10 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.CreateVocabularyByStaff
                 await _vocabularyExampleRepository.SaveChangesAsync(cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
 
+                var message = "Tạo vocabulary thành công. Đang chờ phê duyệt.";
+                if (skippedExamples.Any())
+                    message += $" Đã bỏ qua {skippedExamples.Count} câu ví dụ trùng lặp.";
+
                 return OperationResult<VocabularyResponse>.Success(
                     new VocabularyResponse
                     {
@@ -166,22 +191,26 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.CreateVocabularyByStaff
                         Examples = exampleResponses
                     },
                     201,
-                    "Tạo vocabulary thành công. Đang chờ phê duyệt."
+                    message
                 );
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync(cancellationToken);
-
-                _logger.LogError(ex,
-                    "Lỗi khi Staff tạo vocabulary: {Text}", text);
-
+                _logger.LogError(ex, "Lỗi khi Staff tạo vocabulary: {Text}", text);
                 return OperationResult<VocabularyResponse>.Failure(
                     new List<Error> { AppErrors.ServerError },
                     500,
                     $"Lỗi hệ thống: {ex.Message}"
                 );
             }
+        }
+
+        // ✅ Normalize: trim, collapse khoảng trắng giữa, lowercase
+        private static string Normalize(string input)
+        {
+            var collapsed = Regex.Replace(input.Trim(), @"\s+", " ");
+            return collapsed.ToLowerInvariant();
         }
     }
 }
