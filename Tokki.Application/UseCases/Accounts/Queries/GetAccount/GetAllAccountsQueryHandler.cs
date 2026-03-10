@@ -2,6 +2,7 @@
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.Accounts.DTOs;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Accounts.Queries.GetAccount
 {
@@ -18,10 +19,8 @@ namespace Tokki.Application.UseCases.Accounts.Queries.GetAccount
             GetAllAccountsQuery request,
             CancellationToken cancellationToken)
         {
-            // Lấy tất cả accounts (hoặc dùng GetPagedAsync nếu muốn query trực tiếp từ DB)
-            var (allAccounts, totalBeforeFilter) = await _repository.GetPagedAsync(1, int.MaxValue);
+            var (allAccounts, _) = await _repository.GetPagedAsync(1, int.MaxValue);
 
-            // Apply filters
             var filteredAccounts = allAccounts.AsQueryable();
 
             // Filter by Status
@@ -59,20 +58,18 @@ namespace Tokki.Application.UseCases.Accounts.Queries.GetAccount
                     a.PhoneNumber != null && a.PhoneNumber.Contains(request.SearchPhone));
             }
 
-            // Filter by VIP Status
+            // Filter by VIP Status: chỉ còn Active / NoVip
             if (request.VipStatus.HasValue)
             {
                 var now = DateTime.UtcNow;
+
                 filteredAccounts = request.VipStatus.Value switch
                 {
-                    Domain.Enums.VipStatus.Active => filteredAccounts
+                    VipStatus.Active => filteredAccounts
                         .Where(a => a.VipExpirationDate.HasValue && a.VipExpirationDate.Value > now),
 
-                    Domain.Enums.VipStatus.Expired => filteredAccounts
-                        .Where(a => a.VipExpirationDate.HasValue && a.VipExpirationDate.Value <= now),
-
-                    Domain.Enums.VipStatus.NoVip => filteredAccounts
-                        .Where(a => !a.VipExpirationDate.HasValue),
+                    VipStatus.NoVip => filteredAccounts
+                        .Where(a => !a.VipExpirationDate.HasValue || a.VipExpirationDate.Value <= now),
 
                     _ => filteredAccounts
                 };
