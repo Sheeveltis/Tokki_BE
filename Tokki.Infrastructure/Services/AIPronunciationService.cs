@@ -22,6 +22,7 @@ namespace Tokki.Infrastructure.Services
             _httpClient = httpClient;
             _options = options.Value;
         }
+
         public async Task<(string GeneralFeedback, double FinalAccuracyScore)> GenerateFeedbackAsync(
      PronunciationAssessmentDTO assessment,
      string targetText,
@@ -30,7 +31,6 @@ namespace Tokki.Infrastructure.Services
             var config = _options.Pronunciation;
             if (string.IsNullOrEmpty(config.ApiKey)) return ("Lỗi cấu hình hệ thống.", assessment.AccuracyScore);
 
-            // 1. Chuẩn bị dữ liệu chi tiết âm tiết để Gemini "soi"
             var wordDetails = assessment.Words
                 .Select(w => {
                     string syllables = w.Syllables != null && w.Syllables.Any()
@@ -42,26 +42,26 @@ namespace Tokki.Infrastructure.Services
 
             string detailedInfo = string.Join("\n", wordDetails);
 
-            // 2. Prompt yêu cầu feedback tổng thể và hướng dẫn sửa từng từ
             string prompt = $@"
-    Bạn là chuyên gia ngôn ngữ Hàn Quốc tích hợp trong hệ thống Tokki. Hãy phân tích dữ liệu phát âm:
-    - Câu mẫu: '{targetText}'
-    - Quy tắc trọng tâm: {ruleContext}
-    - Dữ liệu từ Azure:
-    {detailedInfo}
+            Bạn là chuyên gia ngôn ngữ Hàn Quốc tích hợp trong hệ thống Tokki. Hãy phân tích dữ liệu phát âm:
+            - Câu mẫu: '{targetText}'
+            - Quy tắc trọng tâm: {ruleContext}
+            - Dữ liệu từ Azure:
+            {detailedInfo}
 
-    Nhiệm vụ:
-    1. Đưa ra nhận xét tổng thể (generalFeedback) về cả câu (2-3 câu).
-    2. Với mỗi từ có AccuracyScore < 80, hãy đưa ra hướng dẫn sửa lỗi (repairGuide) ngắn gọn.
-    3. Nếu vi phạm quy tắc '{ruleContext}', hãy trừ từ 10-20 điểm (penalty).
-    4. Trả về JSON:
-    {{
-        ""penalty"": <số điểm trừ>,
-        ""generalFeedback"": ""<nhận xét tổng thể, xưng Tokki gọi Bạn>"",
-        ""wordFeedbacks"": [
-            {{ ""word"": ""<từ bị lỗi>"", ""repairGuide"": ""<cách sửa khẩu hình>"" }}
-        ]
-    }}";
+            Nhiệm vụ:
+            1. ĐÁNH GIÁ ĐỘ TÍN NHIỆM: Nếu điểm AccuracyScore của hầu hết các từ đều rất thấp (< 40), hãy nhận định rằng người học phát âm chưa rõ chữ hoặc đọc sai kịch bản. Trong trường hợp này, phần 'generalFeedback' chỉ cần khuyên người học đọc lại chậm rãi, KHÔNG CẦN hướng dẫn sửa lỗi từng từ (để rỗng mảng wordFeedbacks).
+            2. Đưa ra nhận xét tổng thể (generalFeedback) về cả câu (2-3 câu).
+            3. Với mỗi từ có AccuracyScore từ 40 đến 79, hãy đưa ra hướng dẫn sửa lỗi (repairGuide) ngắn gọn.
+            4. Nếu vi phạm quy tắc '{ruleContext}', hãy trừ từ 10-20 điểm (penalty).
+            5. Trả về JSON:
+            {{
+                ""penalty"": <số điểm trừ>,
+                ""generalFeedback"": ""<nhận xét tổng thể, xưng Tokki gọi Bạn>"",
+                ""wordFeedbacks"": [
+                    {{ ""word"": ""<từ bị lỗi>"", ""repairGuide"": ""<cách sửa khẩu hình>"" }}
+                ]
+            }}";
 
             var url = $"{config.BaseUrl.TrimEnd('/')}/models/{config.Model}:generateContent?key={config.ApiKey}";
             var payload = new
@@ -73,20 +73,29 @@ namespace Tokki.Infrastructure.Services
             try
             {
                 var response = await _httpClient.PostAsJsonAsync(url, payload);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorDetails = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Gemini API FAILED: {response.StatusCode} - {errorDetails}");
+                    return ("Hệ thống AI hiện đang quá tải hoặc hết lượt dùng. Bạn vui lòng thử lại sau.", assessment.AccuracyScore);
+                }
+
                 var result = await response.Content.ReadFromJsonAsync<JsonElement>();
 
-                // Kiểm tra an toàn key 'candidates' để tránh lỗi dictionary
-                if (!result.TryGetProperty("candidates", out var candidates))
+                if (!result.TryGetProperty("candidates", out var candidates) || candidates.GetArrayLength() == 0)
                     return ("Hệ thống bận.", assessment.AccuracyScore);
 
                 var rawJson = candidates[0].GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString();
+
+                rawJson = rawJson?.Replace("```json", "").Replace("```", "").Trim();
+
                 var feedbackData = JsonSerializer.Deserialize<JsonElement>(rawJson!);
 
                 int penalty = feedbackData.GetProperty("penalty").GetInt32();
                 string generalFeedback = feedbackData.GetProperty("generalFeedback").GetString()!;
                 var wordFeedbacks = feedbackData.GetProperty("wordFeedbacks").EnumerateArray().ToList();
 
-                // 3. Ánh xạ hướng dẫn sửa lỗi vào từng WordAssessmentDTO
                 foreach (var word in assessment.Words)
                 {
                     var guide = wordFeedbacks.FirstOrDefault(f => f.GetProperty("word").GetString() == word.Word);
@@ -103,9 +112,10 @@ namespace Tokki.Infrastructure.Services
             catch (Exception ex)
             {
                 Console.WriteLine($"Gemini Error: {ex.Message}");
-                return ("Tokki đang xử lý dữ liệu.", assessment.AccuracyScore);
+                return ("Tokki đang xử lý dữ liệu. Vui lòng thử lại.", assessment.AccuracyScore);
             }
         }
+
         public async Task<(string Feedback, double FinalAccuracyScore)> GenerateFeedbackWithAudioAsync(
             PronunciationAssessmentDTO assessment,
             string targetText,
@@ -158,7 +168,10 @@ namespace Tokki.Infrastructure.Services
                 var response = await _httpClient.PostAsJsonAsync(url, payload);
                 if (!response.IsSuccessStatusCode)
                 {
-                    return ("Tokki nhận thấy hệ thống AI đang bận, bạn vui lòng thử lại sau nhé.", assessment.AccuracyScore);
+                    // LỚP PHÒNG NGỰ 1: In ra lỗi nếu xịt để biết do mạng hay do API Key
+                    var errorDetails = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Gemini Audio API FAILED: {response.StatusCode} - {errorDetails}");
+                    return ("Tokki nhận thấy hệ thống AI đang quá tải hoặc hết lượt dùng, bạn vui lòng thử lại sau nhé.", assessment.AccuracyScore);
                 }
 
                 var result = await response.Content.ReadFromJsonAsync<JsonElement>();
@@ -170,13 +183,15 @@ namespace Tokki.Infrastructure.Services
 
                 var rawJson = candidates[0].GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString();
 
-                var feedbackData = JsonSerializer.Deserialize<JsonElement>(rawJson);
+                rawJson = rawJson?.Replace("```json", "").Replace("```", "").Trim();
+
+                var feedbackData = JsonSerializer.Deserialize<JsonElement>(rawJson!);
 
                 int penalty = 0;
                 if (feedbackData.TryGetProperty("penalty", out var p)) penalty = p.GetInt32();
 
                 string comment = "Tokki đánh giá bài làm của bạn rất tốt.";
-                if (feedbackData.TryGetProperty("comment", out var c)) comment = c.GetString();
+                if (feedbackData.TryGetProperty("comment", out var c)) comment = c.GetString()!;
 
                 double finalScore = Math.Max(0, assessment.AccuracyScore - penalty);
 
