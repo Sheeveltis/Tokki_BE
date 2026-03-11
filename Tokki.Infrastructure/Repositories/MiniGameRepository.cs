@@ -32,10 +32,12 @@ namespace Tokki.Infrastructure.Repositories
         {
             return await _context.Topics
                 .AsNoTracking()
-                .Where(t => t.Status == TopicStatus.Active && t.TopicType == TopicType.Solitaire)
+                .Where(t => t.Status == TopicStatus.Active
+                         && t.TopicType == TopicType.Solitaire
+                         && t.VocabularyTopics.Count(vt => vt.Status == VocabularyTopicStatus.Active && vt.Vocabulary != null) >= 4)
                 .Include(t => t.VocabularyTopics.Where(vt => vt.Status == VocabularyTopicStatus.Active))
-                     .ThenInclude(vt => vt.Vocabulary)
-                .OrderBy(t => Guid.NewGuid())
+                    .ThenInclude(vt => vt.Vocabulary)
+                .OrderBy(t => Guid.NewGuid()) 
                 .Take(50)
                 .ToListAsync(token);
         }

@@ -22,7 +22,9 @@ using Tokki.WebAPI.Hubs;
 using Tokki.WebAPI.Middlewares;
 using Tokki.WebAPI.Services;
 using Tokki.Worker;
-var builder = WebApplication.CreateBuilder(args);
+try
+{
+    var builder = WebApplication.CreateBuilder(args);
 
 // ==========================================
 // 1. ĐĂNG KÝ SERVICES
@@ -158,8 +160,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowReactApp", policy =>
     {
         policy.WithOrigins("http://localhost:3000",
-               "https://localhost:7000",          // API itself (cho SignalR)
-                  "https://localhost:7178") // Cho phép đúng cái Frontend của bạn
+               "https://localhost:7000")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -237,3 +238,9 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+}
+catch (Exception ex)
+{
+    Console.WriteLine("LỖI KHỞI ĐỘNG APP: " + ex.ToString());
+    Console.ReadLine();
+}
