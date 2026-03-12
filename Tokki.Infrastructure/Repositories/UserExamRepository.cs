@@ -203,5 +203,23 @@ namespace Tokki.Infrastructure.Repositories
             return await _context.UserExamWritingAnswers
                 .AnyAsync(a => a.UserExamId == userExamId && a.Score == null, token);
         }
+        public async Task<List<QuestionType>> GetIncorrectQuestionTypesByExamIdAsync(string userExamId, CancellationToken cancellationToken)
+        {
+            var objectiveTypeIds = _context.UserExamAnswers
+                .Where(ua => ua.UserExamId == userExamId && ua.IsCorrect == false)
+                .Select(ua => ua.Question.QuestionTypeId);
+
+            var writingTypeIds = _context.UserExamWritingAnswers
+                .Where(uwa => uwa.UserExamId == userExamId)
+                .Select(uwa => uwa.Question.QuestionTypeId);
+            return await objectiveTypeIds
+                .Union(writingTypeIds)
+                .Join(_context.QuestionTypes,
+                      id => id,
+                      qt => qt.QuestionTypeId,
+                      (id, qt) => qt)
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+        }
     }
 }

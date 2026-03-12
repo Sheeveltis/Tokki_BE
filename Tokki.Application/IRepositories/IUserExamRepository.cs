@@ -35,5 +35,6 @@ namespace Tokki.Application.IRepositories
         Task<UserExam?> GetReadingDetailAsync(string userExamId, CancellationToken token);
         Task<UserExam?> GetWritingDetailAsync(string userExamId, CancellationToken token);
         Task<bool> HasPendingWritingAnswersAsync(string userExamId, CancellationToken token);
+        Task<List<QuestionType>> GetIncorrectQuestionTypesByExamIdAsync(string userExamId, CancellationToken cancellationToken);
     }
 }
