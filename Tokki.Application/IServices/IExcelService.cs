@@ -13,5 +13,6 @@ namespace Tokki.Application.IServices
         Task<List<VocabularyExcelDTO>> ExtractVocabularyDataAsync(IFormFile file);
         Task<byte[]> ExportVocabularyToExcelAsync(List<VocabularyExportDTO> data, string sheetName);
         Task<QuestionBankImportDTO> ExtractQuestionBankDataAsync(IFormFile file);
+        Task<List<PronunciationExampleExcelDTO>> ExtractExampleDataAsync(IFormFile file);
     }
 }

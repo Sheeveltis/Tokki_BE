@@ -90,6 +90,11 @@ namespace Tokki.Application.IRepositories
         //Hàm của Kho
         //Add nhiều vocab 1 lần
         Task AddRangeAsync(List<Vocabulary> vocabularies);
+
+
+        //Hàm của kiệt
+        Task<List<Vocabulary>> GetAllByTextAsync(string text);
+
     }
 
 }

@@ -4,10 +4,19 @@ namespace Tokki.Application.Common.Models
 {
     public class OperationResult<T>
     {
+        [JsonPropertyName("isSuccess")]
         public bool IsSuccess { get; set; }
+
+        [JsonPropertyName("data")]
         public T? Data { get; set; }
+
+        [JsonPropertyName("errors")]
         public List<Error>? Errors { get; set; }
+
+        [JsonPropertyName("message")]
         public string Message { get; set; } = string.Empty;
+
+        [JsonPropertyName("statusCode")]
         public int StatusCode { get; set; } = 200;
 
         private OperationResult() { }
@@ -47,6 +56,7 @@ namespace Tokki.Application.Common.Models
                 Message = uiMessage
             };
         }
+
         public static OperationResult<T> Failure(Error error, int statusCode = 400)
         {
             return new OperationResult<T>
@@ -63,7 +73,5 @@ namespace Tokki.Application.Common.Models
         {
             return Failure(new Error("Error.Generic", errorMsg), statusCode, errorMsg);
         }
-
-
     }
 }

@@ -5,6 +5,7 @@ using Microsoft.CognitiveServices.Speech.Transcription;
 using System.Security.Claims;
 using Tokki.Application.Common.Models;
 using Tokki.Application.UseCases.Excel.Commands.AddVocabByExcel;
+using Tokki.Application.UseCases.Excel.Commands.ImportPronunciationExample;
 using Tokki.Application.UseCases.Excel.Commands.ImportQuestionsFromExcel;
 using Tokki.Application.UseCases.Excel.DTOs;
 using Tokki.Application.UseCases.Excel.Queries.ExportVocabByTopic;
@@ -77,6 +78,35 @@ namespace Tokki.WebAPI.Controllers
             }
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
+        }
+        [HttpPost("import/pronunciation-example")]
+        [Consumes("multipart/form-data")]
+        [Authorize(Roles = "Admin, Staff")]
+        public async Task<IActionResult> ImportPronunciationExempleByExcel(IFormFile file)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                {
+                    return BadRequest("Vui lòng chọn file Excel.");
+                }
+
+                var userId = User.FindFirst("UserId")?.Value
+                             ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                var command = new ImportPronunciationExampleCommand
+                {
+                    File = file,
+                    UserId = userId!,
+                };
+
+                var result = await _sender.Send(command);
+                return StatusCode(result.StatusCode, result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.ToString());
+            }
         }
         [HttpGet("export/topic/{topicId}")]
         [Authorize(Roles = "Admin, Staff")] 

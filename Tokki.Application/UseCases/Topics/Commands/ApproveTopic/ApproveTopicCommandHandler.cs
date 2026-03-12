@@ -91,6 +91,12 @@ namespace Tokki.Application.UseCases.Topics.Commands.ApproveTopic
 
                 var now = DateTime.UtcNow.AddHours(7);
 
+                int maxOrderIndex = await _topicRepository.GetMaxOrderIndexForVocabAsync();
+                topic.OrderIndex = maxOrderIndex + 1;
+
+                // (optional nhưng nên có) ép type đúng luôn:
+                topic.TopicType = TopicType.VocabStudy;
+
                 // Duyệt
                 topic.Status = TopicStatus.Active;
 

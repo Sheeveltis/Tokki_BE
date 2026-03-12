@@ -13,6 +13,7 @@ using Tokki.Application.UseCases.Topics.Commands.RejectTopic;
 using Tokki.Application.UseCases.Topics.Commands.RemoveVocabulariesFromTopic;
 using Tokki.Application.UseCases.Topics.Commands.SubmitTopicForApproval;
 using Tokki.Application.UseCases.Topics.Commands.UpdateTopic;
+using Tokki.Application.UseCases.Topics.Commands.UpdateTopicOrderIndex;
 using Tokki.Application.UseCases.Topics.Commands.UpdateTopicStatus;
 using Tokki.Application.UseCases.Topics.DTOs;
 using Tokki.Application.UseCases.Topics.Queries;
@@ -184,14 +185,14 @@ namespace Tokki.WebAPI.Controllers
 
             return Ok(result);
         }
-    //    [HttpPost("staff/create-topic")]
-    //    [Authorize(Roles = "Staff")]
-    //    public async Task<IActionResult> CreateTopicByStaff(
-    //[FromBody] CreateTopicByStaffCommand command)
-    //    {
-    //        var result = await _mediator.Send(command);
-    //        return StatusCode(result.StatusCode, result);
-    //    }
+        [HttpPost("staff/create-topic")]
+        [Authorize(Roles = "Staff")]
+        public async Task<IActionResult> CreateTopicByStaff(
+    [FromBody] CreateTopicByStaffCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
 
         [HttpPost]
         public async Task<IActionResult> CreateTopic([FromBody] CreateTopicCommand request)
@@ -290,12 +291,31 @@ namespace Tokki.WebAPI.Controllers
             var result = await _mediator.Send(command);
             return StatusCode(result.StatusCode, result);
         }
+        [HttpPut("update-order-index")]
+        public async Task<IActionResult> UpdateTopicOrderIndex([FromBody] UpdateTopicOrderIndexCommand command)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return StatusCode(401, OperationResult<bool>.Failure(
+                    new List<Error> { AppErrors.UserUnauthorized },
+                    401,
+                    AppErrors.UserUnauthorized.Description
+                ));
+            }
+
+            command.UpdatedBy = userId;
+
+            var result = await _mediator.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
         [HttpPut("{topicId}/publish")]
         public async Task<IActionResult> Publish(string topicId)
         {
             var result = await _mediator.Send(new PublishTopicCommand { TopicId = topicId });
             return StatusCode(result.StatusCode, result);
         }
+
 
 
         [HttpDelete("{topicId}")]

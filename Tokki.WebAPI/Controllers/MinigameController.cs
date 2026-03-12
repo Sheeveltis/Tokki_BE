@@ -1,7 +1,14 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using Tokki.Application.UseCases.MiniGame.Commands.PublishWordleSentence;
+using Tokki.Application.UseCases.MiniGame.Commands.SubmitWordleGuess;
+using Tokki.Application.UseCases.MiniGame.Commands.SubmitWordleSentence;
+using Tokki.Application.UseCases.MiniGame.Commands.ToggleLikeWordle;
 using Tokki.Application.UseCases.MiniGame.Queries.MatchingCard;
 using Tokki.Application.UseCases.MiniGame.Queries.Solitaire;
+using Tokki.Application.UseCases.MiniGame.Queries.Wordle;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -38,5 +45,118 @@ namespace Tokki.WebAPI.Controllers
             var result = await _sender.Send(query);
             return StatusCode(result.StatusCode, result);
         }
+        [HttpPost("wordle/guess")]
+        public async Task<IActionResult> PostWordleGuess([FromBody] SubmitWordleGuessCommand command)
+        {
+            var userId = User.FindFirst("UserId")?.Value
+                     ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("Không xác định được người dùng.");
+            }
+            command.UserId = userId;
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+        [HttpPost("wordle/submit-sentence")]
+        public async Task<IActionResult> SubmitSentence([FromBody] SubmitWordleSentenceCommand command)
+        {
+            var userId = User.FindFirst("UserId")?.Value
+                   ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("Không xác định được người dùng.");
+            }
+            command.UserId = userId;
+
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+        [HttpPut("wordle/publish-sentence")]
+        public async Task<IActionResult> PublishWordleSentence([FromBody] PublishWordleSentenceCommand? command)
+        {
+            if (command == null)
+            {
+                return BadRequest("Dữ liệu gửi lên không hợp lệ.");
+            }
+            var userId = User.FindFirst("UserId")?.Value
+                         ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("Không xác định được người dùng. Vui lòng đăng nhập lại.");
+            }
+            command.UserId = userId;
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+        [HttpGet("wordle/{dailyWordleId}/top-sentences")]
+        public async Task<IActionResult> GetTopWordleSentences(string dailyWordleId, [FromQuery] int top = 20)
+        {
+            var userId = User.FindFirst("UserId")?.Value
+                         ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var query = new GetTopWordleSentencesQuery
+            {
+                DailyWordleId = dailyWordleId,
+                Top = top,
+                CurrentUserId = userId 
+            };
+
+            var result = await _sender.Send(query);
+
+            return StatusCode(result.StatusCode, result);
+        }
+        [HttpPost("wordle/sentence/toggle-like")]
+        [Authorize]
+        public async Task<IActionResult> ToggleLike([FromBody] ToggleLikeWordleCommand command)
+        {
+            command ??= new ToggleLikeWordleCommand();
+
+            var userId = User.FindFirst("UserId")?.Value
+                         ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            command.UserId = userId;
+            var result = await _sender.Send(command);
+
+            return StatusCode(result.StatusCode, result);
+        }
+        [HttpGet("wordle")]
+        public async Task<IActionResult> GetWordle()
+        {
+            var userId = User.FindFirst("UserId")?.Value
+                     ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("Không xác định được người dùng.");
+            }
+            var query = new GetDailyWordleStatusQuery
+            {
+                UserId = userId
+            };
+            var result = await _sender.Send(query);
+            return StatusCode(result.StatusCode, result);
+        }
+        [HttpGet("wordle/result/{dailyWordleId}")]
+        public async Task<IActionResult> GetResult(string dailyWordleId)
+        {
+            var userId = User.FindFirst("UserId")?.Value
+                    ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("Không xác định được người dùng.");
+            }
+            var query = new GetWordleResultQuery
+            {
+                DailyWordleId = dailyWordleId,
+                UserId = userId
+            };
+
+            var result = await _sender.Send(query);
+            return StatusCode(result.StatusCode, result);
+        }
+        
     }
 }

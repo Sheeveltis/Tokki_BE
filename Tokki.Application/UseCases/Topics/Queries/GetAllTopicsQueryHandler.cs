@@ -20,31 +20,30 @@ namespace Tokki.Application.UseCases.Topics.Queries
         public async Task<OperationResult<PagedResult<TopicDto>>> Handle(GetAllTopicsQuery request, CancellationToken cancellationToken)
         {
             // Lấy dữ liệu phân trang
-            var (items, totalCount) = await _repository.GetPagedAsync(
-                  request.PageNumber,
-                  request.PageSize,
-                  request.SearchTerm,
-                  request.Status,
-                  request.Level
-              );
+            var (items, totalCount) = await _repository.GetVocabTopicsPagedAsync( // ✅ gọi method mới
+    request.PageNumber,
+    request.PageSize,
+    request.SearchTerm,
+    request.Status,
+    request.Level
+);
 
             var dtos = new List<TopicDto>();
 
             foreach (var topic in items)
             {
-                // Đếm số vocabularies trong topic (ĐÃ CẬP NHẬT)
                 var vocabularyCount = await _repository.CountVocabulariesInTopicAsync(topic.TopicId);
 
                 dtos.Add(new TopicDto
                 {
                     TopicId = topic.TopicId,
                     TopicName = topic.TopicName,
-                    Description = topic.Description,                  
-                    Level=topic.Level,
-                    ImgUrl=topic.ImgUrl,
+                    Description = topic.Description,
+                    Level = topic.Level,
+                    ImgUrl = topic.ImgUrl,
                     VocabularyCount = vocabularyCount,
-                    Status = topic.Status
-
+                    Status = topic.Status,
+                    OrderIndex = topic.OrderIndex 
                 });
             }
 

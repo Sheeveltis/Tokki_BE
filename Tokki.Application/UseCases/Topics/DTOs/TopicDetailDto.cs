@@ -27,5 +27,6 @@ namespace Tokki.Application.UseCases.Topics.DTOs
 
         public int VocabularyCount { get; set; }
         public List<VocabularyDto> Vocabularies { get; set; } = new List<VocabularyDto>();
+        public int? OrderIndex { get; set; }
     }
 }

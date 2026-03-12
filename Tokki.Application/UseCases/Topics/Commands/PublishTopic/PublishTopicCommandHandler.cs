@@ -76,7 +76,9 @@ namespace Tokki.Application.UseCases.Topics.Commands.PublishTopic
                 {
                     return OperationResult<bool>.Success(true, 200, "Topic đã được kích hoạt.");
                 }
-
+                // 2) Lấy OrderIndex lớn nhất
+                int maxOrderIndex = await _topicRepository.GetMaxOrderIndexAsync();
+                int newOrderIndex = maxOrderIndex + 1; 
                 // Chỉ cho phép Draft -> Active
                 if (topic.Status != TopicStatus.Draft)
                 {
@@ -89,6 +91,7 @@ namespace Tokki.Application.UseCases.Topics.Commands.PublishTopic
 
                 // 5) UPDATE
                 topic.Status = TopicStatus.Active;
+                topic.OrderIndex = newOrderIndex;
 
                 // Update audit
                 topic.UpdateBy = currentUserId;
