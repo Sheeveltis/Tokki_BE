@@ -58,7 +58,7 @@ namespace Tokki.Infrastructure.Repositories
         public async Task<int> GetExamScoreAsync(string examId, string userId, CancellationToken cancellationToken = default)
         {
             var score = await _context.UserExams
-                .Where(ue => ue.ExamId == examId && ue.UserId == userId && ue.Status == 1)
+                .Where(ue => ue.ExamId == examId && ue.UserId == userId && ue.Status == UserExamStatus.Completed)
                 .OrderByDescending(ue => ue.SubmitTime) 
                 .Select(ue => ue.Score)
                 .FirstOrDefaultAsync(cancellationToken);
@@ -81,7 +81,7 @@ namespace Tokki.Infrastructure.Repositories
         public async Task<UserExam?> GetUserExamByExamIdAsync(string examId, string userId, CancellationToken cancellationToken = default)
         {
             return await _context.UserExams
-                .Where(ue => ue.ExamId == examId && ue.UserId == userId && ue.Status == 1)
+                .Where(ue => ue.ExamId == examId && ue.UserId == userId && ue.Status == UserExamStatus.Completed)
                 .OrderByDescending(ue => ue.SubmitTime) 
                 .FirstOrDefaultAsync(cancellationToken);
         }

@@ -63,7 +63,6 @@ namespace Tokki.Infrastructure.Data
         public DbSet<PronunciationRule> PronunciationRules { get; set; }
         public DbSet<PronunciationExample> PronunciationExamples { get; set; }
         //User take exam
-        public DbSet<UserExam> UserExams { get; set; }
         public DbSet<UserExamAnswer> UserExamAnswers { get; set; }
         public DbSet<UserExamWritingAnswer> UserExamWritingAnswers { get; set; }
         //Wordle
