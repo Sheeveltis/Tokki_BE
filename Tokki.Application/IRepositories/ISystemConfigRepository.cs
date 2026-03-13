@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using Tokki.Domain.Entities;
@@ -15,5 +16,6 @@ namespace Tokki.Application.IRepositories
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
         Task<(List<SystemConfig> Items, int TotalCount)> GetPagedAsync(int pageNumber, int pageSize);
         Task<string?> GetValueByKeyAsync(string key);
+        Task<SystemConfig?> FirstOrDefaultAsync(Expression<Func<SystemConfig, bool>> predicate, CancellationToken cancellationToken = default);
     }
 }
