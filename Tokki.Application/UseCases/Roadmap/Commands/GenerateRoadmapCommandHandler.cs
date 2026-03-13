@@ -39,6 +39,16 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
 
             try
             {
+                var activeRoadmap = await _userRoadmapRepository.GetActiveRoadmapByUserIdAsync(
+                request.UserId, cancellationToken);
+
+                if (activeRoadmap != null)
+                {
+                    return OperationResult<string>.Failure(
+                        "Bạn đang có một lộ trình học đang hoạt động. Vui lòng hoàn thành hoặc hủy lộ trình cũ trước khi tạo mới.",
+                        400);
+                }
+
                 var aiPlan = await _aiRoadmapService.GenerateStudyPlanAsync(
                     request.TargetAim,
                     request.CurrentLevel,
