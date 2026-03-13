@@ -5,10 +5,15 @@ using Microsoft.CognitiveServices.Speech.Transcription;
 using System.Security.Claims;
 using Tokki.Application.Common.Models;
 using Tokki.Application.UseCases.Excel.Commands.AddVocabByExcel;
+using Tokki.Application.UseCases.Excel.Commands.ImportAccounts;
 using Tokki.Application.UseCases.Excel.Commands.ImportPronunciationExample;
 using Tokki.Application.UseCases.Excel.Commands.ImportQuestionsFromExcel;
+using Tokki.Application.UseCases.Excel.Commands.ImportQuestionTypes;
 using Tokki.Application.UseCases.Excel.DTOs;
+using Tokki.Application.UseCases.Excel.Queries.ExportAccounts;
+using Tokki.Application.UseCases.Excel.Queries.ExportQuestionTypes;
 using Tokki.Application.UseCases.Excel.Queries.ExportVocabByTopic;
+using Tokki.Application.UseCases.Excel.Queries.GetTemplate;
 using Tokki.Application.UseCases.LiveChat.Commands.CreateSupportChat;
 
 namespace Tokki.WebAPI.Controllers
@@ -122,6 +127,73 @@ namespace Tokki.WebAPI.Controllers
 
             return BadRequest(result.Errors);
         }
-      
+        [HttpGet("template/account")]
+        public async Task<IActionResult> GetTemplate()
+        {
+            var query = new GetAccountTemplateQuery();
+            var result = await _sender.Send(query);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            // Trả về file Excel cho Frontend tải xuống
+            return File(
+                result.Data.FileBytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                result.Data.FileName
+            );
+        }
+
+        // ==========================================
+        // 2. XUẤT DỮ LIỆU TỪ DB RA EXCEL (EXPORT)
+        // ==========================================
+        [HttpGet("export/account")]
+        public async Task<IActionResult> ExportAccount()
+        {
+                var query = new ExportAccountsQuery();
+                var result = await _sender.Send(query);
+                return File(result.Data.FileBytes, "application/vnd.ms-excel", result.Data.FileName);
+        }
+
+        // ==========================================
+        // 3. IMPORT DỮ LIỆU TỪ FILE EXCEL VÀO DB
+        // ==========================================
+        [HttpPost("import/account")]
+        public async Task<IActionResult> ImportAccounts(IFormFile file)
+        {
+            // Bắt lỗi ngay từ vòng gửi xe nếu FE quên nhét file vào body
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest(new { Message = "Vui lòng đính kèm file Excel." });
+            }
+
+            var command = new ImportAccountCommand(file);
+            var result = await _sender.Send(command);
+
+            // Dù thành công hay có lỗi (do trùng email, thiếu cột), 
+            // kết quả trả về đều chứa danh sách SuccessList và FailureList chi tiết
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+        [HttpGet("export/question-types")]
+        public async Task<IActionResult> ExportQuestionTypes()
+        {
+            var result = await _sender.Send(new ExportQuestionTypesQuery());
+            if (!result.IsSuccess) return BadRequest(result);
+
+            return File(result.Data.FileBytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                result.Data.FileName);
+        }
+
+        [HttpPost("import/question-types")]
+        public async Task<IActionResult> ImportQuestionTypes(IFormFile file)
+        {
+            var result = await _sender.Send(new ImportQuestionTypesCommand(file));
+            if (!result.IsSuccess) return BadRequest(result);
+            return Ok(result);
+        }
     }
 }

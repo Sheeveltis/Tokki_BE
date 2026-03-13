@@ -36,5 +36,8 @@ namespace Tokki.Application.IRepositories
         /// <param name="userId"></param>
         /// <returns></returns>
         Task<AccountBasicInfoDTO?> GetBasicInfoAsync(string userId);
+        Task<List<string>> GetExistingEmailsAsync(List<string> emails, CancellationToken cancellationToken = default);
+        Task AddRangeAsync(IEnumerable<Account> accounts, CancellationToken cancellationToken = default);
+        Task<IEnumerable<Account>> GetAllAsync(CancellationToken cancellationToken = default);
     }
 }
