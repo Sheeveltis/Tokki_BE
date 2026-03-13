@@ -144,6 +144,7 @@ namespace Tokki.Infrastructure.Services
         }
         public async Task<AiRoadmapResponse?> GenerateNextWeekPlanAsync(
             TargetAimLevel target,
+            CurrentTopikLevel currentLevel,
             int nextWeekIndex,
             int examScorePercent,
             List<string> reviewTypes,       
@@ -153,10 +154,10 @@ namespace Tokki.Infrastructure.Services
             if (string.IsNullOrEmpty(_apiKey)) return null;
 
             var reviewContent = reviewTypes.Any()
-                ? await _knowledgeBaseService.GetContentForWeaknessesAsync(reviewTypes, CurrentTopikLevel.Level_1)
+                ? await _knowledgeBaseService.GetContentForWeaknessesAsync(reviewTypes, currentLevel)
                 : new List<KnowledgeMetadata>();
 
-            var generalContent = await _knowledgeBaseService.GetGeneralContentForLevelAsync(CurrentTopikLevel.Level_1);
+            var generalContent = await _knowledgeBaseService.GetGeneralContentForLevelAsync(currentLevel);
             var filteredNew = generalContent
                 .Where(x => !reviewTypes.Contains(x.TargetId) && !persistentFailTypes.Contains(x.TargetId))
                 .ToList();

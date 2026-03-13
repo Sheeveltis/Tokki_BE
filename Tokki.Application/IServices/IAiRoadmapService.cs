@@ -17,6 +17,7 @@ namespace Tokki.Application.IServices
         Task<AiRoadmapResponse?> GenerateStudyPlanAsync(TargetAimLevel target, CurrentTopikLevel currentLevel, int days, List<string> weaknesses);
         Task<AiRoadmapResponse?> GenerateNextWeekPlanAsync(
             TargetAimLevel target,
+            CurrentTopikLevel currentLevel,
             int nextWeekIndex,
             int examScorePercent,
             List<string> reviewTypes,

@@ -106,6 +106,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
 
             var aiPlan = await _aiRoadmapService.GenerateNextWeekPlanAsync(
                 roadmap.TargetAim,
+                roadmap.CurrentLevel,
                 nextWeekIndex,
                 scorePercent,
                 reviewTypes,      
