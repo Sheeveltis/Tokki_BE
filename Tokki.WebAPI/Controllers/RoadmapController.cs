@@ -12,6 +12,7 @@ using Tokki.Application.UseCases.Roadmap.DTOs;
 using Tokki.Application.UseCases.Roadmap.Queries.GetRoadmap;
 using Tokki.Domain.Enums;
 using Tokki.Infrastructure.Data;
+using Tokki.Application.UseCases.Roadmap.Queries.GetVirtualQuiz;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -220,6 +221,17 @@ namespace Tokki.WebAPI.Controllers
                 return Ok(result); 
             }
 
+            return BadRequest(result);
+        }
+
+        [HttpGet("virtual-quiz/{questionTypeId}")]
+        public async Task<IActionResult> GetVirtualQuiz(string questionTypeId, [FromQuery] int count = 10)
+        {
+            var query = new GetVirtualQuizQuery(questionTypeId, count);
+            var result = await _mediator.Send(query);
+
+            if (result.IsSuccess) return Ok(result);
+            if (result.StatusCode == 404) return NotFound(result);
             return BadRequest(result);
         }
     }
