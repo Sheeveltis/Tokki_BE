@@ -104,5 +104,21 @@ namespace Tokki.Infrastructure.Repositories
         {
             await _context.UserExamAnswers.AddRangeAsync(answers);
         }
+        public async Task<bool> QuestionTypeExistsAsync(string questionTypeId, CancellationToken cancellationToken = default)
+        {
+            return await _context.QuestionTypes
+                .AnyAsync(qt => qt.QuestionTypeId == questionTypeId, cancellationToken);
+        }
+
+        public async Task<List<QuestionBank>> GetRandomQuestionsByTypeAsync(string questionTypeId, int count, CancellationToken cancellationToken = default)
+        {
+            return await _context.QuestionBank
+                .Include(q => q.QuestionOptions)
+                .Include(q => q.Passage)
+                .Where(q => q.QuestionTypeId == questionTypeId)
+                .OrderBy(q => Guid.NewGuid())
+                .Take(count)
+                .ToListAsync(cancellationToken);
+        }
     }
 }

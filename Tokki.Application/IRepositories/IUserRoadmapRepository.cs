@@ -13,5 +13,7 @@ public interface IUserRoadmapRepository
     Task<UserExam?> GetUserExamByExamIdAsync(string examId, string userId, CancellationToken cancellationToken = default);
     Task<List<ExamQuestion>> GetExamQuestionsForGradingAsync(string examId, CancellationToken cancellationToken = default);
     Task AddUserExamAsync(UserExam userExam);
-    Task AddUserExamAnswersAsync(List<UserExamAnswer> answers); 
+    Task AddUserExamAnswersAsync(List<UserExamAnswer> answers);
+    Task<bool> QuestionTypeExistsAsync(string questionTypeId, CancellationToken cancellationToken = default);
+    Task<List<QuestionBank>> GetRandomQuestionsByTypeAsync(string questionTypeId, int count, CancellationToken cancellationToken = default);
 }
