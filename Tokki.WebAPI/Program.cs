@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models; // Dùng cho Swagger
 using System.Globalization;
 using System.Text;
+using System.Text.Json;
 using Tokki.Application;
 using Tokki.Application.Common.Helpers;
 using Tokki.Application.Common.Helpers.ValidationVietnameseLanguageManager;
@@ -29,8 +30,12 @@ try
 // ==========================================
 // 1. ĐĂNG KÝ SERVICES
 // ==========================================
-
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+    });
 builder.Services.AddEndpointsApiExplorer();
 //Phần cho mấy mớ services thuộc webAPI 
 builder.Services.AddSingleton<IChatNotificationService, ChatNotificationService>();
