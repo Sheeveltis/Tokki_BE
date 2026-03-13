@@ -14,14 +14,14 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.UpdateVocabulary
         : IRequestHandler<UpdateVocabularyCommand, OperationResult<VocabularyResponseDto>>
     {
         private readonly IVocabularyRepository _vocabularyRepository;
-        private readonly ITextToSpeechService _ttsService;
+        private readonly ISpeechService _ttsService;
         private readonly ICloudinaryService _cloudinaryService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<UpdateVocabularyCommandHandler> _logger;
 
         public UpdateVocabularyCommandHandler(
             IVocabularyRepository vocabularyRepository,
-            ITextToSpeechService ttsService,
+            ISpeechService ttsService,
             ICloudinaryService cloudinaryService,
             IHttpContextAccessor httpContextAccessor,
             ILogger<UpdateVocabularyCommandHandler> logger)

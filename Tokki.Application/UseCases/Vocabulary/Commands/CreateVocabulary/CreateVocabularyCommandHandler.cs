@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
@@ -17,7 +18,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.CreateVocabulary
         private readonly IVocabularyRepository _vocabularyRepository;
         private readonly IVocabularyExampleRepository _vocabularyExampleRepository;
         private readonly IIdGeneratorService _idGenerator;
-        private readonly ITextToSpeechService _ttsService;
+        private readonly ISpeechService _ttsService;
         private readonly ICloudinaryService _cloudinaryService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<CreateVocabularyCommandHandler> _logger;
@@ -26,7 +27,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.CreateVocabulary
             IVocabularyRepository vocabularyRepository,
             IVocabularyExampleRepository vocabularyExampleRepository,
             IIdGeneratorService idGenerator,
-            ITextToSpeechService ttsService,
+            ISpeechService ttsService,
             ICloudinaryService cloudinaryService,
             IHttpContextAccessor httpContextAccessor,
             ILogger<CreateVocabularyCommandHandler> logger)
@@ -56,20 +57,26 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.CreateVocabulary
                 );
             }
 
-            // Chuẩn hóa input (validator đã check not empty/length)
+            // Chuẩn hóa input
             var text = request.Text.Trim();
             var definition = request.Definition.Trim();
             var pronunciation = request.Pronunciation?.Trim();
             var imgUrl = request.ImgURL?.Trim();
 
-            // Transaction: vocab + examples all-or-nothing
             await using var transaction = await _vocabularyExampleRepository.BeginTransactionAsync(cancellationToken);
 
             try
             {
-                // 1) Check trùng vocabulary (Text + Definition)
-                var existingVocab = await _vocabularyRepository.GetByTextAndDefinitionAsync(text, definition);
-                if (existingVocab != null)
+                // 1) Check trùng vocabulary (normalize Text + Definition)
+                var existingVocabs = await _vocabularyRepository.GetAllByTextAsync(text);
+                var normalizedDefinition = Normalize(definition);
+
+                var isDuplicate = existingVocabs?.Any(v =>
+                    string.Equals(Normalize(v.Text), Normalize(text), StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(Normalize(v.Definition), normalizedDefinition, StringComparison.OrdinalIgnoreCase)
+                ) ?? false;
+
+                if (isDuplicate)
                 {
                     return OperationResult<VocabularyResponse>.Failure(
                         new List<Error>
@@ -96,7 +103,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.CreateVocabulary
                     _logger.LogWarning(ex, "Không thể tạo audio cho vocabulary: {Text}", text);
                 }
 
-                // 3) Tạo vocabulary (mặc định Active theo nghiệp vụ)
+                // 3) Tạo vocabulary
                 var vocabulary = new Tokki.Domain.Entities.Vocabulary
                 {
                     VocabularyId = _idGenerator.Generate(15),
@@ -112,11 +119,9 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.CreateVocabulary
 
                 await _vocabularyRepository.AddAsync(vocabulary);
 
-                // 4) Tạo examples (nếu có) + check trùng ngay trong input
+                // 4) Tạo examples (nếu có)
                 var exampleResponses = new List<VocabularyExampleResponse>();
                 var skippedExamples = new List<string>();
-
-                // Normalize + check duplicate in input (Trim + ignore-case)
                 var seenSentences = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
                 if (request.Examples != null && request.Examples.Any())
@@ -125,19 +130,17 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.CreateVocabulary
                     {
                         var sentence = exampleDto.Sentence?.Trim();
 
-                        // Validator thường đã bắt, nhưng giữ an toàn
+                        // ✅ Câu ví dụ có thể để trống, skip nếu trống
                         if (string.IsNullOrWhiteSpace(sentence))
                             continue;
 
-                        // Trùng trong input => skip và ghi nhận
+                        // Trùng trong input => skip
                         if (!seenSentences.Add(sentence))
                         {
                             skippedExamples.Add(sentence);
                             continue;
                         }
 
-                        // Với vocab mới thì DB gần như không thể có examples cùng VocabularyId,
-                        // nhưng vẫn giữ check để tránh trường hợp ID collision hiếm.
                         var existingExample = await _vocabularyExampleRepository.GetBySentenceAsync(
                             vocabulary.VocabularyId,
                             sentence
@@ -191,8 +194,6 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.CreateVocabulary
                 var message = "Tạo vocabulary thành công.";
                 if (skippedExamples.Any())
                 {
-                    // Nếu muốn báo cụ thể câu nào trùng:
-                    // message += $" Đã bỏ qua {skippedExamples.Count} câu ví dụ trùng: {string.Join(" | ", skippedExamples)}.";
                     message += $" Đã bỏ qua {skippedExamples.Count} câu ví dụ trùng lặp.";
                 }
 
@@ -201,7 +202,6 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.CreateVocabulary
             catch (Exception ex)
             {
                 await transaction.RollbackAsync(cancellationToken);
-
                 _logger.LogError(ex, "Lỗi khi tạo vocabulary: {Text}", text);
                 return OperationResult<VocabularyResponse>.Failure(
                     new List<Error> { AppErrors.ServerError },
@@ -209,6 +209,13 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.CreateVocabulary
                     $"Lỗi hệ thống: {ex.Message}"
                 );
             }
+        }
+
+        // ✅ Normalize: trim, collapse khoảng trắng giữa, lowercase
+        private static string Normalize(string input)
+        {
+            var collapsed = Regex.Replace(input.Trim(), @"\s+", " ");
+            return collapsed.ToLowerInvariant();
         }
     }
 }

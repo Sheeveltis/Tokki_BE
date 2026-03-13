@@ -16,6 +16,6 @@ namespace Tokki.Application.UseCases.Topics.DTOs
         public string? ImgUrl { get; set; }
         public int VocabularyCount { get; set; }
         public TopicStatus Status { get; set; }
-
+        public int? OrderIndex { get; set; }
     }
 }

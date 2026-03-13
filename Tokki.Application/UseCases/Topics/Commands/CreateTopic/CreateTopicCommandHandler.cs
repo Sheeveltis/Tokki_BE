@@ -31,8 +31,10 @@ namespace Tokki.Application.UseCases.Topics.Commands.CreateTopic
 
         public async Task<OperationResult<string>> Handle(CreateTopicCommand request, CancellationToken cancellationToken)
         {
-            // USER (CreateBy from claims)
             var currentUserId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            
+
             if (string.IsNullOrWhiteSpace(currentUserId))
             {
                 return OperationResult<string>.Failure(
@@ -55,8 +57,18 @@ namespace Tokki.Application.UseCases.Topics.Commands.CreateTopic
                     );
                 }
 
-                // 2) Create new topic (DEFAULT = Draft)
+                if (string.IsNullOrWhiteSpace(currentUserId))
+                {
+                    return OperationResult<string>.Failure(
+                        new List<Error> { AppErrors.UserUnauthorized },
+                        401,
+                        AppErrors.UserUnauthorized.Description
+                    );
+                }
+
+                // 3) Tạo topic mới
                 string newId = _idGeneratorService.GenerateCustom(15);
+
                 var topic = new Topic
                 {
                     TopicId = newId,
@@ -66,8 +78,9 @@ namespace Tokki.Application.UseCases.Topics.Commands.CreateTopic
                     Description = request.Description,
                     CreateBy = currentUserId,
                     CreateDate = DateTime.UtcNow.AddHours(7),
-                    Status = TopicStatus.Draft
-                };
+                    Status = TopicStatus.Draft,
+                    TopicType =TopicType.VocabStudy
+            };
 
                 await _topicRepository.AddAsync(topic);
                 await _topicRepository.SaveChangesAsync(cancellationToken);
@@ -75,12 +88,13 @@ namespace Tokki.Application.UseCases.Topics.Commands.CreateTopic
                 return OperationResult<string>.Success(
                     topic.TopicId,
                     201,
-                    "Tạo chủ đề (bản nháp) thành công"
+                    "Tạo chủ đề thành công"
                 );
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi khi tạo chủ đề: {TopicName}", request.TopicName);
+
                 return OperationResult<string>.Failure(
                     new List<Error> { AppErrors.ServerError },
                     500,

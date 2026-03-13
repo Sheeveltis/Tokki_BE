@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 using Tokki.Application.IRepositories;
 using Tokki.Domain.Entities;
 using Tokki.Infrastructure.Data;
@@ -46,6 +47,10 @@ namespace Tokki.Infrastructure.Repositories
                                       .Select(x => x.Value)
                                       .FirstOrDefaultAsync();
             return value;
+        }
+        public async Task<SystemConfig?> FirstOrDefaultAsync(Expression<Func<SystemConfig, bool>> predicate, CancellationToken cancellationToken = default)
+        {
+            return await _context.SystemConfig.FirstOrDefaultAsync(predicate, cancellationToken);
         }
     }
 }

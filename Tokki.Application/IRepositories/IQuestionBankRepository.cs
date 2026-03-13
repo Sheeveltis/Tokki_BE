@@ -1,4 +1,5 @@
-﻿using Tokki.Domain.Entities;
+﻿using Tokki.Application.UseCases.QuestionBanks.DTOs;
+using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 
 namespace Tokki.Application.IRepositories
@@ -84,5 +85,6 @@ namespace Tokki.Application.IRepositories
         int pageSize,
         string? searchTerm,
         CancellationToken token = default);
+        Task<List<QuestionSignatureDTO>> GetQuestionsByTypeAsync(string questionTypeId);
     }
 }

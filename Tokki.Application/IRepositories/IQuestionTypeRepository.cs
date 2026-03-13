@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using Tokki.Domain.Entities;
@@ -25,5 +26,8 @@ namespace Tokki.Application.IRepositories
         Task UpdateAsync(QuestionType questionType);
         Task DeleteAsync(QuestionType questionType);
         Task<bool> SaveChangesAsync(CancellationToken cancellationToken = default);
+        Task AddRangeAsync(IEnumerable<QuestionType> entities);
+        Task<List<string>> GetExistingCodesAsync(IEnumerable<string> codes, CancellationToken cancellationToken = default);
+        Task<int> GetMaxOrderIndexAsync(CancellationToken cancellationToken = default);
     }
 }

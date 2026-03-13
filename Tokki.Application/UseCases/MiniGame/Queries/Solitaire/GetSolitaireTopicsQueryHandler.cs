@@ -42,13 +42,14 @@ namespace Tokki.Application.UseCases.MiniGame.Queries.Solitaire
                     .Select(vt => vt.Vocabulary)
                     .ToList();
 
-                if (validVocabs.Count < 3) continue;
+                if (validVocabs.Count < 4) continue;
 
                 int maxTake = Math.Min(validVocabs.Count, 8);
-                int countToTake = random.Next(3, maxTake + 1);
+                int countToTake = random.Next(4, maxTake + 1);
+
 
                 var selectedVocabs = validVocabs
-                    .OrderBy(x => random.Next())
+                    .OrderBy(x => random.Next()) 
                     .Take(countToTake)
                     .ToList();
 
@@ -80,7 +81,7 @@ namespace Tokki.Application.UseCases.MiniGame.Queries.Solitaire
             if ((request.Quantity - totalVocabCollected) > 5)
             {
                 return OperationResult<List<SolitaireTopicDTO>>.Failure(
-                    $"Không đủ từ vựng theo yêu cầu. Bạn cần {request.Quantity} từ, nhưng hệ thống chỉ tìm được {totalVocabCollected} từ (Thiếu {request.Quantity - totalVocabCollected} từ).",
+                    $"Không đủ từ vựng theo yêu cầu. Bạn cần {request.Quantity} từ, nhưng hệ thống chỉ tìm được {totalVocabCollected} từ.",
                     400);
             }
 

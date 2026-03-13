@@ -23,9 +23,8 @@ namespace Tokki.Application.UseCases.Topics.Queries.GetTopicForUser
 
         public async Task<OperationResult<PagedResult<UserTopicDto>>> Handle(GetAllTopicsForUserQuery request, CancellationToken cancellationToken)
         {
-            var (items, totalCount) = await _topicRepository.GetPagedForUserAsync(
-                  request.PageNumber, request.PageSize, request.SearchTerm, request.Level
-              );
+            var (items, totalCount) = await _topicRepository.GetVocabTopicsPagedForUserAsync( 
+                request.PageNumber, request.PageSize, request.SearchTerm, request.Level );
             var dtos = new List<UserTopicDto>();
             foreach (var topic in items)
             {

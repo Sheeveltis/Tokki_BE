@@ -23,7 +23,12 @@ namespace Tokki.Application.IRepositories
        int pageSize,
        string? searchTerm = null,
        TopicLevel? level = null);
-
+        Task<(List<Topic> items, int totalCount)> GetVocabTopicsPagedForUserAsync(
+    int pageNumber,
+    int pageSize,
+    string? searchTerm = null,
+    TopicLevel? level = null
+);
         Task<bool> IsTopicNameExistsAsync(string topicName, string? excludeTopicId = null);
         Task<int> CountVocabulariesInTopicAsync(string topicId);
         Task AddAsync(Topic topic);
@@ -51,5 +56,41 @@ namespace Tokki.Application.IRepositories
         /// <param name="topicId"></param>
         /// <returns></returns>
         Task<List<Vocabulary>> GetVocabulariesByTopicIdAsync(string topicId);
+
+        //Hàm  của kiệt - Lấy max OrderIndex hiện tại để khi tạo topic mới sẽ gán OrderIndex = max + 1
+        Task<int> GetMaxOrderIndexAsync();
+        //Hàm  của kiệt - Lấy max OrderIndex hiện tại để khi tạo topic mới sẽ gán OrderIndex = max + 1
+
+        Task<int> GetMaxOrderIndexForVocabAsync();
+        //Hàm  của kiệt - Khi xóa topic thì những topic có OrderIndex lớn hơn topic bị xóa sẽ bị giảm OrderIndex đi 1 để tránh bị "lỗ" trong thứ tự hiển thị
+        Task DecrementOrderIndexAfterAsync(
+        int deletedOrderIndex,
+        TopicType topicType,
+        string updatedBy,
+        DateTime updatedDate);
+        //Hàm  của kiệt -  dùng để chèn topic mới vào giữa 2 topic đã có thứ tự (ví dụ: muốn chèn vào vị trí index 2 thì những topic hiện tại có index >= 2 sẽ bị tăng index lên 1)
+        Task ShiftOrderIndexUpFromAsync(
+    int fromIndex,
+    TopicType topicType,
+    string excludeTopicId,
+    string updatedBy,
+    DateTime updatedDate);
+
+        //Hàm của kiệt - get topic cho vocab 
+        Task<(IEnumerable<Topic> items, int totalCount)> GetVocabTopicsPagedAsync(
+            int pageNumber,
+            int pageSize,
+            string? searchTerm,
+            TopicStatus? status,
+            TopicLevel? level
+        );
+        //Hàm của kiệt
+        Task ShiftOrderIndexBetweenAsync(
+    int fromIndex,
+    int toIndex,
+    TopicType topicType,
+    string excludeTopicId,
+    string updatedBy,
+    DateTime updatedDate);
     }
 }

@@ -2,12 +2,14 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Tokki.Application.Common.ExcelCore;
 using Tokki.Application.Common.Helpers;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Infrastructure.Data;
 using Tokki.Infrastructure.Repositories;
 using Tokki.Infrastructure.Services;
+using Tokki.Infrastructure.Services.WritingAi;
 namespace Tokki.Infrastructure
 {
     public static class DependencyInjection
@@ -15,7 +17,7 @@ namespace Tokki.Infrastructure
         // Hàm này sẽ được gọi bên WebAPI
         public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
-            // 1. Đăng ký DbContext
+            // 1. Đăng ký DbContext-
             services.AddDbContext<TokkiDbContext>(options =>
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
@@ -51,9 +53,9 @@ namespace Tokki.Infrastructure
             services.AddScoped<IGameRepository, GameRepository>();
             services.AddScoped<IGameMatchSessionRepository, GameMatchSessionRepository>();
             services.AddScoped<IEmailHistoryRepository, EmailHistoryRepository>();
-            services.AddScoped<IUserWeaknessRepository, UserWeaknessRepository>();
-
-
+            services.AddScoped<IUserExamWritingAnswerRepository, UserExamWritingAnswerRepository>();
+            services.AddScoped<IQuestion51Pipeline,
+        Tokki.Infrastructure.Services.WritingAi.Question51GeminiPipeline>();
             // Bạn cũng cần kiểm tra và đăng ký các Repository khác mà Command Handler đang yêu cầu:
             services.AddSingleton<IIdGeneratorService, IdGeneratorService>();
             services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
@@ -63,7 +65,7 @@ namespace Tokki.Infrastructure
             services.AddScoped<IPaymentRepository, PaymentRepository>();
             services.AddScoped<IKnowledgeBaseService, KnowledgeBaseService>();
             //TextToSpeech
-            services.AddScoped<ITextToSpeechService, TextToSpeechService>();
+            services.AddScoped<ISpeechService, SpeechService>();
             //Cloudinary 
             services.AddScoped<ICloudinaryService, CloudinaryService>();
             //Comment
@@ -74,10 +76,41 @@ namespace Tokki.Infrastructure
             services.AddScoped<IUserVocabProgressRepository, UserVocabProgressRepository>();
             //Mini game
             services.AddScoped<IMiniGameRepository, MiniGameRepository>();
+            services.AddScoped<IWordleRepository, WordleRepository>();
+            services.AddScoped<IAIWordleService, AIWordleService>();
             //Excel
             services.AddScoped<IExcelService, ExcelService>();
             //User topic progress
             services.AddScoped<IUserTopicProgressRepository, UserTopicProgressRepository>();
+            // ===== Gemini TOPIK Writing =====
+            services.Configure<Tokki.Infrastructure.Configurations.GeminiOptions>(
+                configuration.GetSection("Gemini"));
+
+            services.AddHttpClient("Gemini", http =>
+            {
+                // KHÔNG set BaseAddress ở đây nữa vì mỗi feature có BaseUrl riêng
+                // BaseUrl sẽ được lấy từ GeminiConfig trong từng Pipeline
+                http.Timeout = TimeSpan.FromSeconds(180);
+            });
+            services.AddHttpClient("ImageDownload", http =>
+            {
+                http.Timeout = TimeSpan.FromSeconds(60);
+                http.DefaultRequestHeaders.Add("User-Agent", "Tokki-TOPIK-Service/1.0");
+            });
+            services.AddScoped<IQuestion52Pipeline, Question52GeminiPipeline>();
+            services.AddScoped<IQuestion53Pipeline, Question53GeminiPipeline>();
+            services.AddScoped<IQuestion54Pipeline, Question54GeminiPipeline>();
+            services.AddScoped<IWritingGradingBackgroundService, WritingGradingBackgroundService>();
+
+            // services.AddScoped<Tokki.Infrastructure.Services.Gemini.GeminiRestClient>();
+            //     services.AddScoped<ITopikWritingGeminiPipeline, Tokki.Infrastructure.Services.Gemini.TopikWritingGeminiPipeline>();
+            //Pronunciation
+            services.AddScoped<IPronunciationRuleRepository, PronunciationRuleRepository>();
+            services.AddScoped<IAIPronunciationService, AIPronunciationService>();
+            services.AddScoped<IPronunciationExampleRepository, PronunciationExampleRepository>();
+            //User take exam
+            services.AddScoped<IUserExamRepository, UserExamRepository>();
+            services.AddScoped<IExcelBaseService, ExcelBaseService>();
             return services;
         }
     }
