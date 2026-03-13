@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Tokki.Application.IServices;
 using Tokki.Application.UseCases.Roadmap.DTOs; 
 using Tokki.Domain.Enums;
+using Tokki.Domain.Entities;
 
 namespace Tokki.Infrastructure.Services
 {
@@ -144,52 +145,95 @@ namespace Tokki.Infrastructure.Services
         public async Task<AiRoadmapResponse?> GenerateNextWeekPlanAsync(
             TargetAimLevel target,
             int nextWeekIndex,
-            int examScore,
-            List<string> detectedWeaknesses,
+            int examScorePercent,
+            List<string> reviewTypes,       
+            List<string> persistentFailTypes, 
             List<string> originalWeaknesses)
         {
             if (string.IsNullOrEmpty(_apiKey)) return null;
 
-            var weakContent = await _knowledgeBaseService.GetContentForWeaknessesAsync(detectedWeaknesses, CurrentTopikLevel.Level_1); 
+            var reviewContent = reviewTypes.Any()
+                ? await _knowledgeBaseService.GetContentForWeaknessesAsync(reviewTypes, CurrentTopikLevel.Level_1)
+                : new List<KnowledgeMetadata>();
+
             var generalContent = await _knowledgeBaseService.GetGeneralContentForLevelAsync(CurrentTopikLevel.Level_1);
+            var filteredNew = generalContent
+                .Where(x => !reviewTypes.Contains(x.TargetId) && !persistentFailTypes.Contains(x.TargetId))
+                .ToList();
 
             var menuJson = JsonSerializer.Serialize(new
             {
-                ReviewItems = weakContent.Select(x => new { x.TargetId, x.DescriptionForAi, x.Type }), 
-                NewItems = generalContent.Select(x => new { x.TargetId, x.DescriptionForAi, x.Type })  
+                ReviewItems = reviewContent.Select(x => new { x.TargetId, x.DescriptionForAi, x.Type }),
+                NewItems = filteredNew.Select(x => new { x.TargetId, x.DescriptionForAi, x.Type })
             });
 
-            var strategy = "";
-            if (examScore < 50)
-                strategy = "Học viên thi TRƯỢT tuần trước (<50 điểm). Yêu cầu: 3 ngày đầu tuần chỉ dùng để ÔN TẬP LẠI (dùng ReviewItems). 3 ngày sau học kiến thức mới nhưng giảm tải. Tăng cường bài tập.";
-            else if (examScore < 70)
-                strategy = "Học viên đạt trung bình (50-70 điểm). Yêu cầu: Dành 1-2 ngày đầu ôn tập điểm yếu (ReviewItems), sau đó học tiếp lộ trình chuẩn.";
+            string strategy;
+            string reviewInstruction;
+
+            if (examScorePercent < 50)
+            {
+                strategy = "Học viên đạt dưới 50%. Tăng cường luyện tập, bố trí thêm VirtualQuiz.";
+                reviewInstruction = reviewTypes.Any()
+                    ? $"Dành ngày 1 và ngày 2 để ÔN LẠI các dạng trong ReviewItems ({string.Join(", ", reviewTypes)}). Từ ngày 3 học NewItems."
+                    : "Tập trung vào các dạng mới nhưng giảm tải độ khó.";
+            }
+            else if (examScorePercent < 80)
+            {
+                strategy = "Học viên đạt 50-79%. Ôn lại điểm yếu kết hợp học tiếp lộ trình.";
+                reviewInstruction = reviewTypes.Any()
+                    ? $"Dành ngày 1 để ÔN LẠI ReviewItems ({string.Join(", ", reviewTypes)}). Từ ngày 2 học NewItems. Tỉ lệ: ~20% ôn cũ, 80% mới."
+                    : "Tiếp tục lộ trình bình thường.";
+            }
             else
-                strategy = "Học viên xuất sắc (>80 điểm). Yêu cầu: Tăng tốc độ, tập trung vào kiến thức mới và khó hơn (NewItems).";
+            {
+                strategy = "Học viên đạt >= 80%. Tiến độ tốt, tăng tốc với kiến thức mới.";
+                reviewInstruction = "Không cần ôn lại. Tập trung 100% vào NewItems, có thể tăng độ khó.";
+            }
+
+            string persistentNote = persistentFailTypes.Any()
+                ? $"KHÔNG được dùng các dạng sau (user đã được ôn 2 tuần liên tiếp nhưng vẫn chưa pass, hệ thống đã cảnh báo và sẽ bỏ qua): {string.Join(", ", persistentFailTypes)}."
+                : string.Empty;
 
             var promptText = $@"
                 Bạn là chuyên gia lập lộ trình TOPIK. Học viên chuẩn bị bước vào TUẦN THỨ {nextWeekIndex}.
-                Kết quả tuần trước: {examScore}/100.
-                
-                CHIẾN LƯỢC ĐIỀU CHỈNH: {strategy}
+                Kết quả tuần trước: {examScorePercent}%.
+        
+                CHIẾN LƯỢC: {strategy}
+                PHÂN BỔ NỘI DUNG: {reviewInstruction}
+            {persistentNote}
 
-                *** THÔNG TIN CỐ ĐỊNH ***
-                - Mục tiêu: {target}
-                - Ngày thứ 7 bắt buộc là: 'WeeklyExam' (Tiêu đề: Kiểm tra định kỳ tuần {nextWeekIndex}).
-                - Các ngày thường: Kết hợp 'LearnTheory' và 'VirtualQuiz'.
+                *** QUY TẮC BẮT BUỘC ***
+            1. CHỈ CHỌN bài học từ MENU DỮ LIỆU bên dưới. KHÔNG tự bịa.
+            2. Ngày thứ 7 BẮT BUỘC là 'WeeklyExam' (Tiêu đề: Kiểm tra định kỳ tuần {nextWeekIndex}).
+            3. Nếu có ReviewItems: ưu tiên xếp vào ngày đầu tuần.
+            4. Tỉ lệ ReviewItems / NewItems xấp xỉ 20% / 80% (tính theo số task, không phải số ngày).
+            5. Nếu ReviewItems rỗng: dùng 100% NewItems.
 
-                *** MENU DỮ LIỆU (CHỈ CHỌN TRONG NÀY) ***
-                {menuJson}
+        *** MENU DỮ LIỆU ***
+        {menuJson}
 
-                *** OUTPUT JSON FORMAT ***
-                (Trả về đúng cấu trúc JSON như các lần trước, chỉ chứa dữ liệu cho 1 tuần duy nhất là WeekIndex {nextWeekIndex})
+        *** OUTPUT JSON (chỉ 1 tuần, WeekIndex = {nextWeekIndex}) ***
+        {{
+          ""Assessment"": ""Nhận xét ngắn gọn và lời khuyên cho tuần {nextWeekIndex}"",
+          ""Weeks"": [
+            {{
+              ""WeekIndex"": {nextWeekIndex},
+              ""WeekGoal"": ""Mục tiêu tuần {nextWeekIndex}"",
+              ""Days"": [
                 {{
-                  ""Assessment"": ""Nhận xét ngắn gọn dựa trên điểm số cũ và lời khuyên cho tuần mới"",
-                  ""Weeks"": [ {{ ... }} ] 
+                  ""DayIndex"": 1,
+                  ""Tasks"": [
+                    {{ ""Title"": ""..."", ""TaskType"": ""LearnTheory"", ""Content"": ""..."", ""GrammarId"": ""ID_TU_MENU"" }},
+                    {{ ""Title"": ""..."", ""TaskType"": ""VirtualQuiz"", ""Content"": ""..."", ""QuestionTypeId"": ""ID_TU_MENU"" }}
+                  ]
                 }}
-            ";
+              ]
+            }}
+          ]
+        }}
+    ";
 
-            return await CallGeminiApiAsync(promptText);  
+            return await CallGeminiApiAsync(promptText);
         }
 
         private async Task<AiRoadmapResponse?> CallGeminiApiAsync(string promptText)

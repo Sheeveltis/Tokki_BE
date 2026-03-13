@@ -7,51 +7,62 @@ using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
 {
-    public class GenerateNextWeekCommandHandler : IRequestHandler<GenerateNextWeekCommand, OperationResult<bool>>
+    public class GenerateNextWeekCommandHandler
+        : IRequestHandler<GenerateNextWeekCommand, OperationResult<GenerateNextWeekResult>>
     {
         private readonly IUserRoadmapRepository _repository;
         private readonly IAiRoadmapService _aiRoadmapService;
         private readonly IExamAssemblyService _examAssemblyService;
+        private readonly IRoadmapKnowledgeProfileRepository _knowledgeProfileRepository; 
         private readonly IIdGeneratorService _idGeneratorService;
+
+        private const int MaxConsecutiveFail = 2;
+        private const double MasteryThreshold = 80.0;
 
         public GenerateNextWeekCommandHandler(
             IUserRoadmapRepository repository,
             IAiRoadmapService aiRoadmapService,
             IExamAssemblyService examAssemblyService,
+            IRoadmapKnowledgeProfileRepository knowledgeProfileRepository, 
             IIdGeneratorService idGeneratorService)
         {
             _repository = repository;
             _aiRoadmapService = aiRoadmapService;
-            _examAssemblyService = examAssemblyService; 
+            _examAssemblyService = examAssemblyService;
+            _knowledgeProfileRepository = knowledgeProfileRepository;
             _idGeneratorService = idGeneratorService;
         }
 
-        public async Task<OperationResult<bool>> Handle(GenerateNextWeekCommand request, CancellationToken cancellationToken)
+        public async Task<OperationResult<GenerateNextWeekResult>> Handle(
+            GenerateNextWeekCommand request,
+            CancellationToken cancellationToken)
         {
             var currentWeek = await _repository.GetWeekByIdAsync(request.FinishedWeekId, cancellationToken);
 
             if (currentWeek == null)
-                return OperationResult<bool>.Failure("Không tìm thấy tuần tương ứng", 404);
+                return OperationResult<GenerateNextWeekResult>.Failure("Không tìm thấy tuần tương ứng", 404);
 
             if (currentWeek.UserRoadmap.UserId != request.UserId)
-                return OperationResult<bool>.Failure("Bạn không có quyền thao tác.", 403);
+                return OperationResult<GenerateNextWeekResult>.Failure("Bạn không có quyền thao tác.", 403);
 
             var roadmap = currentWeek.UserRoadmap;
             int nextWeekIndex = currentWeek.WeekIndex + 1;
 
-            var nextWeek = await _repository.GetWeekByIndexAsync(roadmap.UserRoadmapId, nextWeekIndex, cancellationToken);
-
-            if (nextWeek == null)
-            {
-                currentWeek.Status = RoadmapWeekStatus.Completed;
-                await _repository.SaveChangesAsync(cancellationToken);
-                return OperationResult<bool>.Failure("Bạn đã hoàn thành!", 200);
-            }
+            var nextWeek = await _repository.GetWeekByIndexAsync(
+                roadmap.UserRoadmapId, nextWeekIndex, cancellationToken);
 
             currentWeek.Status = RoadmapWeekStatus.Completed;
 
-            int score = 0;
-            List<string> detectedWeaknesses = new();
+            if (nextWeek == null)
+            {
+                await _repository.SaveChangesAsync(cancellationToken);
+                return OperationResult<GenerateNextWeekResult>.Failure("Bạn đã hoàn thành!", 200);
+            }
+
+            int scorePercent = 0;
+            List<string> failedThisWeek = new();   
+            List<string> persistentFail = new();  
+            List<string> reviewTypes = new();      
 
             if (!string.IsNullOrEmpty(currentWeek.WeeklyExamId))
             {
@@ -64,33 +75,52 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
                         currentWeek.WeeklyExamId, cancellationToken);
 
                     int maxScore = examQuestions.Sum(q => q.Score);
-                    score = maxScore > 0
+                    scorePercent = maxScore > 0
                         ? (int)Math.Round((double)userExam.Score / maxScore * 100)
                         : 0;
 
-                    if (score < 80)
+                    var allProfiles = await _knowledgeProfileRepository
+                        .GetByRoadmapIdAsync(roadmap.UserRoadmapId, cancellationToken);
+
+                    foreach (var profile in allProfiles.Where(p => p.IsWeakness))
                     {
-                        detectedWeaknesses = await _repository.GetWeakQuestionTypesFromExamAsync(
-                            userExam.UserExamId, cancellationToken);
+                        if (profile.ConsecutiveFailWeeks >= MaxConsecutiveFail)
+                        {
+                            persistentFail.Add(profile.QuestionTypeId);
+                        }
+                        else if (profile.ConsecutiveFailWeeks == 1
+                            && profile.LastEvaluatedWeekIndex == currentWeek.WeekIndex)
+                        {
+                            reviewTypes.Add(profile.QuestionTypeId);
+                        }
                     }
                 }
             }
+
+            bool hasWarning = persistentFail.Any();
+            string? warningMessage = hasWarning
+                ? $"Bạn vẫn chưa nắm vững {persistentFail.Count} dạng câu hỏi sau 2 tuần luyện tập: " +
+                  $"{string.Join(", ", persistentFail)}. " +
+                  $"Hãy dành thêm thời gian tự ôn luyện các dạng này ngoài lộ trình nhé!"
+                : null;
+
             var aiPlan = await _aiRoadmapService.GenerateNextWeekPlanAsync(
                 roadmap.TargetAim,
                 nextWeekIndex,
-                score,
-                detectedWeaknesses,
+                scorePercent,
+                reviewTypes,      
+                persistentFail,   
                 new List<string>()
             );
 
             if (aiPlan == null || !aiPlan.Weeks.Any())
-                return OperationResult<bool>.Failure("AI không thể tạo tuần tiếp theo.", 500);
+                return OperationResult<GenerateNextWeekResult>.Failure("AI không thể tạo tuần tiếp theo.", 500);
 
             var weekData = aiPlan.Weeks.First();
             nextWeek.WeekFocusGoal = weekData.WeekGoal;
             nextWeek.Status = RoadmapWeekStatus.InProgress;
             nextWeek.DailyTasks.Clear();
-       
+
             var weeklyScope = weekData.Days
                 .SelectMany(d => d.Tasks)
                 .Where(t => t.TaskType == "VirtualQuiz" && !string.IsNullOrEmpty(t.QuestionTypeId))
@@ -142,7 +172,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
                             {
                                 taskEntity.ExamId = examResult.Data;
                                 nextWeek.WeeklyExamId = examResult.Data;
-                            }                         
+                            }
                         }
                     }
 
@@ -151,7 +181,16 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
             }
 
             await _repository.SaveChangesAsync(cancellationToken);
-            return OperationResult<bool>.Success(true);
+
+            var result = new GenerateNextWeekResult
+            {
+                IsGenerated = true,
+                HasWarning = hasWarning,
+                WarningMessage = warningMessage,
+                PersistentWeakTypeIds = persistentFail
+            };
+
+            return OperationResult<GenerateNextWeekResult>.Success(result);
         }
     }
 }

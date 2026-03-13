@@ -142,9 +142,7 @@ namespace Tokki.WebAPI.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
-            {
                 return Unauthorized("Không tìm thấy thông tin người dùng.");
-            }
 
             var command = new GenerateNextWeekCommand
             {
@@ -154,17 +152,20 @@ namespace Tokki.WebAPI.Controllers
 
             var result = await _mediator.Send(command);
 
-            if (result.IsSuccess)
-            {
-                return Ok(new { message = "Đã tạo lộ trình tuần mới thành công!", status = 200 });
-            }
+            if (result.StatusCode == 200 && result.Message?.Contains("hoàn thành") == true)
+                return Ok(new { message = result.Message, isFinished = true });
 
-            if (result.StatusCode == 200 && result.Message.Contains("hoàn thành"))
-            {
-                return Ok(new { message = result.Message, isFinished = true }); 
-            }
+            if (!result.IsSuccess)
+                return BadRequest(result);
 
-            return BadRequest(result);
+            return Ok(new
+            {
+                message = "Đã tạo lộ trình tuần mới thành công!",
+                isFinished = false,
+                hasWarning = result.Data?.HasWarning ?? false,
+                warningMessage = result.Data?.WarningMessage,
+                persistentWeakTypeIds = result.Data?.PersistentWeakTypeIds ?? new List<string>()
+            });
         }
 
         [HttpPost("submit-exam")]
