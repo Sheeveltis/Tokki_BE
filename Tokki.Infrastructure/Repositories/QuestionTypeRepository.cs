@@ -118,7 +118,26 @@ namespace Tokki.Infrastructure.Repositories
         {
             return await _context.SaveChangesAsync(cancellationToken) > 0;
         }
-
-       
+        public async Task AddRangeAsync(IEnumerable<QuestionType> entities)
+        {
+            await _context.QuestionTypes.AddRangeAsync(entities);
+        }
+        public async Task<List<string>> GetExistingCodesAsync(IEnumerable<string> codes, CancellationToken cancellationToken = default)
+        {
+            if (codes == null || !codes.Any())
+            {
+                return new List<string>();
+            }
+            return await _context.QuestionTypes
+                .Where(q => codes.Contains(q.Code))
+                .Select(q => q.Code)
+                .ToListAsync(cancellationToken);
+        }
+        public async Task<int> GetMaxOrderIndexAsync(CancellationToken cancellationToken = default)
+        {
+            // Lấy số OrderIndex lớn nhất. Nếu DB rỗng (null) thì trả về 0
+            return await _context.QuestionTypes
+                .MaxAsync(q => (int?)q.OrderIndex, cancellationToken) ?? 0;
+        }
     }
 }

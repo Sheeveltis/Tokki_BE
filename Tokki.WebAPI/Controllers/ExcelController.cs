@@ -1,7 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CognitiveServices.Speech.Transcription;
 using System.Security.Claims;
 using Tokki.Application.Common.Models;
 using Tokki.Application.UseCases.Excel.Commands.AddVocabByExcel;
@@ -14,13 +13,13 @@ using Tokki.Application.UseCases.Excel.Queries.ExportAccounts;
 using Tokki.Application.UseCases.Excel.Queries.ExportQuestionTypes;
 using Tokki.Application.UseCases.Excel.Queries.ExportVocabByTopic;
 using Tokki.Application.UseCases.Excel.Queries.GetTemplate;
-using Tokki.Application.UseCases.LiveChat.Commands.CreateSupportChat;
+using Tokki.Application.UseCases.Excel.Queries.TemplateQuestionType;
 
 namespace Tokki.WebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = "Admin, Staff")]
     public class ExcelController : ControllerBase
     {
 
@@ -32,7 +31,6 @@ namespace Tokki.WebAPI.Controllers
 
         [HttpPost("import/vocab")]
         [Consumes("multipart/form-data")]
-        [Authorize(Roles = "Admin, Staff")]
         public async Task<IActionResult> ImportVocabularyByExcel(IFormFile file, [FromQuery] string? topicId)
         {
             try
@@ -62,7 +60,7 @@ namespace Tokki.WebAPI.Controllers
         }
         [HttpPost("import/questions")]
         [Consumes("multipart/form-data")]
-        [Authorize(Roles = "Admin, Staff")]
+    
         public async Task<IActionResult> ImportQuestions([FromForm] ImportQuestionsFromExcelCommand command)
         {
             if (command.ExcelFile == null || command.ExcelFile.Length == 0)
@@ -86,7 +84,6 @@ namespace Tokki.WebAPI.Controllers
         }
         [HttpPost("import/pronunciation-example")]
         [Consumes("multipart/form-data")]
-        [Authorize(Roles = "Admin, Staff")]
         public async Task<IActionResult> ImportPronunciationExempleByExcel(IFormFile file)
         {
             try
@@ -113,6 +110,49 @@ namespace Tokki.WebAPI.Controllers
                 return StatusCode(500, ex.ToString());
             }
         }
+        [HttpPost("import/account")]
+        public async Task<IActionResult> ImportAccounts(IFormFile file)
+        {
+            // Bắt lỗi ngay từ vòng gửi xe nếu FE quên nhét file vào body
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest(new { Message = "Vui lòng đính kèm file Excel." });
+            }
+
+            var command = new ImportAccountCommand(file);
+            var result = await _sender.Send(command);
+
+            // Dù thành công hay có lỗi (do trùng email, thiếu cột), 
+            // kết quả trả về đều chứa danh sách SuccessList và FailureList chi tiết
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+        [HttpPost("import/question-types")]
+        public async Task<IActionResult> ImportQuestionTypes(IFormFile file)
+        {
+            var result = await _sender.Send(new ImportQuestionTypesCommand(file));
+            if (!result.IsSuccess) return BadRequest(result);
+            return Ok(result);
+        }
+        [HttpGet("export/account")]
+        public async Task<IActionResult> ExportAccount()
+        {
+            var query = new ExportAccountsQuery();
+            var result = await _sender.Send(query);
+            return File(result.Data.FileBytes, "application/vnd.ms-excel", result.Data.FileName);
+        }
+        [HttpGet("export/question-types")]
+        public async Task<IActionResult> ExportQuestionTypes()
+        {
+            var result = await _sender.Send(new ExportQuestionTypesQuery());
+            if (!result.IsSuccess) return BadRequest(result);
+
+            return File(result.Data.FileBytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                result.Data.FileName);
+        }
         [HttpGet("export/topic/{topicId}")]
         [Authorize(Roles = "Admin, Staff")] 
         public async Task<IActionResult> ExportVocabByTopic(string topicId)
@@ -136,7 +176,6 @@ namespace Tokki.WebAPI.Controllers
             if (!result.IsSuccess)
                 return BadRequest(result);
 
-            // Trả về file Excel cho Frontend tải xuống
             return File(
                 result.Data.FileBytes,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -144,56 +183,23 @@ namespace Tokki.WebAPI.Controllers
             );
         }
 
-        // ==========================================
-        // 2. XUẤT DỮ LIỆU TỪ DB RA EXCEL (EXPORT)
-        // ==========================================
-        [HttpGet("export/account")]
-        public async Task<IActionResult> ExportAccount()
+        [HttpGet("template/question-type")]
+        public async Task<IActionResult> GetTemplateQuestionType()
         {
-                var query = new ExportAccountsQuery();
-                var result = await _sender.Send(query);
-                return File(result.Data.FileBytes, "application/vnd.ms-excel", result.Data.FileName);
-        }
+            var query = new GetQuestionTypeTemplateQuery();
+            var result = await _sender.Send(query);
 
-        // ==========================================
-        // 3. IMPORT DỮ LIỆU TỪ FILE EXCEL VÀO DB
-        // ==========================================
-        [HttpPost("import/account")]
-        public async Task<IActionResult> ImportAccounts(IFormFile file)
-        {
-            // Bắt lỗi ngay từ vòng gửi xe nếu FE quên nhét file vào body
-            if (file == null || file.Length == 0)
-            {
-                return BadRequest(new { Message = "Vui lòng đính kèm file Excel." });
-            }
-
-            var command = new ImportAccountCommand(file);
-            var result = await _sender.Send(command);
-
-            // Dù thành công hay có lỗi (do trùng email, thiếu cột), 
-            // kết quả trả về đều chứa danh sách SuccessList và FailureList chi tiết
             if (!result.IsSuccess)
                 return BadRequest(result);
 
-            return Ok(result);
-        }
-        [HttpGet("export/question-types")]
-        public async Task<IActionResult> ExportQuestionTypes()
-        {
-            var result = await _sender.Send(new ExportQuestionTypesQuery());
-            if (!result.IsSuccess) return BadRequest(result);
-
-            return File(result.Data.FileBytes,
+            return File(
+                result.Data.FileBytes,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                result.Data.FileName);
+                result.Data.FileName
+            );
         }
 
-        [HttpPost("import/question-types")]
-        public async Task<IActionResult> ImportQuestionTypes(IFormFile file)
-        {
-            var result = await _sender.Send(new ImportQuestionTypesCommand(file));
-            if (!result.IsSuccess) return BadRequest(result);
-            return Ok(result);
-        }
+
+
     }
 }
