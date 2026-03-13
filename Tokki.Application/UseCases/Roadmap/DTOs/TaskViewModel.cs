@@ -13,6 +13,7 @@ namespace Tokki.Application.UseCases.Roadmap.DTOs
         public string TaskType { get; set; } 
         public bool IsCompleted { get; set; }
         public int DayIndex { get; set; }
-        public string Content { get; set; } 
+        public string Content { get; set; }
+        public string? ExamId { get; set; } 
     }
 }

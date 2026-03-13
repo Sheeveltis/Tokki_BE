@@ -67,9 +67,10 @@ namespace Tokki.Infrastructure.Repositories
         }
         public async Task<List<string>> GetWeakQuestionTypesFromExamAsync(string userExamId, CancellationToken cancellationToken = default)
         {
-            var weakTypes = await _context.UserExamDetails
-                .Where(d => d.UserExamId == userExamId && d.IsCorrect == false) 
-                .GroupBy(d => d.QuestionTypeId)
+            var weakTypes = await _context.UserExamAnswers
+                .Where(d => d.UserExamId == userExamId && d.IsCorrect == false)
+                .Include(d => d.Question)
+                .GroupBy(d => d.Question.QuestionTypeId)
                 .Select(g => new { TypeId = g.Key, Count = g.Count() })
                 .OrderByDescending(x => x.Count) 
                 .Take(3) 
@@ -99,9 +100,9 @@ namespace Tokki.Infrastructure.Repositories
             await _context.UserExams.AddAsync(userExam);
         }
 
-        public async Task AddUserExamDetailsAsync(List<UserExamDetail> details)
+        public async Task AddUserExamAnswersAsync(List<UserExamAnswer> answers)
         {
-            await _context.UserExamDetails.AddRangeAsync(details);
+            await _context.UserExamAnswers.AddRangeAsync(answers);
         }
     }
 }

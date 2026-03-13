@@ -13,7 +13,6 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
         private readonly IUserRoadmapRepository _repository;
         private readonly IAiRoadmapService _aiRoadmapService;
         private readonly IIdGeneratorService _idGeneratorService;
-        private readonly IExamRepository _examRepository;
 
         public GenerateNextWeekCommandHandler(
             IUserRoadmapRepository repository,

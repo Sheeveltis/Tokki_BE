@@ -157,6 +157,8 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                                         if (examResult.IsSuccess)
                                         {
                                             taskEntity.ExamId = examResult.Data;
+                                            weekEntity.WeeklyExamId = examResult.Data;
+
                                         }
                                     }
                                     weekEntity.DailyTasks.Add(taskEntity);

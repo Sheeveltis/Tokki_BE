@@ -1,13 +1,10 @@
 ﻿using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Tokki.Application.Common.Models;
-using Tokki.Application.IRepositories; // Sử dụng Interface Repository
+using Tokki.Application.IRepositories; 
 using Tokki.Application.IServices;
 using Tokki.Domain.Entities;
+using Tokki.Domain.Enums;
+using UserExamEntity = Tokki.Domain.Entities.UserExam; 
 
 namespace Tokki.Application.UseCases.Exam.Commands.SubmitExam
 {
@@ -38,7 +35,8 @@ namespace Tokki.Application.UseCases.Exam.Commands.SubmitExam
 
             int totalScore = 0;
             var userExamId = _idGenerator.GenerateCustom(15);
-            var examDetails = new List<UserExamDetail>();
+            var examAnswers = new List<UserExamAnswer>();
+            var weaknessTracking = new List<(string QuestionTypeId, bool IsCorrect)>();
 
             foreach (var userAnswer in request.Answers)
             {
@@ -54,18 +52,20 @@ namespace Tokki.Application.UseCases.Exam.Commands.SubmitExam
                     totalScore += questionEntity.Score;
                 }
 
-                examDetails.Add(new UserExamDetail
+                examAnswers.Add(new UserExamAnswer
                 {
-                    DetailId = _idGenerator.GenerateCustom(15),
+                    UserExamAnswerId = _idGenerator.GenerateCustom(15),
                     UserExamId = userExamId,
                     QuestionId = userAnswer.QuestionId,
                     SelectedOptionId = userAnswer.SelectedOptionId,
                     IsCorrect = isCorrect,
-                    QuestionTypeId = questionEntity.QuestionBank.QuestionTypeId ?? "UNKNOWN"
+                    OrderIndex = 0
                 });
+                var questionTypeId = questionEntity.QuestionBank.QuestionTypeId ?? "UNKNOWN";
+                weaknessTracking.Add((questionTypeId, isCorrect));
             }
 
-            var userExam = new UserExam
+            var userExam = new UserExamEntity
             {
                 UserExamId = userExamId,
                 UserId = request.UserId,
@@ -73,15 +73,16 @@ namespace Tokki.Application.UseCases.Exam.Commands.SubmitExam
                 StartTime = DateTime.UtcNow.AddMinutes(-60),
                 SubmitTime = DateTime.UtcNow,
                 Score = totalScore,
-                Status = 1,
+                Status = UserExamStatus.Completed,
                 CreatedAt = DateTime.UtcNow
             };
 
             await _userRoadmapRepository.AddUserExamAsync(userExam);
-            await _userRoadmapRepository.AddUserExamDetailsAsync(examDetails);
+            await _userRoadmapRepository.AddUserExamAnswersAsync(examAnswers);
 
-            var examResultsByType = examDetails
-                .GroupBy(d => d.QuestionTypeId)
+            var examResultsByType = weaknessTracking
+                .Where(x => x.QuestionTypeId != "UNKNOWN")
+                .GroupBy(x => x.QuestionTypeId)
                 .Select(g => new
                 {
                     TypeId = g.Key,
@@ -90,14 +91,11 @@ namespace Tokki.Application.UseCases.Exam.Commands.SubmitExam
                 .ToList();
 
             var existingWeaknesses = await _userWeaknessRepository.GetByUserIdAsync(request.UserId, cancellationToken);
-
-            var activeRoadmap = await _userRoadmapRepository.GetActiveRoadmapByUserIdAsync(request.UserId, cancellationToken);
+            var activeRoadmap = await _userRoadmapRepository.GetActiveRoadmapByUserIdAsync(request.UserId, cancellationToken);          
             string? currentRoadmapId = activeRoadmap?.UserRoadmapId;
 
             foreach (var result in examResultsByType)
             {
-                if (result.TypeId == "UNKNOWN") continue;
-
                 bool isWeak = result.Score < 50;
                 bool isFixed = result.Score >= 80;
 
@@ -108,27 +106,23 @@ namespace Tokki.Application.UseCases.Exam.Commands.SubmitExam
                     weaknessRecord.CurrentScore = result.Score;
                     weaknessRecord.UpdatedAt = DateTime.UtcNow;
 
-                    if (isFixed) weaknessRecord.Status = 2; 
+                    if (isFixed) weaknessRecord.Status = 2;
                     else if (result.Score > (weaknessRecord.InitialScore ?? 0)) weaknessRecord.Status = 1;
-                    else if (isWeak) weaknessRecord.Status = 0; 
+                    else if (isWeak) weaknessRecord.Status = 0;
                 }
-                else
+                else if (isWeak)
                 {
-                    if (isWeak)
+                    await _userWeaknessRepository.AddAsync(new UserWeakness
                     {
-                        var newWeakness = new UserWeakness
-                        {
-                            Id = _idGenerator.GenerateCustom(15),
-                            UserId = request.UserId,
-                            QuestionTypeId = result.TypeId,
-                            RoadmapId = currentRoadmapId,
-                            Status = 0,
-                            InitialScore = result.Score,
-                            CurrentScore = result.Score,
-                            CreatedAt = DateTime.UtcNow
-                        };
-                        await _userWeaknessRepository.AddAsync(newWeakness, cancellationToken);
-                    }
+                        Id = _idGenerator.GenerateCustom(15),
+                        UserId = request.UserId,
+                        QuestionTypeId = result.TypeId,
+                        RoadmapId = currentRoadmapId,
+                        Status = 0,
+                        InitialScore = result.Score,
+                        CurrentScore = result.Score,
+                        CreatedAt = DateTime.UtcNow
+                    }, cancellationToken);
                 }
             }
             await _userRoadmapRepository.SaveChangesAsync(cancellationToken);

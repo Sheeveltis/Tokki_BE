@@ -46,7 +46,8 @@ namespace Tokki.Application.UseCases.Roadmap.Queries.GetRoadmap
                         TaskType = t.TaskType.ToString(),
                         IsCompleted = t.IsCompleted,
                         DayIndex = t.DayIndex,
-                        Content = t.AiGeneratedContent
+                        Content = t.AiGeneratedContent,
+                        ExamId = t.ExamId
                     }).ToList()
                 }).ToList()
             };
