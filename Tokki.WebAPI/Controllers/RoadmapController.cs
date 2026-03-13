@@ -2,35 +2,56 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Tokki.Application.IServices;
+using Tokki.Application.IRepositories;
+using Tokki.Application.Common.Constants;
 using Tokki.Application.UseCases.Exam.Commands.SubmitExam;
 using Tokki.Application.UseCases.Roadmap.Commands.CompleteTask;
 using Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek;
 using Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap;
 using Tokki.Application.UseCases.Roadmap.DTOs;
+using Tokki.Application.UseCases.Roadmap.Queries.GetDurationRecommendation;
 using Tokki.Application.UseCases.Roadmap.Queries.GetRoadmap;
+using Tokki.Application.UseCases.Roadmap.Queries.GetVirtualQuiz;
+using Tokki.Application.UseCases.Roadmap.Queries.GetEntranceExam;
+using Tokki.Application.UseCases.Roadmap.Commands.CancelRoadmap;
 using Tokki.Domain.Enums;
-using Tokki.Infrastructure.Data;
 
 namespace Tokki.WebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize] 
+    [Authorize]
     public class RoadmapController : ControllerBase
     {
         private readonly IMediator _mediator;
-        private readonly IExamAssemblyService _examAssemblyService;
-        private readonly TokkiDbContext _context;
+        private readonly IUserRoadmapRepository _userRoadmapRepository;
+
         public RoadmapController(
-            IMediator mediator, 
-            IExamAssemblyService examAssemblyService,
-            TokkiDbContext context)
+            IMediator mediator,
+            IUserRoadmapRepository userRoadmapRepository) 
         {
             _mediator = mediator;
-            _examAssemblyService = examAssemblyService;
-            _context = context;
+            _userRoadmapRepository = userRoadmapRepository;
+        }
+     
+        [HttpGet("target-aims")]
+        [AllowAnonymous]
+        public IActionResult GetTargetAims()
+        {
+            var result = TopikLevelConfig.Levels
+                .Select(kvp => new
+                {
+                    Value = (int)kvp.Key,
+                    EnumName = kvp.Key.ToString(),
+                    DisplayName = kvp.Value.DisplayName,
+                    ExamGroup = kvp.Value.ExamGroup,
+                    PassScore = kvp.Value.PassScore,
+                    TotalScore = kvp.Value.TotalScore
+                })
+                .OrderBy(x => x.Value)
+                .ToList();
+
+            return Ok(result);
         }
 
         [HttpPost("generate")]
@@ -38,9 +59,16 @@ namespace Tokki.WebAPI.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
-            {
                 return Unauthorized("Không tìm thấy thông tin người dùng.");
-            }
+
+            var existingRoadmap = await _userRoadmapRepository
+                .GetActiveRoadmapByUserIdAsync(userId, CancellationToken.None);
+
+            if (existingRoadmap != null)
+                return BadRequest(new
+                {
+                    message = "Bạn đang có một lộ trình học đang hoạt động. Vui lòng hoàn thành hoặc hủy lộ trình cũ trước khi tạo mới."
+                });
 
             var command = new GenerateRoadmapCommand
             {
@@ -54,9 +82,7 @@ namespace Tokki.WebAPI.Controllers
             var result = await _mediator.Send(command);
 
             if (result.IsSuccess)
-            {
                 return CreatedAtAction(nameof(GenerateRoadmap), new { id = result.Data }, result);
-            }
 
             return BadRequest(result);
         }
@@ -66,23 +92,13 @@ namespace Tokki.WebAPI.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
-            {
                 return Unauthorized("Không tìm thấy thông tin người dùng.");
-            }
 
             var query = new GetRoadmapQuery(userId);
             var result = await _mediator.Send(query);
 
-            if (result.IsSuccess)
-            {
-                return Ok(result);
-            }
-
-            if (result.StatusCode == 404)
-            {
-                return NotFound(result);
-            }
-
+            if (result.IsSuccess) return Ok(result);
+            if (result.StatusCode == 404) return NotFound(result);
             return BadRequest(result);
         }
 
@@ -109,58 +125,22 @@ namespace Tokki.WebAPI.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var task = await _context.RoadmapDailyTasks
-                .Include(t => t.RoadmapWeek)
-                .ThenInclude(w => w.UserRoadmap)
-                .FirstOrDefaultAsync(t => t.TaskId == taskId);
+            var task = await _userRoadmapRepository
+                .GetTaskByIdAsync(taskId, CancellationToken.None);
 
-            if (task == null) return NotFound("Task not found");
+            if (task == null)
+                return NotFound(new { message = "Không tìm thấy task." });
 
-            var existingExam = await _context.Exams
-                .FirstOrDefaultAsync(e => e.Title.Contains(taskId) && e.CreatedBy == "AI_SYSTEM");
+            if (task.RoadmapWeek.UserRoadmap.UserId != userId)
+                return Forbid();
 
-            if (existingExam != null)
-            {
-                return Ok(new { ExamId = existingExam.ExamId, IsNew = false });
-            }
-            //var templateId = "TMP_TEST";
-            var template = await _context.ExamTemplates
-                .Where(t => t.Status == ExamTemplateStatus.Published) 
-                .OrderByDescending(t => t.Name.Contains("Test"))    
-                .ThenByDescending(t => t.CreatedAt)                
-                .FirstOrDefaultAsync();
+            if (task.TaskType != RoadmapTaskType.WeeklyExam)
+                return BadRequest(new { message = "Task này không phải bài kiểm tra tuần." });
 
-            if (template == null)
-            {
-                return BadRequest("Hệ thống chưa có cấu trúc đề thi nào (ExamTemplate). Vui lòng chạy Script tạo dữ liệu mẫu.");
-            }
+            if (string.IsNullOrEmpty(task.ExamId))
+                return NotFound(new { message = "Đề thi cho tuần này chưa được tạo. Vui lòng thử lại sau." });
 
-            var templateId = template.ExamTemplateId;
-
-            DifficultyLevel level = DifficultyLevel.Easy;
-            if (task.RoadmapWeek.UserRoadmap.TargetAim == TargetAimLevel.Topik_II)
-            {
-                level = DifficultyLevel.Medium;
-            }
-            var result = await _examAssemblyService.GenerateWeeklyExamAsync(
-                templateId,
-                userId,
-                task.RoadmapWeek.WeekIndex,
-                new List<string>(), 
-                level,
-                CancellationToken.None
-            );
-
-            if (!result.IsSuccess) return BadRequest(result.Message);
-
-            var newExam = await _context.Exams.FindAsync(result.Data);
-            if (newExam != null)
-            {
-                newExam.Title = $"Weekly Exam {task.RoadmapWeek.WeekIndex} - {taskId}"; 
-                await _context.SaveChangesAsync();
-            }
-
-            return Ok(new { ExamId = result.Data, IsNew = true });
+            return Ok(new { ExamId = task.ExamId });
         }
 
         [HttpPost("next-week")]
@@ -168,9 +148,7 @@ namespace Tokki.WebAPI.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
-            {
                 return Unauthorized("Không tìm thấy thông tin người dùng.");
-            }
 
             var command = new GenerateNextWeekCommand
             {
@@ -180,17 +158,20 @@ namespace Tokki.WebAPI.Controllers
 
             var result = await _mediator.Send(command);
 
-            if (result.IsSuccess)
-            {
-                return Ok(new { message = "Đã tạo lộ trình tuần mới thành công!", status = 200 });
-            }
+            if (result.StatusCode == 200 && result.Message?.Contains("hoàn thành") == true)
+                return Ok(new { message = result.Message, isFinished = true });
 
-            if (result.StatusCode == 200 && result.Message.Contains("hoàn thành"))
-            {
-                return Ok(new { message = result.Message, isFinished = true }); 
-            }
+            if (!result.IsSuccess)
+                return BadRequest(result);
 
-            return BadRequest(result);
+            return Ok(new
+            {
+                message = "Đã tạo lộ trình tuần mới thành công!",
+                isFinished = false,
+                hasWarning = result.Data?.HasWarning ?? false,
+                warningMessage = result.Data?.WarningMessage,
+                persistentWeakTypeIds = result.Data?.PersistentWeakTypeIds ?? new List<string>()
+            });
         }
 
         [HttpPost("submit-exam")]
@@ -198,9 +179,7 @@ namespace Tokki.WebAPI.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
-            {
                 return Unauthorized("Không tìm thấy thông tin người dùng.");
-            }
 
             var command = new SubmitExamCommand
             {
@@ -215,11 +194,70 @@ namespace Tokki.WebAPI.Controllers
 
             var result = await _mediator.Send(command);
 
-            if (result.IsSuccess)
-            {
-                return Ok(result); 
-            }
+            if (result.IsSuccess) return Ok(result);
+            return BadRequest(result);
+        }
 
+        [HttpGet("virtual-quiz/{questionTypeId}")]
+        public async Task<IActionResult> GetVirtualQuiz(
+            string questionTypeId,
+            [FromQuery] int count = 10)
+        {
+            var query = new GetVirtualQuizQuery(questionTypeId, count);
+            var result = await _mediator.Send(query);
+
+            if (result.IsSuccess) return Ok(result);
+            if (result.StatusCode == 404) return NotFound(result);
+            return BadRequest(result);
+        }
+
+        [HttpGet("duration-recommendation")]
+        public async Task<IActionResult> GetDurationRecommendation(
+            [FromQuery] string examId,
+            [FromQuery] TargetAimLevel targetAim,
+            [FromQuery] List<string> weakTypeIds)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("Không tìm thấy thông tin người dùng.");
+
+            var query = new GetDurationRecommendationQuery
+            {
+                UserId = userId,
+                ExamId = examId,
+                TargetAim = targetAim,
+                WeakQuestionTypeIds = weakTypeIds ?? new List<string>()
+            };
+
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess) return NotFound(result);
+            return Ok(result);
+        }
+
+        [HttpGet("entrance-exam")]
+        public async Task<IActionResult> GetEntranceExam([FromQuery] TargetAimLevel targetAim)
+        {
+            var query = new GetEntranceExamQuery { TargetAim = targetAim };
+            var result = await _mediator.Send(query);
+
+            if (result.IsSuccess) return Ok(result);
+            if (result.StatusCode == 404) return NotFound(result);
+            return BadRequest(result);
+        }
+
+        [HttpPost("cancel")]
+        public async Task<IActionResult> CancelRoadmap()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("Không tìm thấy thông tin người dùng.");
+
+            var command = new CancelRoadmapCommand { UserId = userId };
+            var result = await _mediator.Send(command);
+
+            if (result.IsSuccess) return Ok(result);
+            if (result.StatusCode == 404) return NotFound(result);
             return BadRequest(result);
         }
     }

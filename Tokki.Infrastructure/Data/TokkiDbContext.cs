@@ -34,7 +34,6 @@ namespace Tokki.Infrastructure.Data
         public DbSet<UserFavoriteVocabulary> UserFavoriteVocabularies { get; set; }
         public DbSet<VocabularyExample> VocabularyExamples { get; set; }
         public DbSet<UserExam> UserExams { get; set; }
-        public DbSet<UserExamDetail> UserExamDetails { get; set; }
         public DbSet<Comment> Comments { get; set; }
 
         // --- QUESTION BANK DbSets ---
@@ -63,7 +62,6 @@ namespace Tokki.Infrastructure.Data
         public DbSet<PronunciationRule> PronunciationRules { get; set; }
         public DbSet<PronunciationExample> PronunciationExamples { get; set; }
         //User take exam
-        public DbSet<UserExam> UserExams { get; set; }
         public DbSet<UserExamAnswer> UserExamAnswers { get; set; }
         public DbSet<UserExamWritingAnswer> UserExamWritingAnswers { get; set; }
         //Wordle
@@ -71,6 +69,11 @@ namespace Tokki.Infrastructure.Data
         public DbSet<WordleSentenceSubmission> WordleSentenceSubmissions { get; set; }
         public DbSet<UserWordleProgress> UserWordleProgress { get; set; }
         public DbSet<WordleSentenceLike> WordleSentenceLikes { get; set; }
+        public DbSet<Grammar> Grammars { get; set; }
+        public DbSet<KnowledgeMetadata> KnowledgeMetadatas { get; set; }
+        public DbSet<ExamTemplateStructure> ExamTemplateStructures { get; set; }
+        public DbSet<UserWeakness> UserWeaknesses { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

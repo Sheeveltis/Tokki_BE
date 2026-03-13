@@ -29,5 +29,7 @@ namespace Tokki.Domain.Entities
 
         [ForeignKey(nameof(QuestionTypeId))]
         public virtual QuestionType QuestionType { get; set; } = null!;
+        public int ConsecutiveFailWeeks { get; set; } = 0;
+        public int LastEvaluatedWeekIndex { get; set; } = 0;
     }
 }

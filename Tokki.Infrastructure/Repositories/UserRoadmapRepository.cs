@@ -58,7 +58,7 @@ namespace Tokki.Infrastructure.Repositories
         public async Task<int> GetExamScoreAsync(string examId, string userId, CancellationToken cancellationToken = default)
         {
             var score = await _context.UserExams
-                .Where(ue => ue.ExamId == examId && ue.UserId == userId && ue.Status == 1)
+                .Where(ue => ue.ExamId == examId && ue.UserId == userId && ue.Status == UserExamStatus.Completed)
                 .OrderByDescending(ue => ue.SubmitTime) 
                 .Select(ue => ue.Score)
                 .FirstOrDefaultAsync(cancellationToken);
@@ -67,9 +67,10 @@ namespace Tokki.Infrastructure.Repositories
         }
         public async Task<List<string>> GetWeakQuestionTypesFromExamAsync(string userExamId, CancellationToken cancellationToken = default)
         {
-            var weakTypes = await _context.UserExamDetails
-                .Where(d => d.UserExamId == userExamId && d.IsCorrect == false) 
-                .GroupBy(d => d.QuestionTypeId)
+            var weakTypes = await _context.UserExamAnswers
+                .Where(d => d.UserExamId == userExamId && d.IsCorrect == false)
+                .Include(d => d.Question)
+                .GroupBy(d => d.Question.QuestionTypeId)
                 .Select(g => new { TypeId = g.Key, Count = g.Count() })
                 .OrderByDescending(x => x.Count) 
                 .Take(3) 
@@ -81,7 +82,7 @@ namespace Tokki.Infrastructure.Repositories
         public async Task<UserExam?> GetUserExamByExamIdAsync(string examId, string userId, CancellationToken cancellationToken = default)
         {
             return await _context.UserExams
-                .Where(ue => ue.ExamId == examId && ue.UserId == userId && ue.Status == 1)
+                .Where(ue => ue.ExamId == examId && ue.UserId == userId && ue.Status == UserExamStatus.Completed)
                 .OrderByDescending(ue => ue.SubmitTime) 
                 .FirstOrDefaultAsync(cancellationToken);
         }
@@ -99,9 +100,32 @@ namespace Tokki.Infrastructure.Repositories
             await _context.UserExams.AddAsync(userExam);
         }
 
-        public async Task AddUserExamDetailsAsync(List<UserExamDetail> details)
+        public async Task AddUserExamAnswersAsync(List<UserExamAnswer> answers)
         {
-            await _context.UserExamDetails.AddRangeAsync(details);
+            await _context.UserExamAnswers.AddRangeAsync(answers);
+        }
+        public async Task<bool> QuestionTypeExistsAsync(string questionTypeId, CancellationToken cancellationToken = default)
+        {
+            return await _context.QuestionTypes
+                .AnyAsync(qt => qt.QuestionTypeId == questionTypeId, cancellationToken);
+        }
+
+        public async Task<List<QuestionBank>> GetRandomQuestionsByTypeAsync(string questionTypeId, int count, CancellationToken cancellationToken = default)
+        {
+            return await _context.QuestionBank
+                .Include(q => q.QuestionOptions)
+                .Include(q => q.Passage)
+                .Where(q => q.QuestionTypeId == questionTypeId)
+                .OrderBy(q => Guid.NewGuid())
+                .Take(count)
+                .ToListAsync(cancellationToken);
+        }
+        public async Task<List<string>> GetValidQuestionTypeIdsAsync(List<string> questionTypeIds, CancellationToken cancellationToken = default)
+        {
+            return await _context.QuestionTypes
+                .Where(qt => questionTypeIds.Contains(qt.QuestionTypeId))
+                .Select(qt => qt.QuestionTypeId)
+                .ToListAsync(cancellationToken);
         }
     }
 }

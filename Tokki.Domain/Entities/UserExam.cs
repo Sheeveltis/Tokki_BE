@@ -32,8 +32,6 @@ namespace Tokki.Domain.Entities
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        public DateTime? CreatedAt { get; set; }
-
         [ForeignKey("UserId")]
         public virtual Account User { get; set; } = null!; 
 

@@ -39,6 +39,16 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
 
             try
             {
+                var activeRoadmap = await _userRoadmapRepository.GetActiveRoadmapByUserIdAsync(
+                request.UserId, cancellationToken);
+
+                if (activeRoadmap != null)
+                {
+                    return OperationResult<string>.Failure(
+                        "Bạn đang có một lộ trình học đang hoạt động. Vui lòng hoàn thành hoặc hủy lộ trình cũ trước khi tạo mới.",
+                        400);
+                }
+
                 var aiPlan = await _aiRoadmapService.GenerateStudyPlanAsync(
                     request.TargetAim,
                     request.CurrentLevel,
@@ -49,6 +59,19 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                 if (aiPlan == null || aiPlan.Weeks == null || !aiPlan.Weeks.Any())
                 {
                     return OperationResult<string>.Failure("AI không thể tạo lộ trình. Vui lòng thử lại.", 503);
+                }
+                if (request.Weaknesses != null && request.Weaknesses.Any())
+                {
+                    var validIds = await _userRoadmapRepository
+                        .GetValidQuestionTypeIdsAsync(request.Weaknesses, cancellationToken);
+
+                    var invalidIds = request.Weaknesses.Except(validIds).ToList();
+                    if (invalidIds.Any())
+                    {
+                        _logger.LogWarning($"Loại bỏ {invalidIds.Count} questionTypeId không hợp lệ: {string.Join(", ", invalidIds)}");
+                    }
+
+                    request.Weaknesses = validIds;
                 }
 
                 var roadmapId = _idGeneratorService.GenerateCustom(15);
@@ -157,6 +180,8 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                                         if (examResult.IsSuccess)
                                         {
                                             taskEntity.ExamId = examResult.Data;
+                                            weekEntity.WeeklyExamId = examResult.Data;
+
                                         }
                                     }
                                     weekEntity.DailyTasks.Add(taskEntity);

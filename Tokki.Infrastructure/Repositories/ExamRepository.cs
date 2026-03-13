@@ -139,6 +139,16 @@ namespace Tokki.Infrastructure.Repositories
                         .ThenInclude(qb => qb.QuestionType)   
                 .FirstOrDefaultAsync(e => e.ExamId == examId, cancellationToken);
         }
+        public async Task<Exam?> GetEntranceExamByTypeAsync(
+            ExamType examType,
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.Exams
+                .Where(e => e.Type == examType
+                         && e.Status == ExamStatus.Published)
+                .OrderByDescending(e => e.CreatedAt)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
     }
 
 }
