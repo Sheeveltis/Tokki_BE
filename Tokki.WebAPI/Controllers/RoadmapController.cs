@@ -42,7 +42,14 @@ namespace Tokki.WebAPI.Controllers
             {
                 return Unauthorized("Không tìm thấy thông tin người dùng.");
             }
+            var existingRoadmap = await _context.UserRoadmaps
+            .AnyAsync(r => r.UserId == userId && r.CurrentStatus == Tokki.Domain.Enums.UserRoadmapStatus.Active);
 
+            if (existingRoadmap)
+                return BadRequest(new
+                {
+                    message = "Bạn đang có một lộ trình học đang hoạt động. Vui lòng hoàn thành hoặc hủy lộ trình cũ trước khi tạo mới."
+                });
             var command = new GenerateRoadmapCommand
             {
                 UserId = userId,
@@ -112,56 +119,22 @@ namespace Tokki.WebAPI.Controllers
 
             var task = await _context.RoadmapDailyTasks
                 .Include(t => t.RoadmapWeek)
-                .ThenInclude(w => w.UserRoadmap)
+                    .ThenInclude(w => w.UserRoadmap)
                 .FirstOrDefaultAsync(t => t.TaskId == taskId);
 
-            if (task == null) return NotFound("Task not found");
+            if (task == null)
+                return NotFound(new { message = "Không tìm thấy task." });
 
-            var existingExam = await _context.Exams
-                .FirstOrDefaultAsync(e => e.Title.Contains(taskId) && e.CreatedBy == "AI_SYSTEM");
+            if (task.RoadmapWeek.UserRoadmap.UserId != userId)
+                return Forbid();
 
-            if (existingExam != null)
-            {
-                return Ok(new { ExamId = existingExam.ExamId, IsNew = false });
-            }
-            //var templateId = "TMP_TEST";
-            var template = await _context.ExamTemplates
-                .Where(t => t.Status == ExamTemplateStatus.Published) 
-                .OrderByDescending(t => t.Name.Contains("Test"))    
-                .ThenByDescending(t => t.CreatedAt)                
-                .FirstOrDefaultAsync();
+            if (task.TaskType != Tokki.Domain.Enums.RoadmapTaskType.WeeklyExam)
+                return BadRequest(new { message = "Task này không phải bài kiểm tra tuần." });
 
-            if (template == null)
-            {
-                return BadRequest("Hệ thống chưa có cấu trúc đề thi nào (ExamTemplate). Vui lòng chạy Script tạo dữ liệu mẫu.");
-            }
+            if (string.IsNullOrEmpty(task.ExamId))
+                return NotFound(new { message = "Đề thi cho tuần này chưa được tạo. Vui lòng thử lại sau." });
 
-            var templateId = template.ExamTemplateId;
-
-            DifficultyLevel level = DifficultyLevel.Easy;
-            if (task.RoadmapWeek.UserRoadmap.TargetAim == TargetAimLevel.Topik_II)
-            {
-                level = DifficultyLevel.Medium;
-            }
-            var result = await _examAssemblyService.GenerateWeeklyExamAsync(
-                templateId,
-                userId,
-                task.RoadmapWeek.WeekIndex,
-                new List<string>(), 
-                level,
-                CancellationToken.None
-            );
-
-            if (!result.IsSuccess) return BadRequest(result.Message);
-
-            var newExam = await _context.Exams.FindAsync(result.Data);
-            if (newExam != null)
-            {
-                newExam.Title = $"Weekly Exam {task.RoadmapWeek.WeekIndex} - {taskId}"; 
-                await _context.SaveChangesAsync();
-            }
-
-            return Ok(new { ExamId = result.Data, IsNew = true });
+            return Ok(new { ExamId = task.ExamId });
         }
 
         [HttpPost("next-week")]
