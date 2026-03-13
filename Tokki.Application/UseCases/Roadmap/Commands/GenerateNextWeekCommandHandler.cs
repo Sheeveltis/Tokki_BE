@@ -41,7 +41,15 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
 
             if (currentWeek == null)
                 return OperationResult<GenerateNextWeekResult>.Failure("Không tìm thấy tuần tương ứng", 404);
+            if (!string.IsNullOrEmpty(currentWeek.WeeklyExamId))
+            {
+                var examSubmitted = await _repository.GetUserExamByExamIdAsync(
+                    currentWeek.WeeklyExamId, request.UserId, cancellationToken);
 
+                if (examSubmitted == null)
+                    return OperationResult<GenerateNextWeekResult>.Failure(
+                        "Bạn cần hoàn thành bài kiểm tra cuối tuần trước khi mở tuần mới.", 400);
+            }
             if (currentWeek.UserRoadmap.UserId != request.UserId)
                 return OperationResult<GenerateNextWeekResult>.Failure("Bạn không có quyền thao tác.", 403);
 

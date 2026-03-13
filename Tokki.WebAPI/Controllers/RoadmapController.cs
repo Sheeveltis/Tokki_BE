@@ -12,6 +12,8 @@ using Tokki.Application.UseCases.Roadmap.DTOs;
 using Tokki.Application.UseCases.Roadmap.Queries.GetDurationRecommendation;
 using Tokki.Application.UseCases.Roadmap.Queries.GetRoadmap;
 using Tokki.Application.UseCases.Roadmap.Queries.GetVirtualQuiz;
+using Tokki.Application.UseCases.Roadmap.Queries.GetEntranceExam;
+using Tokki.Application.UseCases.Roadmap.Commands.CancelRoadmap;
 using Tokki.Domain.Enums;
 
 namespace Tokki.WebAPI.Controllers
@@ -231,6 +233,32 @@ namespace Tokki.WebAPI.Controllers
 
             if (!result.IsSuccess) return NotFound(result);
             return Ok(result);
+        }
+
+        [HttpGet("entrance-exam")]
+        public async Task<IActionResult> GetEntranceExam([FromQuery] TargetAimLevel targetAim)
+        {
+            var query = new GetEntranceExamQuery { TargetAim = targetAim };
+            var result = await _mediator.Send(query);
+
+            if (result.IsSuccess) return Ok(result);
+            if (result.StatusCode == 404) return NotFound(result);
+            return BadRequest(result);
+        }
+
+        [HttpPost("cancel")]
+        public async Task<IActionResult> CancelRoadmap()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("Không tìm thấy thông tin người dùng.");
+
+            var command = new CancelRoadmapCommand { UserId = userId };
+            var result = await _mediator.Send(command);
+
+            if (result.IsSuccess) return Ok(result);
+            if (result.StatusCode == 404) return NotFound(result);
+            return BadRequest(result);
         }
     }
 }
