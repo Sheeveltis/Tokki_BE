@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Tokki.Application.Common.ExcelCore;
 using Tokki.Application.Common.Helpers;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
@@ -109,6 +110,7 @@ namespace Tokki.Infrastructure
             services.AddScoped<IPronunciationExampleRepository, PronunciationExampleRepository>();
             //User take exam
             services.AddScoped<IUserExamRepository, UserExamRepository>();
+            services.AddScoped<IExcelBaseService, ExcelBaseService>();
             return services;
         }
     }
