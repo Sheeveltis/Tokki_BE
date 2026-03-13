@@ -13,6 +13,9 @@ namespace Tokki.Domain.Enums
         Medium = 2,
 
         [Description("Khó")]
-        Hard = 3
+        Hard = 3,
+        [Description("Rất khó")]
+        VeryHard = 4
+
     }
 }
