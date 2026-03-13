@@ -29,6 +29,7 @@ namespace Tokki.Domain.Entities
         public ExamType ExamType { get; set; } 
 
         public bool IsActive { get; set; } = true;
+        public int OrderIndex { get; set; } = 0;
 
         public virtual ICollection<QuestionBank> QuestionBank { get; set; } = new List<QuestionBank>();
     }
