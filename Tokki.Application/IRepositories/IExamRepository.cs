@@ -27,5 +27,8 @@ namespace Tokki.Application.IRepositories
         Task DeleteAsync(Exam exam);
         Task<bool> SaveChangesAsync(CancellationToken cancellationToken = default);
         Task<Exam?> GetExamWithFullDetailsAsync(string examId, CancellationToken cancellationToken);
+        Task<Exam?> GetEntranceExamByTypeAsync(
+            ExamType examType,
+            CancellationToken cancellationToken = default);
     }
 }
