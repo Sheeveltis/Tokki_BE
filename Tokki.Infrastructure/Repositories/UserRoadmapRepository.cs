@@ -120,5 +120,12 @@ namespace Tokki.Infrastructure.Repositories
                 .Take(count)
                 .ToListAsync(cancellationToken);
         }
+        public async Task<List<string>> GetValidQuestionTypeIdsAsync(List<string> questionTypeIds, CancellationToken cancellationToken = default)
+        {
+            return await _context.QuestionTypes
+                .Where(qt => questionTypeIds.Contains(qt.QuestionTypeId))
+                .Select(qt => qt.QuestionTypeId)
+                .ToListAsync(cancellationToken);
+        }
     }
 }
