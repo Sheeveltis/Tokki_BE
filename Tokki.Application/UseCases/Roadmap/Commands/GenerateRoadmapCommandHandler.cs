@@ -50,6 +50,19 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                 {
                     return OperationResult<string>.Failure("AI không thể tạo lộ trình. Vui lòng thử lại.", 503);
                 }
+                if (request.Weaknesses != null && request.Weaknesses.Any())
+                {
+                    var validIds = await _userRoadmapRepository
+                        .GetValidQuestionTypeIdsAsync(request.Weaknesses, cancellationToken);
+
+                    var invalidIds = request.Weaknesses.Except(validIds).ToList();
+                    if (invalidIds.Any())
+                    {
+                        _logger.LogWarning($"Loại bỏ {invalidIds.Count} questionTypeId không hợp lệ: {string.Join(", ", invalidIds)}");
+                    }
+
+                    request.Weaknesses = validIds;
+                }
 
                 var roadmapId = _idGeneratorService.GenerateCustom(15);
                 var roadmap = new UserRoadmap
