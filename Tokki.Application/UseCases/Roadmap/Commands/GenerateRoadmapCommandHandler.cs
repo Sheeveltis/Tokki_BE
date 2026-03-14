@@ -105,27 +105,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                     OverallAiAssessment = aiPlan.Assessment,
                     CreatedAt = DateTime.UtcNow,
                     Weeks = new List<RoadmapWeek>()
-                };
-
-                if (request.Weaknesses != null && request.Weaknesses.Any())
-                {
-                    foreach (var weakTypeId in request.Weaknesses)
-                    {
-                        var weaknessRecord = new UserWeakness
-                        {
-                            Id = _idGeneratorService.GenerateCustom(15),
-                            UserId = request.UserId,
-                            RoadmapId = roadmapId, 
-                            QuestionTypeId = weakTypeId,
-                            Status = 0, 
-                            InitialScore = 0,
-                            CurrentScore = 0,
-                            CreatedAt = DateTime.UtcNow
-                        };
-
-                        await _userWeaknessRepository.AddAsync(weaknessRecord, cancellationToken);
-                    }
-                }
+                };               
 
                 int totalWeeks = (int)Math.Ceiling((double)request.DurationDays / 7);
 
@@ -217,6 +197,25 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
 
                 await _userRoadmapRepository.AddAsync(roadmap);
                 await _userRoadmapRepository.SaveChangesAsync(cancellationToken);
+
+                if (request.Weaknesses != null && request.Weaknesses.Any())
+                {
+                    foreach (var weakTypeId in request.Weaknesses)
+                    {
+                        var weaknessRecord = new UserWeakness
+                        {
+                            Id = _idGeneratorService.GenerateCustom(15),
+                            UserId = request.UserId,
+                            RoadmapId = roadmapId,
+                            QuestionTypeId = weakTypeId,
+                            Status = 0,
+                            InitialScore = 0,
+                            CurrentScore = 0,
+                            CreatedAt = DateTime.UtcNow
+                        };
+                        await _userWeaknessRepository.AddAsync(weaknessRecord, cancellationToken);
+                    }
+                }
                 await _userWeaknessRepository.SaveChangesAsync(cancellationToken);
 
                 return OperationResult<string>.Success(roadmapId, 201, "Tạo lộ trình thành công (Week 1 sẵn sàng)!");
