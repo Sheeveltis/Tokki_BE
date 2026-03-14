@@ -9,25 +9,29 @@ namespace Tokki.Application.UseCases.Roadmap.Queries.GetEntranceExam
         : IRequestHandler<GetEntranceExamQuery, OperationResult<EntranceExamResult>>
     {
         private readonly IExamRepository _examRepository;
+        private readonly IUserRoadmapRepository _userRoadmapRepository;
 
-        public GetEntranceExamQueryHandler(IExamRepository examRepository)
+        public GetEntranceExamQueryHandler(IExamRepository examRepository, IUserRoadmapRepository userRoadmapRepository)
         {
             _examRepository = examRepository;
+            _userRoadmapRepository = userRoadmapRepository;
         }
 
         public async Task<OperationResult<EntranceExamResult>> Handle(
-            GetEntranceExamQuery request,
-            CancellationToken cancellationToken)
+    GetEntranceExamQuery request,
+    CancellationToken cancellationToken)
         {
             if (!TopikLevelConfig.Levels.TryGetValue(request.TargetAim, out var levelInfo))
                 return OperationResult<EntranceExamResult>.Failure(
                     "Mục tiêu học tập không hợp lệ.", 400);
-            var exam = await _examRepository
-                .GetEntranceExamByTypeAsync(levelInfo.EntranceExamType, cancellationToken);
+
+            var exam = await _userRoadmapRepository
+                .GetEntranceExamByConfigKeyAsync(levelInfo.ConfigKey, cancellationToken);
 
             if (exam == null)
                 return OperationResult<EntranceExamResult>.Failure(
-                    $"Chưa có đề test đầu vào cho {levelInfo.DisplayName}. Vui lòng liên hệ admin.", 404);
+                    $"Chưa có đề test đầu vào cho {levelInfo.DisplayName}. " +
+                    $"Vui lòng liên hệ admin để cấu hình đề thi.", 404);
 
             return OperationResult<EntranceExamResult>.Success(new EntranceExamResult
             {

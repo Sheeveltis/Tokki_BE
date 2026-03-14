@@ -4,16 +4,16 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tokki.Application.IRepositories;
 using Tokki.Application.Common.Constants;
-using Tokki.Application.UseCases.Exam.Commands.SubmitExam;
 using Tokki.Application.UseCases.Roadmap.Commands.CompleteTask;
 using Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek;
 using Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap;
 using Tokki.Application.UseCases.Roadmap.DTOs;
-using Tokki.Application.UseCases.Roadmap.Queries.GetDurationRecommendation;
 using Tokki.Application.UseCases.Roadmap.Queries.GetRoadmap;
 using Tokki.Application.UseCases.Roadmap.Queries.GetVirtualQuiz;
 using Tokki.Application.UseCases.Roadmap.Queries.GetEntranceExam;
 using Tokki.Application.UseCases.Roadmap.Commands.CancelRoadmap;
+using Tokki.Application.UseCases.Roadmap.Commands.ProcessWeeklyResult;
+using Tokki.Application.UseCases.Roadmap.Queries.GetEntranceFeedback;
 using Tokki.Domain.Enums;
 
 namespace Tokki.WebAPI.Controllers
@@ -67,7 +67,7 @@ namespace Tokki.WebAPI.Controllers
             if (existingRoadmap != null)
                 return BadRequest(new
                 {
-                    message = "Bạn đang có một lộ trình học đang hoạt động. Vui lòng hoàn thành hoặc hủy lộ trình cũ trước khi tạo mới."
+                    message = "Bạn đang có một lộ trình học đang hoạt động."
                 });
 
             var command = new GenerateRoadmapCommand
@@ -75,8 +75,8 @@ namespace Tokki.WebAPI.Controllers
                 UserId = userId,
                 TargetAim = request.TargetAim,
                 DurationDays = request.DurationDays,
-                Weaknesses = request.Weaknesses,
-                CurrentLevel = request.CurrentLevel
+                CurrentLevel = request.CurrentLevel,
+                UserExamId = request.UserExamId  
             };
 
             var result = await _mediator.Send(command);
@@ -173,31 +173,7 @@ namespace Tokki.WebAPI.Controllers
                 persistentWeakTypeIds = result.Data?.PersistentWeakTypeIds ?? new List<string>()
             });
         }
-
-        [HttpPost("submit-exam")]
-        public async Task<IActionResult> SubmitExam([FromBody] SubmitExamRequestDto request)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized("Không tìm thấy thông tin người dùng.");
-
-            var command = new SubmitExamCommand
-            {
-                ExamId = request.ExamId,
-                UserId = userId,
-                Answers = request.Answers.Select(a => new UserAnswerDto
-                {
-                    QuestionId = a.QuestionId,
-                    SelectedOptionId = a.SelectedOptionId
-                }).ToList()
-            };
-
-            var result = await _mediator.Send(command);
-
-            if (result.IsSuccess) return Ok(result);
-            return BadRequest(result);
-        }
-
+        
         [HttpGet("virtual-quiz/{questionTypeId}")]
         public async Task<IActionResult> GetVirtualQuiz(
             string questionTypeId,
@@ -209,28 +185,6 @@ namespace Tokki.WebAPI.Controllers
             if (result.IsSuccess) return Ok(result);
             if (result.StatusCode == 404) return NotFound(result);
             return BadRequest(result);
-        }
-
-        [HttpGet("duration-recommendation")]
-        public async Task<IActionResult> GetDurationRecommendation(
-            [FromQuery] TargetAimLevel targetAim,
-            [FromQuery] List<string> weakTypeIds)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized("Không tìm thấy thông tin người dùng.");
-
-            var query = new GetDurationRecommendationQuery
-            {
-                UserId = userId,
-                TargetAim = targetAim,
-                WeakQuestionTypeIds = weakTypeIds ?? new List<string>()
-            };
-
-            var result = await _mediator.Send(query);
-
-            if (!result.IsSuccess) return BadRequest(result);
-            return Ok(result);
         }
 
         [HttpGet("entrance-exam")]
@@ -257,6 +211,48 @@ namespace Tokki.WebAPI.Controllers
             if (result.IsSuccess) return Ok(result);
             if (result.StatusCode == 404) return NotFound(result);
             return BadRequest(result);
+        }
+
+        [HttpPost("process-weekly-result")]
+        public async Task<IActionResult> ProcessWeeklyResult(
+            [FromBody] ProcessWeeklyResultRequestDto request)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("Không tìm thấy thông tin người dùng.");
+
+            var command = new ProcessWeeklyResultCommand
+            {
+                UserId = userId,
+                UserExamId = request.UserExamId
+            };
+
+            var result = await _mediator.Send(command);
+
+            if (!result.IsSuccess) return StatusCode(result.StatusCode, result);
+            return Ok(result);
+        }
+
+        [HttpGet("feedback")]
+        public async Task<IActionResult> GetEntranceFeedback(
+            [FromQuery] string userExamId,
+            [FromQuery] TargetAimLevel targetAim)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("Không tìm thấy thông tin người dùng.");
+
+            var query = new GetEntranceFeedbackQuery
+            {
+                UserId = userId,
+                UserExamId = userExamId,
+                TargetAim = targetAim
+            };
+
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess) return StatusCode(result.StatusCode, result);
+            return Ok(result);
         }
     }
 }

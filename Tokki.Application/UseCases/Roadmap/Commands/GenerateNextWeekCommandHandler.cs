@@ -2,6 +2,7 @@
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
+using Tokki.Application.UseCases.Roadmap.DTOs;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 
@@ -70,7 +71,10 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
             int scorePercent = 0;
             List<string> failedThisWeek = new();   
             List<string> persistentFail = new();  
-            List<string> reviewTypes = new();      
+            List<string> reviewTypes = new();
+            var weakTypeInfos = new List<QuestionTypeMenuItem>();
+            var grammarMenu = new List<GrammarMenuItem>();
+            var questionTypeMenu = new List<QuestionTypeMenuItem>();
 
             if (!string.IsNullOrEmpty(currentWeek.WeeklyExamId))
             {
@@ -102,9 +106,22 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
                             reviewTypes.Add(profile.QuestionTypeId);
                         }
                     }
+                    var allWeakIds = reviewTypes.Union(persistentFail).ToList();
+
+                    weakTypeInfos = allWeakIds.Any()
+                        ? await _repository.GetQuestionTypeMenuAsync(allWeakIds, cancellationToken)
+                        : new List<QuestionTypeMenuItem>();
+
+                    grammarMenu = await _repository.GetGrammarMenuAsync(
+                        reviewTypes, roadmap.CurrentLevel, cancellationToken);
+
+                    var allLevelTypeIds = await _repository
+                        .GetValidQuestionTypeIdsByLevelAsync(roadmap.CurrentLevel, cancellationToken);
+
+                    questionTypeMenu = await _repository
+                        .GetQuestionTypeMenuAsync(allLevelTypeIds, cancellationToken);
                 }
             }
-
             bool hasWarning = persistentFail.Any();
             string? warningMessage = hasWarning
                 ? $"Bạn vẫn chưa nắm vững {persistentFail.Count} dạng câu hỏi sau 2 tuần luyện tập: " +
@@ -119,7 +136,10 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
                 scorePercent,
                 reviewTypes,      
                 persistentFail,   
-                new List<string>()
+                new List<string>(),
+                weakTypeInfos,   
+                grammarMenu,     
+                questionTypeMenu
             );
 
             if (aiPlan == null || !aiPlan.Weeks.Any())
