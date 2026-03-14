@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tokki.Application.IRepositories;
 using Tokki.Application.Common.Constants;
-using Tokki.Application.UseCases.Exam.Commands.SubmitExam;
 using Tokki.Application.UseCases.Roadmap.Commands.CompleteTask;
 using Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek;
 using Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap;
