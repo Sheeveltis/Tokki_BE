@@ -28,5 +28,7 @@ namespace Tokki.Application.UseCases.Roadmap.DTOs
         public string TaskType { get; set; } = string.Empty;
 
         public string Content { get; set; } = string.Empty;
+        public string? GrammarId { get; set; }
+        public string? QuestionTypeId { get; set; }
     }
 }

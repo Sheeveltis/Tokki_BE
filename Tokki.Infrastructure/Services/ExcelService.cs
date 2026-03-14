@@ -236,5 +236,51 @@ namespace Application.Services
                         .Replace("\"", "&quot;")
                         .Replace("'", "&#39;");
         }
+
+        public Task<List<PronunciationExampleExcelDTO>> ExtractExampleDataAsync(IFormFile file)
+        {
+            var result = new List<PronunciationExampleExcelDTO>();
+
+            ExcelPackage.License.SetNonCommercialPersonal("TokkiProject");
+
+            using (var stream = file.OpenReadStream())
+            using (var package = new ExcelPackage(stream))
+            {
+                var worksheet = package.Workbook.Worksheets[0];
+
+                if (worksheet.Dimension == null)
+                    return Task.FromResult(result);
+
+                int rowCount = worksheet.Dimension.Rows;
+
+                for (int row = 2; row <= rowCount; row++)
+                {
+                    var ruleId = worksheet.Cells[row, 1].Text;
+                    if (string.IsNullOrWhiteSpace(ruleId)) continue;
+
+                    var targetScript = worksheet.Cells[row, 2].Text;
+
+                    var rawScript = worksheet.Cells[row, 3].Text;
+
+                    var phoneticScript = worksheet.Cells[row, 4].Text;
+
+                    var meaning = worksheet.Cells[row, 5].Text;
+
+                    int.TryParse(worksheet.Cells[row, 6].Text, out int sortOrder);
+
+                    result.Add(new PronunciationExampleExcelDTO
+                    {
+                        PronunciationRuleId = ruleId.Trim(),
+                        TargetScript = targetScript.Trim(),
+                        RawScript = rawScript.Trim(),
+                        PhoneticScript = phoneticScript.Trim(),
+                        Meaning = meaning.Trim(),
+                        SortOrder = sortOrder
+                    });
+                }
+            }
+
+            return Task.FromResult(result);
+        }
     }
 }

@@ -132,7 +132,36 @@ namespace Tokki.Infrastructure.Repositories
         {
             await _context.SaveChangesAsync(cancellationToken);
         }
+        public async Task<(List<Topic> items, int totalCount)> GetVocabTopicsPagedForUserAsync(
+            int pageNumber, int pageSize, string? searchTerm = null, TopicLevel? level = null)
+        {
+            var query = _context.Topics
+                .Include(t => t.VocabularyTopics)
+                .Where(t => t.Status == TopicStatus.Active
+                         && t.TopicType == TopicType.VocabStudy) // ✅ chỉ lấy VocabStudy
+                .AsQueryable();
 
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+                query = query.Where(t =>
+                    t.TopicName.Contains(searchTerm) ||
+                    (t.Description != null && t.Description.Contains(searchTerm))
+                );
+
+            if (level.HasValue)
+                query = query.Where(t => t.Level == level.Value);
+
+            int totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderBy(t => t.OrderIndex.HasValue ? 0 : 1) // ✅ có index lên trước
+                .ThenBy(t => t.OrderIndex)                    // ✅ sắp xếp theo index tăng dần
+                .ThenByDescending(t => t.CreateDate)          // ✅ không có index thì theo ngày tạo
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
         public async Task<(List<Topic> Items, int TotalCount)> GetPagedForUserAsync(int pageNumber, int pageSize, string? searchTerm = null, TopicLevel? level = null)
         {
             var query = _context.Topics
@@ -209,6 +238,126 @@ namespace Tokki.Infrastructure.Repositories
                         select v;
 
             return await query.AsNoTracking().ToListAsync();
+        }
+
+        //Hàm  của kiệt - Lấy max OrderIndex hiện tại để khi tạo topic mới sẽ gán OrderIndex = max + 1
+
+        public async Task<int> GetMaxOrderIndexAsync()
+        {
+            return await _context.Topics
+                .Where(t => t.Status != TopicStatus.Deleted
+                            && t.TopicType == TopicType.VocabStudy)
+                .Select(t => (int?)t.OrderIndex)
+                .MaxAsync() ?? 0;
+        }
+        public async Task<int> GetMaxOrderIndexForVocabAsync()
+        {
+            return await _context.Topics
+                .Where(t => t.Status != TopicStatus.Deleted
+                            && t.TopicType == TopicType.VocabStudy)
+                .Select(t => (int?)t.OrderIndex)
+                .MaxAsync() ?? 0;
+        }
+        public async Task DecrementOrderIndexAfterAsync(
+    int deletedOrderIndex,
+    TopicType topicType,
+    string updatedBy,
+    DateTime updatedDate)
+        {
+            // chỉ lùi index các topic phía sau, cùng type, và không phải Deleted
+            var topicsToShift = await _context.Topics
+                .Where(t => t.Status != TopicStatus.Deleted
+                            && t.TopicType == topicType
+                            && t.OrderIndex > deletedOrderIndex)
+                .ToListAsync();
+
+            foreach (var t in topicsToShift)
+            {
+                t.OrderIndex -= 1;
+                t.UpdateBy = updatedBy;
+                t.UpdateDate = updatedDate;
+            }
+        }
+
+        public async Task ShiftOrderIndexUpFromAsync(
+    int fromIndex,
+    TopicType topicType,
+    string excludeTopicId,
+    string updatedBy,
+    DateTime updatedDate)
+        {
+            var topicsToShift = await _context.Topics
+                .Where(t => t.Status != TopicStatus.Deleted
+                            && t.TopicType == topicType
+                            && t.OrderIndex >= fromIndex
+                            && t.TopicId != excludeTopicId)
+                .OrderByDescending(t => t.OrderIndex) // tránh dính unique (nếu có)
+                .ToListAsync();
+
+            foreach (var t in topicsToShift)
+            {
+                t.OrderIndex += 1;
+                t.UpdateBy = updatedBy;
+                t.UpdateDate = updatedDate;
+            }
+        }
+
+        // TopicRepository.cs
+        public async Task<(IEnumerable<Topic> items, int totalCount)> GetVocabTopicsPagedAsync(
+            int pageNumber,
+            int pageSize,
+            string? searchTerm,
+            TopicStatus? status,
+            TopicLevel? level)
+        {
+            var query = _context.Topics
+                .Where(t => t.TopicType == TopicType.VocabStudy) // ✅ filter VocabStudy từ DB
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+                query = query.Where(t => t.TopicName.Contains(searchTerm));
+
+            if (status.HasValue)
+                query = query.Where(t => t.Status == status.Value);
+
+            if (level.HasValue)
+                query = query.Where(t => t.Level == level.Value);
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+              .OrderBy(t => t.OrderIndex.HasValue ? 0 : 1)
+              .ThenBy(t => t.OrderIndex)                   
+              .ThenBy(t => t.CreateDate)                   
+              .Skip((pageNumber - 1) * pageSize)
+              .Take(pageSize)
+              .ToListAsync();
+
+            return (items, totalCount);
+        }
+
+
+        public async Task ShiftOrderIndexBetweenAsync(
+    int fromIndex, int toIndex, TopicType topicType,
+    string excludeTopicId, string updatedBy, DateTime updatedDate)
+        {
+            bool movingDown = fromIndex < toIndex;
+
+            var topicsToShift = await _context.Topics
+                .Where(t => t.TopicType == topicType
+                         && t.TopicId != excludeTopicId
+                         && t.OrderIndex.HasValue
+                         && (movingDown
+                             ? t.OrderIndex >= fromIndex + 1 && t.OrderIndex <= toIndex   // dịch xuống: giảm 1
+                             : t.OrderIndex >= toIndex && t.OrderIndex <= fromIndex - 1)) // dịch lên: tăng 1
+                .ToListAsync();
+
+            foreach (var t in topicsToShift)
+            {
+                t.OrderIndex = movingDown ? t.OrderIndex - 1 : t.OrderIndex + 1;
+                t.UpdateBy = updatedBy;
+                t.UpdateDate = updatedDate;
+            }
         }
     }
 }

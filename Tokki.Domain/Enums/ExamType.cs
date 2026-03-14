@@ -11,10 +11,16 @@ namespace Tokki.Domain.Enums
         TopikII = 2,
 
         [Description("Test đầu vào")]
+        [Obsolete("Dùng EntranceTestTopikI hoặc EntranceTestTopikII thay thế")]
         EntranceTest = 3,
 
         [Description("Kiểm tra tuần")]
-        WeeklyAssessment = 4
+        WeeklyAssessment = 4,
 
+        [Description("Test đầu vào TOPIK I")]
+        EntranceTestTopikI = 5,
+
+        [Description("Test đầu vào TOPIK II")]
+        EntranceTestTopikII = 6
     }
 }

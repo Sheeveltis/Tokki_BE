@@ -36,5 +36,16 @@ namespace Tokki.Domain.Entities
 
         [ForeignKey(nameof(TargetQuestionTypeId))]
         public virtual QuestionType? TargetQuestionType { get; set; }
+        public string? GrammarId { get; set; }
+        [ForeignKey("GrammarId")]
+        public virtual Grammar? Grammar { get; set; }
+        [Column(TypeName = "varchar(10)")] 
+        public string? QuestionTypeId { get; set; }
+        [ForeignKey("QuestionTypeId")]
+        public virtual QuestionType? QuestionType { get; set; }
+
+        public string? ExamId { get; set; }
+        [ForeignKey("ExamId")]
+        public virtual Exam? Exam { get; set; }
     }
 }

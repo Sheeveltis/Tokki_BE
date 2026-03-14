@@ -17,8 +17,8 @@ namespace Tokki.Domain.Entities
         public string UserId { get; set; } = string.Empty;
 
         [MaxLength(50)]
-        public string TargetAim { get; set; } = string.Empty; 
-
+        public TargetAimLevel TargetAim { get; set; }
+        public CurrentTopikLevel CurrentLevel { get; set; }
         public int DurationDays { get; set; } 
 
         public DateTime StartDate { get; set; }

@@ -64,12 +64,27 @@ namespace Tokki.Application.UseCases.Topics.Commands.DeleteTopic
                     );
                 }
 
+                var now = DateTime.UtcNow.AddHours(7);
+
                 // 3) Soft delete topic
+                int? deletedOrderIndex = existingTopic.OrderIndex; var deletedType = existingTopic.TopicType;
+
                 existingTopic.Status = TopicStatus.Deleted;
                 existingTopic.UpdateBy = currentUserId;
-                existingTopic.UpdateDate = DateTime.UtcNow.AddHours(7);
+                existingTopic.UpdateDate = now;
 
                 await _topicRepository.UpdateAsync(existingTopic);
+
+                // ✅ Lùi OrderIndex các topic phía sau 1 bậc
+                if (deletedOrderIndex.HasValue && deletedOrderIndex.Value > 0)
+                {
+                    await _topicRepository.DecrementOrderIndexAfterAsync(
+                        deletedOrderIndex.Value,
+                        deletedType,
+                        currentUserId,
+                        now);
+                }
+
 
                 // 4) Soft delete toàn bộ mapping VocabularyTopic của topic này
                 var mappings = await _vocabularyTopicRepository.GetByTopicIdAsync(request.TopicId);

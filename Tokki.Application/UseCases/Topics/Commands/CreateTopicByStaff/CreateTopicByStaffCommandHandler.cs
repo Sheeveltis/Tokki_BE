@@ -65,7 +65,8 @@ namespace Tokki.Application.UseCases.Topics.Commands.CreateTopicByStaff
                 ImgUrl = request.ImgUrl,
                 CreateBy = currentUserId,
                 CreateDate = DateTime.UtcNow.AddHours(7),
-                Status = TopicStatus.PendingApproval
+                Status = TopicStatus.PendingApproval,
+                TopicType =TopicType.VocabStudy
             };
 
             await _topicRepository.AddAsync(topic);

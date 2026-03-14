@@ -102,7 +102,7 @@ namespace Tokki.Application.UseCases.Exam.Queries.GetExamDetailQuery
                 result.TemplateParts.Add(partDto);
             }
 
-            return OperationResult<ExamDetailDTO>.Success(result, 200,OperationMessages.CreateSuccess("đề"));
+            return OperationResult<ExamDetailDTO>.Success(result, 200,OperationMessages.GetSuccess("đề"));
         }
 
         private string MapSkillToMediaType(QuestionSkill? skill)

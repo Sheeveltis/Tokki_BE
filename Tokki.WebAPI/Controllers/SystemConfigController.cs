@@ -4,13 +4,13 @@ using Microsoft.AspNetCore.Mvc;
 using Tokki.Application.UseCases.SystemConfigs.Commands.Create;
 using Tokki.Application.UseCases.SystemConfigs.Commands.Update;
 using Tokki.Application.UseCases.SystemConfigs.Queries.GetAll;
+using Tokki.Application.UseCases.SystemConfigs.Queries.GetSystemConfigByKey;
 using Tokki.Domain.Enums;
 
 namespace Tokki.WebAPI.Controllers
 {
     [Route("api/system-configs")] // Đặt tên theo chuẩn REST (số nhiều, gạch nối)
     [ApiController]
-    [Authorize(Roles = nameof(AccountRole.Admin))] // 🔒 Chỉ Admin mới được can thiệp cấu hình hệ thống
     public class SystemConfigController : ControllerBase
     {
         private readonly ISender _sender; // Dùng ISender gọn hơn IMediator
@@ -21,6 +21,8 @@ namespace Tokki.WebAPI.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = nameof(AccountRole.Admin))]
+
         public async Task<IActionResult> CreateConfig([FromBody] CreateSystemConfigCommand command)
         {
             var result = await _sender.Send(command);
@@ -28,6 +30,8 @@ namespace Tokki.WebAPI.Controllers
         }
 
         [HttpPut]
+        [Authorize(Roles = nameof(AccountRole.Admin))]
+
         public async Task<IActionResult> UpdateConfig([FromBody] UpdateSystemConfigCommand command)
         {
             var result = await _sender.Send(command);
@@ -36,6 +40,8 @@ namespace Tokki.WebAPI.Controllers
 
         
         [HttpGet]
+        [Authorize(Roles = nameof(AccountRole.Admin))]
+
         public async Task<IActionResult> GetAllConfigs([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             var query = new GetAllSystemConfigsQuery
@@ -48,12 +54,12 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
-    //    [HttpGet("{key}")]
-    //    public async Task<IActionResult> GetConfigByKey(string key)
-    //    {
-    //        var query = new GetSystemConfigByKeyQuery(key);
-    //        var result = await _sender.Send(query);
-    //        return StatusCode(result.StatusCode, result);
-    //    }
+        [HttpGet("{key}")]
+        public async Task<IActionResult> GetConfigByKey(string key)
+        {
+            var query = new GetSystemConfigByKeyQuery(key);
+            var result = await _sender.Send(query);
+            return StatusCode(result.StatusCode, result);
+        }
     }
 }

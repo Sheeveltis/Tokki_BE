@@ -233,5 +233,33 @@ namespace Tokki.Infrastructure.Repositories
                         };
             return await query.AsNoTracking().FirstOrDefaultAsync();
         }
+        public async Task AddRangeAsync(IEnumerable<Account> accounts, CancellationToken cancellationToken = default)
+        {
+            if (accounts == null || !accounts.Any())
+                return;
+
+            await _context.Accounts.AddRangeAsync(accounts, cancellationToken);
+
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+        public async Task<List<string>> GetExistingEmailsAsync(List<string> emails, CancellationToken cancellationToken = default)
+        {
+            if (emails == null || !emails.Any())
+            {
+                return new List<string>();
+            }
+
+            return await _context.Accounts
+                .AsNoTracking() 
+                .Where(a => emails.Contains(a.Email))
+                .Select(a => a.Email)
+                .ToListAsync(cancellationToken);
+        }
+        public async Task<IEnumerable<Account>> GetAllAsync(CancellationToken cancellationToken = default)
+        {
+            return await _context.Accounts
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+        }
     }
 }

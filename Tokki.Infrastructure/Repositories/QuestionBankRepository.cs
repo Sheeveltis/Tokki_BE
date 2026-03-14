@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Tokki.Application.IRepositories;
+using Tokki.Application.UseCases.QuestionBanks.DTOs;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 using Tokki.Infrastructure.Data;
@@ -202,11 +203,13 @@ namespace Tokki.Infrastructure.Repositories
             string questionTypeId,
             int quantity,
             List<string> excludedIds,
+            DifficultyLevel level,
             CancellationToken cancellationToken)
         {
             var query = _context.QuestionBank
                 .Where(x => x.QuestionTypeId == questionTypeId
-                            && x.Status == QuestionBankStatus.Active);
+                            && x.Status == QuestionBankStatus.Active
+                            && x.QuestionType.Difficulty == level);
 
             if (excludedIds != null && excludedIds.Any())
             {
@@ -280,6 +283,19 @@ namespace Tokki.Infrastructure.Repositories
                 .ToListAsync(token);
 
             return (items, totalCount);
+        }
+        public async Task<List<QuestionSignatureDTO>> GetQuestionsByTypeAsync(string questionTypeId)
+        {
+            return await _context.QuestionBank
+                .AsNoTracking()
+                .Where(q => q.QuestionTypeId == questionTypeId)
+                .Select(q => new QuestionSignatureDTO
+                {
+                    Content = q.Content,
+                    MediaUrl = q.MediaUrl,
+                    OptionContents = q.QuestionOptions.Select(o => o.Content).ToList()
+                })
+                .ToListAsync();
         }
     }
 }

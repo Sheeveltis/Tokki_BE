@@ -1,18 +1,32 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Tokki.Application.UseCases.Roadmap.DTOs; 
+using Tokki.Application.UseCases.Roadmap.DTOs;
+using Tokki.Domain.Enums;
+using Tokki.Application.IRepositories;
 
 namespace Tokki.Application.IServices
 {
     public interface IAiRoadmapService
     {
-        /// <summary>
-        /// Gửi thông tin user sang AI và nhận về JSON lộ trình học
-        /// </summary>
-        /// <param name="target">Mục tiêu (VD: TOPIK I Level 2)</param>
-        /// <param name="days">Số ngày (30/60/90)</param>
-        /// <param name="weaknesses">Danh sách điểm yếu (VD: Listening, Grammar)</param>
-        /// <returns>Object chứa lộ trình hoặc null nếu lỗi</returns>
-        Task<AiRoadmapResponse?> GenerateStudyPlanAsync(string target, int days, List<string> weaknesses);
+        Task<AiRoadmapResponse?> GenerateStudyPlanAsync(
+            TargetAimLevel target,
+            CurrentTopikLevel currentLevel,
+            int durationDays,
+            List<string> weaknesses,
+            List<QuestionTypeMenuItem> weakTypeInfos,    
+            List<GrammarMenuItem> grammarMenu,           
+            List<QuestionTypeMenuItem> questionTypeMenu); 
+
+        Task<AiRoadmapResponse?> GenerateNextWeekPlanAsync(
+            TargetAimLevel target,
+            CurrentTopikLevel currentLevel,
+            int nextWeekIndex,
+            int examScorePercent,
+            List<string> reviewTypes,
+            List<string> persistentFailTypes,
+            List<string> originalWeaknesses,
+            List<QuestionTypeMenuItem> weakTypeInfos,    
+            List<GrammarMenuItem> grammarMenu,          
+            List<QuestionTypeMenuItem> questionTypeMenu); 
     }
 }

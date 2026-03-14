@@ -14,6 +14,7 @@ using Tokki.Application.UseCases.Exam.Queries.GetExamById;
 using Tokki.Application.UseCases.Exam.Queries.GetExamDetailQuery;
 using Tokki.Application.UseCases.Exam.Queries.GetExams;
 using Tokki.Application.UseCases.Exam.Queries.GetQuestionsByPart;
+using Tokki.Application.UseCases.UserExam.Commands.CreateUserTakeExam;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -56,6 +57,7 @@ namespace Tokki.WebAPI.Controllers
             }
             return StatusCode(result.StatusCode, result);
         }
+     
         [HttpGet("admin")]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> GetAllExamsForAdmin([FromQuery] GetExamsQuery query )

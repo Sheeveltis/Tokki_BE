@@ -27,6 +27,7 @@ namespace Tokki.Domain.Entities
         public TopicStatus Status { get; set; } = TopicStatus.Active;
         public TopicType TopicType { get; set; }
 
+        public int? OrderIndex { get; set; }
         public virtual ICollection<VocabularyTopic> VocabularyTopics { get; set; } = new List<VocabularyTopic>();
     }
 }

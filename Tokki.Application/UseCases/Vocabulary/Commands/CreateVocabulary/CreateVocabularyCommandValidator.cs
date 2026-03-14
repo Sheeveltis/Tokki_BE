@@ -58,18 +58,14 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.CreateVocabulary
                 });
 
             RuleForEach(x => x.Examples)
-                .ChildRules(example =>
-                {
-                    example.RuleFor(e => e.Sentence)
-                        .NotEmpty()
-                        .WithMessage("Câu ví dụ không được để trống.");
-
-                    example.RuleFor(e => e.Translation)
-                        .MaximumLength(1000)
-                        .When(e => !string.IsNullOrEmpty(e.Translation))
-                        .WithMessage("Bản dịch không được vượt quá 1000 ký tự.");
-                })
-                .When(x => x.Examples != null);
+              .ChildRules(example =>
+              {
+                  example.RuleFor(e => e.Translation)
+                      .MaximumLength(1000)
+                      .When(e => !string.IsNullOrEmpty(e.Translation))
+                      .WithMessage("Bản dịch không được vượt quá 1000 ký tự.");
+              })
+              .When(x => x.Examples != null);
         }
     }
 }

@@ -5,9 +5,7 @@ namespace Tokki.Domain.Enums
     {
         [Description("Còn hạn VIP")]
         Active=1,
-        [Description("Hết hạn VIP")]
-        Expired=2,
         [Description("Không có VIP")]
-        NoVip=3
+        NoVip=2
     }
 }

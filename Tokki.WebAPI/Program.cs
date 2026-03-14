@@ -1,29 +1,42 @@
 ﻿// 1. THÊM CÁC NAMESPACE NÀY
-using System.Globalization;
-using System.Text;
 using FluentValidation;
+using Hangfire;
+using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models; // Dùng cho Swagger
+using System.Globalization;
+using System.Text;
+using System.Text.Json;
 using Tokki.Application;
 using Tokki.Application.Common.Helpers;
 using Tokki.Application.Common.Helpers.ValidationVietnameseLanguageManager;
 using Tokki.Application.IServices;
 using Tokki.Infrastructure;
 using Tokki.Infrastructure.BackgroundJobs; // Nơi chứa class JwtSettings
+using Tokki.Infrastructure.Configurations;
+using Tokki.Infrastructure.Repositories;
 using Tokki.Infrastructure.Services;
+using Tokki.WebAPI.BackgroundServices;
 using Tokki.WebAPI.Hubs;
 using Tokki.WebAPI.Middlewares;
 using Tokki.WebAPI.Services;
-var builder = WebApplication.CreateBuilder(args);
+using Tokki.Worker;
+try
+{
+    var builder = WebApplication.CreateBuilder(args);
 
 // ==========================================
 // 1. ĐĂNG KÝ SERVICES
 // ==========================================
-
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+    });
 builder.Services.AddEndpointsApiExplorer();
 //Phần cho mấy mớ services thuộc webAPI 
 builder.Services.AddSingleton<IChatNotificationService, ChatNotificationService>();
@@ -102,6 +115,11 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddHttpContextAccessor();
 
 
+//Cấu hình Background Service
+builder.Services.AddHostedService<ExamDeadlineWorker>();
+builder.Services.AddHostedService<WordleGeneratorWorker>();
+//Cấu hình cho tùy chọn apikey gemini 
+builder.Services.Configure<GeminiOptions>(builder.Configuration.GetSection("Gemini"));
 // 4. CẤU HÌNH FLUENTVALIDATION TIẾNG VIỆT (THÊM PHẦN NÀY)
 ValidatorOptions.Global.LanguageManager = new ValidationVietnameseLanguageManager();
 ValidatorOptions.Global.LanguageManager.Enabled = true;
@@ -148,8 +166,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowReactApp", policy =>
     {
         policy.WithOrigins("http://localhost:3000",
-               "https://localhost:7000",          // API itself (cho SignalR)
-                  "https://localhost:7178") // Cho phép đúng cái Frontend của bạn
+               "https://localhost:7000")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -165,12 +182,38 @@ builder.Services.AddCors(options =>
     });
 });
 
+// ===== HANGFIRE CONFIGURATION =====
+builder.Services.AddHangfire(configuration => configuration
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseSqlServerStorage(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        new SqlServerStorageOptions
+        {
+            CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+            SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+            QueuePollInterval = TimeSpan.Zero,
+            UseRecommendedIsolationLevel = true,
+            DisableGlobalLocks = true
+        }));
+// Add Hangfire server
+builder.Services.AddHangfireServer(options =>
+{
+    options.WorkerCount = 5; // Số worker chạy đồng thời (tùy chỉnh theo server)
+});
+
 //SignalR
 builder.Services.AddSignalR();
 
 // ==========================================
 
 var app = builder.Build();
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[] { new HangfireAuthorizationFilter() },
+    DashboardTitle = "Tokki Background Jobs"
+});
 //ChatHub
 app.MapHub<ChatHub>("/chatHub");
 app.MapHub<VocabularyHub>("/vocabularyHub");
@@ -201,3 +244,9 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+}
+catch (Exception ex)
+{
+    Console.WriteLine("LỖI KHỞI ĐỘNG APP: " + ex.ToString());
+    Console.ReadLine();
+}
