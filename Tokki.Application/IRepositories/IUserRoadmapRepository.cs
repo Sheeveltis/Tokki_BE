@@ -1,4 +1,5 @@
 ﻿using Tokki.Domain.Entities;
+using Tokki.Domain.Enums;
 
 public interface IUserRoadmapRepository
 {
@@ -17,4 +18,12 @@ public interface IUserRoadmapRepository
     Task<bool> QuestionTypeExistsAsync(string questionTypeId, CancellationToken cancellationToken = default);
     Task<List<QuestionBank>> GetRandomQuestionsByTypeAsync(string questionTypeId, int count, CancellationToken cancellationToken = default);
     Task<List<string>> GetValidQuestionTypeIdsAsync(List<string> questionTypeIds, CancellationToken cancellationToken = default);
+    Task<List<QuestionTypeMenuItem>> GetQuestionTypeMenuAsync(
+        List<string> questionTypeIds,
+        CancellationToken cancellationToken = default);
+
+    Task<List<GrammarMenuItem>> GetGrammarMenuAsync(
+        List<string> questionTypeIds,
+        CurrentTopikLevel level,
+        CancellationToken cancellationToken = default);
 }
