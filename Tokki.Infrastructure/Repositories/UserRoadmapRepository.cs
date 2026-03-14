@@ -184,5 +184,20 @@ namespace Tokki.Infrastructure.Repositories
                 .Select(qt => qt.QuestionTypeId)
                 .ToListAsync(cancellationToken);
         }
+        public async Task<Exam?> GetEntranceExamByConfigKeyAsync(
+            string configKey,
+            CancellationToken cancellationToken = default)
+        {
+            var config = await _context.SystemConfig
+                .FirstOrDefaultAsync(c => c.Key == configKey && c.IsActive, cancellationToken);
+
+            if (config == null || string.IsNullOrEmpty(config.Value))
+                return null;
+
+            return await _context.Exams
+                .FirstOrDefaultAsync(e => e.ExamId == config.Value
+                                       && e.Status == ExamStatus.Published,
+                    cancellationToken);
+        }
     }
 }
