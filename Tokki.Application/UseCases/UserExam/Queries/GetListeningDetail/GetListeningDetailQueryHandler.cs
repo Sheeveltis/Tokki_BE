@@ -31,7 +31,10 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetListeningDetail
             if (templateParts == null || !templateParts.Any())
                 return OperationResult<ListeningDetailResponse>.Failure("Cấu trúc đề thi bị lỗi.", 400);
 
-            var listeningParts = templateParts.Where(p => p.Skill == QuestionSkill.Listening).ToList();
+            var listeningParts = templateParts
+                .Where(p => p.Skill == QuestionSkill.Listening)
+                .OrderBy(p => p.QuestionFrom)
+                .ToList();
 
             var response = new ListeningDetailResponse();
             var groupsDto = new List<QuestionResultGroupDto>();
@@ -100,11 +103,11 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetListeningDetail
                 }
             }
 
+            // Gán kết quả đã được Group và Sort vào response
             response.QuestionGroups = groupsDto;
 
             return OperationResult<ListeningDetailResponse>.Success(response);
         }
-
         private string GetMediaType(string? url)
         {
             if (string.IsNullOrEmpty(url)) return "None";

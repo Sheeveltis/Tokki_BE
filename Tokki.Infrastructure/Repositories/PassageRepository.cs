@@ -125,5 +125,12 @@ namespace Tokki.Infrastructure.Repositories
         {
             await _context.Passages.AddRangeAsync(passages);
         }
+        public async Task<List<Passage>> GetByIdsAsync(List<string> ids, CancellationToken token)
+        {
+            return await _context.Passages
+                .AsNoTracking() // Tối ưu thêm: Không theo dõi thay đổi để chạy nhanh hơn
+                .Where(p => ids.Contains(p.PassageId))
+                .ToListAsync(token);
+        }
     }
 }

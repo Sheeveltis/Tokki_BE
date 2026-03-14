@@ -16,10 +16,12 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
     public class GetInProgressExamQueryHandler : IRequestHandler<GetInProgressExamQuery, OperationResult<UserTakeExamResponse>>
     {
         private readonly IUserExamRepository _repository;
+        private readonly IPassageRepository _passageRepository;
 
-        public GetInProgressExamQueryHandler(IUserExamRepository repository)
+        public GetInProgressExamQueryHandler(IUserExamRepository repository, IPassageRepository passageRepository)
         {
             _repository = repository;
+            _passageRepository = passageRepository;
         }
 
         public async Task<OperationResult<UserTakeExamResponse>> Handle(GetInProgressExamQuery request, CancellationToken token)
@@ -29,10 +31,23 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
             if (session == null)
                 return OperationResult<UserTakeExamResponse>.Failure("Không tìm thấy phiên làm bài đang diễn ra", 404);
 
-            return OperationResult<UserTakeExamResponse>.Success(MapToResponse(session, false));
+            var passageIds = session.UserExamAnswers.Select(a => a.Question.PassageId)
+                .Union(session.UserExamWritingAnswers.Select(w => w.Question.PassageId))
+                .Where(id => !string.IsNullOrEmpty(id))
+                .Distinct()
+                .ToList();
+
+            Dictionary<string, Passage> passageMap = new();
+            if (passageIds.Any())
+            {
+                var passages = await _passageRepository.GetByIdsAsync(passageIds!, token);
+                passageMap = passages.ToDictionary(p => p.PassageId);
+            }
+
+            return OperationResult<UserTakeExamResponse>.Success(MapToResponse(session, false, passageMap));
         }
 
-        private UserTakeExamResponse MapToResponse(Domain.Entities.UserExam session, bool isShuffleOptions)
+        private UserTakeExamResponse MapToResponse(Domain.Entities.UserExam session, bool isShuffleOptions, Dictionary<string, Passage> passageMap)
         {
             var elapsedSeconds = (int)(DateTime.UtcNow - session.StartTime).TotalSeconds;
             var duration = session.Exam.Duration * 60;
@@ -72,18 +87,18 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
             var parts = session.Exam.ExamTemplate.TemplateParts.OrderBy(p => p.QuestionFrom).ToList();
 
             response.Part.Listening = parts.Where(p => p.Skill == QuestionSkill.Listening)
-                                           .Select(p => MapToPartDto(p, questionsMap, isShuffleOptions)).ToList();
+                                           .Select(p => MapToPartDto(p, questionsMap, isShuffleOptions, passageMap)).ToList();
 
             response.Part.Reading = parts.Where(p => p.Skill == QuestionSkill.Reading)
-                                         .Select(p => MapToPartDto(p, questionsMap, isShuffleOptions)).ToList();
+                                         .Select(p => MapToPartDto(p, questionsMap, isShuffleOptions, passageMap)).ToList();
 
             response.Part.Writing = parts.Where(p => p.Skill == QuestionSkill.Writing)
-                                         .Select(p => MapToPartWritingDto(p, questionsMap)).ToList();
+                                         .Select(p => MapToPartWritingDto(p, questionsMap, passageMap)).ToList();
 
             return response;
         }
 
-        private ExamPartDto MapToPartDto(TemplatePart part, Dictionary<int, QuestionAnswerMetadata> questionsMap, bool shuffleOptions)
+        private ExamPartDto MapToPartDto(TemplatePart part, Dictionary<int, QuestionAnswerMetadata> questionsMap, bool shuffleOptions, Dictionary<string, Passage> passageMap)
         {
             var groups = new List<QuestionGroupDto>();
             QuestionGroupDto? currentGroup = null;
@@ -93,6 +108,10 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
                 if (questionsMap.TryGetValue(i, out var item) && !item.IsWriting)
                 {
                     var q = item.Question;
+
+                    Passage? passage = null;
+                    if (!string.IsNullOrEmpty(q.PassageId)) passageMap.TryGetValue(q.PassageId, out passage);
+
                     var options = q.QuestionOptions.Select(o => new ExamOptionDto
                     {
                         OptionId = o.OptionId,
@@ -115,16 +134,20 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
 
                     bool isSameGroup = currentGroup != null &&
                                        currentGroup.SharedMediaUrl == q.MediaUrl &&
-                                       currentGroup.SharedPassageContent == q.Passage?.Content;
+                                       currentGroup.SharedPassageContent == passage?.Content;
 
                     if (!isSameGroup)
                     {
+                        string? passageMedia = !string.IsNullOrEmpty(passage?.AudioUrl)
+                                               ? passage.AudioUrl
+                                               : passage?.ImageUrl;
+
                         currentGroup = new QuestionGroupDto
                         {
                             SharedMediaUrl = q.MediaUrl,
                             SharedMediaType = GetMediaType(q.MediaUrl),
-                            SharedPassageContent = q.Passage?.Content,
-                            SharedPassageMediaUrl = null,
+                            SharedPassageContent = passage?.Content,
+                            SharedPassageMediaUrl = passageMedia,
                             Questions = new List<ExamQuestionDto>()
                         };
                         groups.Add(currentGroup);
@@ -144,7 +167,7 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
             };
         }
 
-        private ExamPartWritingDto MapToPartWritingDto(TemplatePart part, Dictionary<int, QuestionAnswerMetadata> questionsMap)
+        private ExamPartWritingDto MapToPartWritingDto(TemplatePart part, Dictionary<int, QuestionAnswerMetadata> questionsMap, Dictionary<string, Passage> passageMap)
         {
             var groups = new List<QuestionWritingGroupDto>();
             QuestionWritingGroupDto? currentGroup = null;
@@ -155,6 +178,9 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
                 {
                     var q = item.Question;
 
+                    Passage? passage = null;
+                    if (!string.IsNullOrEmpty(q.PassageId)) passageMap.TryGetValue(q.PassageId, out passage);
+
                     var questionDto = new ExamQuestionWritingDto
                     {
                         UserQuestionId = item.AnswerId,
@@ -164,19 +190,22 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
                         QuestionTypeCode = q.QuestionType?.Code
                     };
 
-                    // THUẬT TOÁN GOM NHÓM CHO WRITING
                     bool isSameGroup = currentGroup != null &&
                                        currentGroup.SharedMediaUrl == q.MediaUrl &&
-                                       currentGroup.SharedPassageContent == q.Passage?.Content;
+                                       currentGroup.SharedPassageContent == passage?.Content;
 
                     if (!isSameGroup)
                     {
+                        string? passageMedia = !string.IsNullOrEmpty(passage?.AudioUrl)
+                                               ? passage.AudioUrl
+                                               : passage?.ImageUrl;
+
                         currentGroup = new QuestionWritingGroupDto
                         {
                             SharedMediaUrl = q.MediaUrl,
                             SharedMediaType = GetMediaType(q.MediaUrl),
-                            SharedPassageContent = q.Passage?.Content,
-                            SharedPassageMediaUrl = null,
+                            SharedPassageContent = passage?.Content,
+                            SharedPassageMediaUrl = passageMedia,
                             Questions = new List<ExamQuestionWritingDto>()
                         };
                         groups.Add(currentGroup);
