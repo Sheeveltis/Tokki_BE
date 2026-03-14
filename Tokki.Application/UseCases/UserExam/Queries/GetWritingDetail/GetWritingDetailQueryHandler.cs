@@ -32,7 +32,11 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetWritingDetail
             if (templateParts == null || !templateParts.Any())
                 return OperationResult<WritingDetailResponse>.Failure("Cấu trúc đề thi bị lỗi.", 400);
 
-            var writingParts = templateParts.Where(p => p.Skill == QuestionSkill.Writing).ToList();
+            // FIX 1: Sort các Part thuộc kỹ năng Writing theo thứ tự câu hỏi bắt đầu
+            var writingParts = templateParts
+                .Where(p => p.Skill == QuestionSkill.Writing)
+                .OrderBy(p => p.QuestionFrom)
+                .ToList();
 
             var response = new WritingDetailResponse();
             var groupsDto = new List<QuestionWritingResultGroupDto>();
@@ -44,6 +48,7 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetWritingDetail
                 int to = part.QuestionTo;
                 double mark = part.Mark;
 
+                // FIX 2: Đảm bảo các bài viết tự luận (WritingAnswers) được sort theo OrderIndex
                 var partAnswers = session.UserExamWritingAnswers
                     .Where(a => a.OrderIndex >= from && a.OrderIndex <= to)
                     .OrderBy(a => a.OrderIndex)
@@ -58,6 +63,7 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetWritingDetail
 
                     var question = answer.Question;
 
+                    // Xử lý AI Analysis JSON
                     object? parsedAiAnalysis = null;
                     if (!string.IsNullOrWhiteSpace(answer.AiAnalysisJson))
                     {
@@ -82,10 +88,11 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetWritingDetail
                         AnswerContent = answer.AnswerContent,
                         WordCount = answer.WordCount,
                         Score = answer.Score,
-                        AiAnalysis = parsedAiAnalysis, 
+                        AiAnalysis = parsedAiAnalysis,
                         GradedAt = answer.GradedAt
                     };
 
+                    // Logic Grouping (Dựa trên Media/Passage của câu hỏi Writing)
                     bool isSameGroup = currentGroup != null &&
                                        currentGroup.SharedMediaUrl == question.MediaUrl &&
                                        currentGroup.SharedPassageContent == question.Passage?.Content;
@@ -110,7 +117,6 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetWritingDetail
 
             return OperationResult<WritingDetailResponse>.Success(response);
         }
-
         private string GetMediaType(string? url)
         {
             if (string.IsNullOrEmpty(url)) return "None";

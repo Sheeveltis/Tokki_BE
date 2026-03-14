@@ -31,7 +31,10 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetReadingDetail
             if (templateParts == null || !templateParts.Any())
                 return OperationResult<ReadingDetailResponse>.Failure("Cấu trúc đề thi bị lỗi.", 400);
 
-            var readingParts = templateParts.Where(p => p.Skill == QuestionSkill.Reading).ToList();
+            var readingParts = templateParts
+                .Where(p => p.Skill == QuestionSkill.Reading)
+                .OrderBy(p => p.QuestionFrom)
+                .ToList();
 
             var response = new ReadingDetailResponse();
             var groupsDto = new List<QuestionResultGroupDto>();
@@ -104,7 +107,6 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetReadingDetail
 
             return OperationResult<ReadingDetailResponse>.Success(response);
         }
-
         private string GetMediaType(string? url)
         {
             if (string.IsNullOrEmpty(url)) return "None";
