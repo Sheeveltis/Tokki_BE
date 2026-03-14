@@ -207,14 +207,17 @@ namespace Tokki.Infrastructure.Repositories
         public async Task<List<QuestionType>> GetIncorrectQuestionTypesByExamIdAsync(string userExamId, CancellationToken cancellationToken)
         {
             var objectiveTypeIds = _context.UserExamAnswers
-                .Where(ua => ua.UserExamId == userExamId && ua.IsCorrect == false)
+                .Where(ua => ua.UserExamId == userExamId && ua.IsCorrect != true) 
                 .Select(ua => ua.Question.QuestionTypeId);
 
             var writingTypeIds = _context.UserExamWritingAnswers
                 .Where(uwa => uwa.UserExamId == userExamId)
                 .Select(uwa => uwa.Question.QuestionTypeId);
+
             return await objectiveTypeIds
                 .Union(writingTypeIds)
+                .Where(id => id != null)
+                .Distinct() 
                 .Join(_context.QuestionTypes,
                       id => id,
                       qt => qt.QuestionTypeId,
