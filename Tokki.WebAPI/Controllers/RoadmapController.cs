@@ -14,6 +14,7 @@ using Tokki.Application.UseCases.Roadmap.Queries.GetRoadmap;
 using Tokki.Application.UseCases.Roadmap.Queries.GetVirtualQuiz;
 using Tokki.Application.UseCases.Roadmap.Queries.GetEntranceExam;
 using Tokki.Application.UseCases.Roadmap.Commands.CancelRoadmap;
+using Tokki.Application.UseCases.Roadmap.Commands.ProcessWeeklyResult;
 using Tokki.Domain.Enums;
 
 namespace Tokki.WebAPI.Controllers
@@ -173,31 +174,7 @@ namespace Tokki.WebAPI.Controllers
                 persistentWeakTypeIds = result.Data?.PersistentWeakTypeIds ?? new List<string>()
             });
         }
-
-        [HttpPost("submit-exam")]
-        public async Task<IActionResult> SubmitExam([FromBody] SubmitExamRequestDto request)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized("Không tìm thấy thông tin người dùng.");
-
-            var command = new SubmitExamCommand
-            {
-                ExamId = request.ExamId,
-                UserId = userId,
-                Answers = request.Answers.Select(a => new UserAnswerDto
-                {
-                    QuestionId = a.QuestionId,
-                    SelectedOptionId = a.SelectedOptionId
-                }).ToList()
-            };
-
-            var result = await _mediator.Send(command);
-
-            if (result.IsSuccess) return Ok(result);
-            return BadRequest(result);
-        }
-
+        
         [HttpGet("virtual-quiz/{questionTypeId}")]
         public async Task<IActionResult> GetVirtualQuiz(
             string questionTypeId,
@@ -258,5 +235,26 @@ namespace Tokki.WebAPI.Controllers
             if (result.StatusCode == 404) return NotFound(result);
             return BadRequest(result);
         }
+
+        [HttpPost("process-weekly-result")]
+        public async Task<IActionResult> ProcessWeeklyResult(
+            [FromBody] ProcessWeeklyResultRequestDto request)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("Không tìm thấy thông tin người dùng.");
+
+            var command = new ProcessWeeklyResultCommand
+            {
+                UserId = userId,
+                UserExamId = request.UserExamId
+            };
+
+            var result = await _mediator.Send(command);
+
+            if (!result.IsSuccess) return StatusCode(result.StatusCode, result);
+            return Ok(result);
+        }
+
     }
 }
