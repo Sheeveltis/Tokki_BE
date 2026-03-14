@@ -36,9 +36,13 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             // Setup QuestionBank cho đủ 5 câu
             var mockBankRepo = MockQuestionBankRepository.GetMock();
-            mockBankRepo.Setup(x => x.GetRandomQuestionsByTypeAsync(It.IsAny<string>(), 5, It.IsAny<List<string>>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new List<QuestionBank> { new(), new(), new(), new(), new() });
-
+            mockBankRepo.Setup(x => x.GetRandomQuestionsByTypeAsync(
+     It.IsAny<string>(),
+     5,
+     It.IsAny<List<string>>(),
+     It.IsAny<DifficultyLevel>(),   // <-- thêm vào đây
+     It.IsAny<CancellationToken>()))
+ .ReturnsAsync(new List<QuestionBank> { new(), new(), new(), new(), new() });
             // Override IdGenerator xíu để test trả về đúng ID
             mockIdGen.Setup(x => x.GenerateCustom(10)).Returns("NEW-EXAM-1");
 
@@ -222,9 +226,13 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             // Giả lập kho chỉ có 1 câu
             var mockBankRepo = MockQuestionBankRepository.GetMock();
-            mockBankRepo.Setup(x => x.GetRandomQuestionsByTypeAsync(It.IsAny<string>(), 10, It.IsAny<List<string>>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new List<QuestionBank> { new() });
-
+            mockBankRepo.Setup(x => x.GetRandomQuestionsByTypeAsync(
+     It.IsAny<string>(),
+     10,
+     It.IsAny<List<string>>(),
+     It.IsAny<DifficultyLevel>(),   // <-- thêm vào đây
+     It.IsAny<CancellationToken>()))
+ .ReturnsAsync(new List<QuestionBank> { new() });
             var mockIdGen = MockIdGeneratorService.GetMock();
             var mockLogger = new Mock<ILogger<CreateExamCommandHandler>>();
 
