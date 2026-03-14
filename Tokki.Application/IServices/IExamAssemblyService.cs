@@ -17,6 +17,12 @@ namespace Tokki.Application.IServices
             string userId,
             int weekIndex,
             List<string> weakQuestionTypeIds, 
+            DifficultyLevel targetLevel,
             CancellationToken cancellationToken);
+        Task<OperationResult<string>> GenerateWeeklyExamFromScopeAsync(
+            string userId,
+            int weekIndex,
+            List<string> weeklyQuestionTypeIds,
+            CancellationToken cancellationToken = default);
     }
 }

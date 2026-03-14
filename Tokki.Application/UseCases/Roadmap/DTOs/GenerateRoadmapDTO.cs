@@ -1,14 +1,15 @@
 ﻿using System.Collections.Generic;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
 {
     public class GenerateRoadmapDTO
     {
-        public string TargetAim { get; set; } = string.Empty; 
+        public TargetAimLevel TargetAim { get; set; }
         public int DurationDays { get; set; }
 
         public List<string> Weaknesses { get; set; } = new List<string>();
 
-        public string CurrentLevel { get; set; } = "Beginner"; 
+        public CurrentTopikLevel CurrentLevel { get; set; }
     }
 }

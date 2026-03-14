@@ -17,6 +17,7 @@ using Tokki.Application.IServices;
 using Tokki.Infrastructure;
 using Tokki.Infrastructure.BackgroundJobs; // Nơi chứa class JwtSettings
 using Tokki.Infrastructure.Configurations;
+using Tokki.Infrastructure.Repositories;
 using Tokki.Infrastructure.Services;
 using Tokki.WebAPI.BackgroundServices;
 using Tokki.WebAPI.Hubs;

@@ -56,6 +56,9 @@ namespace Tokki.Infrastructure
             services.AddScoped<IUserExamWritingAnswerRepository, UserExamWritingAnswerRepository>();
             services.AddScoped<IQuestion51Pipeline,
         Tokki.Infrastructure.Services.WritingAi.Question51GeminiPipeline>();
+            services.AddScoped<IUserWeaknessRepository, UserWeaknessRepository>();
+            services.AddScoped<IRoadmapKnowledgeProfileRepository, RoadmapKnowledgeProfileRepository>();
+
             // Bạn cũng cần kiểm tra và đăng ký các Repository khác mà Command Handler đang yêu cầu:
             services.AddSingleton<IIdGeneratorService, IdGeneratorService>();
             services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
@@ -63,7 +66,7 @@ namespace Tokki.Infrastructure
 
             services.AddScoped<ISePayService, SePayService>();
             services.AddScoped<IPaymentRepository, PaymentRepository>();
-
+            services.AddScoped<IKnowledgeBaseService, KnowledgeBaseService>();
             //TextToSpeech
             services.AddScoped<ISpeechService, SpeechService>();
             //Cloudinary 
