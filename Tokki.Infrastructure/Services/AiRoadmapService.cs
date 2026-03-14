@@ -346,5 +346,85 @@ namespace Tokki.Infrastructure.Services
                 return null;
             }
         }
+        public async Task<string?> GenerateEntranceFeedbackAsync(
+                TargetAimLevel targetAim,
+                int readingWeakCount,
+                int listeningWeakCount,
+                int writingWeakCount,
+                List<string> readingNames,
+                List<string> listeningNames,
+                List<string> writingNames,
+                int recommendedDays)
+        {
+            if (string.IsNullOrEmpty(_apiKey)) return null;
+
+            var readingSection = readingNames.Any()
+                ? string.Join(", ", readingNames)
+                : "không có";
+
+            var listeningSection = listeningNames.Any()
+                ? string.Join(", ", listeningNames)
+                : "không có";
+
+            var writingSection = writingNames.Any()
+                ? string.Join(", ", writingNames)
+                : "không có";
+
+            var promptText = $@"
+        Bạn là gia sư TOPIK thân thiện. Hãy viết nhận xét ngắn gọn (3-4 câu, bằng tiếng Việt) 
+        cho học viên dựa trên kết quả bài test đầu vào.
+
+        Thông tin kết quả:
+        - Mục tiêu: {targetAim}
+        - Phần Đọc: {readingWeakCount} dạng yếu ({readingSection})
+        - Phần Nghe: {listeningWeakCount} dạng yếu ({listeningSection})
+        - Phần Viết: {writingWeakCount} dạng yếu ({writingSection})
+        - Lộ trình đề xuất: {recommendedDays} ngày
+
+        Yêu cầu:
+        1. Nhận xét thân thiện, động viên, không tiêu cực
+        2. Chỉ ra skill nào yếu nhất cần tập trung
+        3. Giải thích ngắn gọn tại sao cần {recommendedDays} ngày
+        4. Kết thúc bằng lời khuyến khích
+
+        Chỉ trả về đoạn text nhận xét, không có format hay markdown.
+            ";
+
+            var requestBody = new
+            {
+                contents = new[] {
+            new { parts = new[] { new { text = promptText } } }
+        }
+            };
+
+            try
+            {
+                var url = $"{BASE_URL}?key={_apiKey}";
+                var response = await _httpClient.PostAsJsonAsync(url, requestBody);
+                if (!response.IsSuccessStatusCode) return null;
+
+                using var jsonDoc = await JsonDocument.ParseAsync(
+                    await response.Content.ReadAsStreamAsync());
+                var root = jsonDoc.RootElement;
+
+                if (root.TryGetProperty("candidates", out var candidates)
+                    && candidates.GetArrayLength() > 0)
+                {
+                    return candidates[0]
+                        .GetProperty("content")
+                        .GetProperty("parts")[0]
+                        .GetProperty("text")
+                        .GetString()
+                        ?.Trim();
+                }
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi generate entrance feedback");
+                return null;
+            }
+        }
     }
 }

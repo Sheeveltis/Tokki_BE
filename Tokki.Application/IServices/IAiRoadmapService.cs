@@ -27,6 +27,15 @@ namespace Tokki.Application.IServices
             List<string> originalWeaknesses,
             List<QuestionTypeMenuItem> weakTypeInfos,    
             List<GrammarMenuItem> grammarMenu,          
-            List<QuestionTypeMenuItem> questionTypeMenu); 
+            List<QuestionTypeMenuItem> questionTypeMenu);
+        Task<string?> GenerateEntranceFeedbackAsync(
+            TargetAimLevel targetAim,
+            int readingWeakCount,
+            int listeningWeakCount,
+            int writingWeakCount,
+            List<string> readingNames,
+            List<string> listeningNames,
+            List<string> writingNames,
+            int recommendedDays);
     }
 }
