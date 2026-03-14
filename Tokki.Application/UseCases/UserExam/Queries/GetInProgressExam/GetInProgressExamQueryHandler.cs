@@ -16,10 +16,12 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
     public class GetInProgressExamQueryHandler : IRequestHandler<GetInProgressExamQuery, OperationResult<UserTakeExamResponse>>
     {
         private readonly IUserExamRepository _repository;
+        private readonly IPassageRepository _passageRepository;
 
-        public GetInProgressExamQueryHandler(IUserExamRepository repository)
+        public GetInProgressExamQueryHandler(IUserExamRepository repository, IPassageRepository passageRepository)
         {
             _repository = repository;
+            _passageRepository = passageRepository;
         }
 
         public async Task<OperationResult<UserTakeExamResponse>> Handle(GetInProgressExamQuery request, CancellationToken token)
@@ -28,6 +30,25 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
 
             if (session == null)
                 return OperationResult<UserTakeExamResponse>.Failure("Không tìm thấy phiên làm bài đang diễn ra", 404);
+
+            var passageIds = session.UserExamAnswers.Select(a => a.Question.PassageId)
+                .Union(session.UserExamWritingAnswers.Select(w => w.Question.PassageId))
+                .Where(id => !string.IsNullOrEmpty(id))
+                .Distinct()
+                .ToList();
+
+            if (passageIds.Any())
+            {
+                var passages = await _passageRepository.GetByIdsAsync(passageIds!, token);
+                var passageMap = passages.ToDictionary(p => p.PassageId);
+
+                // Gán ngược Passage vào Object Graph
+                foreach (var a in session.UserExamAnswers.Where(x => !string.IsNullOrEmpty(x.Question.PassageId)))
+                    if (passageMap.TryGetValue(a.Question.PassageId!, out var p)) a.Question.Passage = p;
+
+                foreach (var w in session.UserExamWritingAnswers.Where(x => !string.IsNullOrEmpty(x.Question.PassageId)))
+                    if (passageMap.TryGetValue(w.Question.PassageId!, out var p)) w.Question.Passage = p;
+            }
 
             return OperationResult<UserTakeExamResponse>.Success(MapToResponse(session, false));
         }
@@ -119,12 +140,17 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
 
                     if (!isSameGroup)
                     {
+                        // CHỌN MEDIA CHO PASSAGE: Ưu tiên Audio rồi mới đến Image
+                        string? passageMedia = !string.IsNullOrEmpty(q.Passage?.AudioUrl)
+                                               ? q.Passage.AudioUrl
+                                               : q.Passage?.ImageUrl;
+
                         currentGroup = new QuestionGroupDto
                         {
                             SharedMediaUrl = q.MediaUrl,
                             SharedMediaType = GetMediaType(q.MediaUrl),
                             SharedPassageContent = q.Passage?.Content,
-                            SharedPassageMediaUrl = null,
+                            SharedPassageMediaUrl = passageMedia,
                             Questions = new List<ExamQuestionDto>()
                         };
                         groups.Add(currentGroup);
@@ -164,19 +190,23 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
                         QuestionTypeCode = q.QuestionType?.Code
                     };
 
-                    // THUẬT TOÁN GOM NHÓM CHO WRITING
                     bool isSameGroup = currentGroup != null &&
                                        currentGroup.SharedMediaUrl == q.MediaUrl &&
                                        currentGroup.SharedPassageContent == q.Passage?.Content;
 
                     if (!isSameGroup)
                     {
+                        // CHỌN MEDIA CHO PASSAGE WRITING
+                        string? passageMedia = !string.IsNullOrEmpty(q.Passage?.AudioUrl)
+                                               ? q.Passage.AudioUrl
+                                               : q.Passage?.ImageUrl;
+
                         currentGroup = new QuestionWritingGroupDto
                         {
                             SharedMediaUrl = q.MediaUrl,
                             SharedMediaType = GetMediaType(q.MediaUrl),
                             SharedPassageContent = q.Passage?.Content,
-                            SharedPassageMediaUrl = null,
+                            SharedPassageMediaUrl = passageMedia,
                             Questions = new List<ExamQuestionWritingDto>()
                         };
                         groups.Add(currentGroup);

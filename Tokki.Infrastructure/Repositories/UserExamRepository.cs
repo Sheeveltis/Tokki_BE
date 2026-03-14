@@ -61,19 +61,20 @@ namespace Tokki.Infrastructure.Repositories
         {
             await _context.SaveChangesAsync(token);
         }
-        public async Task<UserExam?> GetByIdAsync(string userExamId, CancellationToken token)
+        public async Task<UserExam?> GetByIdAsync(string id, CancellationToken token)
         {
             return await _context.UserExams
+                .AsNoTracking()
+                .AsSplitQuery()
                 .Include(ue => ue.Exam)
                     .ThenInclude(e => e.ExamTemplate)
                         .ThenInclude(et => et.TemplateParts)
                 .Include(ue => ue.UserExamAnswers)
                     .ThenInclude(ua => ua.Question)
-                        .ThenInclude(q => q.QuestionOptions)
+                        .ThenInclude(q => q.QuestionOptions) 
                 .Include(ue => ue.UserExamWritingAnswers)
-                    .ThenInclude(uwa => uwa.Question)
-                    .ThenInclude(q => q.QuestionType)
-                .FirstOrDefaultAsync(ue => ue.UserExamId == userExamId, token);
+                    .ThenInclude(uw => uw.Question) 
+                .FirstOrDefaultAsync(x => x.UserExamId == id, token);
         }
         public async Task<UserExam?> GetReviewByIdAsync(string userExamId, CancellationToken cancellationToken)
         {
