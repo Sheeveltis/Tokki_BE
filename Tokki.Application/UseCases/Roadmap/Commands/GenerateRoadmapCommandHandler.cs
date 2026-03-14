@@ -75,14 +75,18 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
 
                     weaknesses = validIds;
                 }
+                int totalTypes = weaknesses.Count;
+                int totalWeeks = (int)Math.Ceiling((double)request.DurationDays / 7);
+                int typesPerWeek = totalTypes == 0
+                    ? 3
+                    : Math.Clamp((int)Math.Ceiling((double)totalTypes / totalWeeks), 1, 5);
 
-                var weakTypeInfos = weaknesses.Any()
+                var week1Weaknesses = weaknesses.Take(typesPerWeek).ToList();
+
+                var weakTypeInfos = week1Weaknesses.Any()
                     ? await _userRoadmapRepository.GetQuestionTypeMenuAsync(
-                        weaknesses, cancellationToken)
+                    week1Weaknesses, cancellationToken)
                     : new List<QuestionTypeMenuItem>();
-
-                var grammarMenu = await _userRoadmapRepository.GetGrammarMenuAsync(
-                    weaknesses, request.CurrentLevel, cancellationToken);
 
                 var allLevelTypeIds = await _userRoadmapRepository
                     .GetValidQuestionTypeIdsByLevelAsync(request.CurrentLevel, cancellationToken);
@@ -94,10 +98,11 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                     request.TargetAim,
                     request.CurrentLevel,
                     7,
-                    weaknesses,
+                    week1Weaknesses, 
                     weakTypeInfos,
-                    grammarMenu,
-                    questionTypeMenu
+                    questionTypeMenu,
+                    typesPerWeek,
+                    totalWeeks        
                 );
 
                 if (aiPlan == null || aiPlan.Weeks == null || !aiPlan.Weeks.Any())
@@ -118,8 +123,6 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                     CreatedAt = DateTime.UtcNow,
                     Weeks = new List<RoadmapWeek>()
                 };
-
-                int totalWeeks = (int)Math.Ceiling((double)request.DurationDays / 7);
 
                 for (int i = 1; i <= totalWeeks; i++)
                 {
@@ -169,7 +172,8 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                                     if (taskDto.TaskType == "LearnTheory")
                                     {
                                         taskEntity.TaskType = RoadmapTaskType.LearnTheory;
-                                        taskEntity.GrammarId = taskDto.GrammarId;
+                                        if (!string.IsNullOrEmpty(taskDto.QuestionTypeId))
+                                            taskEntity.QuestionTypeId = taskDto.QuestionTypeId;     
                                     }
                                     else if (taskDto.TaskType == "VirtualQuiz")
                                     {

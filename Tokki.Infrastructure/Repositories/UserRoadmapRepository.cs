@@ -182,6 +182,8 @@ namespace Tokki.Infrastructure.Repositories
                 .Where(qt => qt.IsActive
                     && (qt.ExamType == ExamType.TopikI || qt.ExamType == ExamType.TopikII))
                 .Select(qt => qt.QuestionTypeId)
+                .Where(id => id != null)         
+                .Select(id => id!)
                 .ToListAsync(cancellationToken);
         }
         public async Task<Exam?> GetEntranceExamByConfigKeyAsync(

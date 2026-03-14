@@ -73,7 +73,6 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
             List<string> persistentFail = new();  
             List<string> reviewTypes = new();
             var weakTypeInfos = new List<QuestionTypeMenuItem>();
-            var grammarMenu = new List<GrammarMenuItem>();
             var questionTypeMenu = new List<QuestionTypeMenuItem>();
 
             if (!string.IsNullOrEmpty(currentWeek.WeeklyExamId))
@@ -112,9 +111,6 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
                         ? await _repository.GetQuestionTypeMenuAsync(allWeakIds, cancellationToken)
                         : new List<QuestionTypeMenuItem>();
 
-                    grammarMenu = await _repository.GetGrammarMenuAsync(
-                        reviewTypes, roadmap.CurrentLevel, cancellationToken);
-
                     var allLevelTypeIds = await _repository
                         .GetValidQuestionTypeIdsByLevelAsync(roadmap.CurrentLevel, cancellationToken);
 
@@ -138,7 +134,6 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
                 persistentFail,   
                 new List<string>(),
                 weakTypeInfos,   
-                grammarMenu,     
                 questionTypeMenu
             );
 
