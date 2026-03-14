@@ -37,23 +37,17 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
                 .Distinct()
                 .ToList();
 
+            Dictionary<string, Passage> passageMap = new();
             if (passageIds.Any())
             {
                 var passages = await _passageRepository.GetByIdsAsync(passageIds!, token);
-                var passageMap = passages.ToDictionary(p => p.PassageId);
-
-                // Gán ngược Passage vào Object Graph
-                foreach (var a in session.UserExamAnswers.Where(x => !string.IsNullOrEmpty(x.Question.PassageId)))
-                    if (passageMap.TryGetValue(a.Question.PassageId!, out var p)) a.Question.Passage = p;
-
-                foreach (var w in session.UserExamWritingAnswers.Where(x => !string.IsNullOrEmpty(x.Question.PassageId)))
-                    if (passageMap.TryGetValue(w.Question.PassageId!, out var p)) w.Question.Passage = p;
+                passageMap = passages.ToDictionary(p => p.PassageId);
             }
 
-            return OperationResult<UserTakeExamResponse>.Success(MapToResponse(session, false));
+            return OperationResult<UserTakeExamResponse>.Success(MapToResponse(session, false, passageMap));
         }
 
-        private UserTakeExamResponse MapToResponse(Domain.Entities.UserExam session, bool isShuffleOptions)
+        private UserTakeExamResponse MapToResponse(Domain.Entities.UserExam session, bool isShuffleOptions, Dictionary<string, Passage> passageMap)
         {
             var elapsedSeconds = (int)(DateTime.UtcNow - session.StartTime).TotalSeconds;
             var duration = session.Exam.Duration * 60;
@@ -93,18 +87,18 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
             var parts = session.Exam.ExamTemplate.TemplateParts.OrderBy(p => p.QuestionFrom).ToList();
 
             response.Part.Listening = parts.Where(p => p.Skill == QuestionSkill.Listening)
-                                           .Select(p => MapToPartDto(p, questionsMap, isShuffleOptions)).ToList();
+                                           .Select(p => MapToPartDto(p, questionsMap, isShuffleOptions, passageMap)).ToList();
 
             response.Part.Reading = parts.Where(p => p.Skill == QuestionSkill.Reading)
-                                         .Select(p => MapToPartDto(p, questionsMap, isShuffleOptions)).ToList();
+                                         .Select(p => MapToPartDto(p, questionsMap, isShuffleOptions, passageMap)).ToList();
 
             response.Part.Writing = parts.Where(p => p.Skill == QuestionSkill.Writing)
-                                         .Select(p => MapToPartWritingDto(p, questionsMap)).ToList();
+                                         .Select(p => MapToPartWritingDto(p, questionsMap, passageMap)).ToList();
 
             return response;
         }
 
-        private ExamPartDto MapToPartDto(TemplatePart part, Dictionary<int, QuestionAnswerMetadata> questionsMap, bool shuffleOptions)
+        private ExamPartDto MapToPartDto(TemplatePart part, Dictionary<int, QuestionAnswerMetadata> questionsMap, bool shuffleOptions, Dictionary<string, Passage> passageMap)
         {
             var groups = new List<QuestionGroupDto>();
             QuestionGroupDto? currentGroup = null;
@@ -114,6 +108,10 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
                 if (questionsMap.TryGetValue(i, out var item) && !item.IsWriting)
                 {
                     var q = item.Question;
+
+                    Passage? passage = null;
+                    if (!string.IsNullOrEmpty(q.PassageId)) passageMap.TryGetValue(q.PassageId, out passage);
+
                     var options = q.QuestionOptions.Select(o => new ExamOptionDto
                     {
                         OptionId = o.OptionId,
@@ -136,20 +134,19 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
 
                     bool isSameGroup = currentGroup != null &&
                                        currentGroup.SharedMediaUrl == q.MediaUrl &&
-                                       currentGroup.SharedPassageContent == q.Passage?.Content;
+                                       currentGroup.SharedPassageContent == passage?.Content;
 
                     if (!isSameGroup)
                     {
-                        // CHỌN MEDIA CHO PASSAGE: Ưu tiên Audio rồi mới đến Image
-                        string? passageMedia = !string.IsNullOrEmpty(q.Passage?.AudioUrl)
-                                               ? q.Passage.AudioUrl
-                                               : q.Passage?.ImageUrl;
+                        string? passageMedia = !string.IsNullOrEmpty(passage?.AudioUrl)
+                                               ? passage.AudioUrl
+                                               : passage?.ImageUrl;
 
                         currentGroup = new QuestionGroupDto
                         {
                             SharedMediaUrl = q.MediaUrl,
                             SharedMediaType = GetMediaType(q.MediaUrl),
-                            SharedPassageContent = q.Passage?.Content,
+                            SharedPassageContent = passage?.Content,
                             SharedPassageMediaUrl = passageMedia,
                             Questions = new List<ExamQuestionDto>()
                         };
@@ -170,7 +167,7 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
             };
         }
 
-        private ExamPartWritingDto MapToPartWritingDto(TemplatePart part, Dictionary<int, QuestionAnswerMetadata> questionsMap)
+        private ExamPartWritingDto MapToPartWritingDto(TemplatePart part, Dictionary<int, QuestionAnswerMetadata> questionsMap, Dictionary<string, Passage> passageMap)
         {
             var groups = new List<QuestionWritingGroupDto>();
             QuestionWritingGroupDto? currentGroup = null;
@@ -180,6 +177,9 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
                 if (questionsMap.TryGetValue(i, out var item) && item.IsWriting)
                 {
                     var q = item.Question;
+
+                    Passage? passage = null;
+                    if (!string.IsNullOrEmpty(q.PassageId)) passageMap.TryGetValue(q.PassageId, out passage);
 
                     var questionDto = new ExamQuestionWritingDto
                     {
@@ -192,20 +192,19 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
 
                     bool isSameGroup = currentGroup != null &&
                                        currentGroup.SharedMediaUrl == q.MediaUrl &&
-                                       currentGroup.SharedPassageContent == q.Passage?.Content;
+                                       currentGroup.SharedPassageContent == passage?.Content;
 
                     if (!isSameGroup)
                     {
-                        // CHỌN MEDIA CHO PASSAGE WRITING
-                        string? passageMedia = !string.IsNullOrEmpty(q.Passage?.AudioUrl)
-                                               ? q.Passage.AudioUrl
-                                               : q.Passage?.ImageUrl;
+                        string? passageMedia = !string.IsNullOrEmpty(passage?.AudioUrl)
+                                               ? passage.AudioUrl
+                                               : passage?.ImageUrl;
 
                         currentGroup = new QuestionWritingGroupDto
                         {
                             SharedMediaUrl = q.MediaUrl,
                             SharedMediaType = GetMediaType(q.MediaUrl),
-                            SharedPassageContent = q.Passage?.Content,
+                            SharedPassageContent = passage?.Content,
                             SharedPassageMediaUrl = passageMedia,
                             Questions = new List<ExamQuestionWritingDto>()
                         };
