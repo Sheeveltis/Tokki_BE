@@ -24,10 +24,10 @@ jobs:
           dotnet-version: '8.x'
 
       - name: Build with dotnet
-        run: dotnet build --configuration Release
+        run: dotnet build Tokki.WebAPI/Tokki.WebAPI.csproj --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        run: dotnet publish Tokki.WebAPI/Tokki.WebAPI.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -51,9 +51,9 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_0C3B8A2B56CF4FC4A8869E42057AF602 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_DD236085C3714536B13A9B9A96C543BF }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_5AA81CC3D9E34BA2BFF51D9E5D7CC8AA }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_3289894EB7C14DF8AC842A6DAB66C296 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_D3D1529163764BCAB65FF84E18F80E4C }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_7B4AA544B4FA46D992A2624EE7695050 }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
@@ -62,4 +62,7 @@ jobs:
           app-name: 'tokki-be'
           slot-name: 'Production'
           package: .
+
           
+
+
