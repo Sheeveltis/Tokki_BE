@@ -79,7 +79,7 @@ USER_ESSAY (bài viết của thí sinh - {charCount} ký tự):
             // ── 6. Update Score + AiAnalysisJson + GradedAt ───────────────
             writingAnswer.Score = actualScore;
             writingAnswer.AiAnalysisJson = raw;
-            writingAnswer.GradedAt = DateTime.UtcNow;
+            writingAnswer.GradedAt = DateTime.UtcNow.AddHours(7);
 
             _writingRepo.UpdateAsync(writingAnswer);
             await _writingRepo.SaveChangesAsync(ct);
