@@ -1,7 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Tokki.Application.IRepositories;
+using Tokki.Application.UseCases.Roadmap.DTOs;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums; 
 using Tokki.Infrastructure.Data;
@@ -124,6 +125,62 @@ namespace Tokki.Infrastructure.Repositories
         {
             return await _context.QuestionTypes
                 .Where(qt => questionTypeIds.Contains(qt.QuestionTypeId))
+                .Select(qt => qt.QuestionTypeId)
+                .ToListAsync(cancellationToken);
+        }
+        
+        public async Task<List<QuestionTypeMenuItem>> GetQuestionTypeMenuAsync(
+            List<string> questionTypeIds,
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.QuestionTypes
+                .Where(qt => questionTypeIds.Contains(qt.QuestionTypeId) && qt.IsActive)
+                .Select(qt => new QuestionTypeMenuItem
+                {
+                    QuestionTypeId = qt.QuestionTypeId,
+                    Code = qt.Code,
+                    Name = qt.Name,
+                    Description = qt.Description,
+                    Skill = qt.Skill.ToString()
+                })
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<List<GrammarMenuItem>> GetGrammarMenuAsync(
+            List<string> questionTypeIds,
+            CurrentTopikLevel level,
+            CancellationToken cancellationToken = default)
+        {
+            var query = _context.Grammars
+                .Where(g => g.Level == level || g.Level == (CurrentTopikLevel)((int)level + 1));
+
+            if (questionTypeIds.Any())
+            {
+                query = _context.Grammars
+                    .Where(g => questionTypeIds.Contains(g.RelatedQuestionTypeId)
+                             || g.Level == level);
+            }
+
+            return await query
+                .OrderBy(g => g.RelatedQuestionTypeId == null) 
+                .Take(20)
+                .Select(g => new GrammarMenuItem
+                {
+                    GrammarId = g.GrammarId,
+                    Title = g.Title,
+                    Syntaxes = g.Syntaxes,
+                    Description = g.Description,
+                    RelatedQuestionTypeId = g.RelatedQuestionTypeId
+                })
+                .ToListAsync(cancellationToken);
+        }
+        public async Task<List<string>> GetValidQuestionTypeIdsByLevelAsync(
+            CurrentTopikLevel level,
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.QuestionTypes
+                .Where(qt => qt.IsActive
+                    && (qt.ExamType == ExamType.TopikI || qt.ExamType == ExamType.TopikII))
                 .Select(qt => qt.QuestionTypeId)
                 .ToListAsync(cancellationToken);
         }

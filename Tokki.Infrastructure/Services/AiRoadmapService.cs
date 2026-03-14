@@ -13,99 +13,117 @@ namespace Tokki.Infrastructure.Services
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<AiRoadmapService> _logger;
-        private readonly IKnowledgeBaseService _knowledgeBaseService;
         private readonly string _apiKey;
-
         private const string BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
         public AiRoadmapService(
             HttpClient httpClient,
             ILogger<AiRoadmapService> logger,
-            IConfiguration configuration,
-            IKnowledgeBaseService knowledgeBaseService)
+            IConfiguration configuration)
         {
             _httpClient = httpClient;
             _logger = logger;
-            _apiKey = configuration["AiSettings:ApiKey"]; 
-            _knowledgeBaseService = knowledgeBaseService;
+            _apiKey = configuration["AiSettings:ApiKey"];
         }
 
         public async Task<AiRoadmapResponse?> GenerateStudyPlanAsync(
             TargetAimLevel target,
             CurrentTopikLevel currentLevel,
             int durationDays,
-            List<string> weaknesses)
+            List<string> weaknesses,
+            List<QuestionTypeMenuItem> weakTypeInfos,
+            List<GrammarMenuItem> grammarMenu,
+            List<QuestionTypeMenuItem> questionTypeMenu)
         {
-            if (string.IsNullOrEmpty(_apiKey))
-            {
-                _logger.LogError("API Key chưa được cấu hình (AiSettings:ApiKey)");
-                return null;
-            }
+            if (string.IsNullOrEmpty(_apiKey)) return null;
 
-            var weakContent = await _knowledgeBaseService.GetContentForWeaknessesAsync(weaknesses, currentLevel);
-            var generalContent = await _knowledgeBaseService.GetGeneralContentForLevelAsync(currentLevel);
+            var weaknessSection = weakTypeInfos.Any()
+                ? string.Join("\n", weakTypeInfos.Select(w =>
+                    $"  - [{w.Skill}] {w.Name} (QuestionTypeId: {w.QuestionTypeId})" +
+                    (string.IsNullOrEmpty(w.Description) ? "" : $" — {w.Description}")))
+                : "  - Không có điểm yếu cụ thể, học theo lộ trình chuẩn.";
 
-            var menuJson = JsonSerializer.Serialize(new
-            {
-                PriorityItems = weakContent.Select(x => new { x.TargetId, x.DescriptionForAi, x.Type }), // Chỉ lấy trường cần thiết
-                StandardItems = generalContent.Select(x => new { x.TargetId, x.DescriptionForAi, x.Type })
-            });
+            var grammarMenuJson = JsonSerializer.Serialize(
+                grammarMenu.Select(g => new
+                {
+                    GrammarId = g.GrammarId,
+                    Title = g.Title,
+                    Syntaxes = g.Syntaxes,
+                    Description = g.Description ?? "",
+                    RelatedQuestionTypeId = g.RelatedQuestionTypeId ?? ""
+                })
+            );
+
+            var quizMenuJson = JsonSerializer.Serialize(
+                questionTypeMenu.Select(q => new
+                {
+                    QuestionTypeId = q.QuestionTypeId,
+                    Code = q.Code,
+                    Name = q.Name,
+                    Skill = q.Skill,
+                    Description = q.Description ?? ""
+                })
+            );
 
             var promptText = $@"
                 Bạn là chuyên gia lập lộ trình TOPIK. Hãy tạo lộ trình {durationDays} ngày.
                 - Mục tiêu: {target}
                 - Trình độ hiện tại: {currentLevel}
-                - Điểm yếu cần khắc phục: {(weaknesses != null && weaknesses.Any() ? string.Join(", ", weaknesses) : "Không có")}
 
-                *** QUY TẮC BẮT BUỘC (QUAN TRỌNG): ***
-                1. KHÔNG được tự bịa ra bài học. CHỈ ĐƯỢC CHỌN bài học từ danh sách 'MENU DỮ LIỆU' bên dưới.
-                2. Nếu task là 'LearnTheory' -> Bắt buộc điền 'GrammarId' lấy từ Menu (TargetId của Type=1).
-                3. Nếu task là 'VirtualQuiz' -> Bắt buộc điền 'QuestionTypeId' lấy từ Menu (TargetId của Type=2).
-                4. Ngày thứ 7 hàng tuần phải có task 'WeeklyExam' (Title: 'Thi thử tuần').
-                5. Ưu tiên xếp 'PriorityItems' (Điểm yếu) vào các ngày đầu tiên.
+            *** ĐIỂM YẾU CỦA HỌC VIÊN (BẮT BUỘC ƯU TIÊN) ***
+                {weaknessSection}
 
-                *** MENU DỮ LIỆU (CHỈ CHỌN TRONG NÀY): ***
-                {menuJson}
+            *** QUY TẮC BẮT BUỘC ***
+                1. KHÔNG tự bịa bài học. CHỈ CHỌN từ MENU bên dưới.
+                2. Task 'LearnTheory' → điền GrammarId từ GRAMMAR MENU.
+                    Ưu tiên grammar có RelatedQuestionTypeId khớp với điểm yếu.
+                3. Task 'VirtualQuiz' → điền QuestionTypeId từ QUIZ MENU.
+                    Ưu tiên QuestionTypeId của các điểm yếu ở trên.
+                4. Ngày thứ 7 phải có task 'WeeklyExam'.
+                5. Mỗi ngày nên có cả LearnTheory lẫn VirtualQuiz để học xong luyện ngay.
 
-                *** ĐỊNH DẠNG OUTPUT (JSON ONLY): ***
-                Trả về JSON thuần (không markdown), cấu trúc:
+            *** GRAMMAR MENU (dùng cho LearnTheory) ***
+                {grammarMenuJson}
+
+            *** QUIZ MENU (dùng cho VirtualQuiz) ***
+                {quizMenuJson}
+
+            *** OUTPUT JSON (chỉ JSON thuần, không markdown) ***
                 {{
-                  ""Assessment"": ""Nhận xét về trình độ và điểm yếu"",
-                  ""Weeks"": [
-                    {{
-                      ""WeekIndex"": 1,
-                      ""WeekGoal"": ""Mục tiêu tuần 1"",
-                      ""Days"": [
+                    ""Assessment"": ""Nhận xét về trình độ và điểm yếu của học viên"",
+                    ""Weeks"": [
+                {{
+                    ""WeekIndex"": 1,
+                    ""WeekGoal"": ""Mục tiêu tuần 1"",
+                    ""Days"": [
+                {{
+                    ""DayIndex"": 1,
+                    ""Tasks"": [
                         {{
-                          ""DayIndex"": 1,
-                          ""Tasks"": [
-                             {{ 
-                               ""Title"": ""Tên bài hiển thị"", 
-                               ""TaskType"": ""LearnTheory"", 
-                               ""Content"": ""Lời khuyên ngắn"",
-                               ""GrammarId"": ""ID_TU_MENU"" 
-                             }},
-                             {{ 
-                               ""Title"": ""Luyện tập"", 
-                               ""TaskType"": ""VirtualQuiz"", 
-                               ""Content"": ""Mô tả bài tập"",
-                               ""QuestionTypeId"": ""ID_TU_MENU"" 
-                             }}
-                          ]
-                        }}
-                      ]
+                            ""Title"": ""Tên bài"",
+                            ""TaskType"": ""LearnTheory"",
+                            ""Content"": ""Lời khuyên ngắn"",
+                            ""GrammarId"": ""ID_TU_GRAMMAR_MENU""
+                        }},
+                    {{
+                      ""Title"": ""Luyện tập"",
+                      ""TaskType"": ""VirtualQuiz"",
+                      ""Content"": ""Mô tả bài tập"",
+                      ""QuestionTypeId"": ""ID_TU_QUIZ_MENU""
                     }}
                   ]
                 }}
-            ";
-
+              ]
+            }}
+          ]
+        }}
+    ";
             var requestBody = new
             {
                 contents = new[] {
-                    new { parts = new[] { new { text = promptText } } }
-                }
+            new { parts = new[] { new { text = promptText } } }
+        }
             };
-
             try
             {
                 var url = $"{BASE_URL}?key={_apiKey}";
@@ -117,17 +135,26 @@ namespace Tokki.Infrastructure.Services
                     _logger.LogError($"Lỗi gọi AI ({response.StatusCode}): {errorContent}");
                     return null;
                 }
-
-                using var jsonDoc = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+                using var jsonDoc = await JsonDocument.ParseAsync(
+                    await response.Content.ReadAsStreamAsync());
                 var root = jsonDoc.RootElement;
 
-                if (root.TryGetProperty("candidates", out var candidates) && candidates.GetArrayLength() > 0)
+                if (root.TryGetProperty("candidates", out var candidates)
+                    && candidates.GetArrayLength() > 0)
                 {
-                    var text = candidates[0].GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString();
+                    var text = candidates[0]
+                        .GetProperty("content")
+                        .GetProperty("parts")[0]
+                        .GetProperty("text")
+                        .GetString();
 
                     if (!string.IsNullOrEmpty(text))
                     {
                         text = text.Replace("```json", "").Replace("```", "").Trim();
+                        int startIndex = text.IndexOf("{");
+                        int endIndex = text.LastIndexOf("}");
+                        if (startIndex >= 0 && endIndex > startIndex)
+                            text = text.Substring(startIndex, endIndex - startIndex + 1);
 
                         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
                         return JsonSerializer.Deserialize<AiRoadmapResponse>(text, options);
@@ -139,7 +166,7 @@ namespace Tokki.Infrastructure.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Exception khi gọi AI Service");
-                return null; 
+                return null;
             }
         }
         public async Task<AiRoadmapResponse?> GenerateNextWeekPlanAsync(
@@ -147,26 +174,56 @@ namespace Tokki.Infrastructure.Services
             CurrentTopikLevel currentLevel,
             int nextWeekIndex,
             int examScorePercent,
-            List<string> reviewTypes,       
-            List<string> persistentFailTypes, 
-            List<string> originalWeaknesses)
-        {
-            if (string.IsNullOrEmpty(_apiKey)) return null;
+            List<string> reviewTypes,
+            List<string> persistentFailTypes,
+            List<string> originalWeaknesses,
+            List<QuestionTypeMenuItem> weakTypeInfos,    
+            List<GrammarMenuItem> grammarMenu,           
+            List<QuestionTypeMenuItem> questionTypeMenu) 
+            {
+                if (string.IsNullOrEmpty(_apiKey)) return null;
 
-            var reviewContent = reviewTypes.Any()
-                ? await _knowledgeBaseService.GetContentForWeaknessesAsync(reviewTypes, currentLevel)
-                : new List<KnowledgeMetadata>();
+            var reviewSection = weakTypeInfos.Any()
+                ? string.Join("\n", weakTypeInfos
+                    .Where(w => reviewTypes.Contains(w.QuestionTypeId))
+                    .Select(w => $"  - [{w.Skill}] {w.Name} (QuestionTypeId: {w.QuestionTypeId})"))
+                : "  - Không có dạng cần ôn lại.";
 
-            var generalContent = await _knowledgeBaseService.GetGeneralContentForLevelAsync(currentLevel);
-            var filteredNew = generalContent
-                .Where(x => !reviewTypes.Contains(x.TargetId) && !persistentFailTypes.Contains(x.TargetId))
+            var persistentSection = persistentFailTypes.Any()
+                ? string.Join("\n", weakTypeInfos
+                    .Where(w => persistentFailTypes.Contains(w.QuestionTypeId))
+                    .Select(w => $"  - [{w.Skill}] {w.Name} (QuestionTypeId: {w.QuestionTypeId})"))
+                : "  - Không có.";
+
+            var filteredGrammarMenu = grammarMenu
+                .Where(g => !persistentFailTypes.Contains(g.RelatedQuestionTypeId ?? ""))
                 .ToList();
 
-            var menuJson = JsonSerializer.Serialize(new
-            {
-                ReviewItems = reviewContent.Select(x => new { x.TargetId, x.DescriptionForAi, x.Type }),
-                NewItems = filteredNew.Select(x => new { x.TargetId, x.DescriptionForAi, x.Type })
-            });
+            var filteredQuizMenu = questionTypeMenu
+                .Where(q => !persistentFailTypes.Contains(q.QuestionTypeId))
+                .ToList();
+
+            var grammarMenuJson = JsonSerializer.Serialize(
+                filteredGrammarMenu.Select(g => new
+                {
+                    GrammarId = g.GrammarId,
+                    Title = g.Title,
+                    Syntaxes = g.Syntaxes,
+                    Description = g.Description ?? "",
+                    RelatedQuestionTypeId = g.RelatedQuestionTypeId ?? ""
+                })
+            );
+
+            var quizMenuJson = JsonSerializer.Serialize(
+                filteredQuizMenu.Select(q => new
+                {
+                    QuestionTypeId = q.QuestionTypeId,
+                    Code = q.Code,
+                    Name = q.Name,
+                    Skill = q.Skill,
+                    Description = q.Description ?? ""
+                })
+            );
 
             string strategy;
             string reviewInstruction;
@@ -175,57 +232,73 @@ namespace Tokki.Infrastructure.Services
             {
                 strategy = "Học viên đạt dưới 50%. Tăng cường luyện tập, bố trí thêm VirtualQuiz.";
                 reviewInstruction = reviewTypes.Any()
-                    ? $"Dành ngày 1 và ngày 2 để ÔN LẠI các dạng trong ReviewItems ({string.Join(", ", reviewTypes)}). Từ ngày 3 học NewItems."
-                    : "Tập trung vào các dạng mới nhưng giảm tải độ khó.";
+                    ? "Dành ngày 1 và ngày 2 để ÔN LẠI các dạng trong REVIEW LIST. Từ ngày 3 học nội dung mới."
+                    : "Tập trung vào nội dung mới nhưng giảm tải độ khó.";
             }
             else if (examScorePercent < 80)
             {
                 strategy = "Học viên đạt 50-79%. Ôn lại điểm yếu kết hợp học tiếp lộ trình.";
                 reviewInstruction = reviewTypes.Any()
-                    ? $"Dành ngày 1 để ÔN LẠI ReviewItems ({string.Join(", ", reviewTypes)}). Từ ngày 2 học NewItems. Tỉ lệ: ~20% ôn cũ, 80% mới."
+                    ? "Dành ngày 1 để ÔN LẠI REVIEW LIST. Từ ngày 2 học nội dung mới. Tỉ lệ ~20% ôn cũ / 80% mới."
                     : "Tiếp tục lộ trình bình thường.";
             }
             else
             {
                 strategy = "Học viên đạt >= 80%. Tiến độ tốt, tăng tốc với kiến thức mới.";
-                reviewInstruction = "Không cần ôn lại. Tập trung 100% vào NewItems, có thể tăng độ khó.";
+                reviewInstruction = "Không cần ôn lại. Tập trung 100% nội dung mới, có thể tăng độ khó.";
             }
 
-            string persistentNote = persistentFailTypes.Any()
-                ? $"KHÔNG được dùng các dạng sau (user đã được ôn 2 tuần liên tiếp nhưng vẫn chưa pass, hệ thống đã cảnh báo và sẽ bỏ qua): {string.Join(", ", persistentFailTypes)}."
-                : string.Empty;
-
             var promptText = $@"
-                Bạn là chuyên gia lập lộ trình TOPIK. Học viên chuẩn bị bước vào TUẦN THỨ {nextWeekIndex}.
+                Bạn là chuyên gia lập lộ trình TOPIK. Học viên bước vào TUẦN THỨ {nextWeekIndex}.
                 Kết quả tuần trước: {examScorePercent}%.
-        
+
                 CHIẾN LƯỢC: {strategy}
                 PHÂN BỔ NỘI DUNG: {reviewInstruction}
-            {persistentNote}
 
-                *** QUY TẮC BẮT BUỘC ***
-            1. CHỈ CHỌN bài học từ MENU DỮ LIỆU bên dưới. KHÔNG tự bịa.
-            2. Ngày thứ 7 BẮT BUỘC là 'WeeklyExam' (Tiêu đề: Kiểm tra định kỳ tuần {nextWeekIndex}).
-            3. Nếu có ReviewItems: ưu tiên xếp vào ngày đầu tuần.
-            4. Tỉ lệ ReviewItems / NewItems xấp xỉ 20% / 80% (tính theo số task, không phải số ngày).
-            5. Nếu ReviewItems rỗng: dùng 100% NewItems.
+            *** DẠNG CẦN ÔN LẠI (REVIEW LIST - 20% nội dung tuần này) ***
+                {reviewSection}
 
-        *** MENU DỮ LIỆU ***
-        {menuJson}
+            *** DẠNG ĐÃ CẢNH BÁO 2 TUẦN - KHÔNG ĐƯA VÀO LỘ TRÌNH ***
+                {persistentSection}
 
-        *** OUTPUT JSON (chỉ 1 tuần, WeekIndex = {nextWeekIndex}) ***
-        {{
-          ""Assessment"": ""Nhận xét ngắn gọn và lời khuyên cho tuần {nextWeekIndex}"",
-          ""Weeks"": [
-            {{
-              ""WeekIndex"": {nextWeekIndex},
-              ""WeekGoal"": ""Mục tiêu tuần {nextWeekIndex}"",
-              ""Days"": [
+            *** QUY TẮC BẮT BUỘC ***
+                1. CHỈ CHỌN từ MENU bên dưới. KHÔNG tự bịa.
+                2. Task 'LearnTheory' → dùng GrammarId từ GRAMMAR MENU.
+                   Ưu tiên grammar có RelatedQuestionTypeId trong REVIEW LIST.
+                3. Task 'VirtualQuiz' → dùng QuestionTypeId từ QUIZ MENU.
+                   Ưu tiên QuestionTypeId trong REVIEW LIST vào ngày đầu tuần.
+                4. Ngày thứ 7 BẮT BUỘC là 'WeeklyExam' (Tiêu đề: Kiểm tra tuần {nextWeekIndex}).
+                5. KHÔNG dùng bất kỳ dạng nào trong danh sách ĐÃ CẢNH BÁO.
+
+            *** GRAMMAR MENU ***
+                {grammarMenuJson}
+
+            *** QUIZ MENU ***
+                {quizMenuJson}
+
+            *** OUTPUT JSON (chỉ 1 tuần, WeekIndex = {nextWeekIndex}) ***
                 {{
-                  ""DayIndex"": 1,
-                  ""Tasks"": [
-                    {{ ""Title"": ""..."", ""TaskType"": ""LearnTheory"", ""Content"": ""..."", ""GrammarId"": ""ID_TU_MENU"" }},
-                    {{ ""Title"": ""..."", ""TaskType"": ""VirtualQuiz"", ""Content"": ""..."", ""QuestionTypeId"": ""ID_TU_MENU"" }}
+                    ""Assessment"": ""Nhận xét ngắn gọn và lời khuyên cho tuần {nextWeekIndex}"",
+                    ""Weeks"": [
+                {{
+                    ""WeekIndex"": {nextWeekIndex},
+                    ""WeekGoal"": ""Mục tiêu tuần {nextWeekIndex}"",
+                    ""Days"": [
+                        {{
+                            ""DayIndex"": 1,
+                            ""Tasks"": [
+                        {{
+                      ""Title"": ""..."",
+                      ""TaskType"": ""LearnTheory"",
+                      ""Content"": ""..."",
+                      ""GrammarId"": ""ID_TU_GRAMMAR_MENU""
+                    }},
+                    {{
+                      ""Title"": ""..."",
+                      ""TaskType"": ""VirtualQuiz"",
+                      ""Content"": ""..."",
+                      ""QuestionTypeId"": ""ID_TU_QUIZ_MENU""
+                    }}
                   ]
                 }}
               ]
@@ -236,7 +309,6 @@ namespace Tokki.Infrastructure.Services
 
             return await CallGeminiApiAsync(promptText);
         }
-
         private async Task<AiRoadmapResponse?> CallGeminiApiAsync(string promptText)
         {
             var requestBody = new { contents = new[] { new { parts = new[] { new { text = promptText } } } } };

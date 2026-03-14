@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories; 
 using Tokki.Application.IServices;
+using Tokki.Application.UseCases.Roadmap.DTOs;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 
@@ -48,12 +49,28 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                         "Bạn đang có một lộ trình học đang hoạt động. Vui lòng hoàn thành hoặc hủy lộ trình cũ trước khi tạo mới.",
                         400);
                 }
+                var weakTypeInfos = request.Weaknesses.Any()
+                    ? await _userRoadmapRepository.GetQuestionTypeMenuAsync(
+                    request.Weaknesses, cancellationToken)
+                    : new List<QuestionTypeMenuItem>();
+
+                var grammarMenu = await _userRoadmapRepository.GetGrammarMenuAsync(
+                    request.Weaknesses, request.CurrentLevel, cancellationToken);
+
+                var questionTypeMenu = await _userRoadmapRepository.GetQuestionTypeMenuAsync(
+                    await _userRoadmapRepository.GetValidQuestionTypeIdsByLevelAsync(
+                        request.CurrentLevel, cancellationToken),
+                    cancellationToken);
+
 
                 var aiPlan = await _aiRoadmapService.GenerateStudyPlanAsync(
                     request.TargetAim,
                     request.CurrentLevel,
                     7,
-                    request.Weaknesses
+                    request.Weaknesses,
+                    weakTypeInfos,
+                    grammarMenu,
+                    questionTypeMenu
                 );
 
                 if (aiPlan == null || aiPlan.Weeks == null || !aiPlan.Weeks.Any())
