@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using Microsoft.Extensions.Logging;
 using Tokki.Application.Common.Models;
-using Tokki.Application.IRepositories; 
+using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Application.UseCases.Roadmap.DTOs;
 using Tokki.Domain.Entities;
@@ -16,14 +16,16 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
         private readonly IIdGeneratorService _idGeneratorService;
         private readonly ILogger<GenerateRoadmapCommandHandler> _logger;
         private readonly IUserRoadmapRepository _userRoadmapRepository;
-        private readonly IUserWeaknessRepository _userWeaknessRepository; 
+        private readonly IUserWeaknessRepository _userWeaknessRepository;
+        private readonly IUserExamRepository _userExamRepository;
 
         public GenerateRoadmapCommandHandler(
             IAiRoadmapService aiRoadmapService,
             IExamAssemblyService examAssemblyService,
             IIdGeneratorService idGeneratorService,
             IUserRoadmapRepository userRoadmapRepository,
-            IUserWeaknessRepository userWeaknessRepository, 
+            IUserWeaknessRepository userWeaknessRepository,
+            IUserExamRepository userExamRepository, 
             ILogger<GenerateRoadmapCommandHandler> logger)
         {
             _aiRoadmapService = aiRoadmapService;
@@ -31,6 +33,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
             _idGeneratorService = idGeneratorService;
             _userRoadmapRepository = userRoadmapRepository;
             _userWeaknessRepository = userWeaknessRepository;
+            _userExamRepository = userExamRepository;
             _logger = logger;
         }
 
@@ -40,56 +43,65 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
 
             try
             {
-                var activeRoadmap = await _userRoadmapRepository.GetActiveRoadmapByUserIdAsync(
-                request.UserId, cancellationToken);
+                var activeRoadmap = await _userRoadmapRepository
+                    .GetActiveRoadmapByUserIdAsync(request.UserId, cancellationToken);
 
                 if (activeRoadmap != null)
-                {
                     return OperationResult<string>.Failure(
-                        "Bạn đang có một lộ trình học đang hoạt động. Vui lòng hoàn thành hoặc hủy lộ trình cũ trước khi tạo mới.",
-                        400);
+                        "Bạn đang có một lộ trình học đang hoạt động. Vui lòng hoàn thành hoặc hủy lộ trình cũ trước khi tạo mới.", 400);
+
+                var weaknesses = new List<string>();
+
+                if (!string.IsNullOrEmpty(request.UserExamId))
+                {
+                    var questionTypes = await _userExamRepository
+                        .GetIncorrectQuestionTypesByExamIdAsync(
+                            request.UserExamId, cancellationToken);
+
+                    weaknesses = questionTypes
+                        .Select(qt => qt.QuestionTypeId)
+                        .Distinct()
+                        .ToList();
                 }
-                var weakTypeInfos = request.Weaknesses.Any()
+
+                if (weaknesses.Any())
+                {
+                    var validIds = await _userRoadmapRepository
+                        .GetValidQuestionTypeIdsAsync(weaknesses, cancellationToken);
+
+                    var invalidIds = weaknesses.Except(validIds).ToList();
+                    if (invalidIds.Any())
+                        _logger.LogWarning($"Loại bỏ {invalidIds.Count} questionTypeId không hợp lệ: {string.Join(", ", invalidIds)}");
+
+                    weaknesses = validIds;
+                }
+
+                var weakTypeInfos = weaknesses.Any()
                     ? await _userRoadmapRepository.GetQuestionTypeMenuAsync(
-                    request.Weaknesses, cancellationToken)
+                        weaknesses, cancellationToken)
                     : new List<QuestionTypeMenuItem>();
 
                 var grammarMenu = await _userRoadmapRepository.GetGrammarMenuAsync(
-                    request.Weaknesses, request.CurrentLevel, cancellationToken);
+                    weaknesses, request.CurrentLevel, cancellationToken);
 
-                var questionTypeMenu = await _userRoadmapRepository.GetQuestionTypeMenuAsync(
-                    await _userRoadmapRepository.GetValidQuestionTypeIdsByLevelAsync(
-                        request.CurrentLevel, cancellationToken),
-                    cancellationToken);
+                var allLevelTypeIds = await _userRoadmapRepository
+                    .GetValidQuestionTypeIdsByLevelAsync(request.CurrentLevel, cancellationToken);
 
+                var questionTypeMenu = await _userRoadmapRepository
+                    .GetQuestionTypeMenuAsync(allLevelTypeIds, cancellationToken);
 
                 var aiPlan = await _aiRoadmapService.GenerateStudyPlanAsync(
                     request.TargetAim,
                     request.CurrentLevel,
                     7,
-                    request.Weaknesses,
+                    weaknesses,
                     weakTypeInfos,
                     grammarMenu,
                     questionTypeMenu
                 );
 
                 if (aiPlan == null || aiPlan.Weeks == null || !aiPlan.Weeks.Any())
-                {
                     return OperationResult<string>.Failure("AI không thể tạo lộ trình. Vui lòng thử lại.", 503);
-                }
-                if (request.Weaknesses != null && request.Weaknesses.Any())
-                {
-                    var validIds = await _userRoadmapRepository
-                        .GetValidQuestionTypeIdsAsync(request.Weaknesses, cancellationToken);
-
-                    var invalidIds = request.Weaknesses.Except(validIds).ToList();
-                    if (invalidIds.Any())
-                    {
-                        _logger.LogWarning($"Loại bỏ {invalidIds.Count} questionTypeId không hợp lệ: {string.Join(", ", invalidIds)}");
-                    }
-
-                    request.Weaknesses = validIds;
-                }
 
                 var roadmapId = _idGeneratorService.GenerateCustom(15);
                 var roadmap = new UserRoadmap
@@ -105,7 +117,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                     OverallAiAssessment = aiPlan.Assessment,
                     CreatedAt = DateTime.UtcNow,
                     Weeks = new List<RoadmapWeek>()
-                };               
+                };
 
                 int totalWeeks = (int)Math.Ceiling((double)request.DurationDays / 7);
 
@@ -133,7 +145,8 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
 
                             var weeklyScope = weekDto.Days
                                 .SelectMany(d => d.Tasks)
-                                .Where(t => t.TaskType == "VirtualQuiz" && !string.IsNullOrEmpty(t.QuestionTypeId))
+                                .Where(t => t.TaskType == "VirtualQuiz"
+                                         && !string.IsNullOrEmpty(t.QuestionTypeId))
                                 .Select(t => t.QuestionTypeId)
                                 .Distinct()
                                 .ToList();
@@ -167,20 +180,23 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                                     {
                                         taskEntity.TaskType = RoadmapTaskType.WeeklyExam;
 
-                                        var examResult = await _examAssemblyService.GenerateWeeklyExamFromScopeAsync(
-                                            request.UserId,
-                                            i,
-                                            weeklyScope, 
-                                            cancellationToken
-                                        );
-
-                                        if (examResult.IsSuccess)
+                                        if (weeklyScope.Any())
                                         {
-                                            taskEntity.ExamId = examResult.Data;
-                                            weekEntity.WeeklyExamId = examResult.Data;
+                                            var examResult = await _examAssemblyService
+                                                .GenerateWeeklyExamFromScopeAsync(
+                                                    request.UserId,
+                                                    i,
+                                                    weeklyScope,
+                                                    cancellationToken);
 
+                                            if (examResult.IsSuccess)
+                                            {
+                                                taskEntity.ExamId = examResult.Data;
+                                                weekEntity.WeeklyExamId = examResult.Data;
+                                            }
                                         }
                                     }
+
                                     weekEntity.DailyTasks.Add(taskEntity);
                                 }
                             }
@@ -198,11 +214,11 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                 await _userRoadmapRepository.AddAsync(roadmap);
                 await _userRoadmapRepository.SaveChangesAsync(cancellationToken);
 
-                if (request.Weaknesses != null && request.Weaknesses.Any())
+                if (weaknesses.Any())
                 {
-                    foreach (var weakTypeId in request.Weaknesses)
+                    foreach (var weakTypeId in weaknesses)
                     {
-                        var weaknessRecord = new UserWeakness
+                        await _userWeaknessRepository.AddAsync(new UserWeakness
                         {
                             Id = _idGeneratorService.GenerateCustom(15),
                             UserId = request.UserId,
@@ -212,13 +228,13 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                             InitialScore = 0,
                             CurrentScore = 0,
                             CreatedAt = DateTime.UtcNow
-                        };
-                        await _userWeaknessRepository.AddAsync(weaknessRecord, cancellationToken);
+                        }, cancellationToken);
                     }
+                    await _userWeaknessRepository.SaveChangesAsync(cancellationToken);
                 }
-                await _userWeaknessRepository.SaveChangesAsync(cancellationToken);
 
-                return OperationResult<string>.Success(roadmapId, 201, "Tạo lộ trình thành công (Week 1 sẵn sàng)!");
+                return OperationResult<string>.Success(
+                    roadmapId, 201, "Tạo lộ trình thành công (Week 1 sẵn sàng)!");
             }
             catch (Exception ex)
             {

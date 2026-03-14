@@ -67,7 +67,7 @@ namespace Tokki.WebAPI.Controllers
             if (existingRoadmap != null)
                 return BadRequest(new
                 {
-                    message = "Bạn đang có một lộ trình học đang hoạt động. Vui lòng hoàn thành hoặc hủy lộ trình cũ trước khi tạo mới."
+                    message = "Bạn đang có một lộ trình học đang hoạt động."
                 });
 
             var command = new GenerateRoadmapCommand
@@ -75,8 +75,8 @@ namespace Tokki.WebAPI.Controllers
                 UserId = userId,
                 TargetAim = request.TargetAim,
                 DurationDays = request.DurationDays,
-                Weaknesses = request.Weaknesses,
-                CurrentLevel = request.CurrentLevel
+                CurrentLevel = request.CurrentLevel,
+                UserExamId = request.UserExamId  
             };
 
             var result = await _mediator.Send(command);

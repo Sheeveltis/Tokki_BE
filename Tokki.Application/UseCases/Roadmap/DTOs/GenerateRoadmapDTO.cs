@@ -8,7 +8,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
         public TargetAimLevel TargetAim { get; set; }
         public int DurationDays { get; set; }
 
-        public List<string> Weaknesses { get; set; } = new List<string>();
+        public string UserExamId { get; set; } = string.Empty;
 
         public CurrentTopikLevel CurrentLevel { get; set; }
     }
