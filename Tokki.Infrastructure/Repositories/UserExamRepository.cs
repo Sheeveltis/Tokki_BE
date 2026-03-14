@@ -61,19 +61,20 @@ namespace Tokki.Infrastructure.Repositories
         {
             await _context.SaveChangesAsync(token);
         }
-        public async Task<UserExam?> GetByIdAsync(string userExamId, CancellationToken token)
+        public async Task<UserExam?> GetByIdAsync(string id, CancellationToken token)
         {
             return await _context.UserExams
+                .AsNoTracking()
+                .AsSplitQuery()
                 .Include(ue => ue.Exam)
                     .ThenInclude(e => e.ExamTemplate)
                         .ThenInclude(et => et.TemplateParts)
                 .Include(ue => ue.UserExamAnswers)
                     .ThenInclude(ua => ua.Question)
-                        .ThenInclude(q => q.QuestionOptions)
+                        .ThenInclude(q => q.QuestionOptions) 
                 .Include(ue => ue.UserExamWritingAnswers)
-                    .ThenInclude(uwa => uwa.Question)
-                    .ThenInclude(q => q.QuestionType)
-                .FirstOrDefaultAsync(ue => ue.UserExamId == userExamId, token);
+                    .ThenInclude(uw => uw.Question) 
+                .FirstOrDefaultAsync(x => x.UserExamId == id, token);
         }
         public async Task<UserExam?> GetReviewByIdAsync(string userExamId, CancellationToken cancellationToken)
         {
@@ -206,14 +207,17 @@ namespace Tokki.Infrastructure.Repositories
         public async Task<List<QuestionType>> GetIncorrectQuestionTypesByExamIdAsync(string userExamId, CancellationToken cancellationToken)
         {
             var objectiveTypeIds = _context.UserExamAnswers
-                .Where(ua => ua.UserExamId == userExamId && ua.IsCorrect == false)
+                .Where(ua => ua.UserExamId == userExamId && ua.IsCorrect != true) 
                 .Select(ua => ua.Question.QuestionTypeId);
 
             var writingTypeIds = _context.UserExamWritingAnswers
                 .Where(uwa => uwa.UserExamId == userExamId)
                 .Select(uwa => uwa.Question.QuestionTypeId);
+
             return await objectiveTypeIds
                 .Union(writingTypeIds)
+                .Where(id => id != null)
+                .Distinct() 
                 .Join(_context.QuestionTypes,
                       id => id,
                       qt => qt.QuestionTypeId,

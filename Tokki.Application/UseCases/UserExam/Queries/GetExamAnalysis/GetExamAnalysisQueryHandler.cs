@@ -22,40 +22,39 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetExamAnalysis
 
         public async Task<OperationResult<ExamAnalysisResponse>> Handle(GetExamAnalysisQuery request, CancellationToken cancellationToken)
         {
-            try
+            var questionTypes = await _userExamRepository.GetIncorrectQuestionTypesByExamIdAsync(request.UserExamId, cancellationToken);
+
+            var response = new ExamAnalysisResponse();
+
+            if (questionTypes == null || !questionTypes.Any())
             {
-                var questionTypes = await _userExamRepository.GetIncorrectQuestionTypesByExamIdAsync(request.UserExamId, cancellationToken);
+                return OperationResult<ExamAnalysisResponse>.Success(response, 200, "Tuyệt vời! Không phát hiện điểm yếu nào.");
+            }
 
-                var response = new ExamAnalysisResponse();
-
-                foreach (var qt in questionTypes)
+            foreach (var qt in questionTypes)
+            {
+                var dto = new QuestionTypeDto
                 {
-                    var dto = new QuestionTypeDto
-                    {
-                        QuestionTypeId = qt.QuestionTypeId,
-                        Code = qt.Code,
-                        Name = qt.Name
-                    };
-                    switch (qt.Skill)
-                    {
-                        case QuestionSkill.Reading:
-                            response.ReadingIssues.Add(dto);
-                            break;
-                        case QuestionSkill.Listening:
-                            response.ListeningIssues.Add(dto);
-                            break;
-                        case QuestionSkill.Writing:
-                            response.WritingIssues.Add(dto);
-                            break;
-                    }
-                }
+                    QuestionTypeId = qt.QuestionTypeId,
+                    Code = qt.Code,
+                    Name = qt.Name
+                };
 
-                return OperationResult<ExamAnalysisResponse>.Success(response, 200, "Phân tích điểm yếu hoàn tất.");
+                switch (qt.Skill)
+                {
+                    case QuestionSkill.Reading:
+                        response.ReadingIssues.Add(dto);
+                        break;
+                    case QuestionSkill.Listening:
+                        response.ListeningIssues.Add(dto);
+                        break;
+                    case QuestionSkill.Writing:
+                        response.WritingIssues.Add(dto);
+                        break;
+                }
             }
-            catch (Exception ex)
-            {
-                return OperationResult<ExamAnalysisResponse>.Failure(new Error("ANALYSIS_ERROR", ex.Message));
-            }
+
+            return OperationResult<ExamAnalysisResponse>.Success(response, 200, "Phân tích điểm yếu hoàn tất.");
         }
     }
 }

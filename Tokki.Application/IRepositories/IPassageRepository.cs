@@ -29,5 +29,6 @@ namespace Tokki.Application.IRepositories
         /// <param name="passages"></param>
         /// <returns></returns>
         Task AddRangeAsync(IEnumerable<Passage> passages);
+        Task<List<Passage>> GetByIdsAsync(List<string> ids, CancellationToken token);
     }
 }
