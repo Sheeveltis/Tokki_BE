@@ -1,4 +1,5 @@
-﻿using Tokki.Domain.Entities;
+﻿using Tokki.Application.UseCases.Roadmap.DTOs;
+using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 
 public interface IUserRoadmapRepository
@@ -26,4 +27,7 @@ public interface IUserRoadmapRepository
         List<string> questionTypeIds,
         CurrentTopikLevel level,
         CancellationToken cancellationToken = default);
+    Task<List<string>> GetValidQuestionTypeIdsByLevelAsync(
+    CurrentTopikLevel level,
+    CancellationToken cancellationToken = default);
 }

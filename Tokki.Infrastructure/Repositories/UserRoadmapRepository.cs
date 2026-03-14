@@ -174,5 +174,15 @@ namespace Tokki.Infrastructure.Repositories
                 })
                 .ToListAsync(cancellationToken);
         }
+        public async Task<List<string>> GetValidQuestionTypeIdsByLevelAsync(
+            CurrentTopikLevel level,
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.QuestionTypes
+                .Where(qt => qt.IsActive
+                    && (qt.ExamType == ExamType.TopikI || qt.ExamType == ExamType.TopikII))
+                .Select(qt => qt.QuestionTypeId)
+                .ToListAsync(cancellationToken);
+        }
     }
 }
