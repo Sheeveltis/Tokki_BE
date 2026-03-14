@@ -213,7 +213,6 @@ namespace Tokki.WebAPI.Controllers
 
         [HttpGet("duration-recommendation")]
         public async Task<IActionResult> GetDurationRecommendation(
-            [FromQuery] string examId,
             [FromQuery] TargetAimLevel targetAim,
             [FromQuery] List<string> weakTypeIds)
         {
@@ -224,14 +223,13 @@ namespace Tokki.WebAPI.Controllers
             var query = new GetDurationRecommendationQuery
             {
                 UserId = userId,
-                ExamId = examId,
                 TargetAim = targetAim,
                 WeakQuestionTypeIds = weakTypeIds ?? new List<string>()
             };
 
             var result = await _mediator.Send(query);
 
-            if (!result.IsSuccess) return NotFound(result);
+            if (!result.IsSuccess) return BadRequest(result);
             return Ok(result);
         }
 
