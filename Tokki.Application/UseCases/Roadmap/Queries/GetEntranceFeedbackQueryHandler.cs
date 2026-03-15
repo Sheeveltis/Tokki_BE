@@ -157,20 +157,19 @@ namespace Tokki.Application.UseCases.Roadmap.Queries.GetEntranceFeedback
             if (totalScore >= 190) return CurrentTopikLevel.Level_5;
             if (totalScore >= 150) return CurrentTopikLevel.Level_4;
             if (totalScore >= 120) return CurrentTopikLevel.Level_3;
-            if (totalScore >= 80) return CurrentTopikLevel.Level_2;
-            if (totalScore >= 40) return CurrentTopikLevel.Level_1;
-            return CurrentTopikLevel.Pre_Topik;
+            return CurrentTopikLevel.Pre_Topik_II;
         }
 
         private static string GetLevelDisplayName(CurrentTopikLevel level) => level switch
         {
             CurrentTopikLevel.Pre_Topik => "Chưa có trình độ TOPIK",
-            CurrentTopikLevel.Level_1 => "TOPIK Level 1",
-            CurrentTopikLevel.Level_2 => "TOPIK Level 2",
-            CurrentTopikLevel.Level_3 => "TOPIK Level 3",
-            CurrentTopikLevel.Level_4 => "TOPIK Level 4",
-            CurrentTopikLevel.Level_5 => "TOPIK Level 5",
-            CurrentTopikLevel.Level_6 => "TOPIK Level 6",
+            CurrentTopikLevel.Level_1 => "TOPIK I - Level 1",
+            CurrentTopikLevel.Level_2 => "TOPIK I - Level 2",
+            CurrentTopikLevel.Pre_Topik_II => "Đang xây dựng nền tảng TOPIK II",
+            CurrentTopikLevel.Level_3 => "TOPIK II - Level 3",
+            CurrentTopikLevel.Level_4 => "TOPIK II - Level 4",
+            CurrentTopikLevel.Level_5 => "TOPIK II - Level 5",
+            CurrentTopikLevel.Level_6 => "TOPIK II - Level 6",
             _ => "Không xác định"
         };
 

@@ -303,9 +303,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
             if (totalScore >= 190) return CurrentTopikLevel.Level_5;
             if (totalScore >= 150) return CurrentTopikLevel.Level_4;
             if (totalScore >= 120) return CurrentTopikLevel.Level_3;
-            if (totalScore >= 80) return CurrentTopikLevel.Level_2;
-            if (totalScore >= 40) return CurrentTopikLevel.Level_1;
-            return CurrentTopikLevel.Pre_Topik;
+            return CurrentTopikLevel.Pre_Topik_II;
         }
     }
 }

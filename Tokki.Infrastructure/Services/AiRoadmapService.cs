@@ -3,7 +3,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Tokki.Application.IServices;
-using Tokki.Application.UseCases.Roadmap.DTOs; 
+using Tokki.Application.UseCases.Roadmap.DTOs;
 using Tokki.Domain.Enums;
 using Tokki.Domain.Entities;
 
@@ -58,7 +58,7 @@ namespace Tokki.Infrastructure.Services
             var promptText = $@"
                 Bạn là chuyên gia lập lộ trình TOPIK. Hãy tạo nội dung cho TUẦN ĐẦU TIÊN.
                 - Mục tiêu: {target}
-                - Trình độ hiện tại: {currentLevel}
+                - Trình độ hiện tại: {GetLevelDescription(currentLevel)}
                 - Tổng lộ trình: {totalWeeks} tuần
 
             *** ĐIỂM YẾU CỦA HỌC VIÊN (BẮT BUỘC ƯU TIÊN) ***
@@ -126,8 +126,8 @@ namespace Tokki.Infrastructure.Services
             var requestBody = new
             {
                 contents = new[] {
-            new { parts = new[] { new { text = promptText } } }
-        }
+                    new { parts = new[] { new { text = promptText } } }
+                }
             };
             try
             {
@@ -239,7 +239,7 @@ namespace Tokki.Infrastructure.Services
             var promptText = $@"
             Bạn là chuyên gia lập lộ trình TOPIK. Học viên bước vào TUẦN THỨ {nextWeekIndex}.
             Kết quả tuần trước: {examScorePercent}%.
-
+            Trình độ hiện tại: {GetLevelDescription(currentLevel)}
             CHIẾN LƯỢC: {strategy}
             PHÂN BỔ: {reviewInstruction}
 
@@ -310,14 +310,14 @@ namespace Tokki.Infrastructure.Services
             }
         }
         public async Task<string?> GenerateEntranceFeedbackAsync(
-                TargetAimLevel targetAim,
-                int readingWeakCount,
-                int listeningWeakCount,
-                int writingWeakCount,
-                List<string> readingNames,
-                List<string> listeningNames,
-                List<string> writingNames,
-                int recommendedDays)
+            TargetAimLevel targetAim,
+            int readingWeakCount,
+            int listeningWeakCount,
+            int writingWeakCount,
+            List<string> readingNames,
+            List<string> listeningNames,
+            List<string> writingNames,
+            int recommendedDays)
         {
             if (string.IsNullOrEmpty(_apiKey)) return null;
 
@@ -356,8 +356,8 @@ namespace Tokki.Infrastructure.Services
             var requestBody = new
             {
                 contents = new[] {
-            new { parts = new[] { new { text = promptText } } }
-        }
+                    new { parts = new[] { new { text = promptText } } }
+                }
             };
 
             try
@@ -389,5 +389,17 @@ namespace Tokki.Infrastructure.Services
                 return null;
             }
         }
+        private static string GetLevelDescription(CurrentTopikLevel level) => level switch
+        {
+            CurrentTopikLevel.Pre_Topik => "Chưa có nền tảng TOPIK, cần học từ cơ bản",
+            CurrentTopikLevel.Level_1 => "TOPIK I Level 1 (A1) — nền tảng cơ bản",
+            CurrentTopikLevel.Level_2 => "TOPIK I Level 2 (A2) — sơ cấp",
+            CurrentTopikLevel.Pre_Topik_II => "Đang xây dựng nền tảng TOPIK II — chưa đạt Level 3, cần học chắc kiến thức trung cấp trước",
+            CurrentTopikLevel.Level_3 => "TOPIK II Level 3 (B1) — trung cấp",
+            CurrentTopikLevel.Level_4 => "TOPIK II Level 4 (B2) — trung cấp cao",
+            CurrentTopikLevel.Level_5 => "TOPIK II Level 5 (C1) — cao cấp",
+            CurrentTopikLevel.Level_6 => "TOPIK II Level 6 (C2) — thành thạo",
+            _ => level.ToString()
+        };
     }
 }
