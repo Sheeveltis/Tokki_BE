@@ -9,7 +9,5 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
         public int DurationDays { get; set; }
 
         public string UserExamId { get; set; } = string.Empty;
-
-        public CurrentTopikLevel CurrentLevel { get; set; }
     }
 }

@@ -221,8 +221,24 @@ namespace Tokki.Infrastructure.Repositories
                       id => id,
                       qt => qt.QuestionTypeId,
                       (id, qt) => qt)
+                .OrderBy(qt => qt.Skill)       
+                .ThenBy(qt => qt.OrderIndex)
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
+        }
+        public async Task SaveSelfDeclaredLevelAsync(
+            string userExamId,
+            CurrentTopikLevel level,
+            CancellationToken cancellationToken = default)
+        {
+            var exam = await _context.UserExams
+                .FirstOrDefaultAsync(e => e.UserExamId == userExamId, cancellationToken);
+
+            if (exam != null)
+            {
+                exam.SelfDeclaredLevel = level;
+                await _context.SaveChangesAsync(cancellationToken);
+            }
         }
     }
 }

@@ -9,22 +9,22 @@ namespace Tokki.Application.UseCases.Roadmap.Queries.GetEntranceFeedback
         public string UserId { get; set; } = string.Empty;
         public string UserExamId { get; set; } = string.Empty;
         public TargetAimLevel TargetAim { get; set; }
+        public CurrentTopikLevel SelfDeclaredLevel { get; set; } 
     }
 
     public class EntranceFeedbackResult
     {
         public string AiFeedback { get; set; } = string.Empty;
-
         public int TotalWeakTypes { get; set; }
         public int ReadingWeakCount { get; set; }
         public int ListeningWeakCount { get; set; }
         public int WritingWeakCount { get; set; }
-
         public List<WeakTypeDto> ReadingIssues { get; set; } = new();
         public List<WeakTypeDto> ListeningIssues { get; set; } = new();
         public List<WeakTypeDto> WritingIssues { get; set; } = new();
-
         public List<EntranceDurationOption> DurationOptions { get; set; } = new();
+        public CurrentTopikLevel SuggestedCurrentLevel { get; set; }
+        public string SuggestedCurrentLevelName { get; set; } = string.Empty;
     }
 
     public class WeakTypeDto

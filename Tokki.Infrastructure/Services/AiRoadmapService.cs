@@ -3,7 +3,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Tokki.Application.IServices;
-using Tokki.Application.UseCases.Roadmap.DTOs; 
+using Tokki.Application.UseCases.Roadmap.DTOs;
 using Tokki.Domain.Enums;
 using Tokki.Domain.Entities;
 
@@ -32,8 +32,9 @@ namespace Tokki.Infrastructure.Services
             int durationDays,
             List<string> weaknesses,
             List<QuestionTypeMenuItem> weakTypeInfos,
-            List<GrammarMenuItem> grammarMenu,
-            List<QuestionTypeMenuItem> questionTypeMenu)
+            List<QuestionTypeMenuItem> questionTypeMenu,
+            int typesPerWeek,
+            int totalWeeks)
         {
             if (string.IsNullOrEmpty(_apiKey)) return null;
 
@@ -42,17 +43,6 @@ namespace Tokki.Infrastructure.Services
                     $"  - [{w.Skill}] {w.Name} (QuestionTypeId: {w.QuestionTypeId})" +
                     (string.IsNullOrEmpty(w.Description) ? "" : $" — {w.Description}")))
                 : "  - Không có điểm yếu cụ thể, học theo lộ trình chuẩn.";
-
-            var grammarMenuJson = JsonSerializer.Serialize(
-                grammarMenu.Select(g => new
-                {
-                    GrammarId = g.GrammarId,
-                    Title = g.Title,
-                    Syntaxes = g.Syntaxes,
-                    Description = g.Description ?? "",
-                    RelatedQuestionTypeId = g.RelatedQuestionTypeId ?? ""
-                })
-            );
 
             var quizMenuJson = JsonSerializer.Serialize(
                 questionTypeMenu.Select(q => new
@@ -66,50 +56,65 @@ namespace Tokki.Infrastructure.Services
             );
 
             var promptText = $@"
-                Bạn là chuyên gia lập lộ trình TOPIK. Hãy tạo lộ trình {durationDays} ngày.
+                Bạn là chuyên gia lập lộ trình TOPIK. Hãy tạo nội dung cho TUẦN ĐẦU TIÊN.
                 - Mục tiêu: {target}
-                - Trình độ hiện tại: {currentLevel}
+                - Trình độ hiện tại: {GetLevelDescription(currentLevel)}
+                - Tổng lộ trình: {totalWeeks} tuần
 
             *** ĐIỂM YẾU CỦA HỌC VIÊN (BẮT BUỘC ƯU TIÊN) ***
-                {weaknessSection}
+            {weaknessSection}
+
+            *** PHÂN BỔ NỘI DUNG TUẦN NÀY ***
+            - Tuần này chỉ học TỐI ĐA {typesPerWeek} dạng câu từ danh sách ĐIỂM YẾU ở trên
+            - Mỗi ngày tối đa 3-4 task, KHÔNG được nhồi nhét quá nhiều
+            - Mỗi dạng câu nên có CẢ LearnTheory lẫn VirtualQuiz:
+            + LearnTheory: học lý thuyết về dạng đó trước
+            + VirtualQuiz: luyện tập thực hành sau khi học lý thuyết
+            - Phân bổ đều vào 6 ngày đầu (ngày 7 là WeeklyExam)
 
             *** QUY TẮC BẮT BUỘC ***
-                1. KHÔNG tự bịa bài học. CHỈ CHỌN từ MENU bên dưới.
-                2. Task 'LearnTheory' → điền GrammarId từ GRAMMAR MENU.
-                    Ưu tiên grammar có RelatedQuestionTypeId khớp với điểm yếu.
-                3. Task 'VirtualQuiz' → điền QuestionTypeId từ QUIZ MENU.
-                    Ưu tiên QuestionTypeId của các điểm yếu ở trên.
-                4. Ngày thứ 7 phải có task 'WeeklyExam'.
-                5. Mỗi ngày nên có cả LearnTheory lẫn VirtualQuiz để học xong luyện ngay.
+                1. CHỈ CHỌN QuestionTypeId từ MENU bên dưới. KHÔNG tự bịa.
+                2. Task 'LearnTheory':
+                - Điền 'QuestionTypeId' của dạng đang học (lấy từ MENU)
+                - Điền 'Content' là nội dung HTML lý thuyết đầy đủ gồm:
+                + Giải thích dạng câu hỏi này yêu cầu kỹ năng gì
+                + Các pattern/cấu trúc ngữ pháp thường gặp (nếu có)
+                + 2-3 ví dụ minh họa bằng tiếng Hàn (có dịch)
+                + Mẹo làm bài nhanh
+                - Format HTML: <h3>...</h3><p>...</p><ul><li>...</li></ul>
+                - KHÔNG điền GrammarId
+                3. Task 'VirtualQuiz':
+                - Điền 'QuestionTypeId' của dạng cần luyện tập (lấy từ MENU)
+                - Điền 'Content' là lời khuyên ngắn gọn
+                4. Ngày thứ 7 BẮT BUỘC là 'WeeklyExam' (Title: 'Thi thử tuần').
 
-            *** GRAMMAR MENU (dùng cho LearnTheory) ***
-                {grammarMenuJson}
-
-            *** QUIZ MENU (dùng cho VirtualQuiz) ***
-                {quizMenuJson}
+            *** QUIZ MENU (dùng cho cả LearnTheory và VirtualQuiz) ***
+            {quizMenuJson}
 
             *** OUTPUT JSON (chỉ JSON thuần, không markdown) ***
+        {{
+          ""Assessment"": ""Nhận xét về trình độ và điểm yếu của học viên"",
+          ""Weeks"": [
+            {{
+              ""WeekIndex"": 1,
+              ""WeekGoal"": ""Mục tiêu tuần 1"",
+              ""Days"": [
                 {{
-                    ""Assessment"": ""Nhận xét về trình độ và điểm yếu của học viên"",
-                    ""Weeks"": [
-                {{
-                    ""WeekIndex"": 1,
-                    ""WeekGoal"": ""Mục tiêu tuần 1"",
-                    ""Days"": [
-                {{
-                    ""DayIndex"": 1,
-                    ""Tasks"": [
-                        {{
-                            ""Title"": ""Tên bài"",
-                            ""TaskType"": ""LearnTheory"",
-                            ""Content"": ""Lời khuyên ngắn"",
-                            ""GrammarId"": ""ID_TU_GRAMMAR_MENU""
-                        }},
+                  ""DayIndex"": 1,
+                  ""Tasks"": [
                     {{
-                      ""Title"": ""Luyện tập"",
+                      ""Title"": ""Lý thuyết: Tên dạng bài"",
+                      ""TaskType"": ""LearnTheory"",
+                      ""Content"": ""<h3>...</h3><p>...</p>"",
+                      ""QuestionTypeId"": ""ID_TU_MENU"",
+                      ""GrammarId"": null
+                    }},
+                    {{
+                      ""Title"": ""Luyện tập: Tên dạng bài"",
                       ""TaskType"": ""VirtualQuiz"",
-                      ""Content"": ""Mô tả bài tập"",
-                      ""QuestionTypeId"": ""ID_TU_QUIZ_MENU""
+                      ""Content"": ""Lời khuyên ngắn"",
+                      ""QuestionTypeId"": ""ID_TU_MENU"",
+                      ""GrammarId"": null
                     }}
                   ]
                 }}
@@ -121,8 +126,8 @@ namespace Tokki.Infrastructure.Services
             var requestBody = new
             {
                 contents = new[] {
-            new { parts = new[] { new { text = promptText } } }
-        }
+                    new { parts = new[] { new { text = promptText } } }
+                }
             };
             try
             {
@@ -160,7 +165,6 @@ namespace Tokki.Infrastructure.Services
                         return JsonSerializer.Deserialize<AiRoadmapResponse>(text, options);
                     }
                 }
-
                 return null;
             }
             catch (Exception ex)
@@ -177,11 +181,10 @@ namespace Tokki.Infrastructure.Services
             List<string> reviewTypes,
             List<string> persistentFailTypes,
             List<string> originalWeaknesses,
-            List<QuestionTypeMenuItem> weakTypeInfos,    
-            List<GrammarMenuItem> grammarMenu,           
-            List<QuestionTypeMenuItem> questionTypeMenu) 
-            {
-                if (string.IsNullOrEmpty(_apiKey)) return null;
+            List<QuestionTypeMenuItem> weakTypeInfos,
+            List<QuestionTypeMenuItem> questionTypeMenu)
+        {
+            if (string.IsNullOrEmpty(_apiKey)) return null;
 
             var reviewSection = weakTypeInfos.Any()
                 ? string.Join("\n", weakTypeInfos
@@ -195,24 +198,9 @@ namespace Tokki.Infrastructure.Services
                     .Select(w => $"  - [{w.Skill}] {w.Name} (QuestionTypeId: {w.QuestionTypeId})"))
                 : "  - Không có.";
 
-            var filteredGrammarMenu = grammarMenu
-                .Where(g => !persistentFailTypes.Contains(g.RelatedQuestionTypeId ?? ""))
-                .ToList();
-
             var filteredQuizMenu = questionTypeMenu
                 .Where(q => !persistentFailTypes.Contains(q.QuestionTypeId))
                 .ToList();
-
-            var grammarMenuJson = JsonSerializer.Serialize(
-                filteredGrammarMenu.Select(g => new
-                {
-                    GrammarId = g.GrammarId,
-                    Title = g.Title,
-                    Syntaxes = g.Syntaxes,
-                    Description = g.Description ?? "",
-                    RelatedQuestionTypeId = g.RelatedQuestionTypeId ?? ""
-                })
-            );
 
             var quizMenuJson = JsonSerializer.Serialize(
                 filteredQuizMenu.Select(q => new
@@ -230,80 +218,55 @@ namespace Tokki.Infrastructure.Services
 
             if (examScorePercent < 50)
             {
-                strategy = "Học viên đạt dưới 50%. Tăng cường luyện tập, bố trí thêm VirtualQuiz.";
+                strategy = "Học viên đạt dưới 50%. Tăng cường luyện tập.";
                 reviewInstruction = reviewTypes.Any()
-                    ? "Dành ngày 1 và ngày 2 để ÔN LẠI các dạng trong REVIEW LIST. Từ ngày 3 học nội dung mới."
-                    : "Tập trung vào nội dung mới nhưng giảm tải độ khó.";
+                    ? "Dành ngày 1 và ngày 2 để ÔN LẠI các dạng trong REVIEW LIST. Từ ngày 3 học mới."
+                    : "Tập trung nội dung mới nhưng giảm tải độ khó.";
             }
             else if (examScorePercent < 80)
             {
-                strategy = "Học viên đạt 50-79%. Ôn lại điểm yếu kết hợp học tiếp lộ trình.";
+                strategy = "Học viên đạt 50-79%. Kết hợp ôn cũ và học mới.";
                 reviewInstruction = reviewTypes.Any()
-                    ? "Dành ngày 1 để ÔN LẠI REVIEW LIST. Từ ngày 2 học nội dung mới. Tỉ lệ ~20% ôn cũ / 80% mới."
+                    ? "Dành ngày 1 ôn REVIEW LIST (~20%). Từ ngày 2 học mới (80%)."
                     : "Tiếp tục lộ trình bình thường.";
             }
             else
             {
-                strategy = "Học viên đạt >= 80%. Tiến độ tốt, tăng tốc với kiến thức mới.";
-                reviewInstruction = "Không cần ôn lại. Tập trung 100% nội dung mới, có thể tăng độ khó.";
+                strategy = "Học viên đạt >= 80%. Tăng tốc với kiến thức mới.";
+                reviewInstruction = "Không cần ôn lại. Tập trung 100% nội dung mới.";
             }
 
             var promptText = $@"
-                Bạn là chuyên gia lập lộ trình TOPIK. Học viên bước vào TUẦN THỨ {nextWeekIndex}.
-                Kết quả tuần trước: {examScorePercent}%.
+            Bạn là chuyên gia lập lộ trình TOPIK. Học viên bước vào TUẦN THỨ {nextWeekIndex}.
+            Kết quả tuần trước: {examScorePercent}%.
+            Trình độ hiện tại: {GetLevelDescription(currentLevel)}
+            CHIẾN LƯỢC: {strategy}
+            PHÂN BỔ: {reviewInstruction}
 
-                CHIẾN LƯỢC: {strategy}
-                PHÂN BỔ NỘI DUNG: {reviewInstruction}
+            *** DẠNG CẦN ÔN LẠI (REVIEW LIST - 20%) ***
+            {reviewSection}
 
-            *** DẠNG CẦN ÔN LẠI (REVIEW LIST - 20% nội dung tuần này) ***
-                {reviewSection}
-
-            *** DẠNG ĐÃ CẢNH BÁO 2 TUẦN - KHÔNG ĐƯA VÀO LỘ TRÌNH ***
-                {persistentSection}
+            *** DẠNG ĐÃ CẢNH BÁO 2 TUẦN - KHÔNG ĐƯA VÀO ***
+            {persistentSection}
 
             *** QUY TẮC BẮT BUỘC ***
-                1. CHỈ CHỌN từ MENU bên dưới. KHÔNG tự bịa.
-                2. Task 'LearnTheory' → dùng GrammarId từ GRAMMAR MENU.
-                   Ưu tiên grammar có RelatedQuestionTypeId trong REVIEW LIST.
-                3. Task 'VirtualQuiz' → dùng QuestionTypeId từ QUIZ MENU.
-                   Ưu tiên QuestionTypeId trong REVIEW LIST vào ngày đầu tuần.
-                4. Ngày thứ 7 BẮT BUỘC là 'WeeklyExam' (Tiêu đề: Kiểm tra tuần {nextWeekIndex}).
-                5. KHÔNG dùng bất kỳ dạng nào trong danh sách ĐÃ CẢNH BÁO.
-
-            *** GRAMMAR MENU ***
-                {grammarMenuJson}
+            1. CHỈ CHỌN từ MENU. KHÔNG tự bịa.
+            2. Task 'LearnTheory':
+           - Điền 'QuestionTypeId' của dạng đang học
+           - Điền 'Content' là HTML lý thuyết đầy đủ (định nghĩa, pattern, ví dụ, mẹo)
+           - KHÔNG điền GrammarId
+            3. Task 'VirtualQuiz': Điền 'QuestionTypeId', Content ngắn gọn
+            4. Ngày 7 BẮT BUỘC là 'WeeklyExam'
+            5. Mỗi ngày tối đa 3-4 task
+            6. KHÔNG dùng dạng trong danh sách ĐÃ CẢNH BÁO
 
             *** QUIZ MENU ***
-                {quizMenuJson}
+            {quizMenuJson}
 
-            *** OUTPUT JSON (chỉ 1 tuần, WeekIndex = {nextWeekIndex}) ***
-                {{
-                    ""Assessment"": ""Nhận xét ngắn gọn và lời khuyên cho tuần {nextWeekIndex}"",
-                    ""Weeks"": [
-                {{
-                    ""WeekIndex"": {nextWeekIndex},
-                    ""WeekGoal"": ""Mục tiêu tuần {nextWeekIndex}"",
-                    ""Days"": [
-                        {{
-                            ""DayIndex"": 1,
-                            ""Tasks"": [
-                        {{
-                      ""Title"": ""..."",
-                      ""TaskType"": ""LearnTheory"",
-                      ""Content"": ""..."",
-                      ""GrammarId"": ""ID_TU_GRAMMAR_MENU""
-                    }},
-                    {{
-                      ""Title"": ""..."",
-                      ""TaskType"": ""VirtualQuiz"",
-                      ""Content"": ""..."",
-                      ""QuestionTypeId"": ""ID_TU_QUIZ_MENU""
-                    }}
-                  ]
-                }}
-              ]
-            }}
-          ]
+        *** OUTPUT JSON (WeekIndex = {nextWeekIndex}) ***
+        {{
+          ""Assessment"": ""Nhận xét và lời khuyên tuần {nextWeekIndex}"",
+          ""Weeks"": [ {{ ... }} ]
         }}
     ";
 
@@ -347,14 +310,14 @@ namespace Tokki.Infrastructure.Services
             }
         }
         public async Task<string?> GenerateEntranceFeedbackAsync(
-                TargetAimLevel targetAim,
-                int readingWeakCount,
-                int listeningWeakCount,
-                int writingWeakCount,
-                List<string> readingNames,
-                List<string> listeningNames,
-                List<string> writingNames,
-                int recommendedDays)
+            TargetAimLevel targetAim,
+            int readingWeakCount,
+            int listeningWeakCount,
+            int writingWeakCount,
+            List<string> readingNames,
+            List<string> listeningNames,
+            List<string> writingNames,
+            int recommendedDays)
         {
             if (string.IsNullOrEmpty(_apiKey)) return null;
 
@@ -393,8 +356,8 @@ namespace Tokki.Infrastructure.Services
             var requestBody = new
             {
                 contents = new[] {
-            new { parts = new[] { new { text = promptText } } }
-        }
+                    new { parts = new[] { new { text = promptText } } }
+                }
             };
 
             try
@@ -426,5 +389,17 @@ namespace Tokki.Infrastructure.Services
                 return null;
             }
         }
+        private static string GetLevelDescription(CurrentTopikLevel level) => level switch
+        {
+            CurrentTopikLevel.Pre_Topik => "Chưa có nền tảng TOPIK, cần học từ cơ bản",
+            CurrentTopikLevel.Level_1 => "TOPIK I Level 1 (A1) — nền tảng cơ bản",
+            CurrentTopikLevel.Level_2 => "TOPIK I Level 2 (A2) — sơ cấp",
+            CurrentTopikLevel.Pre_Topik_II => "Đang xây dựng nền tảng TOPIK II — chưa đạt Level 3, cần học chắc kiến thức trung cấp trước",
+            CurrentTopikLevel.Level_3 => "TOPIK II Level 3 (B1) — trung cấp",
+            CurrentTopikLevel.Level_4 => "TOPIK II Level 4 (B2) — trung cấp cao",
+            CurrentTopikLevel.Level_5 => "TOPIK II Level 5 (C1) — cao cấp",
+            CurrentTopikLevel.Level_6 => "TOPIK II Level 6 (C2) — thành thạo",
+            _ => level.ToString()
+        };
     }
 }
