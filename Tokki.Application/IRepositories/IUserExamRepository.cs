@@ -40,5 +40,8 @@ namespace Tokki.Application.IRepositories
             string userExamId,
             CurrentTopikLevel level,
             CancellationToken cancellationToken = default);
+        Task<CurrentTopikLevel?> GetSelfDeclaredLevelAsync(
+            string userExamId,
+            CancellationToken cancellationToken = default);
     }
 }

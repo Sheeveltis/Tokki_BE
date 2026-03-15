@@ -71,13 +71,13 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                             skillData.Reading.Score,
                             skillData.Writing.Score);
 
-                        var userExam = await _userExamRepository
-                            .GetByIdAsync(request.UserExamId, cancellationToken);
+                        var selfDeclaredLevel = await _userExamRepository
+                        .GetSelfDeclaredLevelAsync(request.UserExamId, cancellationToken);
 
-                        if (userExam?.SelfDeclaredLevel != null)
+                        if (selfDeclaredLevel != null)
                         {
                             currentLevel = (CurrentTopikLevel)Math.Min(
-                                (int)userExam.SelfDeclaredLevel.Value,
+                                (int)selfDeclaredLevel.Value,
                                 (int)calculatedLevel);
                         }
                         else

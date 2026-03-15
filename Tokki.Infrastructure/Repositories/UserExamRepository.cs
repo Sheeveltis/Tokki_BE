@@ -240,5 +240,14 @@ namespace Tokki.Infrastructure.Repositories
                 await _context.SaveChangesAsync(cancellationToken);
             }
         }
+        public async Task<CurrentTopikLevel?> GetSelfDeclaredLevelAsync(
+            string userExamId,
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.UserExams
+                .Where(ue => ue.UserExamId == userExamId)
+                .Select(ue => ue.SelfDeclaredLevel)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
     }
 }
