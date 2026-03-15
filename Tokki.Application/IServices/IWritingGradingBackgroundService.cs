@@ -1,4 +1,6 @@
 ﻿// Application/IServices/IWritingGradingBackgroundService.cs
+using Hangfire.Server;
+
 namespace Tokki.Application.IServices
 {
     public interface IWritingGradingBackgroundService

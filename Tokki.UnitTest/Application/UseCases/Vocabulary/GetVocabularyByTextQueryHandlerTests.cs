@@ -110,7 +110,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
                     Definition = "ngân hàng",
                     Status = VocabularyStatus.Active,
                     VocabularyTopics = new List<VocabularyTopic>(),
-                    VocabularyExamples = new List<VocabularyExample>()
+                    VocabularyExamples = new List<Tokki.Domain.Entities.VocabularyExample>()
                 },
                 new Tokki.Domain.Entities.Vocabulary
                 {
@@ -119,7 +119,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
                     Definition = "quả ngân hạnh",
                     Status = VocabularyStatus.Active,
                     VocabularyTopics = new List<VocabularyTopic>(),
-                    VocabularyExamples = new List<VocabularyExample>()
+                    VocabularyExamples = new List<Tokki.Domain.Entities.VocabularyExample>()
                 }
             };
 

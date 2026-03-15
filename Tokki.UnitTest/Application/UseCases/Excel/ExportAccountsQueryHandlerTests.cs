@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Tokki.Application.Common.ExcelCore;
+using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.Excel.DTOs;
 using Tokki.Application.UseCases.Excel.Queries.ExportAccounts;
 using Tokki.UnitTest.Mocks.Repositories;
@@ -55,12 +56,21 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         [Fact]
         public async Task Handle_NullData_ShouldReturnFailure()
         {
-            var mockRepo = MockAccountRepository.GetMock(existingAccounts: null!);
-            var mockExcelService = new Mock<IExcelBaseService>();
-            var handler = new ExportAccountsQueryHandler(mockExcelService.Object, mockRepo.Object);
+            // Arrange — setup GetAllAsync trả về null để trigger check accounts == null
+            var mockRepo = new Mock<IAccountRepository>();
+            mockRepo.Setup(x => x.GetAllAsync(It.IsAny<CancellationToken>()))
+                    .ReturnsAsync((List<Tokki.Domain.Entities.Account>?)null);
 
+            var mockExcelService = new Mock<IExcelBaseService>();
+
+            var handler = new ExportAccountsQueryHandler(
+                mockExcelService.Object,
+                mockRepo.Object);
+
+            // Act
             var result = await handler.Handle(new ExportAccountsQuery(), CancellationToken.None);
 
+            // Assert
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().NotBe(200);
 
@@ -68,15 +78,16 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             {
                 FunctionGroup = "Export",
                 TestCaseID = "TC-ACC-EXP-02",
-                Description = "Attempt to export when account list is empty/null",
+                Description = "Attempt to export when account list is null",
                 ExpectedResult = "Return failure result and do not export file",
-                StatusRound1 = "Passed", // The test itself passed (it correctly caught the failure)
-                TestCaseType = "A", // Abnormal case (no data)
+                StatusRound1 = "Passed",
+                TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> {
-                    "DB has NO data",
-                    "Return Failure Result"
-                }
+                AppliedConditions = new List<string>
+        {
+            "GetAllAsync returns null",
+            "Return Failure with DATA_NULL error"
+        }
             });
         }
     }

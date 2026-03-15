@@ -74,7 +74,7 @@ MAX_MARK: {maxMark} điểm
             var raw = await _gemini.GenerateContentAsync(
                 new List<object> { new { text = userText } },
                 BuildSystemInstruction(),
-                maxOutputTokens: 4096,
+                maxOutputTokens: 2000,
                 temperature: 0.3,
                 ct);
 
