@@ -221,6 +221,8 @@ namespace Tokki.Infrastructure.Repositories
                       id => id,
                       qt => qt.QuestionTypeId,
                       (id, qt) => qt)
+                .OrderBy(qt => qt.Skill)       
+                .ThenBy(qt => qt.OrderIndex)
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
         }
