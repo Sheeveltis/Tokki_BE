@@ -56,6 +56,11 @@ namespace Tokki.Application.UseCases.Roadmap.Queries.GetEntranceFeedback
                 (int)request.SelfDeclaredLevel,
                 (int)calculatedLevel);
 
+            await _userExamRepository.SaveSelfDeclaredLevelAsync(
+                request.UserExamId,
+                request.SelfDeclaredLevel,
+                cancellationToken);
+
             var questionTypes = await _userExamRepository
                 .GetIncorrectQuestionTypesByExamIdAsync(
                     request.UserExamId, cancellationToken);

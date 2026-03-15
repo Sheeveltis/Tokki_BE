@@ -4,6 +4,7 @@ using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Application.UseCases.Roadmap.DTOs;
+using Tokki.Application.UseCases.UserExam.Queries.GetUserExamResult;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 
@@ -18,14 +19,15 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
         private readonly IUserRoadmapRepository _userRoadmapRepository;
         private readonly IUserWeaknessRepository _userWeaknessRepository;
         private readonly IUserExamRepository _userExamRepository;
-
+        private readonly IMediator _mediator; 
         public GenerateRoadmapCommandHandler(
             IAiRoadmapService aiRoadmapService,
             IExamAssemblyService examAssemblyService,
             IIdGeneratorService idGeneratorService,
             IUserRoadmapRepository userRoadmapRepository,
             IUserWeaknessRepository userWeaknessRepository,
-            IUserExamRepository userExamRepository, 
+            IUserExamRepository userExamRepository,
+            IMediator mediator, 
             ILogger<GenerateRoadmapCommandHandler> logger)
         {
             _aiRoadmapService = aiRoadmapService;
@@ -34,6 +36,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
             _userRoadmapRepository = userRoadmapRepository;
             _userWeaknessRepository = userWeaknessRepository;
             _userExamRepository = userExamRepository;
+            _mediator = mediator; 
             _logger = logger;
         }
 
@@ -49,6 +52,40 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                 if (activeRoadmap != null)
                     return OperationResult<string>.Failure(
                         "Bạn đang có một lộ trình học đang hoạt động. Vui lòng hoàn thành hoặc hủy lộ trình cũ trước khi tạo mới.", 400);
+
+                var currentLevel = CurrentTopikLevel.Pre_Topik;
+
+                if (!string.IsNullOrEmpty(request.UserExamId))
+                {
+                    var examResult = await _mediator.Send(
+                        new GetUserExamResultQuery { UserExamId = request.UserExamId },
+                        cancellationToken);
+
+                    if (examResult.IsSuccess && examResult.Data != null)
+                    {
+                        var skillData = examResult.Data;
+
+                        var calculatedLevel = CalculateLevel(
+                            request.TargetAim,
+                            skillData.Listening.Score,
+                            skillData.Reading.Score,
+                            skillData.Writing.Score);
+
+                        var userExam = await _userExamRepository
+                            .GetByIdAsync(request.UserExamId, cancellationToken);
+
+                        if (userExam?.SelfDeclaredLevel != null)
+                        {
+                            currentLevel = (CurrentTopikLevel)Math.Min(
+                                (int)userExam.SelfDeclaredLevel.Value,
+                                (int)calculatedLevel);
+                        }
+                        else
+                        {
+                            currentLevel = calculatedLevel;
+                        }
+                    }
+                }
 
                 var weaknesses = new List<string>();
 
@@ -85,24 +122,24 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
 
                 var weakTypeInfos = week1Weaknesses.Any()
                     ? await _userRoadmapRepository.GetQuestionTypeMenuAsync(
-                    week1Weaknesses, cancellationToken)
+                        week1Weaknesses, cancellationToken)
                     : new List<QuestionTypeMenuItem>();
 
                 var allLevelTypeIds = await _userRoadmapRepository
-                    .GetValidQuestionTypeIdsByLevelAsync(request.CurrentLevel, cancellationToken);
+                    .GetValidQuestionTypeIdsByLevelAsync(currentLevel, cancellationToken);
 
                 var questionTypeMenu = await _userRoadmapRepository
                     .GetQuestionTypeMenuAsync(allLevelTypeIds, cancellationToken);
 
                 var aiPlan = await _aiRoadmapService.GenerateStudyPlanAsync(
                     request.TargetAim,
-                    request.CurrentLevel,
+                    currentLevel,       
                     7,
-                    week1Weaknesses, 
+                    week1Weaknesses,
                     weakTypeInfos,
                     questionTypeMenu,
                     typesPerWeek,
-                    totalWeeks        
+                    totalWeeks
                 );
 
                 if (aiPlan == null || aiPlan.Weeks == null || !aiPlan.Weeks.Any())
@@ -114,7 +151,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                     UserRoadmapId = roadmapId,
                     UserId = request.UserId,
                     TargetAim = request.TargetAim,
-                    CurrentLevel = request.CurrentLevel,
+                    CurrentLevel = currentLevel,    
                     DurationDays = request.DurationDays,
                     StartDate = DateTime.UtcNow,
                     EndDate = DateTime.UtcNow.AddDays(request.DurationDays),
@@ -173,7 +210,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                                     {
                                         taskEntity.TaskType = RoadmapTaskType.LearnTheory;
                                         if (!string.IsNullOrEmpty(taskDto.QuestionTypeId))
-                                            taskEntity.QuestionTypeId = taskDto.QuestionTypeId;     
+                                            taskEntity.QuestionTypeId = taskDto.QuestionTypeId;
                                     }
                                     else if (taskDto.TaskType == "VirtualQuiz")
                                     {
@@ -245,6 +282,30 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                 _logger.LogError(ex, "Lỗi tạo Roadmap");
                 return OperationResult<string>.Failure("Lỗi hệ thống.", 500);
             }
+        }
+
+        private static CurrentTopikLevel CalculateLevel(
+            TargetAimLevel targetAim,
+            double listeningScore,
+            double readingScore,
+            double writingScore)
+        {
+            if (targetAim == TargetAimLevel.Topik_I_Level1
+             || targetAim == TargetAimLevel.Topik_I_Level2)
+            {
+                double topikIScore = listeningScore + readingScore;
+                if (topikIScore >= 140) return CurrentTopikLevel.Level_2;
+                if (topikIScore >= 80) return CurrentTopikLevel.Level_1;
+                return CurrentTopikLevel.Pre_Topik;
+            }
+
+            double totalScore = listeningScore + readingScore + writingScore;
+            if (totalScore >= 190) return CurrentTopikLevel.Level_5;
+            if (totalScore >= 150) return CurrentTopikLevel.Level_4;
+            if (totalScore >= 120) return CurrentTopikLevel.Level_3;
+            if (totalScore >= 80) return CurrentTopikLevel.Level_2;
+            if (totalScore >= 40) return CurrentTopikLevel.Level_1;
+            return CurrentTopikLevel.Pre_Topik;
         }
     }
 }

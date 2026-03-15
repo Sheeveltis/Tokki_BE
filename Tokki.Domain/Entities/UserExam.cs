@@ -31,6 +31,7 @@ namespace Tokki.Domain.Entities
         public UserExamStatus Status { get; set; } = UserExamStatus.InProgress;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public CurrentTopikLevel? SelfDeclaredLevel { get; set; }
 
         [ForeignKey("UserId")]
         public virtual Account User { get; set; } = null!; 

@@ -75,7 +75,6 @@ namespace Tokki.WebAPI.Controllers
                 UserId = userId,
                 TargetAim = request.TargetAim,
                 DurationDays = request.DurationDays,
-                CurrentLevel = request.CurrentLevel,
                 UserExamId = request.UserExamId  
             };
 
@@ -233,10 +232,11 @@ namespace Tokki.WebAPI.Controllers
             return Ok(result);
         }
 
-        [HttpGet("feedback")]
+        [HttpGet("entrance-feedback")]
         public async Task<IActionResult> GetEntranceFeedback(
             [FromQuery] string userExamId,
-            [FromQuery] TargetAimLevel targetAim)
+            [FromQuery] TargetAimLevel targetAim,
+            [FromQuery] CurrentTopikLevel selfDeclaredLevel) 
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
@@ -246,12 +246,18 @@ namespace Tokki.WebAPI.Controllers
             {
                 UserId = userId,
                 UserExamId = userExamId,
-                TargetAim = targetAim
+                TargetAim = targetAim,
+                SelfDeclaredLevel = selfDeclaredLevel 
             };
 
             var result = await _mediator.Send(query);
 
-            if (!result.IsSuccess) return StatusCode(result.StatusCode, result);
+            if (result.StatusCode == 202)
+                return StatusCode(202, result);
+
+            if (!result.IsSuccess)
+                return StatusCode(result.StatusCode, result);
+
             return Ok(result);
         }
     }

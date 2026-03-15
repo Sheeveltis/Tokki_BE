@@ -224,5 +224,19 @@ namespace Tokki.Infrastructure.Repositories
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
         }
+        public async Task SaveSelfDeclaredLevelAsync(
+            string userExamId,
+            CurrentTopikLevel level,
+            CancellationToken cancellationToken = default)
+        {
+            var exam = await _context.UserExams
+                .FirstOrDefaultAsync(e => e.UserExamId == userExamId, cancellationToken);
+
+            if (exam != null)
+            {
+                exam.SelfDeclaredLevel = level;
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+        }
     }
 }
