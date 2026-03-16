@@ -27,6 +27,7 @@ public class GetTaskDetailQueryHandler
             TaskId = task.TaskId,
             Title = task.Title,
             TaskType = task.TaskType.ToString(),
+            Skill = task.QuestionType != null ? task.QuestionType.Skill.ToString() : null,
             IsCompleted = task.IsCompleted,
             DayIndex = task.DayIndex,
             Content = task.AiGeneratedContent,
