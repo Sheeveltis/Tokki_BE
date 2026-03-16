@@ -260,5 +260,21 @@ namespace Tokki.WebAPI.Controllers
 
             return Ok(result);
         }
+        [HttpGet("task/{taskId}/detail")]
+        public async Task<IActionResult> GetTaskDetail(string taskId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var query = new GetTaskDetailQuery
+            {
+                TaskId = taskId,
+            };
+
+            var result = await _mediator.Send(query);
+            if (!result.IsSuccess) return StatusCode(result.StatusCode, result);
+            return Ok(result);
+        }
     }
 }
