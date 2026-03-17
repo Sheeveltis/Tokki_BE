@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using Hangfire;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
+using Tokki.Application.IServices;
 using Tokki.Application.UseCases.UserExam.DTOs;
 using Tokki.Domain.Enums;
 
@@ -14,10 +16,13 @@ namespace Tokki.Application.UseCases.UserExam.Commands.SubmitUserExam
     public class SubmitUserExamCommandHandler : IRequestHandler<SubmitUserExamCommand, OperationResult<SubmitExamResponse>>
     {
         private readonly IUserExamRepository _repository;
-
-        public SubmitUserExamCommandHandler(IUserExamRepository repository)
+        private readonly IBackgroundJobClient _backgroundJobs;
+        public SubmitUserExamCommandHandler(
+      IUserExamRepository repository,
+      IBackgroundJobClient backgroundJobs)
         {
             _repository = repository;
+            _backgroundJobs = backgroundJobs;
         }
 
         public async Task<OperationResult<SubmitExamResponse>> Handle(SubmitUserExamCommand request, CancellationToken token)
@@ -59,12 +64,19 @@ namespace Tokki.Application.UseCases.UserExam.Commands.SubmitUserExam
 
             await _repository.SaveChangesAsync(token);
 
+            aiGrading(request.UserExamId); // fire-and-forget an toàn vì chỉ enqueue, không query DB
+
             return OperationResult<SubmitExamResponse>.Success(new SubmitExamResponse
             {
                 UserExamId = session.UserExamId,
                 FinalMcqScore = totalScore,
                 TimeSpentMinutes = timeSpent
             });
+        }
+        private void aiGrading(string userExamId)
+        {
+            _backgroundJobs.Enqueue<IWritingGradingBackgroundService>(
+                s => s.GradeAllWritingByUserExamAsync(userExamId));
         }
     }
 }

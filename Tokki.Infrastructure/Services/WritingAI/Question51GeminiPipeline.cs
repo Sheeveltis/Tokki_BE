@@ -78,8 +78,8 @@ USER_ANSWER_㉡:
             var raw = await _gemini.GenerateContentAsync(
                 new List<object> { new { text = userText } },
                 BuildSystemInstruction(),
-                maxOutputTokens: 2000,
-                temperature: 0.3,
+                  maxOutputTokens: 3000,
+                temperature: 0.2,
                 ct);
 
             var feedbackJson = GeminiRestClient.ParseJsonRobust(raw);

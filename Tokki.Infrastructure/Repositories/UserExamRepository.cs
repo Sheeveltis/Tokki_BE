@@ -240,5 +240,16 @@ namespace Tokki.Infrastructure.Repositories
                 await _context.SaveChangesAsync(cancellationToken);
             }
         }
+
+        public async Task<UserExam?> GetByIdWithWritingDetailsAsync(string userExamId, CancellationToken token)
+        {
+            return await _context.UserExams
+                .Include(u => u.Exam)
+                    .ThenInclude(e => e.ExamTemplate)
+                        .ThenInclude(et => et.TemplateParts)
+                            .ThenInclude(tp => tp.QuestionType)
+                .Include(u => u.UserExamWritingAnswers)
+                .FirstOrDefaultAsync(u => u.UserExamId == userExamId, token);
+        }
     }
 }

@@ -192,15 +192,15 @@ builder.Services.AddCors(options =>
          new SqlServerStorageOptions
          {
              CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
-             SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
-             QueuePollInterval = TimeSpan.FromSeconds(5), 
+             SlidingInvisibilityTimeout = TimeSpan.FromMinutes(15),
+             QueuePollInterval = TimeSpan.FromSeconds(0), 
              UseRecommendedIsolationLevel = true,
              DisableGlobalLocks = true 
          }));
 
     builder.Services.AddHangfireServer(options =>
     {
-        options.WorkerCount = 5;
+        options.WorkerCount = 15;
         options.ServerTimeout = TimeSpan.FromMinutes(30);
         options.HeartbeatInterval = TimeSpan.FromSeconds(6); 
         options.ServerCheckInterval = TimeSpan.FromSeconds(10);
