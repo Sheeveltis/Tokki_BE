@@ -32,7 +32,8 @@ namespace Tokki.Infrastructure.Repositories
         {
             return await _context.UserRoadmaps
                 .Include(r => r.Weeks)
-                    .ThenInclude(w => w.DailyTasks)
+                .ThenInclude(w => w.DailyTasks)
+                .ThenInclude(t => t.QuestionType) 
                 .FirstOrDefaultAsync(r => r.UserId == userId && r.CurrentStatus == UserRoadmapStatus.Active, cancellationToken);
         }
         public async Task<RoadmapDailyTask?> GetTaskByIdAsync(string taskId, CancellationToken cancellationToken = default)
@@ -40,6 +41,7 @@ namespace Tokki.Infrastructure.Repositories
             return await _context.RoadmapDailyTasks
                 .Include(t => t.RoadmapWeek)
                 .ThenInclude(w => w.UserRoadmap)
+                .Include(t => t.QuestionType)
                 .FirstOrDefaultAsync(t => t.TaskId == taskId, cancellationToken);
         }
         public async Task<RoadmapWeek?> GetWeekByIdAsync(string weekId, CancellationToken cancellationToken)

@@ -240,7 +240,6 @@ namespace Tokki.Infrastructure.Repositories
                 await _context.SaveChangesAsync(cancellationToken);
             }
         }
-
         public async Task<UserExam?> GetByIdWithWritingDetailsAsync(string userExamId, CancellationToken token)
         {
             return await _context.UserExams
@@ -250,6 +249,15 @@ namespace Tokki.Infrastructure.Repositories
                             .ThenInclude(tp => tp.QuestionType)
                 .Include(u => u.UserExamWritingAnswers)
                 .FirstOrDefaultAsync(u => u.UserExamId == userExamId, token);
+        }
+        public async Task<CurrentTopikLevel?> GetSelfDeclaredLevelAsync(
+            string userExamId,
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.UserExams
+                .Where(ue => ue.UserExamId == userExamId)
+                .Select(ue => ue.SelfDeclaredLevel)
+                .FirstOrDefaultAsync(cancellationToken);
         }
     }
 }

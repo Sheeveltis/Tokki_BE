@@ -43,5 +43,8 @@ namespace Tokki.Application.IRepositories
         //hàm của kiệt để lấy chi tiết bài thi kèm phần writing
         Task<UserExam?> GetByIdWithWritingDetailsAsync(string userExamId, CancellationToken token);
 
+        Task<CurrentTopikLevel?> GetSelfDeclaredLevelAsync(
+            string userExamId,
+            CancellationToken cancellationToken = default);
     }
 }
