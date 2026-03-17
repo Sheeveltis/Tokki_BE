@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Json;
 using System.Text.Json;
+using Google.Apis.Auth.OAuth2;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Tokki.Application.IServices;
@@ -14,7 +15,11 @@ namespace Tokki.Infrastructure.Services
         private readonly HttpClient _httpClient;
         private readonly ILogger<AiRoadmapService> _logger;
         private readonly string _apiKey;
-        private const string BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+        private readonly bool _useVertex;
+        private readonly string _projectId;
+        private readonly string _location;
+        private readonly string _credentialsPath;
+        private readonly string _modelName;
 
         public AiRoadmapService(
             HttpClient httpClient,
@@ -23,9 +28,176 @@ namespace Tokki.Infrastructure.Services
         {
             _httpClient = httpClient;
             _logger = logger;
-            _apiKey = configuration["AiSettings:ApiKey"];
+            _apiKey = configuration["AiSettings:ApiKey"] ?? "";
+            _useVertex = bool.TryParse(configuration["AiSettings:UseVertex"], out var uv) && uv;
+            _projectId = configuration["AiSettings:VertexProjectId"] ?? "";
+            _location = configuration["AiSettings:VertexLocation"] ?? "us-central1";
+            _credentialsPath = configuration["AiSettings:VertexCredentialsPath"] ?? "";
+            _modelName = configuration["AiSettings:ModelName"] ?? "gemini-2.5-flash";
+        }
+        private string GetApiUrl()
+        {
+            if (_useVertex)
+                return $"https://{_location}-aiplatform.googleapis.com/v1/projects/{_projectId}" +
+                       $"/locations/{_location}/publishers/google/models/{_modelName}:generateContent";
+
+            return $"https://generativelanguage.googleapis.com/v1/models/{_modelName}:generateContent?key={_apiKey}";
         }
 
+        private bool IsConfigValid()
+        {
+            if (_useVertex)
+            {
+                if (string.IsNullOrEmpty(_credentialsPath))
+                {
+                    _logger.LogError("Vertex AI: VertexCredentialsPath chưa được cấu hình.");
+                    return false;
+                }
+                if (!File.Exists(_credentialsPath))
+                {
+                    _logger.LogError($"Vertex AI: Không tìm thấy file credentials tại '{_credentialsPath}'.");
+                    return false;
+                }
+                return true;
+            }
+
+            if (string.IsNullOrEmpty(_apiKey))
+            {
+                _logger.LogError("Gemini API: ApiKey chưa được cấu hình.");
+                return false;
+            }
+            return true;
+        }
+
+        private async Task<string?> GetAccessTokenAsync()
+        {
+            try
+            {
+                var credential = GoogleCredential
+                    .FromFile(_credentialsPath)
+                    .CreateScoped("https://www.googleapis.com/auth/cloud-platform");
+
+                return await credential.UnderlyingCredential
+                    .GetAccessTokenForRequestAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi lấy access token Vertex AI");
+                return null;
+            }
+        }
+
+        private async Task<bool> PrepareHttpClientAsync()
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = null;
+
+            if (!_useVertex) return true;
+
+            var token = await GetAccessTokenAsync();
+            if (string.IsNullOrEmpty(token)) return false;
+
+            _httpClient.DefaultRequestHeaders.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            return true;
+        }
+        private async Task<AiRoadmapResponse?> CallGeminiApiAsync(string promptText)
+        {
+            if (!IsConfigValid()) return null;
+
+            var requestBody = new
+            {
+                contents = new[] { new { parts = new[] { new { text = promptText } } } }
+            };
+
+            try
+            {
+                var ready = await PrepareHttpClientAsync();
+                if (!ready) return null;
+
+                var url = GetApiUrl();
+                var response = await _httpClient.PostAsJsonAsync(url, requestBody);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var err = await response.Content.ReadAsStringAsync();
+                    _logger.LogError($"Lỗi gọi AI ({response.StatusCode}): {err}");
+                    return null;
+                }
+
+                using var jsonDoc = await JsonDocument.ParseAsync(
+                    await response.Content.ReadAsStreamAsync());
+                var root = jsonDoc.RootElement;
+
+                if (root.TryGetProperty("candidates", out var candidates)
+                    && candidates.GetArrayLength() > 0)
+                {
+                    var text = candidates[0]
+                        .GetProperty("content")
+                        .GetProperty("parts")[0]
+                        .GetProperty("text")
+                        .GetString();
+
+                    if (!string.IsNullOrEmpty(text))
+                    {
+                        text = text.Replace("```json", "").Replace("```", "").Trim();
+                        int startIndex = text.IndexOf("{");
+                        int endIndex = text.LastIndexOf("}");
+                        if (startIndex >= 0 && endIndex > startIndex)
+                            text = text.Substring(startIndex, endIndex - startIndex + 1);
+
+                        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                        return JsonSerializer.Deserialize<AiRoadmapResponse>(text, options);
+                    }
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception khi gọi AI Service");
+                return null;
+            }
+        }
+        private async Task<string?> CallGeminiTextAsync(string promptText)
+        {
+            if (!IsConfigValid()) return null;
+
+            var requestBody = new
+            {
+                contents = new[] { new { parts = new[] { new { text = promptText } } } }
+            };
+
+            try
+            {
+                var ready = await PrepareHttpClientAsync();
+                if (!ready) return null;
+
+                var url = GetApiUrl();
+                var response = await _httpClient.PostAsJsonAsync(url, requestBody);
+                if (!response.IsSuccessStatusCode) return null;
+
+                using var jsonDoc = await JsonDocument.ParseAsync(
+                    await response.Content.ReadAsStreamAsync());
+                var root = jsonDoc.RootElement;
+
+                if (root.TryGetProperty("candidates", out var candidates)
+                    && candidates.GetArrayLength() > 0)
+                {
+                    return candidates[0]
+                        .GetProperty("content")
+                        .GetProperty("parts")[0]
+                        .GetProperty("text")
+                        .GetString()
+                        ?.Trim();
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception khi gọi AI Service (text)");
+                return null;
+            }
+        }
         public async Task<AiRoadmapResponse?> GenerateStudyPlanAsync(
             TargetAimLevel target,
             CurrentTopikLevel currentLevel,
@@ -36,8 +208,6 @@ namespace Tokki.Infrastructure.Services
             int typesPerWeek,
             int totalWeeks)
         {
-            if (string.IsNullOrEmpty(_apiKey)) return null;
-
             var weaknessSection = weakTypeInfos.Any()
                 ? string.Join("\n", weakTypeInfos.Select(w =>
                     $"  - [{w.Skill}] {w.Name} (QuestionTypeId: {w.QuestionTypeId})" +
@@ -123,55 +293,7 @@ namespace Tokki.Infrastructure.Services
           ]
         }}
     ";
-            var requestBody = new
-            {
-                contents = new[] {
-                    new { parts = new[] { new { text = promptText } } }
-                }
-            };
-            try
-            {
-                var url = $"{BASE_URL}?key={_apiKey}";
-                var response = await _httpClient.PostAsJsonAsync(url, requestBody);
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    _logger.LogError($"Lỗi gọi AI ({response.StatusCode}): {errorContent}");
-                    return null;
-                }
-                using var jsonDoc = await JsonDocument.ParseAsync(
-                    await response.Content.ReadAsStreamAsync());
-                var root = jsonDoc.RootElement;
-
-                if (root.TryGetProperty("candidates", out var candidates)
-                    && candidates.GetArrayLength() > 0)
-                {
-                    var text = candidates[0]
-                        .GetProperty("content")
-                        .GetProperty("parts")[0]
-                        .GetProperty("text")
-                        .GetString();
-
-                    if (!string.IsNullOrEmpty(text))
-                    {
-                        text = text.Replace("```json", "").Replace("```", "").Trim();
-                        int startIndex = text.IndexOf("{");
-                        int endIndex = text.LastIndexOf("}");
-                        if (startIndex >= 0 && endIndex > startIndex)
-                            text = text.Substring(startIndex, endIndex - startIndex + 1);
-
-                        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                        return JsonSerializer.Deserialize<AiRoadmapResponse>(text, options);
-                    }
-                }
-                return null;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Exception khi gọi AI Service");
-                return null;
-            }
+            return await CallGeminiApiAsync(promptText);
         }
         public async Task<AiRoadmapResponse?> GenerateNextWeekPlanAsync(
             TargetAimLevel target,
@@ -184,8 +306,6 @@ namespace Tokki.Infrastructure.Services
             List<QuestionTypeMenuItem> weakTypeInfos,
             List<QuestionTypeMenuItem> questionTypeMenu)
         {
-            if (string.IsNullOrEmpty(_apiKey)) return null;
-
             var reviewSection = weakTypeInfos.Any()
                 ? string.Join("\n", weakTypeInfos
                     .Where(w => reviewTypes.Contains(w.QuestionTypeId))
@@ -269,45 +389,7 @@ namespace Tokki.Infrastructure.Services
           ""Weeks"": [ {{ ... }} ]
         }}
     ";
-
             return await CallGeminiApiAsync(promptText);
-        }
-        private async Task<AiRoadmapResponse?> CallGeminiApiAsync(string promptText)
-        {
-            var requestBody = new { contents = new[] { new { parts = new[] { new { text = promptText } } } } };
-            try
-            {
-                var url = $"{BASE_URL}?key={_apiKey}";
-                var response = await _httpClient.PostAsJsonAsync(url, requestBody);
-
-                if (!response.IsSuccessStatusCode) return null;
-
-                using var jsonDoc = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
-                var root = jsonDoc.RootElement;
-                if (root.TryGetProperty("candidates", out var candidates) && candidates.GetArrayLength() > 0)
-                {
-                    var text = candidates[0].GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString();
-                    if (!string.IsNullOrEmpty(text))
-                    {
-                        text = text.Replace("```json", "").Replace("```", "").Trim();
-                        int startIndex = text.IndexOf("{");
-                        int endIndex = text.LastIndexOf("}");
-                        if (startIndex >= 0 && endIndex > startIndex)
-                        {
-                            text = text.Substring(startIndex, endIndex - startIndex + 1);
-                        }
-
-                        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                        return JsonSerializer.Deserialize<AiRoadmapResponse>(text, options);
-                    }
-                }
-                return null;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Gemini API Error");
-                return null;
-            }
         }
         public async Task<string?> GenerateEntranceFeedbackAsync(
             TargetAimLevel targetAim,
@@ -319,19 +401,14 @@ namespace Tokki.Infrastructure.Services
             List<string> writingNames,
             int recommendedDays)
         {
-            if (string.IsNullOrEmpty(_apiKey)) return null;
-
             var readingSection = readingNames.Any()
-                ? string.Join(", ", readingNames)
-                : "không có";
+                ? string.Join(", ", readingNames) : "không có";
 
             var listeningSection = listeningNames.Any()
-                ? string.Join(", ", listeningNames)
-                : "không có";
+                ? string.Join(", ", listeningNames) : "không có";
 
             var writingSection = writingNames.Any()
-                ? string.Join(", ", writingNames)
-                : "không có";
+                ? string.Join(", ", writingNames) : "không có";
 
             var promptText = $@"
         Bạn là gia sư TOPIK thân thiện. Hãy viết nhận xét ngắn gọn (3-4 câu, bằng tiếng Việt) 
@@ -353,41 +430,7 @@ namespace Tokki.Infrastructure.Services
         Chỉ trả về đoạn text nhận xét, không có format hay markdown.
             ";
 
-            var requestBody = new
-            {
-                contents = new[] {
-                    new { parts = new[] { new { text = promptText } } }
-                }
-            };
-
-            try
-            {
-                var url = $"{BASE_URL}?key={_apiKey}";
-                var response = await _httpClient.PostAsJsonAsync(url, requestBody);
-                if (!response.IsSuccessStatusCode) return null;
-
-                using var jsonDoc = await JsonDocument.ParseAsync(
-                    await response.Content.ReadAsStreamAsync());
-                var root = jsonDoc.RootElement;
-
-                if (root.TryGetProperty("candidates", out var candidates)
-                    && candidates.GetArrayLength() > 0)
-                {
-                    return candidates[0]
-                        .GetProperty("content")
-                        .GetProperty("parts")[0]
-                        .GetProperty("text")
-                        .GetString()
-                        ?.Trim();
-                }
-
-                return null;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Lỗi generate entrance feedback");
-                return null;
-            }
+            return await CallGeminiTextAsync(promptText);
         }
         private static string GetLevelDescription(CurrentTopikLevel level) => level switch
         {
