@@ -1,6 +1,7 @@
 ﻿// Infrastructure/BackgroundJobs/WritingGradingBackgroundService.cs
 using Hangfire;
 using Microsoft.Extensions.DependencyInjection;
+using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Application.UseCases.TopikWriting.Question51.DTOs;
 using Tokki.Application.UseCases.TopikWriting.Question52.DTOs;
@@ -56,6 +57,53 @@ namespace Tokki.Infrastructure.BackgroundJobs
             await pipeline.SolveAsync(
                 new Question54RequestDto { UserExamWritingAnswerId = userExamWritingAnswerId },
                 CancellationToken.None);
+        }
+
+        public async Task GradeAllWritingByUserExamAsync(string userExamId)
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var repository = scope.ServiceProvider.GetRequiredService<IUserExamRepository>();
+            var backgroundJobs = scope.ServiceProvider.GetRequiredService<IBackgroundJobClient>();
+
+            var session = await repository.GetByIdWithWritingDetailsAsync(userExamId, CancellationToken.None);
+            if (session == null) return;
+
+            var writingParts = session.Exam.ExamTemplate.TemplateParts
+                .Where(p => p.Skill == Domain.Enums.QuestionSkill.Writing)
+                .ToList();
+
+            var writingAnswers = session.UserExamWritingAnswers.ToList();
+
+            foreach (var part in writingParts)
+            {
+                var matchingAnswer = writingAnswers
+                    .FirstOrDefault(a => a.OrderIndex == part.QuestionFrom);
+
+                if (matchingAnswer == null) continue;
+
+                var code = part.QuestionType?.Code ?? string.Empty;
+                var answerId = matchingAnswer.UserExamWritingAnswerId;
+
+                switch (code)
+                {
+                    case "TOPIK2_W_Q51":
+                        backgroundJobs.Enqueue<IWritingGradingBackgroundService>(
+                            s => s.GradeQuestion51Async(answerId));
+                        break;
+                    case "TOPIK2_W_Q52":
+                        backgroundJobs.Enqueue<IWritingGradingBackgroundService>(
+                            s => s.GradeQuestion52Async(answerId));
+                        break;
+                    case "TOPIK2_W_Q53":
+                        backgroundJobs.Enqueue<IWritingGradingBackgroundService>(
+                            s => s.GradeQuestion53Async(answerId));
+                        break;
+                    case "TOPIK2_W_Q54":
+                        backgroundJobs.Enqueue<IWritingGradingBackgroundService>(
+                            s => s.GradeQuestion54Async(answerId));
+                        break;
+                }
+            }
         }
     }
 }
