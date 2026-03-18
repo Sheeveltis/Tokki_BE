@@ -107,8 +107,15 @@ namespace Tokki.Infrastructure.Services
 
             var requestBody = new
             {
-                contents = new[] { new { parts = new[] { new { text = promptText } } } }
-            };
+                contents = new[]
+            {
+            new
+            {
+                role = "user",
+            parts = new[] { new { text = promptText } }
+            }
+        }
+     };
 
             try
             {
@@ -164,7 +171,14 @@ namespace Tokki.Infrastructure.Services
 
             var requestBody = new
             {
-                contents = new[] { new { parts = new[] { new { text = promptText } } } }
+                contents = new[]
+        {
+            new
+        {
+            role = "user",
+            parts = new[] { new { text = promptText } }
+        }
+    }
             };
 
             try
