@@ -25,10 +25,8 @@ namespace Tokki.Application.UseCases.TopikWriting.Question51.Commands
         {
             try
             {
-                // Enqueue background job - chạy ngầm
-                var jobId = _backgroundJobs.Enqueue<IWritingGradingBackgroundService>(
-                    service => service.GradeQuestion51Async(request.Payload.UserExamWritingAnswerId));
-
+                _backgroundJobs.Enqueue<IWritingGradingBackgroundService>(
+     service => service.GradeQuestion51Async(request.Payload.UserExamWritingAnswerId));
                 // Trả về ngay cho FE - không chờ AI
                 var result = new Question51ResultDto
                 {

@@ -8,12 +8,12 @@ using Tokki.Application.UseCases.Roadmap.Commands.CompleteTask;
 using Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek;
 using Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap;
 using Tokki.Application.UseCases.Roadmap.DTOs;
-using Tokki.Application.UseCases.Roadmap.Queries.GetDurationRecommendation;
 using Tokki.Application.UseCases.Roadmap.Queries.GetRoadmap;
 using Tokki.Application.UseCases.Roadmap.Queries.GetVirtualQuiz;
 using Tokki.Application.UseCases.Roadmap.Queries.GetEntranceExam;
 using Tokki.Application.UseCases.Roadmap.Commands.CancelRoadmap;
 using Tokki.Application.UseCases.Roadmap.Commands.ProcessWeeklyResult;
+using Tokki.Application.UseCases.Roadmap.Queries.GetEntranceFeedback;
 using Tokki.Domain.Enums;
 
 namespace Tokki.WebAPI.Controllers
@@ -67,7 +67,7 @@ namespace Tokki.WebAPI.Controllers
             if (existingRoadmap != null)
                 return BadRequest(new
                 {
-                    message = "Bạn đang có một lộ trình học đang hoạt động. Vui lòng hoàn thành hoặc hủy lộ trình cũ trước khi tạo mới."
+                    message = "Bạn đang có một lộ trình học đang hoạt động."
                 });
 
             var command = new GenerateRoadmapCommand
@@ -75,8 +75,7 @@ namespace Tokki.WebAPI.Controllers
                 UserId = userId,
                 TargetAim = request.TargetAim,
                 DurationDays = request.DurationDays,
-                Weaknesses = request.Weaknesses,
-                CurrentLevel = request.CurrentLevel
+                UserExamId = request.UserExamId  
             };
 
             var result = await _mediator.Send(command);
@@ -187,28 +186,6 @@ namespace Tokki.WebAPI.Controllers
             return BadRequest(result);
         }
 
-        [HttpGet("duration-recommendation")]
-        public async Task<IActionResult> GetDurationRecommendation(
-            [FromQuery] TargetAimLevel targetAim,
-            [FromQuery] List<string> weakTypeIds)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized("Không tìm thấy thông tin người dùng.");
-
-            var query = new GetDurationRecommendationQuery
-            {
-                UserId = userId,
-                TargetAim = targetAim,
-                WeakQuestionTypeIds = weakTypeIds ?? new List<string>()
-            };
-
-            var result = await _mediator.Send(query);
-
-            if (!result.IsSuccess) return BadRequest(result);
-            return Ok(result);
-        }
-
         [HttpGet("entrance-exam")]
         public async Task<IActionResult> GetEntranceExam([FromQuery] TargetAimLevel targetAim)
         {
@@ -255,5 +232,49 @@ namespace Tokki.WebAPI.Controllers
             return Ok(result);
         }
 
+        [HttpGet("entrance-feedback")]
+        public async Task<IActionResult> GetEntranceFeedback(
+            [FromQuery] string userExamId,
+            [FromQuery] TargetAimLevel targetAim,
+            [FromQuery] CurrentTopikLevel selfDeclaredLevel) 
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("Không tìm thấy thông tin người dùng.");
+
+            var query = new GetEntranceFeedbackQuery
+            {
+                UserId = userId,
+                UserExamId = userExamId,
+                TargetAim = targetAim,
+                SelfDeclaredLevel = selfDeclaredLevel 
+            };
+
+            var result = await _mediator.Send(query);
+
+            if (result.StatusCode == 202)
+                return StatusCode(202, result);
+
+            if (!result.IsSuccess)
+                return StatusCode(result.StatusCode, result);
+
+            return Ok(result);
+        }
+        [HttpGet("task/{taskId}/detail")]
+        public async Task<IActionResult> GetTaskDetail(string taskId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var query = new GetTaskDetailQuery
+            {
+                TaskId = taskId,
+            };
+
+            var result = await _mediator.Send(query);
+            if (!result.IsSuccess) return StatusCode(result.StatusCode, result);
+            return Ok(result);
+        }
     }
 }

@@ -10,8 +10,6 @@ namespace Tokki.Infrastructure.Services.WritingAi
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly GeminiConfig _config;
-        private static readonly SemaphoreSlim _rateLimiter = new(1, 1);
-        private static DateTime _lastRequestTime = DateTime.MinValue;
 
         public GeminiRestClient(IHttpClientFactory httpClientFactory, GeminiConfig config)
         {
@@ -26,21 +24,6 @@ namespace Tokki.Infrastructure.Services.WritingAi
             double temperature,
             CancellationToken ct)
         {
-            await _rateLimiter.WaitAsync(ct);
-            try
-            {
-                var timeSinceLastRequest = DateTime.UtcNow - _lastRequestTime;
-                if (timeSinceLastRequest < TimeSpan.FromSeconds(2))
-                {
-                    await Task.Delay(TimeSpan.FromSeconds(2) - timeSinceLastRequest, ct);
-                }
-                _lastRequestTime = DateTime.UtcNow;
-            }
-            finally
-            {
-                _rateLimiter.Release();
-            }
-
             if (string.IsNullOrWhiteSpace(_config.ApiKey))
                 throw new InvalidOperationException("Thiếu Gemini API key.");
 
@@ -110,13 +93,12 @@ namespace Tokki.Infrastructure.Services.WritingAi
         {
             var cleaned = maybeJson.Trim();
 
-            // Remove markdown fences
             if (cleaned.StartsWith("```json")) cleaned = cleaned[7..];
             if (cleaned.StartsWith("```")) cleaned = cleaned[3..];
             if (cleaned.EndsWith("```")) cleaned = cleaned[..^3];
             cleaned = cleaned.Trim();
 
-            // Strategy 1: Try direct parse
+            // Strategy 1: Direct parse
             try
             {
                 using var doc = JsonDocument.Parse(cleaned);
@@ -126,7 +108,7 @@ namespace Tokki.Infrastructure.Services.WritingAi
             {
                 Console.WriteLine($"⚠️ JSON parse failed: {ex.Message}");
 
-                // Strategy 2: Fix line breaks in strings
+                // Strategy 2: Fix unescaped line breaks inside strings
                 var fixed1 = System.Text.RegularExpressions.Regex.Replace(
                     cleaned,
                     @"""([^""\\]*(?:\\.[^""\\]*)*)""",
@@ -146,7 +128,7 @@ namespace Tokki.Infrastructure.Services.WritingAi
                 }
                 catch { }
 
-                // Strategy 3: Extract JSON object
+                // Strategy 3: Extract JSON object by braces
                 var start = cleaned.IndexOf('{');
                 var end = cleaned.LastIndexOf('}');
                 if (start >= 0 && end > start)

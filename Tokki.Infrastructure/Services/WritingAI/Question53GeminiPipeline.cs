@@ -64,7 +64,8 @@ USER_ESSAY (bài viết của thí sinh - {charCount} ký tự):
             var raw = await _gemini.GenerateContentAsync(
                 new List<object> { new { text = userText } },
                 BuildSystemInstruction(),
-                maxOutputTokens: 10000,  // Câu 53 cần nhiều token hơn vì feedback chi tiết
+                maxOutputTokens: 6000
+                ,  // Câu 53 cần nhiều token hơn vì feedback chi tiết
                 temperature: 0.2,        // Thấp hơn để chấm điểm nhất quán
                 ct);
 

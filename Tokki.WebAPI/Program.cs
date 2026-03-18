@@ -182,29 +182,32 @@ builder.Services.AddCors(options =>
     });
 });
 
-// ===== HANGFIRE CONFIGURATION =====
-builder.Services.AddHangfire(configuration => configuration
-    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-    .UseSimpleAssemblyNameTypeSerializer()
-    .UseRecommendedSerializerSettings()
-    .UseSqlServerStorage(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        new SqlServerStorageOptions
-        {
-            CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
-            SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
-            QueuePollInterval = TimeSpan.Zero,
-            UseRecommendedIsolationLevel = true,
-            DisableGlobalLocks = true
-        }));
-// Add Hangfire server
-builder.Services.AddHangfireServer(options =>
-{
-    options.WorkerCount = 5; // Số worker chạy đồng thời (tùy chỉnh theo server)
-});
+    // ===== HANGFIRE CONFIGURATION =====
+    builder.Services.AddHangfire(configuration => configuration
+     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+     .UseSimpleAssemblyNameTypeSerializer()
+     .UseRecommendedSerializerSettings()
+     .UseSqlServerStorage(
+         builder.Configuration.GetConnectionString("DefaultConnection"),
+         new SqlServerStorageOptions
+         {
+             CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+             SlidingInvisibilityTimeout = TimeSpan.FromMinutes(15),
+             QueuePollInterval = TimeSpan.FromSeconds(0), 
+             UseRecommendedIsolationLevel = true,
+             DisableGlobalLocks = true 
+         }));
 
-//SignalR
-builder.Services.AddSignalR();
+    builder.Services.AddHangfireServer(options =>
+    {
+        options.WorkerCount = 15;
+        options.ServerTimeout = TimeSpan.FromMinutes(30);
+        options.HeartbeatInterval = TimeSpan.FromSeconds(6); 
+        options.ServerCheckInterval = TimeSpan.FromSeconds(10);
+        options.ShutdownTimeout = TimeSpan.FromMinutes(5);
+    });
+    //SignalR
+    builder.Services.AddSignalR();
 
 // ==========================================
 

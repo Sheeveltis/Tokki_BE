@@ -110,17 +110,15 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.UpdateVocabulary
                 {
                     vocabulary.Status = newStatus;
 
-                    // 1) Vocab -> Deleted: cascade ALL children -> Deleted
+                    // 1) Vocab -> Deleted: cascade topics -> Deleted (examples giữ nguyên)
                     if (newStatus == VocabularyStatus.Deleted)
                     {
                         CascadeTopicsToDeleted(vocabulary, currentUserId);
-                        CascadeExamplesToDeleted(vocabulary);
                     }
-                    // 2) Vocab -> Draft: cascade ALL children -> Draft
+                    // 2) Vocab -> Draft: cascade topics -> Draft (examples giữ nguyên)
                     else if (newStatus == VocabularyStatus.Draft)
                     {
                         CascadeTopicsToDraft(vocabulary, currentUserId);
-                        CascadeExamplesToDraft(vocabulary);
                     }
                     // 3) Vocab -> Active: chỉ vocab Active, children giữ nguyên (không cascade)
                     else if (newStatus == VocabularyStatus.Active)
@@ -198,22 +196,6 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.UpdateVocabulary
                 vt.Status = VocabularyTopicStatus.Draft;
                 vt.UpdateBy = userId;
                 vt.UpdateDate = DateTime.UtcNow.AddHours(7);
-            }
-        }
-
-        private static void CascadeExamplesToDeleted(Tokki.Domain.Entities.Vocabulary vocabulary)
-        {
-            foreach (var ex in vocabulary.VocabularyExamples)
-            {
-                ex.Status = VocabularyExampleStatus.Deleted;
-            }
-        }
-
-        private static void CascadeExamplesToDraft(Tokki.Domain.Entities.Vocabulary vocabulary)
-        {
-            foreach (var ex in vocabulary.VocabularyExamples)
-            {
-                ex.Status = VocabularyExampleStatus.Draft;
             }
         }
     }

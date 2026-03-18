@@ -44,10 +44,12 @@ namespace Tokki.Application.UseCases.Roadmap.Queries.GetRoadmap
                         TaskId = t.TaskId,
                         Title = t.Title,
                         TaskType = t.TaskType.ToString(),
+                        Skill = t.QuestionType != null ? t.QuestionType.Skill.ToString() : null,
                         IsCompleted = t.IsCompleted,
                         DayIndex = t.DayIndex,
-                        Content = t.AiGeneratedContent,
-                        ExamId = t.ExamId
+                        HasContent = !string.IsNullOrEmpty(t.AiGeneratedContent),
+                        ExamId = t.ExamId,
+                        QuestionTypeId = t.QuestionTypeId
                     }).ToList()
                 }).ToList()
             };

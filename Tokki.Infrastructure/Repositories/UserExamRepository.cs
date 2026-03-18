@@ -221,8 +221,43 @@ namespace Tokki.Infrastructure.Repositories
                       id => id,
                       qt => qt.QuestionTypeId,
                       (id, qt) => qt)
+                .OrderBy(qt => qt.Skill)       
+                .ThenBy(qt => qt.OrderIndex)
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
+        }
+        public async Task SaveSelfDeclaredLevelAsync(
+            string userExamId,
+            CurrentTopikLevel level,
+            CancellationToken cancellationToken = default)
+        {
+            var exam = await _context.UserExams
+                .FirstOrDefaultAsync(e => e.UserExamId == userExamId, cancellationToken);
+
+            if (exam != null)
+            {
+                exam.SelfDeclaredLevel = level;
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+        }
+        public async Task<UserExam?> GetByIdWithWritingDetailsAsync(string userExamId, CancellationToken token)
+        {
+            return await _context.UserExams
+                .Include(u => u.Exam)
+                    .ThenInclude(e => e.ExamTemplate)
+                        .ThenInclude(et => et.TemplateParts)
+                            .ThenInclude(tp => tp.QuestionType)
+                .Include(u => u.UserExamWritingAnswers)
+                .FirstOrDefaultAsync(u => u.UserExamId == userExamId, token);
+        }
+        public async Task<CurrentTopikLevel?> GetSelfDeclaredLevelAsync(
+            string userExamId,
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.UserExams
+                .Where(ue => ue.UserExamId == userExamId)
+                .Select(ue => ue.SelfDeclaredLevel)
+                .FirstOrDefaultAsync(cancellationToken);
         }
     }
 }

@@ -9,7 +9,7 @@ using Tokki.Application.IServices;
 
 namespace Tokki.Application.UseCases.Cloudinary.Commands.UploadImage
 {
-    internal class UploadImageCommandHandler : IRequestHandler<UploadImageCommand, OperationResult<string>>
+    public class UploadImageCommandHandler : IRequestHandler<UploadImageCommand, OperationResult<string>>
     {
         private readonly ICloudinaryService _cloudinaryService;
 

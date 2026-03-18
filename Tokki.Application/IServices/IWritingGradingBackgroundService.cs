@@ -1,4 +1,6 @@
 ﻿// Application/IServices/IWritingGradingBackgroundService.cs
+using Hangfire.Server;
+
 namespace Tokki.Application.IServices
 {
     public interface IWritingGradingBackgroundService
@@ -7,5 +9,7 @@ namespace Tokki.Application.IServices
         Task GradeQuestion52Async(string userExamWritingAnswerId);
         Task GradeQuestion53Async(string userExamWritingAnswerId);
         Task GradeQuestion54Async(string userExamWritingAnswerId);
+        Task GradeAllWritingByUserExamAsync(string userExamId);
+
     }
 }

@@ -32,7 +32,8 @@ namespace Tokki.Infrastructure.Repositories
         {
             return await _context.UserRoadmaps
                 .Include(r => r.Weeks)
-                    .ThenInclude(w => w.DailyTasks)
+                .ThenInclude(w => w.DailyTasks)
+                .ThenInclude(t => t.QuestionType) 
                 .FirstOrDefaultAsync(r => r.UserId == userId && r.CurrentStatus == UserRoadmapStatus.Active, cancellationToken);
         }
         public async Task<RoadmapDailyTask?> GetTaskByIdAsync(string taskId, CancellationToken cancellationToken = default)
@@ -40,6 +41,7 @@ namespace Tokki.Infrastructure.Repositories
             return await _context.RoadmapDailyTasks
                 .Include(t => t.RoadmapWeek)
                 .ThenInclude(w => w.UserRoadmap)
+                .Include(t => t.QuestionType)
                 .FirstOrDefaultAsync(t => t.TaskId == taskId, cancellationToken);
         }
         public async Task<RoadmapWeek?> GetWeekByIdAsync(string weekId, CancellationToken cancellationToken)
@@ -182,7 +184,24 @@ namespace Tokki.Infrastructure.Repositories
                 .Where(qt => qt.IsActive
                     && (qt.ExamType == ExamType.TopikI || qt.ExamType == ExamType.TopikII))
                 .Select(qt => qt.QuestionTypeId)
+                .Where(id => id != null)         
+                .Select(id => id!)
                 .ToListAsync(cancellationToken);
+        }
+        public async Task<Exam?> GetEntranceExamByConfigKeyAsync(
+            string configKey,
+            CancellationToken cancellationToken = default)
+        {
+            var config = await _context.SystemConfig
+                .FirstOrDefaultAsync(c => c.Key == configKey && c.IsActive, cancellationToken);
+
+            if (config == null || string.IsNullOrEmpty(config.Value))
+                return null;
+
+            return await _context.Exams
+                .FirstOrDefaultAsync(e => e.ExamId == config.Value
+                                       && e.Status == ExamStatus.Published,
+                    cancellationToken);
         }
     }
 }
