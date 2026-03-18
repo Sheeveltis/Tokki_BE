@@ -49,12 +49,18 @@ namespace Tokki.Application.IRepositories
         /// <param name="quantity"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
+        /// 
         Task<List<QuestionBank>> GetRandomQuestionsByTypeAsync(
             string questionTypeId,
             int quantity,
             List<string> excludedIds,
             DifficultyLevel level,
             CancellationToken cancellationToken);
+        Task<List<QuestionBank>> GetRandomQuestionsByTypeAsync(
+        string questionTypeId,
+        int quantity,
+        List<string> excludedIds,
+        CancellationToken cancellationToken);
         /// <summary>
         /// Kho - dùng thêm câu hỏi hàng loạt
         /// Chủ yếu bên excel import

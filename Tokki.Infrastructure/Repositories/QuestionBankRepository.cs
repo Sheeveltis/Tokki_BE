@@ -221,6 +221,31 @@ namespace Tokki.Infrastructure.Repositories
                 .Take(quantity)
                 .ToListAsync(cancellationToken);
         }
+
+
+        public async Task<List<QuestionBank>> GetRandomQuestionsByTypeAsync(
+            string questionTypeId,
+            int quantity,
+            List<string> excludedIds,
+            CancellationToken cancellationToken)
+        {
+            // Bỏ lọc theo DifficultyLevel, chỉ giữ lại QuestionTypeId và Active
+            var query = _context.QuestionBank
+                .AsNoTracking() // Tối ưu hiệu năng cho việc đọc ngẫu nhiên
+                .Where(x => x.QuestionTypeId == questionTypeId
+                            && x.Status == QuestionBankStatus.Active);
+
+            // Loại bỏ các ID đã được chọn trước đó
+            if (excludedIds != null && excludedIds.Any())
+            {
+                query = query.Where(x => !excludedIds.Contains(x.QuestionBankId));
+            }
+
+            return await query
+                .OrderBy(r => Guid.NewGuid()) // Tuyệt chiêu bốc ngẫu nhiên của SQL
+                .Take(quantity)
+                .ToListAsync(cancellationToken);
+        }
         /// <summary>
         /// Kho - dùng thêm câu hỏi hàng loạt
         /// Chủ yếu bên excel import

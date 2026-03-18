@@ -70,7 +70,6 @@ namespace Tokki.Application.UseCases.Exam.Commands.RegenerateExamPart
                     templatePart.QuestionTypeId,
                     quantityNeeded,
                     excludedQuestionBankIds,
-                    DifficultyLevel.Easy,
                     cancellationToken
                 );
 

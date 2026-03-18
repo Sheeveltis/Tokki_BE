@@ -86,7 +86,6 @@ namespace Tokki.Application.UseCases.Exam.Commands.CreateExam
                         part.QuestionTypeId,
                         quantityNeeded,
                         allSelectedQuestionIds,
-                        DifficultyLevel.Easy, 
                         cancellationToken
                     );
 
