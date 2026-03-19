@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.Extensions.Logging;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
@@ -16,7 +17,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
         private readonly IExamAssemblyService _examAssemblyService;
         private readonly IRoadmapKnowledgeProfileRepository _knowledgeProfileRepository; 
         private readonly IIdGeneratorService _idGeneratorService;
-
+        private readonly ILogger<GenerateNextWeekCommandHandler> _logger; 
         private const int MaxConsecutiveFail = 2;
         private const double MasteryThreshold = 80.0;
 
@@ -25,13 +26,15 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
             IAiRoadmapService aiRoadmapService,
             IExamAssemblyService examAssemblyService,
             IRoadmapKnowledgeProfileRepository knowledgeProfileRepository, 
-            IIdGeneratorService idGeneratorService)
+            IIdGeneratorService idGeneratorService,
+            ILogger<GenerateNextWeekCommandHandler> logger)
         {
             _repository = repository;
             _aiRoadmapService = aiRoadmapService;
             _examAssemblyService = examAssemblyService;
             _knowledgeProfileRepository = knowledgeProfileRepository;
             _idGeneratorService = idGeneratorService;
+            _logger = logger;
         }
 
         public async Task<OperationResult<GenerateNextWeekResult>> Handle(
@@ -185,17 +188,34 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
 
                         if (weeklyScope.Any())
                         {
-                            var examResult = await _examAssemblyService.GenerateWeeklyExamFromScopeAsync(
-                                request.UserId,
-                                nextWeekIndex,
-                                weeklyScope,
-                                cancellationToken
-                            );
+                            var (isValid, insufficientTypes) = await _examAssemblyService
+                                .ValidateQuestionAvailabilityAsync(weeklyScope, cancellationToken);
 
-                            if (examResult.IsSuccess)
+                            if (isValid)
                             {
-                                taskEntity.ExamId = examResult.Data;
-                                nextWeek.WeeklyExamId = examResult.Data;
+                                var examType = (roadmap.TargetAim == TargetAimLevel.Topik_I_Level1
+                                    || roadmap.TargetAim == TargetAimLevel.Topik_I_Level2)
+                                    ? ExamType.TopikI
+                                    : ExamType.TopikII;
+                                var examResult = await _examAssemblyService
+                                    .GenerateWeeklyExamFromScopeAsync(
+                                        request.UserId,
+                                        nextWeekIndex,
+                                        weeklyScope,
+                                        examType,
+                                        cancellationToken);
+
+                                if (examResult.IsSuccess)
+                                {
+                                    taskEntity.ExamId = examResult.Data;
+                                    nextWeek.WeeklyExamId = examResult.Data;
+                                }
+                            }
+                            else
+                            {
+                                _logger.LogWarning(
+                                    "Bỏ qua tạo weekly exam tuần {Week} — các dạng không đủ câu: {Types}",
+                                    nextWeekIndex, string.Join(", ", insufficientTypes));
                             }
                         }
                     }

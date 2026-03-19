@@ -223,11 +223,16 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
 
                                         if (weeklyScope.Any())
                                         {
+                                            var examType = (request.TargetAim == TargetAimLevel.Topik_I_Level1
+                                                || request.TargetAim == TargetAimLevel.Topik_I_Level2)
+                                                ? ExamType.TopikI
+                                                : ExamType.TopikII;
                                             var examResult = await _examAssemblyService
                                                 .GenerateWeeklyExamFromScopeAsync(
                                                     request.UserId,
                                                     i,
                                                     weeklyScope,
+                                                    examType,
                                                     cancellationToken);
 
                                             if (examResult.IsSuccess)
