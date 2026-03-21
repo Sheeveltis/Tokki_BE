@@ -19,7 +19,8 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
         private readonly IUserRoadmapRepository _userRoadmapRepository;
         private readonly IUserWeaknessRepository _userWeaknessRepository;
         private readonly IUserExamRepository _userExamRepository;
-        private readonly IMediator _mediator; 
+        private readonly IAccountRepository _accountRepository;
+        private readonly IMediator _mediator;
         public GenerateRoadmapCommandHandler(
             IAiRoadmapService aiRoadmapService,
             IExamAssemblyService examAssemblyService,
@@ -27,7 +28,8 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
             IUserRoadmapRepository userRoadmapRepository,
             IUserWeaknessRepository userWeaknessRepository,
             IUserExamRepository userExamRepository,
-            IMediator mediator, 
+            IAccountRepository accountRepository,
+            IMediator mediator,
             ILogger<GenerateRoadmapCommandHandler> logger)
         {
             _aiRoadmapService = aiRoadmapService;
@@ -36,7 +38,8 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
             _userRoadmapRepository = userRoadmapRepository;
             _userWeaknessRepository = userWeaknessRepository;
             _userExamRepository = userExamRepository;
-            _mediator = mediator; 
+            _accountRepository = accountRepository;
+            _mediator = mediator;
             _logger = logger;
         }
 
@@ -133,7 +136,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
 
                 var aiPlan = await _aiRoadmapService.GenerateStudyPlanAsync(
                     request.TargetAim,
-                    currentLevel,       
+                    currentLevel,
                     7,
                     week1Weaknesses,
                     weakTypeInfos,
@@ -151,7 +154,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                     UserRoadmapId = roadmapId,
                     UserId = request.UserId,
                     TargetAim = request.TargetAim,
-                    CurrentLevel = currentLevel,    
+                    CurrentLevel = currentLevel,
                     DurationDays = request.DurationDays,
                     StartDate = DateTime.UtcNow,
                     EndDate = DateTime.UtcNow.AddDays(request.DurationDays),
@@ -223,11 +226,16 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
 
                                         if (weeklyScope.Any())
                                         {
+                                            var examType = (request.TargetAim == TargetAimLevel.Topik_I_Level1
+                                                || request.TargetAim == TargetAimLevel.Topik_I_Level2)
+                                                ? ExamType.TopikI
+                                                : ExamType.TopikII;
                                             var examResult = await _examAssemblyService
                                                 .GenerateWeeklyExamFromScopeAsync(
                                                     request.UserId,
                                                     i,
                                                     weeklyScope,
+                                                    examType,
                                                     cancellationToken);
 
                                             if (examResult.IsSuccess)
@@ -274,6 +282,22 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                     await _userWeaknessRepository.SaveChangesAsync(cancellationToken);
                 }
 
+                var mappedLevel = MapToTopicLevel(currentLevel);
+                var account = await _accountRepository.GetByIdAsync(request.UserId);
+                if (account != null)
+                {
+                    if (!account.Level.HasValue || (int)mappedLevel.Value > (int)account.Level.Value)
+                    {
+                        account.Level = mappedLevel;
+                        account.UpdatedAt = DateTime.UtcNow;
+                        await _accountRepository.UpdateUserAsync(account);
+                        await _accountRepository.SaveChangesAsync(cancellationToken);
+                        _logger.LogInformation(
+                            "Cập nhật Level user {UserId}: {OldLevel} → {NewLevel}",
+                            request.UserId, account.Level, mappedLevel);
+                    }
+                }
+
                 return OperationResult<string>.Success(
                     roadmapId, 201, "Tạo lộ trình thành công (Week 1 sẵn sàng)!");
             }
@@ -283,6 +307,18 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                 return OperationResult<string>.Failure("Lỗi hệ thống.", 500);
             }
         }
+
+        private static TopicLevel? MapToTopicLevel(CurrentTopikLevel level) => level switch
+        {
+            CurrentTopikLevel.Pre_Topik => TopicLevel.Level1, 
+            CurrentTopikLevel.Level_1 => TopicLevel.Level1,
+            CurrentTopikLevel.Level_2 => TopicLevel.Level2,
+            CurrentTopikLevel.Pre_Topik_II => TopicLevel.Level3, 
+            CurrentTopikLevel.Level_3 => TopicLevel.Level3,
+            CurrentTopikLevel.Level_4 => TopicLevel.Level4,
+            CurrentTopikLevel.Level_5 => TopicLevel.Level5,
+            _ => TopicLevel.Level1   
+        };
 
         private static CurrentTopikLevel CalculateLevel(
             TargetAimLevel targetAim,
