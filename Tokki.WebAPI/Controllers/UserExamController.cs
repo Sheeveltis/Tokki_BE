@@ -12,6 +12,7 @@ using Tokki.Application.UseCases.UserExam.Queries.CheckGradingStatus;
 using Tokki.Application.UseCases.UserExam.Queries.GetExamAnalysis;
 using Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam;
 using Tokki.Application.UseCases.UserExam.Queries.GetListeningDetail;
+using Tokki.Application.UseCases.UserExam.Queries.GetPracticeQuestions;
 using Tokki.Application.UseCases.UserExam.Queries.GetReadingDetail;
 using Tokki.Application.UseCases.UserExam.Queries.GetUserExamResult;
 using Tokki.Application.UseCases.UserExam.Queries.GetUserExamReview;
@@ -184,6 +185,26 @@ namespace Tokki.WebAPI.Controllers
             if (!result.IsSuccess)
             {
                 return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
+        [HttpGet("{questionTypeId}")]
+        public async Task<ActionResult<OperationResult<List<QuestionResultGroupDto>>>> GetPracticeByTypeId(
+            [FromRoute] string questionTypeId,
+            [FromQuery] int quantity = 10)
+        {
+            var query = new GetPracticeQuestionsQuery
+            {
+                QuestionTypeId = questionTypeId,
+                Quantity = quantity
+            };
+
+            var result = await _sender.Send(query);
+
+            if (!result.IsSuccess)
+            {
+                return StatusCode(result.StatusCode, result);
             }
 
             return Ok(result);

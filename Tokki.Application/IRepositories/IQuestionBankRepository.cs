@@ -61,6 +61,10 @@ namespace Tokki.Application.IRepositories
         int quantity,
         List<string> excludedIds,
         CancellationToken cancellationToken);
+        Task<List<QuestionBank>> GetRandomQuestionsForPracticeAsync(
+        string questionTypeId,
+        int quantity,
+        CancellationToken cancellationToken);
         /// <summary>
         /// Kho - dùng thêm câu hỏi hàng loạt
         /// Chủ yếu bên excel import
