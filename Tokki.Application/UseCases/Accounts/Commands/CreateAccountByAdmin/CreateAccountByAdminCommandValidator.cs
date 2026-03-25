@@ -27,8 +27,7 @@ namespace Tokki.Application.UseCases.Accounts.Commands.CreateStaffAccount
                 .LessThan(DateOnly.FromDateTime(DateTime.Now)).WithMessage("Ngày sinh phải là ngày trong quá khứ.");
 
             RuleFor(x => x.Role)
-                .NotEmpty().WithMessage("Vai trò là bắt buộc.")
-                .Must(BeValidRole).WithMessage("Vai trò chỉ có thể là Staff, Admin hoặc User.");
+    .Must(BeValidRole).WithMessage("Vai trò chỉ có thể là Staff hoặc User.");
         }
 
         private bool BeValidRole(AccountRole role)
