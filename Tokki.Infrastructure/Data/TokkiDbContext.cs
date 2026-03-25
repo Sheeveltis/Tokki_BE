@@ -17,7 +17,6 @@ namespace Tokki.Infrastructure.Data
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<Report> Reports { get; set; }
         public DbSet<Account> Accounts { get; set; }
-        public DbSet<Session> Session { get; set; }
         public DbSet<Otp> OtpCodes { get; set; }
         public DbSet<SystemConfig> SystemConfig { get; set; }
         public DbSet<VipPackage> VipPackages { get; set; }
@@ -189,15 +188,15 @@ namespace Tokki.Infrastructure.Data
                 .HasIndex(e => new { e.UserId, e.Provider })
                 .IsUnique();
 
-            // =========================================================
-            // 4. CONFIG SESSION
-            // =========================================================
+            //// =========================================================
+            //// 4. CONFIG SESSION
+            //// =========================================================
 
-            modelBuilder.Entity<Session>()
-                .HasOne(us => us.Account)
-                .WithMany(a => a.Sessions)
-                .HasForeignKey(us => us.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+            //modelBuilder.Entity<Session>()
+            //    .HasOne(us => us.Account)
+            //    .WithMany(a => a.Sessions)
+            //    .HasForeignKey(us => us.UserId)
+            //    .OnDelete(DeleteBehavior.Cascade);
 
             // =========================================================
             // 5. CONFIG OTP

@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System.Threading;
 using System.Threading.Tasks;
 using Tokki.Application.IRepositories;
@@ -41,11 +41,7 @@ namespace Tokki.Infrastructure.Repositories
                 .FirstOrDefaultAsync(u => u.Email == email);
         }
 
-        // HÀM LƯU SESSION
-        public async Task AddSessionAsync(Session session)
-        {
-            await _context.Session.AddAsync(session);
-        }
+       
         public Task UpdateUserAsync(Account user)
         {
             // Đánh dấu Entity là đã chỉnh sửa
@@ -198,18 +194,70 @@ namespace Tokki.Infrastructure.Repositories
             return (items, totalCount);
         }
 
+        public async Task<(IEnumerable<Account> items, int totalCount)> GetPagedWithSearchAsync(
+            int pageNumber,
+            int pageSize,
+            string? searchText,
+            AccountStatus? status,
+            AccountRole? role,
+            VipStatus? vipStatus)
+        {
+            var query = _context.Accounts
+                .Include(a => a.CurrentTitle)
+                .AsNoTracking()
+                .AsQueryable();
+
+            // Search: khớp bất kỳ trường nào (OR) – case insensitive
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                var keyword = searchText.Trim().ToLower();
+                query = query.Where(a =>
+                    a.UserId.ToLower().Contains(keyword) ||
+                    (a.FullName != null && a.FullName.ToLower().Contains(keyword)) ||
+                    a.Email.ToLower().Contains(keyword) ||
+                    (a.PhoneNumber != null && a.PhoneNumber.Contains(keyword)));
+            }
+
+            // Filter by Status
+            if (status.HasValue)
+                query = query.Where(a => a.Status == status.Value);
+
+            // Filter by Role
+            if (role.HasValue)
+                query = query.Where(a => a.Role == role.Value);
+
+            // Filter by VipStatus
+            if (vipStatus.HasValue)
+            {
+                var now = DateTimeOffset.UtcNow;
+                query = vipStatus.Value switch
+                {
+                    VipStatus.Active  => query.Where(a => a.VipExpirationDate.HasValue && a.VipExpirationDate.Value > now),
+                    VipStatus.NoVip   => query.Where(a => !a.VipExpirationDate.HasValue),
+                    _                 => query
+                };
+            }
+
+            // Sort mới nhất lên trước
+            query = query.OrderByDescending(a => a.CreatedAt);
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
+
         public async Task<int> CountUnlockedTitlesAsync(string userId)
         {
             return await _context.AccountTitles
                 .CountAsync(at => at.UserId == userId);
         }
 
-        public async Task<int> CountSessionsAsync(string userId)
-        {
-            return await _context.Session
-                .CountAsync(s => s.UserId == userId);
-        }
-
+        
         public async Task<int> CountSocialLoginsAsync(string userId)
         {
             return await _context.SocialLogins
