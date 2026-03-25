@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using FluentValidation;
 using Tokki.Domain.Enums;
 
@@ -19,8 +19,8 @@ namespace Tokki.Application.UseCases.Accounts.Commands.CreateStaffAccount
                 .MaximumLength(100).WithMessage("Họ tên không được vượt quá 100 ký tự.");
 
             RuleFor(x => x.PhoneNumber)
-                .Matches(@"^\d+$").WithMessage("Số điện thoại chỉ được chứa các chữ số.")
-                .MaximumLength(15).WithMessage("Số điện thoại không được vượt quá 15 ký tự.")
+                .Matches(@"^0(86|96|97|98|32|33|34|35|36|37|38|39|89|90|93|70|76|77|78|79|88|91|94|81|82|83|84|85|92|52|56|58|99|59|87|55)\d{7}$")
+                .WithMessage("Số điện thoại không hợp lệ. Vui lòng nhập đúng số di động Việt Nam (10 chữ số, bắt đầu bằng 0).")
                 .When(x => !string.IsNullOrEmpty(x.PhoneNumber));
 
             RuleFor(x => x.DateOfBirth)
