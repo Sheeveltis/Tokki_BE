@@ -26,6 +26,9 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetUserExamResult
             if (session == null)
                 return OperationResult<UserExamResultResponse>.Failure("Không tìm thấy kết quả bài thi.", 404);
 
+            if (session.Status == UserExamStatus.InProgress)
+                return OperationResult<UserExamResultResponse>.Failure("Bạn chưa nộp bài thi nên chưa thể xem kết quả.", 400);
+
             var response = new UserExamResultResponse
             {
                 UserExamId = session.UserExamId,
