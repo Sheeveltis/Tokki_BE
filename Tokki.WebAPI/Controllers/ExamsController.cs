@@ -14,6 +14,7 @@ using Tokki.Application.UseCases.Exam.Queries.GetExamById;
 using Tokki.Application.UseCases.Exam.Queries.GetExamDetailQuery;
 using Tokki.Application.UseCases.Exam.Queries.GetExams;
 using Tokki.Application.UseCases.Exam.Queries.GetQuestionsByPart;
+using Tokki.Application.UseCases.Exam.Queries.GetTemplateSkills;
 using Tokki.Application.UseCases.UserExam.Commands.CreateUserTakeExam;
 
 namespace Tokki.WebAPI.Controllers
@@ -29,22 +30,34 @@ namespace Tokki.WebAPI.Controllers
         {
             _sender = sender;
         }
-
+        [HttpGet("{examTemplateId}/skills")]
+        public async Task<ActionResult<OperationResult<List<string>>>> GetSkills(string examTemplateId)
+        {
+            var result = await _sender.Send(new GetTemplateSkillsQuery { TemplateId = examTemplateId });
+            return result.IsSuccess ? Ok(result) : StatusCode(result.StatusCode, result);
+        }
         [HttpPost]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> CreateExam([FromBody] CreateExamCommand command)
         {
+            if (command == null)
+            {
+                return BadRequest("Dữ liệu đầu vào không hợp lệ hoặc sai định dạng JSON.");
+            }
+
             var userId = User.FindFirst("UserId")?.Value
-                         ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                        ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized("Không xác định được người dùng.");
             }
+            
             command.CreatedBy = userId;
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
         }
+
         [HttpPost("regenerate-part")]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> RegenerateExamPart([FromBody] RegenerateExamPartCommand command)

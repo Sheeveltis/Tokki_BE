@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,12 +15,18 @@ namespace Tokki.Application.UseCases.Exam.Commands.CreateExam
                 .NotEmpty()
                 .WithName("tên đề thi");
 
-            RuleFor(x => x.Duration)
-                .GreaterThan(0)
-                .WithName("Thời gian làm bài");
-
             RuleFor(x => x.ExamTemplateId)
                 .NotEmpty().WithMessage("Phải chọn cấu trúc đề thi (ExamTemplate).");
+
+            RuleFor(x => x.SkillDurations)
+                .NotEmpty().WithMessage("Vui lòng nhập thời gian cho các kỹ năng.");
+
+            RuleForEach(x => x.SkillDurations)
+                .ChildRules(skill => 
+                {
+                    skill.RuleFor(s => s.Value)
+                         .GreaterThan(0).WithMessage("Thời gian của kỹ năng '{PropertyName}' phải lớn hơn 0.");
+                });
         }
     }
 }

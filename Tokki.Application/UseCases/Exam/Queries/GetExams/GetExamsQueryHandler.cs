@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.Exam.DTOs;
@@ -33,6 +33,7 @@ namespace Tokki.Application.UseCases.Exam.Queries.GetExams
                 Type = e.Type,
                 Status = e.Status,
                 Duration = e.Duration,
+                SkillDurations = e.SkillDurationsDict,
                 CreatedAt = e.CreatedAt.AddHours(7),
                 TotalQuestions = e.ExamQuestions?.Count ?? 0 
             }).ToList();

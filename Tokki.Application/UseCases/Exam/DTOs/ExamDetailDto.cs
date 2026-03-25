@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,6 +15,7 @@ namespace Tokki.Application.UseCases.Exam.DTOs
         public string ExamTemplateName { get; set; }
         public int TotalQuestions { get; set; }
         public int Duration { get; set; }
+        public Dictionary<string, int> SkillDurations { get; set; } = new();
         public  ExamType Type { get; set; }
         public ExamStatus Status { get; set; }
         public string CreatedBy { get; set; }

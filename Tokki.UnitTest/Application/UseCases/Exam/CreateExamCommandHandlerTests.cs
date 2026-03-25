@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -9,8 +9,10 @@ using Tokki.Application.Common.Models;
 using Tokki.Application.UseCases.Exam.Commands.CreateExam;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
-using Tokki.UnitTest.Mocks.Repositories; // <-- Chuẩn bài Mock Repos
-using Tokki.UnitTest.Mocks.Services;     // <-- Chuẩn bài Mock Services
+using Tokki.Application.IRepositories;
+using Tokki.Application.IServices;
+using Tokki.UnitTest.Mocks.Repositories; 
+using Tokki.UnitTest.Mocks.Services;     
 using Tokki.UnitTest.Utilities;
 using Xunit;
 
@@ -22,7 +24,13 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
         public async Task Handle_ValidData_ShouldCreateExamSuccessfully()
         {
             // Arrange
-            var command = new CreateExamCommand { ExamTemplateId = "TPL-01", Title = "Final Exam", Duration = 60, CreatedBy = "Admin" };
+            var command = new CreateExamCommand 
+            { 
+                ExamTemplateId = "TPL-01", 
+                Title = "Final Exam", 
+                SkillDurations = new Dictionary<string, int> { { "Listening", 30 } },
+                CreatedBy = "Admin" 
+            };
 
             var template = new ExamTemplate { ExamTemplateId = "TPL-01", Status = ExamTemplateStatus.Published, Type = (ExamType)1 };
             var parts = new List<TemplatePart> { new TemplatePart { QuestionFrom = 1, QuestionTo = 5, QuestionTypeId = "QT-01", Mark = 2 } };
@@ -37,12 +45,12 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             // Setup QuestionBank cho đủ 5 câu
             var mockBankRepo = MockQuestionBankRepository.GetMock();
             mockBankRepo.Setup(x => x.GetRandomQuestionsByTypeAsync(
-     It.IsAny<string>(),
-     5,
-     It.IsAny<List<string>>(),
-     It.IsAny<DifficultyLevel>(),   // <-- thêm vào đây
-     It.IsAny<CancellationToken>()))
- .ReturnsAsync(new List<QuestionBank> { new(), new(), new(), new(), new() });
+                It.IsAny<string>(),
+                5,
+                It.IsAny<List<string>>(),
+                It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<QuestionBank> { new(), new(), new(), new(), new() });
+            
             // Override IdGenerator xíu để test trả về đúng ID
             mockIdGen.Setup(x => x.GenerateCustom(10)).Returns("NEW-EXAM-1");
 
@@ -227,12 +235,11 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             // Giả lập kho chỉ có 1 câu
             var mockBankRepo = MockQuestionBankRepository.GetMock();
             mockBankRepo.Setup(x => x.GetRandomQuestionsByTypeAsync(
-     It.IsAny<string>(),
-     10,
-     It.IsAny<List<string>>(),
-     It.IsAny<DifficultyLevel>(),   // <-- thêm vào đây
-     It.IsAny<CancellationToken>()))
- .ReturnsAsync(new List<QuestionBank> { new() });
+                It.IsAny<string>(),
+                10,
+                It.IsAny<List<string>>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<QuestionBank> { new() });
             var mockIdGen = MockIdGeneratorService.GetMock();
             var mockLogger = new Mock<ILogger<CreateExamCommandHandler>>();
 
@@ -295,6 +302,41 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string> { "System Exception", "Return 500 Server Error" }
             });
+        }
+        [Fact]
+        public async Task Handle_IncompleteSkillDurations_ShouldReturn400()
+        {
+            var command = new CreateExamCommand 
+            { 
+                ExamTemplateId = "TPL-01", 
+                Title = "Incomplete Skill Durations", 
+                SkillDurations = new Dictionary<string, int> { { "Listening", 30 } } // Chỉ nhập 1 skill trong khi template có 2
+            };
+
+            var template = new ExamTemplate { ExamTemplateId = "TPL-01", Status = ExamTemplateStatus.Published };
+            // Giả sử template có 2 skill: Listening và Reading
+            var parts = new List<TemplatePart> 
+            { 
+                new TemplatePart { Skill = QuestionSkill.Listening, QuestionFrom = 1, QuestionTo = 5 },
+                new TemplatePart { Skill = QuestionSkill.Reading, QuestionFrom = 6, QuestionTo = 10 }
+            };
+
+            var mockExamRepo = MockExamRepository.GetMock(isTitleExists: false);
+            var mockTemplateRepo = MockExamTemplateRepository.GetMock(template);
+            var mockPartRepo = MockTemplatePartRepository.GetMock(parts);
+            var mockBankRepo = MockQuestionBankRepository.GetMock();
+            var mockIdGen = MockIdGeneratorService.GetMock();
+            var mockLogger = new Mock<ILogger<CreateExamCommandHandler>>();
+
+            var handler = new CreateExamCommandHandler(
+                mockExamRepo.Object, mockTemplateRepo.Object, mockPartRepo.Object,
+                mockBankRepo.Object, mockIdGen.Object, mockLogger.Object);
+
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            result.IsSuccess.Should().BeFalse();
+            result.StatusCode.Should().Be(400);
+            result.Message.Should().Contain("vui lòng nhập thời gian làm bài hợp lệ");
         }
     }
 }

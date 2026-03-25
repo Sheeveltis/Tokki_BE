@@ -169,7 +169,6 @@ namespace Tokki.Infrastructure.Services
             var createExamCmd = new CreateExamCommand
             {
                 Title = examTitle,
-                Duration = duration,
                 ExamTemplateId = templateIdToUse,
                 CreatedBy = AI_SYSTEM_ID
             };

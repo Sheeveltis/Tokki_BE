@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.Extensions.Logging;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
@@ -14,7 +14,6 @@ namespace Tokki.Application.UseCases.Exam.Commands.CreateExam
         private readonly IExamTemplateRepository _examTemplateRepository;
         private readonly ITemplatePartRepository _templatePartRepository;
         private readonly IQuestionBankRepository _questionBankRepository;
-        private readonly IQuestionTypeRepository _questionTypeRepository; 
         private readonly IIdGeneratorService _idGeneratorService;
         private readonly ILogger<CreateExamCommandHandler> _logger;
 
@@ -23,7 +22,6 @@ namespace Tokki.Application.UseCases.Exam.Commands.CreateExam
             IExamTemplateRepository examTemplateRepository,
             ITemplatePartRepository templatePartRepository,
             IQuestionBankRepository questionBankRepository,
-            IQuestionTypeRepository questionTypeRepository,           
             IIdGeneratorService idGeneratorService,
             ILogger<CreateExamCommandHandler> logger)
         {
@@ -31,7 +29,6 @@ namespace Tokki.Application.UseCases.Exam.Commands.CreateExam
             _examTemplateRepository = examTemplateRepository;
             _templatePartRepository = templatePartRepository;
             _questionBankRepository = questionBankRepository;
-            _questionTypeRepository = questionTypeRepository;         
             _idGeneratorService = idGeneratorService;
             _logger = logger;
         }
@@ -45,23 +42,38 @@ namespace Tokki.Application.UseCases.Exam.Commands.CreateExam
             {
                 bool isDuplicate = await _examRepository.IsTitleExistsAsync(request.Title, null, cancellationToken);
                 if (isDuplicate)
-                {
-                    return OperationResult<string>.Failure(
-                        $"Tên đề thi '{request.Title}' đã tồn tại. Vui lòng chọn tên khác.", 400);
-                }
+                    return OperationResult<string>.Failure($"Tên đề thi '{request.Title}' đã tồn tại.", 400);
 
                 var template = await _examTemplateRepository.GetByIdAsync(request.ExamTemplateId);
-                if (template == null)
-                    return OperationResult<string>.Failure(AppErrors.ExamTemplateNotFound, 404);
+                if (template == null) return OperationResult<string>.Failure(AppErrors.ExamTemplateNotFound, 404);
 
                 if (template.Status != ExamTemplateStatus.Published)
                     return OperationResult<string>.Failure(AppErrors.ExamTemplateInactive, 400);
 
-                var parts = await _templatePartRepository.GetByExamTemplateIdAsync(
-                    template.ExamTemplateId, cancellationToken);
-
+                var parts = await _templatePartRepository.GetByExamTemplateIdAsync(template.ExamTemplateId, cancellationToken);
                 if (parts == null || !parts.Any())
                     return OperationResult<string>.Failure(AppErrors.ExamTemplateEmptyParts, 400);
+
+                // --- LOGIC SKILL DURATIONS ---
+                // Lấy danh sách Skill thực tế có trong các Part của Template
+                var skillsInTemplate = parts.Select(p => p.Skill.ToString()).Distinct().ToList();
+                var finalSkillDurations = new Dictionary<string, int>();
+
+                // Để FE truyền key không phân biệt hoa thường (vd: "reading" vs "Reading")
+                var inputDurations = new Dictionary<string, int>(request.SkillDurations, StringComparer.OrdinalIgnoreCase);
+
+                foreach (var skillName in skillsInTemplate)
+                {
+                    // Kiểm tra nếu FE không gửi thời gian hoặc gửi <= 0 cho skill bắt buộc
+                    if (!inputDurations.TryGetValue(skillName, out int time) || time <= 0)
+                    {
+                        return OperationResult<string>.Failure($"Vui lòng nhập thời gian làm bài hợp lệ cho phần '{skillName}'.", 400);
+                    }
+                    finalSkillDurations[skillName] = time;
+                }
+
+                // Luôn tự động tính tổng thời gian từ các skill
+                int totalDuration = finalSkillDurations.Values.Sum();
 
                 var examId = _idGeneratorService.GenerateCustom(10);
                 var exam = new Domain.Entities.Exam
@@ -70,8 +82,9 @@ namespace Tokki.Application.UseCases.Exam.Commands.CreateExam
                     ExamTemplateId = template.ExamTemplateId,
                     Title = request.Title,
                     Type = template.Type,
-                    Status = (int)ExamStatus.Draft,
-                    Duration = request.Duration,
+                    Status = ExamStatus.Draft,
+                    Duration = totalDuration, 
+                    SkillDurations = System.Text.Json.JsonSerializer.Serialize(finalSkillDurations),
                     CreatedBy = request.CreatedBy,
                     ExamQuestions = new List<ExamQuestion>()
                 };
@@ -83,38 +96,18 @@ namespace Tokki.Application.UseCases.Exam.Commands.CreateExam
                     int quantityNeeded = part.QuestionTo - part.QuestionFrom + 1;
                     if (quantityNeeded <= 0) continue;
 
-                    var questionType = await _questionTypeRepository.GetByIdAsync(
-                        part.QuestionTypeId, cancellationToken);
-
-                    if (questionType == null)
-                    {
-                        _logger.LogWarning(
-                            "QuestionType {TypeId} không tồn tại, bỏ qua part.", part.QuestionTypeId);
-                        continue;
-                    }
-
-                    DifficultyLevel actualDifficulty = questionType.Difficulty; 
-
+                    // FIX: Loại bỏ DifficultyLevel, bốc random thuần túy theo Type
                     var randomQuestions = await _questionBankRepository.GetRandomQuestionsByTypeAsync(
                         part.QuestionTypeId,
                         quantityNeeded,
                         allSelectedQuestionIds,
-                        actualDifficulty,  
-                        cancellationToken
+                        cancellationToken // Đã bỏ actualDifficulty ở đây
                     );
 
                     if (randomQuestions.Count < quantityNeeded)
                     {
-                        _logger.LogWarning(
-                            "QuestionType {TypeId} (Difficulty={Diff}): cần {Need} câu, chỉ có {Got} câu active.",
-                            part.QuestionTypeId, actualDifficulty, quantityNeeded, randomQuestions.Count);
-
                         return OperationResult<string>.Failure(
-                            AppErrors.ExamNotEnoughQuestions(
-                                part.QuestionTypeId,
-                                quantityNeeded,
-                                randomQuestions.Count),
-                            400);
+                            AppErrors.ExamNotEnoughQuestions(part.QuestionTypeId, quantityNeeded, randomQuestions.Count), 400);
                     }
 
                     int currentQuestionNo = part.QuestionFrom;
@@ -136,14 +129,12 @@ namespace Tokki.Application.UseCases.Exam.Commands.CreateExam
                 await _examRepository.AddAsync(exam);
                 await _examRepository.SaveChangesAsync(cancellationToken);
 
-                return OperationResult<string>.Success(
-                    exam.ExamId, 201, OperationMessages.CreateSuccess("đề thi"));
+                return OperationResult<string>.Success(exam.ExamId, 201, OperationMessages.CreateSuccess("đề thi"));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi khi tạo Exam");
-                return OperationResult<string>.Failure(
-                    "Đã xảy ra lỗi hệ thống khi tạo đề thi. Vui lòng thử lại sau.", 500);
+                return OperationResult<string>.Failure("Lỗi hệ thống khi tạo đề thi.", 500);
             }
         }
     }

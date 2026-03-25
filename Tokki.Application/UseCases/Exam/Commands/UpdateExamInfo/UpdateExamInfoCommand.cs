@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +14,6 @@ namespace Tokki.Application.UseCases.Exam.Commands.UpdateExamInfo
         [JsonIgnore]
         public string ExamId { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
-        public int Duration { get; set; }
+        public Dictionary<string, int> SkillDurations { get; set; } = new();
     }
 }

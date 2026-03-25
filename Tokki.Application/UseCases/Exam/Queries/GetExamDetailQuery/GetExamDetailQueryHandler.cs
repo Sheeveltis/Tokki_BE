@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,6 +48,7 @@ namespace Tokki.Application.UseCases.Exam.Queries.GetExamDetailQuery
                 Status = exam.Status, 
                 CreatedAt = exam.CreatedAt,
                 CreatedBy = exam.CreatedBy,
+                SkillDurations = exam.SkillDurationsDict,
                 TemplateParts = new List<ExamPartDto>(),
                 TotalQuestions = exam.ExamQuestions?.Count ?? 0,
             };
