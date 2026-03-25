@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -73,6 +73,26 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
                     AnswerContent = w.AnswerContent
                 };
 
+            // --- LOGIC CHI TIẾT THỜI GIAN THEO SKILL ---
+            var parts = session.Exam.ExamTemplate.TemplateParts.OrderBy(p => p.QuestionFrom).ToList();
+            var skillSequence = parts.Select(p => p.Skill.ToString()).Distinct().ToList();
+
+            var skillRemaining = new Dictionary<string, int>();
+            int currentElapsedSeconds = elapsedSeconds;
+
+            foreach (var s in skillSequence)
+            {
+                // Lấy thời gian quy định cho skill này (quy ra giây)
+                int skillAllocatedSec = session.Exam.SkillDurationsDict.TryGetValue(s, out int d) ? d * 60 : 0;
+
+                // Thời gian còn lại cho skill này
+                int remainingForSkill = Math.Max(0, skillAllocatedSec - currentElapsedSeconds);
+                skillRemaining[s] = remainingForSkill;
+
+                // Giảm đi thời gian đã "tiêu" vào skill hiện tại trước khi xét skill tiếp theo
+                currentElapsedSeconds = Math.Max(0, currentElapsedSeconds - skillAllocatedSec);
+            }
+
             var response = new UserTakeExamResponse
             {
                 UserExamId = session.UserExamId,
@@ -81,10 +101,10 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
                 Duration = session.Exam.Duration,
                 TotalQuestions = questionsMap.Count,
                 TimeRemaining = remaining,
+                SkillDurations = session.Exam.SkillDurationsDict,
+                SkillTimeRemaining = skillRemaining,
                 Part = new ExamSkillsDto()
             };
-
-            var parts = session.Exam.ExamTemplate.TemplateParts.OrderBy(p => p.QuestionFrom).ToList();
 
             response.Part.Listening = parts.Where(p => p.Skill == QuestionSkill.Listening)
                                            .Select(p => MapToPartDto(p, questionsMap, isShuffleOptions, passageMap)).ToList();

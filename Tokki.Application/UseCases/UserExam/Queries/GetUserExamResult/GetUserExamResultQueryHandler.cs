@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -98,7 +98,8 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetUserExamResult
                 CorrectAnswers = totalCorrect,
                 Score = totalScore,
                 MaxScore = maxScore,
-                IsGraded = isGraded
+                IsGraded = isGraded,
+                Duration = session.Exam?.SkillDurationsDict.TryGetValue(targetSkill.ToString(), out int d) ?? false ? d : 0
             };
         }
     }
