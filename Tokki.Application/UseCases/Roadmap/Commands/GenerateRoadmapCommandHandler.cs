@@ -20,6 +20,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
         private readonly IUserWeaknessRepository _userWeaknessRepository;
         private readonly IUserExamRepository _userExamRepository;
         private readonly IAccountRepository _accountRepository;
+        private readonly IRoadmapProgressService _progressService;
         private readonly IMediator _mediator;
         public GenerateRoadmapCommandHandler(
             IAiRoadmapService aiRoadmapService,
@@ -29,7 +30,9 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
             IUserWeaknessRepository userWeaknessRepository,
             IUserExamRepository userExamRepository,
             IAccountRepository accountRepository,
-            IMediator mediator,
+            IRoadmapProgressService progressService,
+
+        IMediator mediator,
             ILogger<GenerateRoadmapCommandHandler> logger)
         {
             _aiRoadmapService = aiRoadmapService;
@@ -39,6 +42,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
             _userWeaknessRepository = userWeaknessRepository;
             _userExamRepository = userExamRepository;
             _accountRepository = accountRepository;
+            _progressService = progressService;
             _mediator = mediator;
             _logger = logger;
         }
@@ -49,12 +53,16 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
 
             try
             {
+                Report(request.JobId, 5, "Kiểm tra thông tin tài khoản...");
+
                 var activeRoadmap = await _userRoadmapRepository
                     .GetActiveRoadmapByUserIdAsync(request.UserId, cancellationToken);
 
                 if (activeRoadmap != null)
                     return OperationResult<string>.Failure(
                         "Bạn đang có một lộ trình học đang hoạt động. Vui lòng hoàn thành hoặc hủy lộ trình cũ trước khi tạo mới.", 400);
+                
+                Report(request.JobId, 20, "Phân tích kết quả bài test đầu vào...");
 
                 var currentLevel = CurrentTopikLevel.Pre_Topik;
 
@@ -89,6 +97,8 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                         }
                     }
                 }
+
+                Report(request.JobId, 35, "Xây dựng chương trình học phù hợp...");
 
                 var weaknesses = new List<string>();
 
@@ -133,6 +143,8 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
 
                 var questionTypeMenu = await _userRoadmapRepository
                     .GetQuestionTypeMenuAsync(allLevelTypeIds, cancellationToken);
+                
+                Report(request.JobId, 55, "AI đang tạo nội dung học tập (có thể mất 15-30 giây)...");
 
                 var aiPlan = await _aiRoadmapService.GenerateStudyPlanAsync(
                     request.TargetAim,
@@ -147,6 +159,8 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
 
                 if (aiPlan == null || aiPlan.Weeks == null || !aiPlan.Weeks.Any())
                     return OperationResult<string>.Failure("AI không thể tạo lộ trình. Vui lòng thử lại.", 503);
+                
+                Report(request.JobId, 75, "Lưu lộ trình vào hệ thống...");
 
                 var roadmapId = _idGeneratorService.GenerateCustom(15);
                 var roadmap = new UserRoadmap
@@ -259,6 +273,8 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
 
                     roadmap.Weeks.Add(weekEntity);
                 }
+                
+                Report(request.JobId, 90, "Tạo đề thi tuần 1 và cập nhật hồ sơ học viên...");
 
                 await _userRoadmapRepository.AddAsync(roadmap);
                 await _userRoadmapRepository.SaveChangesAsync(cancellationToken);
@@ -307,7 +323,6 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                 return OperationResult<string>.Failure("Lỗi hệ thống.", 500);
             }
         }
-
         private static TopicLevel? MapToTopicLevel(CurrentTopikLevel level) => level switch
         {
             CurrentTopikLevel.Pre_Topik => TopicLevel.Level1, 
@@ -340,6 +355,16 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
             if (totalScore >= 150) return CurrentTopikLevel.Level_4;
             if (totalScore >= 120) return CurrentTopikLevel.Level_3;
             return CurrentTopikLevel.Pre_Topik_II;
+        }
+        private void Report(string? jobId, int percent, string step)
+        {
+            if (string.IsNullOrEmpty(jobId)) return;
+            _progressService.Set(jobId, new RoadmapProgressState
+            {
+                JobId = jobId,
+                Percent = percent,
+                Step = step
+            });
         }
     }
 }
