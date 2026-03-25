@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.UserExam.DTOs;
@@ -78,7 +78,6 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetUserExamReview
                     QuestionId = w.QuestionId,
                     OrderIndex = w.OrderIndex,
                     Content = w.Question.Content,
-                    Explanation = w.Question.Explanation,
                     Skill = "Writing",
 
                     QuestionMaxScore = info.ScorePerQuestion,

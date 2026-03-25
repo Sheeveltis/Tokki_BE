@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -65,6 +65,7 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetPracticeQuestions
                     Content = q.Content,
                     SelectedOptionId = null,
                     CorrectOptionId = correctOption?.OptionId,
+                    Explanation = q.Explanation, // Thêm Explanation vào đây
                     Options = q.QuestionOptions.Select(o => new ExamOptionDto
                     {
                         OptionId = o.OptionId,

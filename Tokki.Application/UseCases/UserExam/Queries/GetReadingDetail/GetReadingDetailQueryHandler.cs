@@ -77,6 +77,7 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetReadingDetail
                         SelectedOptionId = answer.SelectedOptionId,
                         CorrectOptionId = correctOption?.OptionId,
                         IsCorrect = isCorrect,
+                        Explanation = question.Explanation,
                         Options = question.QuestionOptions.Select(o => new ExamOptionDto
                         {
                             OptionId = o.OptionId,

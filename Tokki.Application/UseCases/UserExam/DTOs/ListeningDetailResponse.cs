@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace Tokki.Application.UseCases.UserExam.DTOs
 {
@@ -39,6 +39,7 @@ namespace Tokki.Application.UseCases.UserExam.DTOs
         public string? SelectedOptionId { get; set; }
         public string? CorrectOptionId { get; set; }
         public bool IsCorrect { get; set; }
+        public string? Explanation { get; set; }
 
         public List<ExamOptionDto> Options { get; set; } = new();
     }
