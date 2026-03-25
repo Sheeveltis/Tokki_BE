@@ -29,7 +29,7 @@ namespace Tokki.Infrastructure.Repositories
         {
             return await _context.QuestionTypes
                 .Where(qt => qt.IsActive)
-                .OrderBy(qt => qt.Skill)
+                .OrderBy(qt => qt.OrderIndex)
                 .ThenBy(qt => qt.Name)
                 .ToListAsync(cancellationToken);
         }
@@ -71,7 +71,7 @@ namespace Tokki.Infrastructure.Repositories
             }
 
             return await query
-                .OrderBy(qt => qt.Skill)
+                .OrderBy(qt => qt.OrderIndex)
                 .ThenBy(qt => qt.ExamType)
                 .ThenBy(qt => qt.Name)
                 .ToListAsync(cancellationToken);

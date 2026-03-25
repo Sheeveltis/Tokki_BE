@@ -5,13 +5,6 @@ namespace Tokki.Application.IServices
 {
     public interface IExamAssemblyService
     {
-        /// <summary>
-        /// Tạo bài kiểm tra tuần dựa trên ExamTemplate chuẩn
-        /// </summary>
-        /// <param name="templateId">ID của template cấu trúc (ví dụ: TOPIK I)</param>
-        /// <param name="userId">Người làm bài (để đặt tên đề thi unique)</param>
-        /// <param name="weekIndex">Tuần thứ mấy</param>
-        /// <param name="weakQuestionTypeIds">Danh sách các dạng bài User đang yếu (để ưu tiên chọn)</param>
         Task<OperationResult<string>> GenerateWeeklyExamAsync(
             string templateId,
             string userId,
@@ -23,6 +16,10 @@ namespace Tokki.Application.IServices
             string userId,
             int weekIndex,
             List<string> weeklyQuestionTypeIds,
+            ExamType examType,           
+            CancellationToken cancellationToken = default);
+        Task<(bool IsValid, List<string> InsufficientTypes)> ValidateQuestionAvailabilityAsync(
+            List<string> questionTypeIds,
             CancellationToken cancellationToken = default);
     }
 }

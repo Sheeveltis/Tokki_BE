@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -225,6 +225,68 @@ namespace Tokki.Infrastructure.Repositories
                 .ThenBy(qt => qt.OrderIndex)
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
+        }
+
+        public async Task<List<QuestionTypeDto>> GetExamAnalysisSummaryAsync(string userExamId, CancellationToken cancellationToken)
+        {
+            // Get all MCQ answers and their correctness
+            var mcqAnswers = await _context.UserExamAnswers
+                .AsNoTracking()
+                .Where(ua => ua.UserExamId == userExamId)
+                .Select(ua => new { ua.Question.QuestionTypeId, ua.IsCorrect })
+                .ToListAsync(cancellationToken);
+
+            // Get all Writing answers
+            var writingAnswers = await _context.UserExamWritingAnswers
+                .AsNoTracking()
+                .Where(uwa => uwa.UserExamId == userExamId)
+                .Select(uwa => new { uwa.Question.QuestionTypeId, uwa.Score })
+                .ToListAsync(cancellationToken);
+
+            // Get distinct question type IDs from both MCQ and Writing
+            var typeIds = mcqAnswers.Select(a => a.QuestionTypeId)
+                .Concat(writingAnswers.Select(a => a.QuestionTypeId))
+                .Where(id => id != null)
+                .Distinct()
+                .ToList();
+
+            // Fetch QuestionType details for these IDs
+            var questionTypes = await _context.QuestionTypes
+                .AsNoTracking()
+                .Where(qt => typeIds.Contains(qt.QuestionTypeId))
+                .ToListAsync(cancellationToken);
+
+            var result = new List<QuestionTypeDto>();
+
+            foreach (var qt in questionTypes)
+            {
+                var mcqs = mcqAnswers.Where(a => a.QuestionTypeId == qt.QuestionTypeId).ToList();
+                var writings = writingAnswers.Where(a => a.QuestionTypeId == qt.QuestionTypeId).ToList();
+
+                int totalCount = mcqs.Count + writings.Count;
+                if (totalCount == 0) continue;
+
+                // Incorrect count:
+                // For MCQ: IsCorrect is false or null (unanswered/wrong)
+                // For Writing: Based on previous logic, we consider them "issues" for analysis.
+                // However, if we want a ratio, maybe we should differentiate.
+                // But generally, for TOPPIK writing, any mistake is an issue.
+                // Let's count MCQ non-correct and Writing as "issues" but maybe only if score is low?
+                // For now, to keep it consistent with the previous 'Issues' logic:
+                int wrongCount = mcqs.Count(a => a.IsCorrect != true) + writings.Count;
+
+                result.Add(new QuestionTypeDto
+                {
+                    QuestionTypeId = qt.QuestionTypeId,
+                    Code = qt.Code ?? string.Empty,
+                    Name = qt.Name,
+                    Skill = qt.Skill,
+                    IsWeakness = wrongCount > 0,
+                    WrongRatio = $"{wrongCount}/{totalCount}"
+                });
+            }
+
+            return result.OrderBy(r => r.Skill).ThenBy(r => r.QuestionTypeId).ToList();
         }
         public async Task SaveSelfDeclaredLevelAsync(
             string userExamId,

@@ -2,18 +2,19 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Tokki.Application.IRepositories;
 using Tokki.Application.Common.Constants;
+using Tokki.Application.IRepositories;
+using Tokki.Application.IServices;
+using Tokki.Application.UseCases.Roadmap.Commands.CancelRoadmap;
 using Tokki.Application.UseCases.Roadmap.Commands.CompleteTask;
 using Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek;
 using Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap;
+using Tokki.Application.UseCases.Roadmap.Commands.ProcessWeeklyResult;
 using Tokki.Application.UseCases.Roadmap.DTOs;
+using Tokki.Application.UseCases.Roadmap.Queries.GetEntranceExam;
+using Tokki.Application.UseCases.Roadmap.Queries.GetEntranceFeedback;
 using Tokki.Application.UseCases.Roadmap.Queries.GetRoadmap;
 using Tokki.Application.UseCases.Roadmap.Queries.GetVirtualQuiz;
-using Tokki.Application.UseCases.Roadmap.Queries.GetEntranceExam;
-using Tokki.Application.UseCases.Roadmap.Commands.CancelRoadmap;
-using Tokki.Application.UseCases.Roadmap.Commands.ProcessWeeklyResult;
-using Tokki.Application.UseCases.Roadmap.Queries.GetEntranceFeedback;
 using Tokki.Domain.Enums;
 
 namespace Tokki.WebAPI.Controllers
@@ -25,13 +26,16 @@ namespace Tokki.WebAPI.Controllers
     {
         private readonly IMediator _mediator;
         private readonly IUserRoadmapRepository _userRoadmapRepository;
+        private readonly IRoadmapProgressService _progressService;
 
         public RoadmapController(
             IMediator mediator,
-            IUserRoadmapRepository userRoadmapRepository) 
+            IUserRoadmapRepository userRoadmapRepository,
+            IRoadmapProgressService progressService) 
         {
             _mediator = mediator;
             _userRoadmapRepository = userRoadmapRepository;
+            _progressService = progressService;
         }
      
         [HttpGet("target-aims")]
@@ -61,29 +65,18 @@ namespace Tokki.WebAPI.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized("Không tìm thấy thông tin người dùng.");
 
-            var existingRoadmap = await _userRoadmapRepository
-                .GetActiveRoadmapByUserIdAsync(userId, CancellationToken.None);
-
-            if (existingRoadmap != null)
-                return BadRequest(new
-                {
-                    message = "Bạn đang có một lộ trình học đang hoạt động."
-                });
-
             var command = new GenerateRoadmapCommand
             {
                 UserId = userId,
                 TargetAim = request.TargetAim,
                 DurationDays = request.DurationDays,
-                UserExamId = request.UserExamId  
+                UserExamId = request.UserExamId
             };
 
             var result = await _mediator.Send(command);
 
-            if (result.IsSuccess)
-                return CreatedAtAction(nameof(GenerateRoadmap), new { id = result.Data }, result);
-
-            return BadRequest(result);
+            if (!result.IsSuccess) return BadRequest(result);
+            return StatusCode(202, result); 
         }
 
         [HttpGet("current")]
@@ -275,6 +268,17 @@ namespace Tokki.WebAPI.Controllers
             var result = await _mediator.Send(query);
             if (!result.IsSuccess) return StatusCode(result.StatusCode, result);
             return Ok(result);
+        }
+
+        [HttpGet("progress/{jobId}")]
+        public IActionResult GetProgress(string jobId)
+        {
+            var state = _progressService.Get(jobId);
+
+            if (state == null)
+                return NotFound(new { message = "Không tìm thấy job. Có thể đã hết hạn hoặc jobId không hợp lệ." });
+
+            return Ok(state);
         }
     }
 }

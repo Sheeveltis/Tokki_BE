@@ -153,9 +153,10 @@ builder.Services.AddHttpClient<IAiRoadmapService, AiRoadmapService>();
 
 builder.Services.AddScoped<IUserRoadmapRepository, UserRoadmapRepository>();
 builder.Services.AddScoped<IExamAssemblyService, ExamAssemblyService>();
+    builder.Services.AddMemoryCache();
+    builder.Services.AddScoped<IRoadmapProgressService, RoadmapProgressService>();
 
-
-builder.Services.AddMemoryCache(options =>
+    builder.Services.AddMemoryCache(options =>
 {
     //options.SizeLimit = 1024; // Giới hạn 1024 entries
     options.CompactionPercentage = 0.25; // Khi đầy, xóa 25% entries cũ nhất
