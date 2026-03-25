@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Threading.Tasks;
 using Tokki.Application.UseCases.Accounts.DTOs;
 using Tokki.Application.UseCases.Leaderboard.DTOs;
@@ -13,7 +13,6 @@ namespace Tokki.Application.IRepositories
         Task AddAsync(Account user);
         Task SaveChangesAsync(CancellationToken cancellationToken);
         Task<Account?> GetByEmailAsync(string email);
-        Task AddSessionAsync(Session session);
         Task UpdateUserAsync(Account user);
         Task<Account?> GetByIdAsync(string userId);
         Task<bool> IsPhoneNumberExistsAsync(string phoneNumber);
@@ -27,8 +26,20 @@ namespace Tokki.Application.IRepositories
               int pageSize
           );
 
+        /// <summary>
+        /// Tìm kiếm & phân trang account theo một ô SearchText duy nhất
+        /// (match theo UserId, FullName, Email, hoặc PhoneNumber).
+        /// Không ảnh hưởng tới GetPagedAsync cũ.
+        /// </summary>
+        Task<(IEnumerable<Account> items, int totalCount)> GetPagedWithSearchAsync(
+            int pageNumber,
+            int pageSize,
+            string? searchText,
+            AccountStatus? status,
+            AccountRole? role,
+            VipStatus? vipStatus);
+
         Task<int> CountUnlockedTitlesAsync(string userId);
-        Task<int> CountSessionsAsync(string userId);
         Task<int> CountSocialLoginsAsync(string userId);
         /// <summary>
         /// Kho - hàm của Kho dùng lấy thông tin author vs comment.

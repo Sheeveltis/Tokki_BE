@@ -96,7 +96,6 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             m.Setup(x => x.GetByEmailAsync(It.IsAny<string>())).ReturnsAsync(user);
             m.Setup(x => x.UpdateUserAsync(It.IsAny<Account>())).Returns(Task.CompletedTask);
             m.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
-            m.Setup(x => x.AddSessionAsync(It.IsAny<Session>())).Returns(Task.CompletedTask);
             return m;
         }
 
@@ -470,49 +469,6 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-LOGIN-12  | N | Đăng nhập thành công → Session được tạo trong DB
-        // ═══════════════════════════════════════════════════════════
-        [Fact]
-        public async Task Handle_ValidCredentials_ShouldCreateSession()
-        {
-            const string pass = "ValidPass123!";
-            var user = ActiveUser(pass);
-
-            Session? capturedSession = null;
-            var mockRepo = BuildAccountRepoWith(user);
-            mockRepo.Setup(x => x.AddSessionAsync(It.IsAny<Session>()))
-                    .Callback<Session>(s => capturedSession = s)
-                    .Returns(Task.CompletedTask);
-
-            var result = await CreateHandler(
-                accountRepo: mockRepo,
-                configRepo: BuildDefaultConfigMock(),
-                gamification: BuildGamificationMock(),
-                emailHistoryRepo: BuildEmailHistoryMock())
-                .Handle(new LoginCommand { Email = user.Email, Password = pass }, CancellationToken.None);
-
-            result.IsSuccess.Should().BeTrue();
-            capturedSession.Should().NotBeNull();
-            capturedSession!.UserId.Should().Be(user.UserId);
-            capturedSession.RefreshToken.Should().Be("fake-jwt-token");
-            capturedSession.ExpiresAt.Should().BeAfter(DateTime.UtcNow);
-
-            QACollector.LogTestCase("Account - Login", new TestCaseDetail
-            {
-                FunctionGroup = "Login",
-                TestCaseID = "TC-LOGIN-12",
-                Description = "Đăng nhập thành công → AddSessionAsync được gọi với đúng UserId và token",
-                ExpectedResult = "Session được tạo, UserId đúng, RefreshToken = fake-jwt-token",
-                StatusRound1 = "Passed",
-                TestCaseType = "N",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "Valid credentials",
-                    "AddSessionAsync được capture để verify"
-                }
-            });
-        }
+       
     }
 }
