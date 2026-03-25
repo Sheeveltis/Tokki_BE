@@ -16,12 +16,10 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
     public class GetInProgressExamQueryHandler : IRequestHandler<GetInProgressExamQuery, OperationResult<UserTakeExamResponse>>
     {
         private readonly IUserExamRepository _repository;
-        private readonly IPassageRepository _passageRepository;
 
-        public GetInProgressExamQueryHandler(IUserExamRepository repository, IPassageRepository passageRepository)
+        public GetInProgressExamQueryHandler(IUserExamRepository repository)
         {
             _repository = repository;
-            _passageRepository = passageRepository;
         }
 
         public async Task<OperationResult<UserTakeExamResponse>> Handle(GetInProgressExamQuery request, CancellationToken token)
@@ -31,23 +29,11 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
             if (session == null)
                 return OperationResult<UserTakeExamResponse>.Failure("Không tìm thấy phiên làm bài đang diễn ra", 404);
 
-            var passageIds = session.UserExamAnswers.Select(a => a.Question.PassageId)
-                .Union(session.UserExamWritingAnswers.Select(w => w.Question.PassageId))
-                .Where(id => !string.IsNullOrEmpty(id))
-                .Distinct()
-                .ToList();
-
-            Dictionary<string, Passage> passageMap = new();
-            if (passageIds.Any())
-            {
-                var passages = await _passageRepository.GetByIdsAsync(passageIds!, token);
-                passageMap = passages.ToDictionary(p => p.PassageId);
-            }
-
-            return OperationResult<UserTakeExamResponse>.Success(MapToResponse(session, false, passageMap));
+            // Bỏ qua việc query Passage lần nữa vì đã được Include trong Repo rồi
+            return OperationResult<UserTakeExamResponse>.Success(MapToResponse(session, false));
         }
 
-        private UserTakeExamResponse MapToResponse(Domain.Entities.UserExam session, bool isShuffleOptions, Dictionary<string, Passage> passageMap)
+        private UserTakeExamResponse MapToResponse(Domain.Entities.UserExam session, bool isShuffleOptions)
         {
             var elapsedSeconds = (int)(DateTime.UtcNow - session.StartTime).TotalSeconds;
             var duration = session.Exam.Duration * 60;
@@ -73,7 +59,6 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
                     AnswerContent = w.AnswerContent
                 };
 
-            // --- LOGIC CHI TIẾT THỜI GIAN THEO SKILL ---
             var parts = session.Exam.ExamTemplate.TemplateParts.OrderBy(p => p.QuestionFrom).ToList();
             var skillSequence = parts.Select(p => p.Skill.ToString()).Distinct().ToList();
 
@@ -82,14 +67,11 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
 
             foreach (var s in skillSequence)
             {
-                // Lấy thời gian quy định cho skill này (quy ra giây)
                 int skillAllocatedSec = session.Exam.SkillDurationsDict.TryGetValue(s, out int d) ? d * 60 : 0;
 
-                // Thời gian còn lại cho skill này
                 int remainingForSkill = Math.Max(0, skillAllocatedSec - currentElapsedSeconds);
                 skillRemaining[s] = remainingForSkill;
 
-                // Giảm đi thời gian đã "tiêu" vào skill hiện tại trước khi xét skill tiếp theo
                 currentElapsedSeconds = Math.Max(0, currentElapsedSeconds - skillAllocatedSec);
             }
 
@@ -107,18 +89,18 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
             };
 
             response.Part.Listening = parts.Where(p => p.Skill == QuestionSkill.Listening)
-                                           .Select(p => MapToPartDto(p, questionsMap, isShuffleOptions, passageMap)).ToList();
+                                           .Select(p => MapToPartDto(p, questionsMap, isShuffleOptions)).ToList();
 
             response.Part.Reading = parts.Where(p => p.Skill == QuestionSkill.Reading)
-                                         .Select(p => MapToPartDto(p, questionsMap, isShuffleOptions, passageMap)).ToList();
+                                         .Select(p => MapToPartDto(p, questionsMap, isShuffleOptions)).ToList();
 
             response.Part.Writing = parts.Where(p => p.Skill == QuestionSkill.Writing)
-                                         .Select(p => MapToPartWritingDto(p, questionsMap, passageMap)).ToList();
+                                         .Select(p => MapToPartWritingDto(p, questionsMap)).ToList();
 
             return response;
         }
 
-        private ExamPartDto MapToPartDto(TemplatePart part, Dictionary<int, QuestionAnswerMetadata> questionsMap, bool shuffleOptions, Dictionary<string, Passage> passageMap)
+        private ExamPartDto MapToPartDto(TemplatePart part, Dictionary<int, QuestionAnswerMetadata> questionsMap, bool shuffleOptions)
         {
             var groups = new List<QuestionGroupDto>();
             QuestionGroupDto? currentGroup = null;
@@ -128,9 +110,7 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
                 if (questionsMap.TryGetValue(i, out var item) && !item.IsWriting)
                 {
                     var q = item.Question;
-
-                    Passage? passage = null;
-                    if (!string.IsNullOrEmpty(q.PassageId)) passageMap.TryGetValue(q.PassageId, out passage);
+                    var passage = q.Passage;
 
                     var options = q.QuestionOptions.Select(o => new ExamOptionDto
                     {
@@ -187,7 +167,7 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
             };
         }
 
-        private ExamPartWritingDto MapToPartWritingDto(TemplatePart part, Dictionary<int, QuestionAnswerMetadata> questionsMap, Dictionary<string, Passage> passageMap)
+        private ExamPartWritingDto MapToPartWritingDto(TemplatePart part, Dictionary<int, QuestionAnswerMetadata> questionsMap)
         {
             var groups = new List<QuestionWritingGroupDto>();
             QuestionWritingGroupDto? currentGroup = null;
@@ -197,9 +177,7 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
                 if (questionsMap.TryGetValue(i, out var item) && item.IsWriting)
                 {
                     var q = item.Question;
-
-                    Passage? passage = null;
-                    if (!string.IsNullOrEmpty(q.PassageId)) passageMap.TryGetValue(q.PassageId, out passage);
+                    var passage = q.Passage;
 
                     var questionDto = new ExamQuestionWritingDto
                     {

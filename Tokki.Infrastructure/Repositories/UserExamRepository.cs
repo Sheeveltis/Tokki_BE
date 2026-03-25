@@ -70,9 +70,16 @@ namespace Tokki.Infrastructure.Repositories
                 .Include(ue => ue.UserExamAnswers)
                     .ThenInclude(ua => ua.Question)
                         .ThenInclude(q => q.QuestionOptions)
+                .Include(ue => ue.UserExamAnswers)
+                    .ThenInclude(ua => ua.Question)
+                        .ThenInclude(q => q.Passage)
                 .Include(ue => ue.UserExamWritingAnswers)
                     .ThenInclude(uwa => uwa.Question)
-                    .ThenInclude(q => q.QuestionType)
+                        .ThenInclude(q => q.QuestionType)
+                .Include(ue => ue.UserExamWritingAnswers)
+                    .ThenInclude(uwa => uwa.Question)
+                        .ThenInclude(q => q.Passage)
+                .AsSplitQuery()
                 .FirstOrDefaultAsync(ue => ue.UserExamId == userExamId, token);
         }
         public async Task<UserExam?> GetReviewByIdAsync(string userExamId, CancellationToken cancellationToken)
