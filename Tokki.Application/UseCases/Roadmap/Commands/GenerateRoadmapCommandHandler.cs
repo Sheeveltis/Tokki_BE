@@ -236,7 +236,15 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
 
                                 foreach (var dayDto in weekDto.Days)
                                 {
-                                    foreach (var taskDto in dayDto.Tasks)
+                                    var orderedTasks = dayDto.Tasks.OrderBy(t => t.TaskType switch
+                                    {
+                                        "LearnTheory" => 0,
+                                        "VirtualQuiz" => 1,
+                                        "WeeklyExam" => 2,
+                                        _ => 99
+                                    });
+
+                                    foreach (var taskDto in orderedTasks)
                                     {
                                         var taskId = idGenerator.GenerateCustom(15);
                                         var taskEntity = new RoadmapDailyTask

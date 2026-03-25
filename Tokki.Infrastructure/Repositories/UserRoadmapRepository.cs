@@ -27,14 +27,26 @@ namespace Tokki.Infrastructure.Repositories
         {
             return await _context.SaveChangesAsync(cancellationToken) > 0;
         }
-
         public async Task<UserRoadmap?> GetActiveRoadmapByUserIdAsync(string userId, CancellationToken cancellationToken = default)
         {
-            return await _context.UserRoadmaps
+            var roadmap = await _context.UserRoadmaps
                 .Include(r => r.Weeks)
                 .ThenInclude(w => w.DailyTasks)
-                .ThenInclude(t => t.QuestionType) 
+                .ThenInclude(t => t.QuestionType)
                 .FirstOrDefaultAsync(r => r.UserId == userId && r.CurrentStatus == UserRoadmapStatus.Active, cancellationToken);
+
+            if (roadmap != null)
+            {
+                foreach (var week in roadmap.Weeks)
+                {
+                    week.DailyTasks = week.DailyTasks
+                        .OrderBy(t => t.DayIndex)
+                        .ThenBy(t => (int)t.TaskType) 
+                        .ToList();
+                }
+            }
+
+            return roadmap;
         }
         public async Task<RoadmapDailyTask?> GetTaskByIdAsync(string taskId, CancellationToken cancellationToken = default)
         {
