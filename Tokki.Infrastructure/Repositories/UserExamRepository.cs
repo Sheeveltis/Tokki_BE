@@ -94,6 +94,7 @@ namespace Tokki.Infrastructure.Repositories
                 .Include(ue => ue.UserExamWritingAnswers)
                     .ThenInclude(uwa => uwa.Question)
                 .AsNoTracking() 
+                .AsSplitQuery()
                 .FirstOrDefaultAsync(ue => ue.UserExamId == userExamId, cancellationToken);
         }
         public async Task<List<UserExam>> GetExpiredSessionsAsync(CancellationToken token)
@@ -163,6 +164,8 @@ namespace Tokki.Infrastructure.Repositories
                         .ThenInclude(et => et.TemplateParts)
                 .Include(ue => ue.UserExamAnswers)
                 .Include(ue => ue.UserExamWritingAnswers)
+                .AsNoTracking()
+                .AsSplitQuery()
                 .FirstOrDefaultAsync(ue => ue.UserExamId == userExamId, token);
         }
         public async Task<UserExam?> GetSkillDetailResultAsync(string userExamId, CancellationToken token)
@@ -174,6 +177,8 @@ namespace Tokki.Infrastructure.Repositories
                 .Include(ue => ue.UserExamAnswers)
                     .ThenInclude(ua => ua.Question)
                         .ThenInclude(q => q.QuestionOptions)
+                .AsNoTracking()
+                .AsSplitQuery()
                 .FirstOrDefaultAsync(ue => ue.UserExamId == userExamId, token);
         }
         public async Task<UserExam?> GetListeningDetailAsync(string userExamId, CancellationToken token)
@@ -183,6 +188,8 @@ namespace Tokki.Infrastructure.Repositories
                 .Include(ue => ue.UserExamAnswers)
                     .ThenInclude(ua => ua.Question)
                         .ThenInclude(q => q.QuestionOptions)
+                .AsNoTracking()
+                .AsSplitQuery()
                 .FirstOrDefaultAsync(ue => ue.UserExamId == userExamId, token);
         }
 
@@ -194,6 +201,8 @@ namespace Tokki.Infrastructure.Repositories
                     .ThenInclude(ua => ua.Question).ThenInclude(q => q.QuestionOptions)
                 .Include(ue => ue.UserExamAnswers)
                     .ThenInclude(ua => ua.Question).ThenInclude(q => q.Passage) 
+                .AsNoTracking()
+                .AsSplitQuery()
                 .FirstOrDefaultAsync(ue => ue.UserExamId == userExamId, token);
         }
 
@@ -203,6 +212,8 @@ namespace Tokki.Infrastructure.Repositories
                 .Include(ue => ue.Exam).ThenInclude(e => e.ExamTemplate).ThenInclude(et => et.TemplateParts)
                 .Include(ue => ue.UserExamWritingAnswers)
                     .ThenInclude(uwa => uwa.Question).ThenInclude(q => q.Passage) 
+                .AsNoTracking()
+                .AsSplitQuery()
                 .FirstOrDefaultAsync(ue => ue.UserExamId == userExamId, token);
         }
         public async Task<bool> HasPendingWritingAnswersAsync(string userExamId, CancellationToken token)
