@@ -1,400 +1,400 @@
-using MediatR;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Tokki.Application.UseCases.Vocabulary.Commands.ApproveVocabulary;
-using Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies;
-using Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabulariesByStaff;
-using Tokki.Application.UseCases.Vocabulary.Commands.CreateVocabulary;
-using Tokki.Application.UseCases.Vocabulary.Commands.CreateVocabularyByStaff;
-using Tokki.Application.UseCases.Vocabulary.Commands.DeleteVocabulary;
-using Tokki.Application.UseCases.Vocabulary.Commands.RejectVocabulary;
-using Tokki.Application.UseCases.Vocabulary.Commands.SubmitVocabulariesForApproval;
-using Tokki.Application.UseCases.Vocabulary.Commands.UpdateVocabulary;
-using Tokki.Application.UseCases.Vocabulary.DTOs;
-using Tokki.Application.UseCases.Vocabulary.Queries; // Namespace chứa GetVocabularyByTextQuery (nếu có)
-using Tokki.Application.UseCases.Vocabulary.Queries.FlashCard;
-using Tokki.Application.UseCases.Vocabulary.Queries.GetAllForManager; // <--- THÊM DÒNG NÀY
-using Tokki.Application.UseCases.Vocabulary.Queries.GetById;
-using Tokki.Application.UseCases.Vocabulary.Queries.GetByIdForUser;
-using Tokki.Application.UseCases.Vocabulary.Queries.GetVocabulariesByTopic;
-using Tokki.Application.UseCases.Vocabulary.Queries.SearchVocabulary;
-using Tokki.Domain.Enums;
+    using MediatR;
+    using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Mvc;
+    using Tokki.Application.UseCases.Vocabulary.Commands.ApproveVocabulary;
+    using Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabularies;
+    using Tokki.Application.UseCases.Vocabulary.Commands.BulkCreateVocabulariesByStaff;
+    using Tokki.Application.UseCases.Vocabulary.Commands.CreateVocabulary;
+    using Tokki.Application.UseCases.Vocabulary.Commands.CreateVocabularyByStaff;
+    using Tokki.Application.UseCases.Vocabulary.Commands.DeleteVocabulary;
+    using Tokki.Application.UseCases.Vocabulary.Commands.RejectVocabulary;
+    using Tokki.Application.UseCases.Vocabulary.Commands.SubmitVocabulariesForApproval;
+    using Tokki.Application.UseCases.Vocabulary.Commands.UpdateVocabulary;
+    using Tokki.Application.UseCases.Vocabulary.DTOs;
+    using Tokki.Application.UseCases.Vocabulary.Queries; // Namespace chứa GetVocabularyByTextQuery (nếu có)
+    using Tokki.Application.UseCases.Vocabulary.Queries.FlashCard;
+    using Tokki.Application.UseCases.Vocabulary.Queries.GetAllForManager; // <--- THÊM DÒNG NÀY
+    using Tokki.Application.UseCases.Vocabulary.Queries.GetById;
+    using Tokki.Application.UseCases.Vocabulary.Queries.GetByIdForUser;
+    using Tokki.Application.UseCases.Vocabulary.Queries.GetVocabulariesByTopic;
+    using Tokki.Application.UseCases.Vocabulary.Queries.SearchVocabulary;
+    using Tokki.Domain.Enums;
 
-namespace Tokki.WebAPI.Controllers
-{
-    [ApiController]
-    [Route("api/[controller]")]
-    // [Authorize]
-    public class VocabularyController : ControllerBase
+    namespace Tokki.WebAPI.Controllers
     {
-        private readonly IMediator _mediator;
-
-        public VocabularyController(IMediator mediator)
+        [ApiController]
+        [Route("api/[controller]")]
+        // [Authorize]
+        public class VocabularyController : ControllerBase
         {
-            _mediator = mediator;
-        }
+            private readonly IMediator _mediator;
 
-
-        [HttpGet("user/get-detail/{vocabularyId}")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetVocabularyDetail(string vocabularyId)
-        {
-            var query = new GetVocabularyDetailByIdQuery
+            public VocabularyController(IMediator mediator)
             {
-                VocabularyId = vocabularyId
-            };
+                _mediator = mediator;
+            }
 
-            var result = await _mediator.Send(query);
-            return StatusCode(result.StatusCode, result);
-        }
 
-        [HttpGet("admin/get-detail/{vocabularyId}")]
-        public async Task<IActionResult> GetVocabularyForAdminDetail(string vocabularyId)
-        {
-            var query = new GetVocabularyDetailByIdForAdminQuery
+            [HttpGet("user/get-detail/{vocabularyId}")]
+            [AllowAnonymous]
+            public async Task<IActionResult> GetVocabularyDetail(string vocabularyId)
             {
-                VocabularyId = vocabularyId
-            };
+                var query = new GetVocabularyDetailByIdQuery
+                {
+                    VocabularyId = vocabularyId
+                };
 
-            var result = await _mediator.Send(query);
-            return StatusCode(result.StatusCode, result);
-        }
-        /// <summary>
-        /// Lấy danh sách vocabulary cho Manager (có filter, search, paging)
-        /// </summary>
-        /// <remarks>
-        /// API này dùng cho trang quản lý, cho phép lọc theo status, topic, tìm kiếm.
-        /// </remarks>
-        [HttpGet("admin/get-all")]
-        [Authorize(Roles = "Moderator,Staff,Admin")] 
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAllForManager(
-            [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 20,
-            [FromQuery] VocabularyStatus? status = null,
-            [FromQuery] string? vocabId = null,
-            [FromQuery] string? searchText = null,
-            [FromQuery] TopicLevel? topicLevel =null)
-        {
-            var query = new GetAllForManagerQuery
-            {
-                PageNumber = pageNumber,
-                PageSize = pageSize,
-                Status = status,
-                VocabId = vocabId,
-                SearchText = searchText,
-                LevelTopic = topicLevel
-
-            };
-
-            var result = await _mediator.Send(query);
-
-            if (!result.IsSuccess)
-            {
+                var result = await _mediator.Send(query);
                 return StatusCode(result.StatusCode, result);
             }
 
-            return Ok(result);
-        }
-
-        /// <summary>
-        /// Tạo hàng loạt vocabulary
-        /// </summary>
-        [HttpPost("bulk")]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> BulkCreateVocabularies([FromBody] BulkCreateVocabulariesCommand command)
-        {
-            var result = await _mediator.Send(command);
-
-            if (!result.IsSuccess)
+            [HttpGet("admin/get-detail/{vocabularyId}")]
+            public async Task<IActionResult> GetVocabularyForAdminDetail(string vocabularyId)
             {
+                var query = new GetVocabularyDetailByIdForAdminQuery
+                {
+                    VocabularyId = vocabularyId
+                };
+
+                var result = await _mediator.Send(query);
                 return StatusCode(result.StatusCode, result);
             }
-
-            return StatusCode(result.StatusCode, result);
-        }
-        /// </summary>
-        [HttpPost("admin/create-a-vocabulary")]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> CreateVocabularies([FromBody] CreateVocabularyCommand command)
-        {
-            var result = await _mediator.Send(command);
-
-            if (!result.IsSuccess)
+            /// <summary>
+            /// Lấy danh sách vocabulary cho Manager (có filter, search, paging)
+            /// </summary>
+            /// <remarks>
+            /// API này dùng cho trang quản lý, cho phép lọc theo status, topic, tìm kiếm.
+            /// </remarks>
+            [HttpGet("admin/get-all")]
+            [Authorize(Roles = "Moderator,Staff,Admin")] 
+            [ProducesResponseType(StatusCodes.Status200OK)]
+            public async Task<IActionResult> GetAllForManager(
+                [FromQuery] int pageNumber = 1,
+                [FromQuery] int pageSize = 20,
+                [FromQuery] VocabularyStatus? status = null,
+                [FromQuery] string? vocabId = null,
+                [FromQuery] string? searchText = null,
+                [FromQuery] TopicLevel? topicLevel =null)
             {
-                return StatusCode(result.StatusCode, result);
-            }
+                var query = new GetAllForManagerQuery
+                {
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    Status = status,
+                    VocabId = vocabId,
+                    SearchText = searchText,
+                    LevelTopic = topicLevel
 
-            return StatusCode(result.StatusCode, result);
-        }
+                };
 
-        /// <summary>
-        /// Search vocabulary for user (OLD - giữ để backward compatibility)
-        /// </summary>
-        [HttpGet("search-for-user")]
-        [AllowAnonymous]
-        public async Task<IActionResult> SearchVocabulary(
-           [FromQuery] string searchTerm,
-           [FromQuery] int pageNumber = 1,
-           [FromQuery] int pageSize = 20)
-        {
-            var query = new SearchVocabularyQuery
-            {
-                SearchTerm = searchTerm,
-                PageNumber = pageNumber,
-                PageSize = pageSize
-            };
+                var result = await _mediator.Send(query);
 
-            var result = await _mediator.Send(query);
+                if (!result.IsSuccess)
+                {
+                    return StatusCode(result.StatusCode, result);
+                }
 
-            if (result.IsSuccess)
-            {
                 return Ok(result);
             }
 
-            return StatusCode(result.StatusCode, result);
-        }
-
-        /// <summary>
-        /// Get flash card by topic
-        /// </summary>
-        [HttpGet("flash-card")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetFlashCardByTopic([FromQuery] FlashCardQuery command)
-        {
-            var result = await _mediator.Send(command);
-            if (!result.IsSuccess)
+            /// <summary>
+            /// Tạo hàng loạt vocabulary
+            /// </summary>
+            [HttpPost("bulk")]
+            [ProducesResponseType(StatusCodes.Status201Created)]
+            [ProducesResponseType(StatusCodes.Status400BadRequest)]
+            [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+            public async Task<IActionResult> BulkCreateVocabularies([FromBody] BulkCreateVocabulariesCommand command)
             {
+                var result = await _mediator.Send(command);
+
+                if (!result.IsSuccess)
+                {
+                    return StatusCode(result.StatusCode, result);
+                }
+
                 return StatusCode(result.StatusCode, result);
             }
-            return StatusCode(result.StatusCode, result);
-        }  /// <summary>
-           /// Cập nhật vocabulary
-           /// </summary>
-           /// <remarks>
-           /// Sample request:
-           /// 
-           ///     PUT /api/vocabulary/{vocabularyId}
-           ///     {
-           ///         "pronunciation": "eunhaeng",
-           ///         "definition": "ngân hàng (cập nhật)",
-           ///         "topicIds": ["topic_ngan_hang", "topic_dia_diem", "topic_doi_song"]
-           ///     }
-           /// 
-           /// </remarks>
-        [HttpPut("{vocabularyId}")]
-        public async Task<IActionResult> UpdateVocabulary(
-            string vocabularyId,
-            [FromBody] VocabularyUpdateDto updateData)
-        {
-            var command = new UpdateVocabularyCommand
+            /// </summary>
+            [HttpPost("admin/create-a-vocabulary")]
+            [ProducesResponseType(StatusCodes.Status201Created)]
+            [ProducesResponseType(StatusCodes.Status400BadRequest)]
+            [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+            public async Task<IActionResult> CreateVocabularies([FromBody] CreateVocabularyCommand command)
             {
-                VocabularyId = vocabularyId,
-                UpdateData = updateData
-            };
+                var result = await _mediator.Send(command);
 
-            var result = await _mediator.Send(command);
+                if (!result.IsSuccess)
+                {
+                    return StatusCode(result.StatusCode, result);
+                }
 
-            if (!result.IsSuccess)
-            {
                 return StatusCode(result.StatusCode, result);
             }
 
-            return Ok(result);
-        }
-
-        /// <summary>
-        /// Xóa vocabulary (soft delete)
-        /// </summary>
-        [HttpDelete("{vocabularyId}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> DeleteVocabulary(string vocabularyId)
-        {
-            var command = new DeleteVocabularyCommand
+            /// <summary>
+            /// Search vocabulary for user (OLD - giữ để backward compatibility)
+            /// </summary>
+            [HttpGet("search-for-user")]
+            [AllowAnonymous]
+            public async Task<IActionResult> SearchVocabulary(
+               [FromQuery] string searchTerm,
+               [FromQuery] int pageNumber = 1,
+               [FromQuery] int pageSize = 20)
             {
-                VocabularyId = vocabularyId
-            };
+                var query = new SearchVocabularyQuery
+                {
+                    SearchTerm = searchTerm,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize
+                };
 
-            var result = await _mediator.Send(command);
+                var result = await _mediator.Send(query);
 
-            if (!result.IsSuccess)
-            {
+                if (result.IsSuccess)
+                {
+                    return Ok(result);
+                }
+
                 return StatusCode(result.StatusCode, result);
             }
 
-            return Ok(result);
-        }
-
-        /// <summary>
-        /// Lấy tất cả nghĩa của một từ
-        /// </summary>
-        [HttpGet("by-text")]
-        [AllowAnonymous]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetVocabularyByText(
-            [FromQuery] string text,
-            [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 20,
-            [FromQuery] string? topicId = null,
-            [FromQuery] VocabularyStatus? status = null)
-        {
-            // Giả định bạn đã có class GetVocabularyByTextQuery
-            // Nếu chưa có class này, bạn cần tạo nó hoặc dùng GetAllForManagerQuery thay thế
-            // Tạm thời comment code nếu class chưa tồn tại để tránh lỗi build
-            var query = new GetVocabularyByTextQuery
+            /// <summary>
+            /// Get flash card by topic
+            /// </summary>
+            [HttpGet("flash-card")]
+            [AllowAnonymous]
+            public async Task<IActionResult> GetFlashCardByTopic([FromQuery] FlashCardQuery command)
             {
-                Text = text,
-                PageNumber = pageNumber,
-                PageSize = pageSize,
-                TopicId = topicId,
-                Status = status
-            };
-
-            var result = await _mediator.Send(query);
-
-            if (!result.IsSuccess)
-            {
+                var result = await _mediator.Send(command);
+                if (!result.IsSuccess)
+                {
+                    return StatusCode(result.StatusCode, result);
+                }
                 return StatusCode(result.StatusCode, result);
+            }  /// <summary>
+               /// Cập nhật vocabulary
+               /// </summary>
+               /// <remarks>
+               /// Sample request:
+               /// 
+               ///     PUT /api/vocabulary/{vocabularyId}
+               ///     {
+               ///         "pronunciation": "eunhaeng",
+               ///         "definition": "ngân hàng (cập nhật)",
+               ///         "topicIds": ["topic_ngan_hang", "topic_dia_diem", "topic_doi_song"]
+               ///     }
+               /// 
+               /// </remarks>
+            [HttpPut("{vocabularyId}")]
+            public async Task<IActionResult> UpdateVocabulary(
+                string vocabularyId,
+                [FromBody] VocabularyUpdateDto updateData)
+            {
+                var command = new UpdateVocabularyCommand
+                {
+                    VocabularyId = vocabularyId,
+                    UpdateData = updateData
+                };
+
+                var result = await _mediator.Send(command);
+
+                if (!result.IsSuccess)
+                {
+                    return StatusCode(result.StatusCode, result);
+                }
+
+                return Ok(result);
             }
 
-            return Ok(result);
-        }
-
-        /// <summary>
-        /// Lấy vocabularies theo topic
-        /// </summary>
-        [HttpGet("by-topic/{topicId}")]
-        [AllowAnonymous]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetVocabulariesByTopic(
-            string topicId,
-            [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 20,
-            [FromQuery] VocabularyStatus? status = null,
-            [FromQuery] string? searchText = null)
-        {
-            var query = new GetVocabulariesByTopicQuery
+            /// <summary>
+            /// Xóa vocabulary (soft delete)
+            /// </summary>
+            [HttpDelete("{vocabularyId}")]
+            [ProducesResponseType(StatusCodes.Status200OK)]
+            [ProducesResponseType(StatusCodes.Status404NotFound)]
+            [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+            public async Task<IActionResult> DeleteVocabulary(string vocabularyId)
             {
-                TopicId = topicId,
-                PageNumber = pageNumber,
-                PageSize = pageSize,
-                Status = status,
-                SearchText = searchText
-            };
+                var command = new DeleteVocabularyCommand
+                {
+                    VocabularyId = vocabularyId
+                };
 
-            var result = await _mediator.Send(query);
+                var result = await _mediator.Send(command);
 
-            if (!result.IsSuccess)
-            {
-                return StatusCode(result.StatusCode, result);
+                if (!result.IsSuccess)
+                {
+                    return StatusCode(result.StatusCode, result);
+                }
+
+                return Ok(result);
             }
 
-            return Ok(result);
-        }
-
-        /// <summary>
-        /// Search vocabularies (tìm kiếm từ vựng)
-        /// </summary>
-        [HttpGet("search-by-topic")]
-        [AllowAnonymous]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> SearchVocabularies(
-            [FromQuery] string? searchText = null,
-            [FromQuery] string? topicId = null,
-            [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 20,
-            [FromQuery] VocabularyStatus? status = null)
-        {
-            if (string.IsNullOrWhiteSpace(searchText))
+            /// <summary>
+            /// Lấy tất cả nghĩa của một từ
+            /// </summary>
+            [HttpGet("by-text")]
+            [AllowAnonymous]
+            [ProducesResponseType(StatusCodes.Status200OK)]
+            [ProducesResponseType(StatusCodes.Status404NotFound)]
+            public async Task<IActionResult> GetVocabularyByText(
+                [FromQuery] string text,
+                [FromQuery] int pageNumber = 1,
+                [FromQuery] int pageSize = 20,
+                [FromQuery] string? topicId = null,
+                [FromQuery] VocabularyStatus? status = null)
             {
-                return BadRequest(new { message = "Vui lòng nhập từ khóa tìm kiếm" });
+                // Giả định bạn đã có class GetVocabularyByTextQuery
+                // Nếu chưa có class này, bạn cần tạo nó hoặc dùng GetAllForManagerQuery thay thế
+                // Tạm thời comment code nếu class chưa tồn tại để tránh lỗi build
+                var query = new GetVocabularyByTextQuery
+                {
+                    Text = text,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    TopicId = topicId,
+                    Status = status
+                };
+
+                var result = await _mediator.Send(query);
+
+                if (!result.IsSuccess)
+                {
+                    return StatusCode(result.StatusCode, result);
+                }
+
+                return Ok(result);
             }
 
-            var query = new GetVocabulariesByTopicQuery
+            /// <summary>
+            /// Lấy vocabularies theo topic
+            /// </summary>
+            [HttpGet("by-topic/{topicId}")]
+            [AllowAnonymous]
+            [ProducesResponseType(StatusCodes.Status200OK)]
+            [ProducesResponseType(StatusCodes.Status404NotFound)]
+            public async Task<IActionResult> GetVocabulariesByTopic(
+                string topicId,
+                [FromQuery] int pageNumber = 1,
+                [FromQuery] int pageSize = 20,
+                [FromQuery] VocabularyStatus? status = null,
+                [FromQuery] string? searchText = null)
             {
-                TopicId = topicId ?? string.Empty,
-                PageNumber = pageNumber,
-                PageSize = pageSize,
-                Status = status,
-                SearchText = searchText
-            };
+                var query = new GetVocabulariesByTopicQuery
+                {
+                    TopicId = topicId,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    Status = status,
+                    SearchText = searchText
+                };
 
-            var result = await _mediator.Send(query);
+                var result = await _mediator.Send(query);
 
-            return Ok(result);
-        }
-        /// <summary>
-        /// Staff tạo vocabulary (chờ phê duyệt)
-        /// </summary>
-        [HttpPost("staff/create-a-vocabulary")]
-        [Authorize(Roles = "Staff")]
-        public async Task<IActionResult> CreateVocabularyByStaff(
-            [FromBody] CreateVocabularyByStaffCommand command)
-        {
-            var result = await _mediator.Send(command);
+                if (!result.IsSuccess)
+                {
+                    return StatusCode(result.StatusCode, result);
+                }
 
-            if (!result.IsSuccess)
-            {
-                return StatusCode(result.StatusCode, result);
+                return Ok(result);
             }
 
-            return StatusCode(result.StatusCode, result);
-        }
-        /// <summary>
-        /// Staff tạo hàng loạt vocabulary (chờ phê duyệt)
-        /// </summary>
-        [HttpPost("staff/create-a-list-vocabularies")]
-        [Authorize(Roles = "Staff")]
-        public async Task<IActionResult> BulkCreateVocabulariesByStaff(
-            [FromBody] BulkCreateVocabulariesByStaffCommand command)
-        {
-            var result = await _mediator.Send(command);
-
-            if (!result.IsSuccess)
+            /// <summary>
+            /// Search vocabularies (tìm kiếm từ vựng)
+            /// </summary>
+            [HttpGet("search-by-topic")]
+            [AllowAnonymous]
+            [ProducesResponseType(StatusCodes.Status200OK)]
+            public async Task<IActionResult> SearchVocabularies(
+                [FromQuery] string? searchText = null,
+                [FromQuery] string? topicId = null,
+                [FromQuery] int pageNumber = 1,
+                [FromQuery] int pageSize = 20,
+                [FromQuery] VocabularyStatus? status = null)
             {
-                return StatusCode(result.StatusCode, result);
+                if (string.IsNullOrWhiteSpace(searchText))
+                {
+                    return BadRequest(new { message = "Vui lòng nhập từ khóa tìm kiếm" });
+                }
+
+                var query = new GetVocabulariesByTopicQuery
+                {
+                    TopicId = topicId ?? string.Empty,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    Status = status,
+                    SearchText = searchText
+                };
+
+                var result = await _mediator.Send(query);
+
+                return Ok(result);
             }
-
-            return StatusCode(result.StatusCode, result);
-        }
-
-        [HttpPut("moderator/approve-vocabularies")]
-        [Authorize(Roles = "Admin,Moderator")]
-        public async Task<IActionResult> ApproveVocabularies(
-         [FromBody] ApproveVocabulariesCommand command)
-        {
-            var result = await _mediator.Send(command);
-            return StatusCode(result.StatusCode, result);
-        }
-
-              [HttpPut("staff/submit-vocabularies-for-approval")]
+            /// <summary>
+            /// Staff tạo vocabulary (chờ phê duyệt)
+            /// </summary>
+            [HttpPost("staff/create-a-vocabulary")]
             [Authorize(Roles = "Staff")]
-            public async Task<IActionResult> SubmitVocabulariesForApproval(
-            [FromBody] SubmitVocabulariesForApprovalCommand command)
+            public async Task<IActionResult> CreateVocabularyByStaff(
+                [FromBody] CreateVocabularyByStaffCommand command)
             {
                 var result = await _mediator.Send(command);
+
+                if (!result.IsSuccess)
+                {
+                    return StatusCode(result.StatusCode, result);
+                }
+
+                return StatusCode(result.StatusCode, result);
+            }
+            /// <summary>
+            /// Staff tạo hàng loạt vocabulary (chờ phê duyệt)
+            /// </summary>
+            [HttpPost("staff/create-a-list-vocabularies")]
+            [Authorize(Roles = "Staff")]
+            public async Task<IActionResult> BulkCreateVocabulariesByStaff(
+                [FromBody] BulkCreateVocabulariesByStaffCommand command)
+            {
+                var result = await _mediator.Send(command);
+
+                if (!result.IsSuccess)
+                {
+                    return StatusCode(result.StatusCode, result);
+                }
+
                 return StatusCode(result.StatusCode, result);
             }
 
-             [HttpPut("moderator/reject-vocabularies")]
+            [HttpPut("moderator/approve-vocabularies")]
             [Authorize(Roles = "Admin,Moderator")]
-            public async Task<IActionResult> RejectVocabularies([FromBody] RejectVocabulariesCommand command)
+            public async Task<IActionResult> ApproveVocabularies(
+             [FromBody] ApproveVocabulariesCommand command)
             {
                 var result = await _mediator.Send(command);
                 return StatusCode(result.StatusCode, result);
             }
 
+                  [HttpPut("staff/submit-vocabularies-for-approval")]
+                [Authorize(Roles = "Staff")]
+                public async Task<IActionResult> SubmitVocabulariesForApproval(
+                [FromBody] SubmitVocabulariesForApprovalCommand command)
+                {
+                    var result = await _mediator.Send(command);
+                    return StatusCode(result.StatusCode, result);
+                }
 
-}
+                 [HttpPut("moderator/reject-vocabularies")]
+                [Authorize(Roles = "Admin,Moderator")]
+                public async Task<IActionResult> RejectVocabularies([FromBody] RejectVocabulariesCommand command)
+                {
+                    var result = await _mediator.Send(command);
+                    return StatusCode(result.StatusCode, result);
+                }
+
+
+    }
 
 
 
-}
+    }

@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 using System.Text.Json.Serialization;
 using MediatR;
 using Tokki.Application.Common.Models;
@@ -17,10 +17,8 @@ namespace Tokki.Application.UseCases.Accounts.Queries.GetAccount
 
         public VipStatus? VipStatus { get; set; }
 
-        // Search
-        public string? SearchName { get; set; }
-        public string? SearchEmail { get; set; }
-        public string? SearchPhone { get; set; }
+        // Search (tìm theo tên, email, số điện thoại, hoặc ID)
+        public string? SearchText { get; set; }
     }
 
 }

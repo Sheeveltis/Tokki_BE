@@ -1,4 +1,4 @@
-﻿// Application/UseCases/TopikWriting/Question53/Commands/SolveQuestion53Handler.cs
+// Application/UseCases/TopikWriting/Question53/Commands/SolveQuestion53Handler.cs
 using MediatR;
 using Hangfire;
 using Tokki.Application.Common.Models;
@@ -25,7 +25,7 @@ namespace Tokki.Application.UseCases.TopikWriting.Question53.Commands
             try
             {
                 _backgroundJobs.Enqueue<IWritingGradingBackgroundService>(
-      service => service.GradeQuestion51Async(request.Payload.UserExamWritingAnswerId));
+      service => service.GradeQuestion53Async(request.Payload.UserExamWritingAnswerId));
                 var result = new Question53ResultDto
                 {
                     Score = -1,

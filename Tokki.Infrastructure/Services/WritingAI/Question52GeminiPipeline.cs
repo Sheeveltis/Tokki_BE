@@ -58,6 +58,22 @@ namespace Tokki.Infrastructure.Services.WritingAi
                     answer2 = line.Substring(line.IndexOf(':') + 1).Trim();
             }
 
+            // ── GUARD: Kiểm tra bài nộp trống — KHÔNG gọi Gemini ──────────
+            if (IsEmptySubmission(writingAnswer.WordCount))
+            {
+                var emptyRaw = BuildEmptySubmissionJson();
+                var emptyFeedback = GeminiRestClient.ParseJsonRobust(emptyRaw);
+
+                writingAnswer.Score = 0;
+                writingAnswer.AiAnalysisJson = emptyRaw;
+                writingAnswer.GradedAt = DateTime.UtcNow;
+
+                _writingRepo.UpdateAsync(writingAnswer);
+                await _writingRepo.SaveChangesAsync(ct);
+
+                return (emptyFeedback, 0);
+            }
+
             var userText = $"""
 QUESTION_EXPLANATION (nội dung câu hỏi 52):
 {explanation}
@@ -96,6 +112,48 @@ MAX_MARK: {maxMark} điểm
             return (feedbackJson, actualScore);
         }
 
+        // ── GUARD: Kiểm tra bài trống ──────────────────────────────────────
+        /// <summary>
+        /// Trả về true nếu bài nộp trống hoặc quá ngắn:
+        /// - WordCount == 0, hoặc
+        /// - Cả 2 ô đều rỗng/khoảng trắng, hoặc
+        /// - Tổng ký tự của 2 ô <= 5 (coi như chưa làm)
+        /// </summary>
+        private static bool IsEmptySubmission(int wordCount)
+     => wordCount <= 5;
+
+
+        /// <summary>
+        /// Tạo JSON response cho bài nộp trống, khớp schema prompt câu 52.
+        /// Score = 0, evaluation = "incorrect", không có suggestions.
+        /// </summary>
+        private static string BuildEmptySubmissionJson() =>
+            """
+            {
+              "totalScore": 0,
+              "results": [
+                {
+                  "blank_id": "㉠",
+                  "user_answer": "",
+                  "score": 0,
+                  "evaluation": "incorrect",
+                  "feedback": "Bạn chưa điền câu trả lời cho ô này. Vui lòng nhập nội dung trước khi nộp bài.",
+                  "suggestions": []
+                },
+                {
+                  "blank_id": "㉡",
+                  "user_answer": "",
+                  "score": 0,
+                  "evaluation": "incorrect",
+                  "feedback": "Bạn chưa điền câu trả lời cho ô này. Vui lòng nhập nội dung trước khi nộp bài.",
+                  "suggestions": []
+                }
+              ]
+            }
+            """;
+
+        // ── SCORE HELPERS ──────────────────────────────────────────────────
+
         /// <summary>
         /// AI chấm thang 0-10 (totalScore).
         /// Convert sang %: totalScore / 10 * 100.
@@ -133,7 +191,7 @@ MAX_MARK: {maxMark} điểm
             return (int)Math.Round(actual, MidpointRounding.AwayFromZero);
         }
 
-        // ── PROMPT CÂU 52 ──────────────────────────────────────────────
+        // ── PROMPT CÂU 52 ──────────────────────────────────────────────────
         private static string BuildSystemInstruction() =>
             @"Bạn là giáo viên chấm thi TOPIK II Writing câu 52, giảng dạy cho học sinh Việt Nam.
 

@@ -15,18 +15,12 @@ namespace Tokki.Application.UseCases.Accounts.Commands.Register
     {
         private readonly IAccountRepository _accountRepository;
         private readonly IIdGeneratorService _idGeneratorService;
-        private readonly ILogger<RegisterUserAccountCommandHandler> _logger;
-        private readonly IValidator<RegisterUserAccountCommand> _validator;
         public RegisterUserAccountCommandHandler(
             IAccountRepository accountRepository,
-            IIdGeneratorService idGeneratorService,
-            ILogger<RegisterUserAccountCommandHandler> logger,
-            IValidator<RegisterUserAccountCommand> validator)
+            IIdGeneratorService idGeneratorService)
         {
             _accountRepository = accountRepository;
             _idGeneratorService = idGeneratorService;
-            _logger = logger;
-            _validator = validator;
         }
         public async Task<OperationResult<string>> Handle(RegisterUserAccountCommand request, CancellationToken cancellationToken)
         {

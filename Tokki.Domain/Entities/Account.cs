@@ -76,7 +76,6 @@ namespace Tokki.Domain.Entities
         public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow.AddHours(7);
 
         // Navigation Properties
-        public virtual ICollection<Session> Sessions { get; set; } = new List<Session>();
         public virtual ICollection<SocialLogin> SocialLogins { get; set; } = new List<SocialLogin>();
 
            }

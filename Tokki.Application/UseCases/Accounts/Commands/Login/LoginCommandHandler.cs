@@ -113,7 +113,6 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
             // - Token JWT: Dùng UTC (chuẩn quốc tế, tránh lỗi validate)
             // - Database: Lưu giờ Việt Nam (+7) để dễ quản lý
             DateTime tokenExpiresAtUtc = utcNow.AddMinutes(tokenExpirationMinutes);
-            DateTime sessionExpiresAtVietnam = vietnamTimeNow.AddMinutes(tokenExpirationMinutes);
 
             // C. Tạo JWT Token (truyền UTC)
             var accessToken = _jwtGenerator.GenerateToken(user, tokenExpiresAtUtc);
@@ -122,20 +121,8 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
                     EmailTemplateType.OfflineReminder,
                     cancellationToken
                 );
-            // D. Lưu Session vào database (lưu giờ Việt Nam)
-            var newSession = new Session
-            {
-                SessionId = _idGenerator.Generate(10),
-                UserId = user.UserId,
-                RefreshToken = accessToken, // Có thể tạo refresh token riêng
-                ExpiresAt = sessionExpiresAtVietnam, // Lưu giờ Việt Nam (+7)
-                IpAddress = "Check-Controller", // Nên lấy từ HttpContext
-                UserAgent = "Web-Browser",
-                CreatedAt = vietnamTimeNow, // Lưu giờ Việt Nam (+7)
-                RevokedAt = null
-            };
+           
 
-            await _accountRepository.AddSessionAsync(newSession);
             await _accountRepository.SaveChangesAsync(cancellationToken);
 
             var response = new LoginResponse
