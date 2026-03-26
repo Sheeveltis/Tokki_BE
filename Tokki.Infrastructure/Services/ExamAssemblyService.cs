@@ -19,12 +19,15 @@ namespace Tokki.Infrastructure.Services
         private readonly IMediator _mediator;
         private readonly TokkiDbContext _context;
         private readonly IIdGeneratorService _idGenerator;
-        private const string AI_SYSTEM_ID = "AI_EXAM_SYSTEM"; 
+        private const string AI_SYSTEM_ID = "AI_EXAM_SYSTEM";
 
 
         private const int QUESTIONS_PER_PART_MCQ = 10;
         private const int QUESTIONS_PER_PART_WRITING = 2;
-        private readonly ILogger<ExamAssemblyService> _logger; 
+        private const int MINUTES_PER_MCQ_QUESTION = 2; 
+        private const int MINUTES_PER_WRITING_QUESTION = 20; 
+
+        private readonly ILogger<ExamAssemblyService> _logger;
         public ExamAssemblyService(
             IMediator mediator,
             TokkiDbContext context,
@@ -161,8 +164,27 @@ namespace Tokki.Infrastructure.Services
                     newTemplateId, templateName, structureHash);
             }
 
-            int duration = targetTypes.Sum(id =>
-                qtMap.TryGetValue(id, out var qt) && qt.Skill == QuestionSkill.Writing ? 20 : 10);
+            var skillDurations = new Dictionary<string, int>();
+
+            foreach (var typeId in targetTypes)
+            {
+                if (!qtMap.TryGetValue(typeId, out var qt)) continue;
+
+                string skillKey = qt.Skill.ToString(); 
+
+                int questionsForType = qt.Skill == QuestionSkill.Writing
+                    ? QUESTIONS_PER_PART_WRITING
+                    : QUESTIONS_PER_PART_MCQ;
+
+                int minutesForType = qt.Skill == QuestionSkill.Writing
+                    ? questionsForType * MINUTES_PER_WRITING_QUESTION
+                    : questionsForType * MINUTES_PER_MCQ_QUESTION;
+
+                if (!skillDurations.ContainsKey(skillKey))
+                    skillDurations[skillKey] = 0;
+
+                skillDurations[skillKey] += minutesForType;
+            }
 
             string examTitle = $"Weekly Exam W{weekIndex} - {userId[..Math.Min(6, userId.Length)]} - {DateTime.UtcNow:ddMMHHmmss}";
 
@@ -170,7 +192,8 @@ namespace Tokki.Infrastructure.Services
             {
                 Title = examTitle,
                 ExamTemplateId = templateIdToUse,
-                CreatedBy = AI_SYSTEM_ID
+                CreatedBy = AI_SYSTEM_ID,
+                SkillDurations = skillDurations
             };
 
             var examResult = await _mediator.Send(createExamCmd, cancellationToken);
