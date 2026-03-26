@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,6 +21,12 @@ namespace Tokki.Application.UseCases.MiniGame.DTOs
         public bool IsWon { get; set; }
         public int AttemptCount { get; set; }
         public int MaxAttempts { get; set; } = 6;
-        public List<string> Guesses { get; set; } = new(); 
+        public List<WordleAttemptDTO> Attempts { get; set; } = new();
+    }
+
+    public class WordleAttemptDTO
+    {
+        public string Guess { get; set; }
+        public List<BlockFeedback> Feedbacks { get; set; } = new();
     }
 }
