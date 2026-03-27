@@ -60,6 +60,8 @@ namespace Tokki.Application.UseCases.Exam.Queries.GetExamDetailQuery
                     TemplatePartId = part.TemplatePartId,
                     TemplatePartsTitle = $"[{part.QuestionFrom}~{part.QuestionTo}] {part.Instruction} (각 {part.Mark} 점)",
                     ExampleUrl = part.ExampleUrl,
+                    Skill = part.Skill.ToString(),
+                    SkillDuration = exam.SkillDurationsDict.TryGetValue(part.Skill.ToString(), out int dur) ? dur : 0,
                     Questions = new List<ExamQuestionDetailDto>()
                 };
 
