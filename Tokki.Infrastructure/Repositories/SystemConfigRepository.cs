@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using Tokki.Application.IRepositories;
 using Tokki.Domain.Entities;
@@ -35,9 +35,16 @@ namespace Tokki.Infrastructure.Repositories
             return await _context.SaveChangesAsync(cancellationToken);
         }
 
-        public Task<(List<SystemConfig> Items, int TotalCount)> GetPagedAsync(int pageNumber, int pageSize)
+        public async Task<(List<SystemConfig> Items, int TotalCount)> GetPagedAsync(int pageNumber, int pageSize)
         {
-            throw new NotImplementedException();
+            var query = _context.SystemConfig.AsNoTracking();
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
         }
         public async Task<string?> GetValueByKeyAsync(string key)
         {
