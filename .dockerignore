@@ -1,0 +1,35 @@
+## Bỏ qua các thư mục build/output — không cần copy vào Docker image
+**/bin/
+**/obj/
+
+## Git
+.git
+.gitignore
+.github/
+
+## Visual Studio files
+**/*.user
+**/*.suo
+.vs/
+*.sln.DotSettings
+
+## Test projects — không đưa vào production image
+Tokki.UnitTest/
+Tokki.UnitTests/
+
+## Docs & misc
+README.md
+**/*.md
+
+## Docker files chính nó (tránh copy vào image)
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+## Environment files (KHÔNG bao giờ đưa vào image)
+.env
+.env.*
+
+## Logs
+**/*.log
+**/logs/
