@@ -14,13 +14,16 @@ namespace Tokki.Application.UseCases.Solitaire.Queries.GetSolitaireResultForUser
     {
         private readonly IGameRepository _gameRepository;
         private readonly ISolitaireSessionRepository _sessionRepository;
+        private readonly IAccountRepository _accountRepository;
 
         public GetSolitaireResultForUserQueryHandler(
             IGameRepository gameRepository,
-            ISolitaireSessionRepository sessionRepository)
+            ISolitaireSessionRepository sessionRepository,
+            IAccountRepository accountRepository)
         {
             _gameRepository = gameRepository;
             _sessionRepository = sessionRepository;
+            _accountRepository = accountRepository;
         }
 
         public async Task<OperationResult<SolitaireResultDto?>> Handle(
@@ -63,10 +66,14 @@ namespace Tokki.Application.UseCases.Solitaire.Queries.GetSolitaireResultForUser
                 );
             }
 
+            var account = await _accountRepository.GetByIdAsync(session.UserId);
+            var userName = account?.FullName ?? string.Empty;
+
             var dto = new SolitaireResultDto
             {
                 GameMatchSessionId = session.GameMatchSessionId,
                 UserId = session.UserId,
+                UserName = userName,
                 GameId = session.GameId,
                 BestScore = session.BestScore,
                 LatestScore = session.LatestScore,

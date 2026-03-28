@@ -1,4 +1,4 @@
-﻿using Tokki.Domain.Enums;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Games.DTOs
 {
@@ -6,6 +6,7 @@ namespace Tokki.Application.UseCases.Games.DTOs
     {
         public string GameMatchSessionId { get; set; } = string.Empty;
         public string UserId { get; set; } = string.Empty;
+        public string UserName { get; set; } = string.Empty;
         public string GameId { get; set; } = string.Empty;
         public string TopicId { get; set; } = string.Empty;
 

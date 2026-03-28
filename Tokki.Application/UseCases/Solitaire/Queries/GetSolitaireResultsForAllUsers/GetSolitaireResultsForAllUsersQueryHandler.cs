@@ -15,13 +15,16 @@ namespace Tokki.Application.UseCases.Solitaire.Queries.GetSolitaireResultsForAll
     {
         private readonly IGameRepository _gameRepository;
         private readonly ISolitaireSessionRepository _sessionRepository;
+        private readonly IAccountRepository _accountRepository;
 
         public GetSolitaireResultsForAllUsersQueryHandler(
             IGameRepository gameRepository,
-            ISolitaireSessionRepository sessionRepository)
+            ISolitaireSessionRepository sessionRepository,
+            IAccountRepository accountRepository)
         {
             _gameRepository = gameRepository;
             _sessionRepository = sessionRepository;
+            _accountRepository = accountRepository;
         }
 
         public async Task<OperationResult<PagedResult<SolitaireResultDto>>> Handle(
@@ -56,10 +59,22 @@ namespace Tokki.Application.UseCases.Solitaire.Queries.GetSolitaireResultsForAll
                 request.PageSize
             );
 
+            // Lấy tên user tuần tự để tránh lỗi DbContext concurrency (EF Core không thread-safe)
+            var userNameCache = new Dictionary<string, string>();
+            foreach (var s in result.Items)
+            {
+                if (!userNameCache.ContainsKey(s.UserId))
+                {
+                    var account = await _accountRepository.GetByIdAsync(s.UserId);
+                    userNameCache[s.UserId] = account?.FullName ?? string.Empty;
+                }
+            }
+
             var dtos = result.Items.Select(s => new SolitaireResultDto
             {
                 GameMatchSessionId = s.GameMatchSessionId,
                 UserId = s.UserId,
+                UserName = userNameCache.GetValueOrDefault(s.UserId, string.Empty),
                 GameId = s.GameId,
                 BestScore = s.BestScore,
                 LatestScore = s.LatestScore,

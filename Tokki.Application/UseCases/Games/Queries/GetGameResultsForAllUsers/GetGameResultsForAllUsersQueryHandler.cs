@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,10 +12,14 @@ namespace Tokki.Application.UseCases.Games.Queries.GetGameResultsForAllUsers
         : IRequestHandler<GetGameResultsForAllUsersQuery, OperationResult<PagedResult<GameResultDto>>>
     {
         private readonly IGameMatchSessionRepository _sessionRepository;
+        private readonly IAccountRepository _accountRepository;
 
-        public GetGameResultsForAllUsersQueryHandler(IGameMatchSessionRepository sessionRepository)
+        public GetGameResultsForAllUsersQueryHandler(
+            IGameMatchSessionRepository sessionRepository,
+            IAccountRepository accountRepository)
         {
             _sessionRepository = sessionRepository;
+            _accountRepository = accountRepository;
         }
 
         public async Task<OperationResult<PagedResult<GameResultDto>>> Handle(
@@ -34,10 +38,22 @@ namespace Tokki.Application.UseCases.Games.Queries.GetGameResultsForAllUsers
             var sessions = result.Items;
             var totalCount = result.TotalCount;
 
+            // Lấy tên user tuần tự để tránh lỗi DbContext concurrency (EF Core không thread-safe)
+            var userNameCache = new Dictionary<string, string>();
+            foreach (var s in sessions)
+            {
+                if (!userNameCache.ContainsKey(s.UserId))
+                {
+                    var account = await _accountRepository.GetByIdAsync(s.UserId);
+                    userNameCache[s.UserId] = account?.FullName ?? string.Empty;
+                }
+            }
+
             var dtos = sessions.Select(s => new GameResultDto
             {
                 GameMatchSessionId = s.GameMatchSessionId,
                 UserId = s.UserId,
+                UserName = userNameCache.GetValueOrDefault(s.UserId, string.Empty),
                 GameId = s.GameId,
                 TopicId = s.TopicId,
                 BestScore = s.BestScore,

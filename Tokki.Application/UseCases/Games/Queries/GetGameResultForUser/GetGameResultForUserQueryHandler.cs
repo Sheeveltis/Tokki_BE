@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.Games.DTOs;
@@ -9,10 +9,14 @@ namespace Tokki.Application.UseCases.Games.Queries.GetGameResultForUser
         : IRequestHandler<GetGameResultForUserQuery, OperationResult<GameResultDto?>>
     {
         private readonly IGameMatchSessionRepository _sessionRepository;
+        private readonly IAccountRepository _accountRepository;
 
-        public GetGameResultForUserQueryHandler(IGameMatchSessionRepository sessionRepository)
+        public GetGameResultForUserQueryHandler(
+            IGameMatchSessionRepository sessionRepository,
+            IAccountRepository accountRepository)
         {
             _sessionRepository = sessionRepository;
+            _accountRepository = accountRepository;
         }
 
         public async Task<OperationResult<GameResultDto?>> Handle(
@@ -35,10 +39,14 @@ namespace Tokki.Application.UseCases.Games.Queries.GetGameResultForUser
                 );
             }
 
+            var account = await _accountRepository.GetByIdAsync(session.UserId);
+            var userName = account?.FullName ?? string.Empty;
+
             var dto = new GameResultDto
             {
                 GameMatchSessionId = session.GameMatchSessionId,
                 UserId = session.UserId,
+                UserName = userName,
                 GameId = session.GameId,
                 TopicId = session.TopicId,
                 BestScore = session.BestScore,
