@@ -11,6 +11,9 @@ using Tokki.Infrastructure.Data;
 using Tokki.Infrastructure.Repositories;
 using Tokki.Infrastructure.Services;
 using Tokki.Infrastructure.Services.WritingAi;
+using WkHtmlToPdfDotNet;
+using WkHtmlToPdfDotNet.Contracts;
+
 namespace Tokki.Infrastructure
 {
     public static class DependencyInjection
@@ -116,6 +119,8 @@ namespace Tokki.Infrastructure
             //User take exam
             services.AddScoped<IUserExamRepository, UserExamRepository>();
             services.AddScoped<IExcelBaseService, ExcelBaseService>();
+            services.AddScoped<IPdfService, PdfService>();
+            services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
             return services;
         }
     }

@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -15,6 +15,7 @@ using Tokki.Application.UseCases.Exam.Queries.GetExamDetailQuery;
 using Tokki.Application.UseCases.Exam.Queries.GetExams;
 using Tokki.Application.UseCases.Exam.Queries.GetQuestionsByPart;
 using Tokki.Application.UseCases.Exam.Queries.GetTemplateSkills;
+using Tokki.Application.UseCases.Exam.Commands.ExportExamToPdf;
 using Tokki.Application.UseCases.UserExam.Commands.CreateUserTakeExam;
 
 namespace Tokki.WebAPI.Controllers
@@ -153,6 +154,22 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
        
+        [HttpPost("{id}/export-pdf")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> ExportExamToPdf(string id, [FromQuery] bool showExplanation = false)
+        {
+            var command = new ExportExamToPdfCommand(id, showExplanation);
+            var result = await _sender.Send(command);
+
+            if (result.IsSuccess)
+            {
+                // Trả về file PDF cho Frontend tải xuống
+                return File(result.Data.PdfData, "application/pdf", result.Data.FileName);
+            }
+
+            return StatusCode(result.StatusCode, result);
+        }
+
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> DeleteExam(string id)
