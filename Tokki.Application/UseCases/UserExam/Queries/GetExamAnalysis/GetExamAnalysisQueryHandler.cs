@@ -22,8 +22,15 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetExamAnalysis
 
         public async Task<OperationResult<ExamAnalysisResponse>> Handle(GetExamAnalysisQuery request, CancellationToken cancellationToken)
         {
+            var session = await _userExamRepository.GetByIdAsync(request.UserExamId, cancellationToken);
+            if (session == null)
+                return OperationResult<ExamAnalysisResponse>.Failure("Không tìm thấy kết quả bài thi.", 404);
+
+            if (session.Status == UserExamStatus.InProgress)
+                return OperationResult<ExamAnalysisResponse>.Failure("Bạn chưa nộp bài thi nên chưa thể xem phân tích.", 400);
+
             var analysis = await _userExamRepository.GetExamAnalysisSummaryAsync(request.UserExamId, cancellationToken);
-            
+
             var response = new ExamAnalysisResponse();
 
             if (analysis == null || !analysis.Any())

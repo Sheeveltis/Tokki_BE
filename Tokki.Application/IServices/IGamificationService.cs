@@ -1,4 +1,5 @@
-﻿using Tokki.Domain.Entities;
+﻿using Tokki.Application.UseCases.Gamification.Commands.AddGameXp;
+using Tokki.Domain.Entities;
 
 namespace Tokki.Application.IServices
 {
@@ -7,5 +8,7 @@ namespace Tokki.Application.IServices
         Task CheckLoginGamificationAsync(Account user);
 
         Task<bool> TrackStudyTimeAsync(string userId, double seconds);
+        Task<AddGameXpResultDto> AddGameXpAsync(string userId, long amount);
+
     }
 }

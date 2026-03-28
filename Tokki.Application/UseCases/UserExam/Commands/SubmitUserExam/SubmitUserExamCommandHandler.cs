@@ -1,9 +1,9 @@
-﻿using Hangfire;
+using Hangfire;
 using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
@@ -61,6 +61,17 @@ namespace Tokki.Application.UseCases.UserExam.Commands.SubmitUserExam
 
             session.Score = totalScore;
             session.Status = UserExamStatus.Completed;
+
+            // Mark the last skill as finished upon submission
+            var finishedList = string.IsNullOrEmpty(session.FinishedSkills)
+                ? new List<string>()
+                : JsonSerializer.Deserialize<List<string>>(session.FinishedSkills) ?? new List<string>();
+
+            if (!finishedList.Contains(session.CurrentSkill.ToString()))
+            {
+                finishedList.Add(session.CurrentSkill.ToString());
+            }
+            session.FinishedSkills = JsonSerializer.Serialize(finishedList);
 
             await _repository.SaveChangesAsync(token);
 

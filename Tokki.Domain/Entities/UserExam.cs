@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -25,6 +25,10 @@ namespace Tokki.Domain.Entities
 
         public DateTime StartTime { get; set; } = DateTime.UtcNow;
         public DateTime? SubmitTime { get; set; } 
+
+        public QuestionSkill CurrentSkill { get; set; } = QuestionSkill.Listening;
+        public DateTime CurrentSkillStartTime { get; set; } = DateTime.UtcNow;
+        public string? FinishedSkills { get; set; } // JSON list e.g. ["Listening"]
 
         public int Score { get; set; } = 0;
 

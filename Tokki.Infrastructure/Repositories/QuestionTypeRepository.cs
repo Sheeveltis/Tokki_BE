@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -41,7 +41,9 @@ namespace Tokki.Infrastructure.Repositories
                 .OrderBy(qt => qt.Name)
                 .ToListAsync(cancellationToken);
         }
-        public async Task<IEnumerable<QuestionType>> GetAsync(
+        public async Task<(IEnumerable<QuestionType> items, int totalCount)> GetPagedAsync(
+            int pageNumber,
+            int pageSize,
             string? keyword = null,
             QuestionSkill? skill = null,
             DifficultyLevel? difficulty = null,
@@ -52,7 +54,10 @@ namespace Tokki.Infrastructure.Repositories
 
             if (!string.IsNullOrWhiteSpace(keyword))
             {
-                query = query.Where(qt => qt.Name.Contains(keyword) || (qt.Code != null && qt.Code.Contains(keyword)));
+                var search = keyword.Trim();
+                query = query.Where(qt => qt.Name.Contains(search) 
+                                     || (qt.Code != null && qt.Code.Contains(search))
+                                     || qt.QuestionTypeId.Contains(search));
             }
 
             if (skill.HasValue)
@@ -70,11 +75,17 @@ namespace Tokki.Infrastructure.Repositories
                 query = query.Where(qt => qt.ExamType == examType.Value);
             }
 
-            return await query
+            var totalCount = await query.CountAsync(cancellationToken);
+
+            var items = await query
                 .OrderBy(qt => qt.OrderIndex)
                 .ThenBy(qt => qt.ExamType)
                 .ThenBy(qt => qt.Name)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync(cancellationToken);
+
+            return (items, totalCount);
         }
 
         public async Task<bool> IsCodeExistsAsync(string code, string? excludeId = null)

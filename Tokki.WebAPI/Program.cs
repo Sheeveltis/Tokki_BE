@@ -1,4 +1,7 @@
 ﻿// 1. THÊM CÁC NAMESPACE NÀY
+using System.Globalization;
+using System.Text;
+using System.Text.Json;
 using FluentValidation;
 using Hangfire;
 using Hangfire.SqlServer;
@@ -7,9 +10,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models; // Dùng cho Swagger
-using System.Globalization;
-using System.Text;
-using System.Text.Json;
 using Tokki.Application;
 using Tokki.Application.Common.Helpers;
 using Tokki.Application.Common.Helpers.ValidationVietnameseLanguageManager;
@@ -17,6 +17,7 @@ using Tokki.Application.IServices;
 using Tokki.Infrastructure;
 using Tokki.Infrastructure.BackgroundJobs; // Nơi chứa class JwtSettings
 using Tokki.Infrastructure.Configurations;
+using Tokki.Infrastructure.Data;
 using Tokki.Infrastructure.Repositories;
 using Tokki.Infrastructure.Services;
 using Tokki.WebAPI.BackgroundServices;
@@ -246,8 +247,13 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<TokkiDbContext>();
+        db.Database.EnsureCreated();
+    }
 
-app.Run();
+    app.Run();
 }
 catch (Exception ex)
 {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -27,6 +27,7 @@ namespace Tokki.Application.UseCases.UserExam.DTOs
         public double MaxScore { get; set; }
         public int CorrectAnswers { get; set; }
         public int TotalQuestions { get; set; }
+        public int Duration { get; set; }
         public bool IsGraded { get; set; } = true; 
     }
 }

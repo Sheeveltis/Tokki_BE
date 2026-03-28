@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Tokki.Application.IRepositories;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
@@ -45,6 +45,7 @@ namespace Tokki.Infrastructure.Repositories
             ExamType? type = null,
             ExamStatus? status = null,
             string? examTemplateId = null,
+            ExamCreatorFilter creatorFilter = ExamCreatorFilter.All,
             CancellationToken cancellationToken = default)
         {
             var query = _context.Exams
@@ -70,6 +71,15 @@ namespace Tokki.Infrastructure.Repositories
             if (!string.IsNullOrEmpty(examTemplateId))
             {
                 query = query.Where(e => e.ExamTemplateId == examTemplateId);
+            }
+
+            if (creatorFilter == ExamCreatorFilter.AI)
+            {
+                query = query.Where(e => e.CreatedBy == "AI_EXAM_SYSTEM");
+            }
+            else if (creatorFilter == ExamCreatorFilter.Human)
+            {
+                query = query.Where(e => e.CreatedBy != "AI_EXAM_SYSTEM");
             }
 
             var totalCount = await query.CountAsync(cancellationToken);
@@ -149,6 +159,16 @@ namespace Tokki.Infrastructure.Repositories
                 .OrderByDescending(e => e.CreatedAt)
                 .FirstOrDefaultAsync(cancellationToken);
         }
-    }
 
+        public async Task<List<string>> GetRecentQuestionIdsAsync(int examCount, CancellationToken cancellationToken = default)
+        {
+            return await _context.Exams
+                .OrderByDescending(e => e.CreatedAt)
+                .Take(examCount)
+                .SelectMany(e => e.ExamQuestions)
+                .Select(eq => eq.QuestionBankId)
+                .Distinct()
+                .ToListAsync(cancellationToken);
+        }
+    }
 }
