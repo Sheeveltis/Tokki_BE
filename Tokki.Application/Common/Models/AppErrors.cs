@@ -309,7 +309,7 @@ namespace Tokki.Application.Common.Models
         public static readonly Error GameResultNotFound = new( "GameResult.NotFound","Không tìm thấy kết quả trò chơi cho user.");
         //Kho
         //Exam
+        public static readonly Error GameTypeMismatch = new("Game.GameTypeMismatch", "Trò chơi không đúng loại yêu cầu.");
 
-    
     }
 }

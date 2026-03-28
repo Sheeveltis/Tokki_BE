@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System.Collections.Generic;
 using Tokki.Domain.Entities;
@@ -700,8 +700,8 @@ namespace Tokki.Infrastructure.Data
                       .HasMaxLength(15);   // khớp với Games.GameId
 
                 entity.Property(s => s.TopicId)
-                      .IsRequired()
-                      .HasMaxLength(50);   // khớp với Topics.TopicId
+                      .IsRequired(false)
+                      .HasMaxLength(50);   // nullable — Solitaire lưu NULL
 
                 entity.Property(s => s.BestScore)
                       .IsRequired();
@@ -719,11 +719,12 @@ namespace Tokki.Infrastructure.Data
                       .HasForeignKey(s => s.GameId)
                       .OnDelete(DeleteBehavior.Restrict);
 
-                // Quan hệ tới Topic
+                // Quan hệ tới Topic (nullable — Solitaire không có topic)
                 entity.HasOne(s => s.Topic)
                       .WithMany()
                       .HasForeignKey(s => s.TopicId)
-                      .OnDelete(DeleteBehavior.Restrict);
+                      .IsRequired(false)
+                      .OnDelete(DeleteBehavior.SetNull);
 
                 // Quan hệ tới Account (User)
                 entity.HasOne(s => s.User)
