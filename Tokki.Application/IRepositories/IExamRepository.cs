@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,6 +19,7 @@ namespace Tokki.Application.IRepositories
             ExamType? type = null,
             ExamStatus? status = null,
             string? examTemplateId = null,
+            ExamCreatorFilter creatorFilter = ExamCreatorFilter.All,
             CancellationToken cancellationToken = default);
         Task<bool> IsTitleExistsAsync(string title, string? excludeId = null, CancellationToken cancellationToken = default);
         Task<int> GetQuestionCountAsync(string examId, CancellationToken cancellationToken = default);
@@ -30,5 +31,6 @@ namespace Tokki.Application.IRepositories
         Task<Exam?> GetEntranceExamByTypeAsync(
             ExamType examType,
             CancellationToken cancellationToken = default);
+        Task<List<string>> GetRecentQuestionIdsAsync(int examCount, CancellationToken cancellationToken = default);
     }
 }

@@ -21,7 +21,9 @@ namespace Tokki.Application.UseCases.Exam.Queries.GetExams
                 request.PageSize,
                 request.SearchTerm,
                 request.Type,       
-                request.Status    
+                request.Status,
+                null, // examTemplateId
+                request.CreatorFilter
             );
 
             var dtos = items.Select(e => new AdminExamDTO
