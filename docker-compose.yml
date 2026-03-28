@@ -1,0 +1,104 @@
+version: '3.9'
+
+services:
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: tokki_sqlserver
+    environment:
+      SA_PASSWORD: "${SQL_SA_PASSWORD}"
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U SA -P '${SQL_SA_PASSWORD}' -Q 'SELECT 1' -No -C || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    networks:
+      - tokki_network
+
+ 
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tokki_api
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+
+      - ConnectionStrings__DefaultConnection=Server=tcp:capstone-fpt.database.windows.net,1433;Initial Catalog=Capstone;Persist Security Info=False;User ID=gum;Password=Capstone123!;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;    
+      - JwtSettings__Secret=${JWT_SECRET}
+      - JwtSettings__Issuer=${JWT_ISSUER}
+      - JwtSettings__Audience=${JWT_AUDIENCE}
+      - JwtSettings__ExpiryMinutes=60
+
+      - EmailSettings__SmtpHost=smtp.gmail.com
+      - EmailSettings__SmtpPort=587
+      - EmailSettings__FromEmail=${EMAIL_FROM}
+      - EmailSettings__FromName=tokkiLearning
+      - EmailSettings__Password=${EMAIL_PASSWORD}
+      - EmailSettings__EnableSsl=true
+
+      - CloudinarySettings__CloudName=${CLOUDINARY_CLOUD_NAME}
+      - CloudinarySettings__ApiKey=${CLOUDINARY_API_KEY}
+      - CloudinarySettings__ApiSecret=${CLOUDINARY_API_SECRET}
+
+      - AzureSpeech__Key=${AZURE_SPEECH_KEY}
+      - AzureSpeech__Region=southeastasia
+
+      - Authentication__Google__ClientIds__0=${GOOGLE_CLIENT_ID}
+
+      - FacebookAuth__AppId=${FACEBOOK_APP_ID}
+      - FacebookAuth__AppSecret=${FACEBOOK_APP_SECRET}
+
+      - Gemini__Writing__BaseUrl=https://generativelanguage.googleapis.com/v1beta/
+      - Gemini__Writing__Model=gemini-2.5-pro
+      - Gemini__Writing__ApiKey=${GEMINI_WRITING_API_KEY}
+
+      - Gemini__Wordle__BaseUrl=https://generativelanguage.googleapis.com/v1beta/
+      - Gemini__Wordle__Model=gemini-3-flash-preview
+      - Gemini__Wordle__ApiKey=${GEMINI_WORDLE_API_KEY}
+
+      - Gemini__Pronunciation__BaseUrl=https://generativelanguage.googleapis.com/v1beta/
+      - Gemini__Pronunciation__Model=gemini-2.5-flash
+      - Gemini__Pronunciation__ApiKey=${GEMINI_PRONUNCIATION_API_KEY}
+
+      - Gemini__Roadmap__BaseUrl=https://generativelanguage.googleapis.com/v1beta/
+      - Gemini__Roadmap__Model=gemini-2.5-pro
+      - Gemini__Roadmap__ApiKey=${GEMINI_ROADMAP_API_KEY}
+
+      - AiSettings__UseVertex=true
+      - AiSettings__VertexProjectId=gen-lang-client-0529410409
+      - AiSettings__VertexLocation=us-central1
+      - AiSettings__VertexCredentialsPath=/app/credentials/vertex-credentials.json
+
+      - SepaySettings__BankName=OCB
+      - SepaySettings__AccountNumber=0037100025583005
+      - SepaySettings__AccountName=Tang Ngoc Trang Anh
+      - SepaySettings__SubAccount=SEPEIC2025
+      - SepaySettings__WebhookEndpoint=/api/webhooks/payment
+
+    volumes:
+      - ${VERTEX_CREDENTIALS_PATH}:/app/credentials/vertex-credentials.json:ro
+
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    networks:
+      - tokki_network
+    restart: unless-stopped
+
+volumes:
+  sqlserver_data:
+
+networks:
+  tokki_network:
+    driver: bridge
