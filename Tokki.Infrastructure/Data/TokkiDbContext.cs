@@ -72,7 +72,7 @@ namespace Tokki.Infrastructure.Data
         public DbSet<KnowledgeMetadata> KnowledgeMetadatas { get; set; }
         public DbSet<ExamTemplateStructure> ExamTemplateStructures { get; set; }
         public DbSet<UserWeakness> UserWeaknesses { get; set; }
-
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

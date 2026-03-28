@@ -60,8 +60,8 @@ namespace Tokki.Infrastructure
         Tokki.Infrastructure.Services.WritingAi.Question51GeminiPipeline>();
             services.AddScoped<IUserWeaknessRepository, UserWeaknessRepository>();
             services.AddScoped<IRoadmapKnowledgeProfileRepository, RoadmapKnowledgeProfileRepository>();
-
-            // Bạn cũng cần kiểm tra và đăng ký các Repository khác mà Command Handler đang yêu cầu:
+            services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+            services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
             services.AddSingleton<IIdGeneratorService, IdGeneratorService>();
             services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
             services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();

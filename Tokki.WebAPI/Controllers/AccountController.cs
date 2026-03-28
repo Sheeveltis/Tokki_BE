@@ -20,6 +20,9 @@ using Tokki.Application.UseCases.Accounts.Queries.GetInternalUserVipAccounts;
 using Tokki.Application.UseCases.Accounts.Queries.GetMyLevel;
 using Tokki.Application.UseCases.Accounts.Queries.GetUserProfile;
 using Tokki.Application.UseCases.Blogs.Commands.CreateBlog;
+using Tokki.Application.UseCases.Accounts.Commands.RefreshToken;
+
+using Tokki.WebAPI.Utilities;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -39,12 +42,54 @@ namespace Tokki.WebAPI.Controllers
         // =========================================================
 
         [HttpPost("login")]
-        [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginCommand command)
         {
             var result = await _sender.Send(command);
-            return StatusCode(result.StatusCode, result);
+            if (!result.IsSuccess) return StatusCode(result.StatusCode, result);
+
+            // Set HttpOnly cookie
+            CookieUtil.SetRefreshTokenCookie(Response, result.Data.RefreshToken);
+
+            // Xóa khỏi response body trước khi gửi về client
+            result.Data.RefreshToken = null;
+
+            return Ok(result);
         }
+        [HttpPost("refresh")]
+        public async Task<IActionResult> Refresh()
+        {
+            // 1. Đọc cookie refreshToken
+            var rawToken = Request.Cookies["refreshToken"];
+            if (string.IsNullOrWhiteSpace(rawToken))
+                return Unauthorized("Session đã hết hạn, vui lòng đăng nhập lại.");
+
+            // 2. Gửi command xử lý
+            var result = await _sender.Send(new RefreshTokenCommand { RawRefreshToken = rawToken });
+            if (!result.IsSuccess) return StatusCode(result.StatusCode, result);
+
+            // 3. Set cookie mới (MaxAge reset lại 7 ngày)
+            if (!string.IsNullOrEmpty(result.Data.RefreshToken))
+            {
+                CookieUtil.SetRefreshTokenCookie(Response, result.Data.RefreshToken);
+            }
+
+            // 4. Xóa khỏi response body trước khi trả về client
+            result.Data.RefreshToken = null;
+
+            return Ok(result);
+        }
+
+        //[HttpPost("logout")]
+        //public async Task<IActionResult> Logout()
+        //{
+        //    var rawToken = Request.Cookies["refreshToken"];
+        //    if (!string.IsNullOrWhiteSpace(rawToken))
+        //    {
+        //        await _refreshTokenService.RevokeRefreshTokenAsync(rawToken);
+        //        CookieUtil.ClearRefreshTokenCookie(Response);
+        //    }
+        //    return NoContent();
+        //}
 
         [HttpPost("google-login")]
         [AllowAnonymous]
