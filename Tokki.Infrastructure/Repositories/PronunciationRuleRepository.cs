@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,6 +22,19 @@ namespace Tokki.Infrastructure.Repositories
             await _context.PronunciationRules.AddAsync(rule);
         }
 
+        public Task UpdateAsync(PronunciationRule rule)
+        {
+            _context.PronunciationRules.Update(rule);
+            return Task.CompletedTask;
+        }
+
+        public Task DeleteAsync(PronunciationRule rule)
+        {
+            rule.IsDeleted = true;
+            _context.PronunciationRules.Update(rule);
+            return Task.CompletedTask;
+        }
+
         public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             await _context.SaveChangesAsync(cancellationToken);
@@ -33,17 +46,57 @@ namespace Tokki.Infrastructure.Repositories
                 .FirstOrDefaultAsync(r => r.PronunciationRuleId == id && !r.IsDeleted);
         }
 
-        public async Task<bool> IsRuleNameExistsAsync(string ruleName)
+        public async Task<PronunciationRule?> GetByIdWithDetailsAsync(string id)
         {
             return await _context.PronunciationRules
-                .AnyAsync(r => r.RuleName == ruleName && !r.IsDeleted);
+                .Include(r => r.Examples)
+                .Include(r => r.Creator)
+                .Include(r => r.Updater)
+                .FirstOrDefaultAsync(r => r.PronunciationRuleId == id && !r.IsDeleted);
         }
+
+        public async Task<bool> IsRuleNameExistsAsync(string ruleName, string? excludeId = null)
+        {
+            var query = _context.PronunciationRules.Where(r => r.RuleName == ruleName && !r.IsDeleted);
+            if (!string.IsNullOrEmpty(excludeId))
+            {
+                query = query.Where(r => r.PronunciationRuleId != excludeId);
+            }
+            return await query.AnyAsync();
+        }
+
         public async Task<List<PronunciationRule>> GetAllActiveRulesAsync(CancellationToken cancellationToken = default)
         {
             return await _context.PronunciationRules
                 .Where(r => !r.IsDeleted)
                 .OrderBy(r => r.SortOrder)
                 .ToListAsync(cancellationToken);
+        }
+
+        public async Task<(List<PronunciationRule> Items, int TotalCount)> GetPagedAsync(
+            int pageNumber,
+            int pageSize,
+            string? searchTerm,
+            CancellationToken cancellationToken = default)
+        {
+            var query = _context.PronunciationRules.AsNoTracking().Where(r => !r.IsDeleted);
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var search = searchTerm.Trim();
+                query = query.Where(r => r.RuleName.Contains(search) 
+                                     || (r.Description != null && r.Description.Contains(search))
+                                     || r.PronunciationRuleId.Contains(search));
+            }
+
+            var totalCount = await query.CountAsync(cancellationToken);
+            var items = await query
+                .OrderBy(r => r.SortOrder)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+
+            return (items, totalCount);
         }
     }
 }
