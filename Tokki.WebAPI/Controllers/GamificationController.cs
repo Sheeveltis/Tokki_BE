@@ -1,15 +1,17 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using Tokki.Application.Common.Helpers;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Application.UseCases.Accounts.DTOs;
+using Tokki.Application.UseCases.Gamification.Commands.AddGameXp;
 
 namespace Tokki.WebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize] 
+    [Authorize]
     public class GamificationController : ControllerBase
     {
         private readonly IGamificationService _gamificationService;
@@ -46,7 +48,6 @@ namespace Tokki.WebAPI.Controllers
             int currentLevel = LevelEngine.GetLevel(user.TotalXP);
 
             long xpAtStartOfLevel = LevelEngine.GetTotalXpRequiredForLevel(currentLevel);
-
             long xpAtStartOfNextLevel = LevelEngine.GetTotalXpRequiredForLevel(currentLevel + 1);
 
             long xpGainedInCurrentLevel = user.TotalXP - xpAtStartOfLevel;
@@ -62,6 +63,20 @@ namespace Tokki.WebAPI.Controllers
                 Streak = user.AchievedGoalStreak,
                 Title = user.CurrentTitle?.Name ?? "N/A"
             });
+        }
+
+        [HttpPost("game-xp")]
+        public async Task<IActionResult> AddGameXp([FromBody] AddGameXpRequest request)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            if (request.Amount < 1 || request.Amount > 500)
+                return BadRequest("Số XP không hợp lệ. Vui lòng nhập giá trị từ 1 đến 500.");
+
+            var result = await _gamificationService.AddGameXpAsync(userId, request.Amount);
+            return Ok(result);
         }
     }
 }

@@ -1,8 +1,9 @@
 ﻿using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
+using Tokki.Application.UseCases.Gamification.Commands.AddGameXp;
 using Tokki.Domain.Entities;
 using Tokki.Infrastructure.Data;
-using Tokki.Application.Common.Helpers; 
+using Tokki.Application.Common.Helpers;
 namespace Tokki.Infrastructure.Services
 {
     public class GamificationService : IGamificationService
@@ -76,7 +77,7 @@ namespace Tokki.Infrastructure.Services
 
                 if (user.LastStreakDate.HasValue && user.LastStreakDate.Value.Date < yesterday)
                 {
-                    user.AchievedGoalStreak = 0; 
+                    user.AchievedGoalStreak = 0;
                 }
             }
 
@@ -91,11 +92,11 @@ namespace Tokki.Infrastructure.Services
 
                 if (user.LastStreakDate.HasValue && user.LastStreakDate.Value.Date == yesterday)
                 {
-                    user.AchievedGoalStreak++; 
+                    user.AchievedGoalStreak++;
                 }
                 else
                 {
-                    user.AchievedGoalStreak = 1; 
+                    user.AchievedGoalStreak = 1;
                 }
 
                 if (user.AchievedGoalStreak > user.MaxStreak)
@@ -124,26 +125,61 @@ namespace Tokki.Infrastructure.Services
                 }
             }
 
-
             user.UpdatedAt = vietnamNow;
 
             await _accountRepository.UpdateUserAsync(user);
             await _accountRepository.SaveChangesAsync(default);
 
-            return isStreakCompletedNow;       
+            return isStreakCompletedNow;
         }
         private void HandleLazyReset(Account user, DateTime today, DateTime yesterday)
         {
             if (user.UpdatedAt.HasValue && user.UpdatedAt.Value.Date < today)
             {
-                user.DailyStudySeconds = 0; 
+                user.DailyStudySeconds = 0;
 
                 if (user.LastStreakDate.HasValue && user.LastStreakDate.Value.Date < yesterday)
                 {
-                    user.AchievedGoalStreak = 0; 
+                    user.AchievedGoalStreak = 0;
                 }
             }
         }
 
+        public async Task<AddGameXpResultDto> AddGameXpAsync(string userId, long amount)
+        {
+            var user = await _accountRepository.GetByIdAsync(userId);
+            if (user == null)
+                throw new InvalidOperationException($"Không tìm thấy user với id: {userId}");
+
+            var vietnamNow = DateTime.UtcNow.AddHours(7);
+
+            user.TotalXP += amount;
+
+            bool isNewTitleUnlocked = false;
+            string? newTitleName = null;
+            string? newTitleColorHex = null;
+
+            var bestTitle = await _titleRepository.GetTitleByXpAsync(user.TotalXP);
+            if (bestTitle != null && user.CurrentTitleId != bestTitle.TitleId)
+            {
+                user.CurrentTitleId = bestTitle.TitleId;
+                isNewTitleUnlocked = true;
+                newTitleName = bestTitle.Name;
+                newTitleColorHex = bestTitle.ColorHex;
+            }
+
+            user.UpdatedAt = vietnamNow;
+            await _accountRepository.UpdateUserAsync(user);
+            await _accountRepository.SaveChangesAsync(default);
+
+            return new AddGameXpResultDto
+            {
+                TotalXP = user.TotalXP,
+                XpAdded = amount,
+                IsNewTitleUnlocked = isNewTitleUnlocked,
+                NewTitleName = newTitleName,
+                NewTitleColorHex = newTitleColorHex
+            };
+        }
     }
 }
