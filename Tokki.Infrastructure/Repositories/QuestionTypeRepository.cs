@@ -54,7 +54,10 @@ namespace Tokki.Infrastructure.Repositories
 
             if (!string.IsNullOrWhiteSpace(keyword))
             {
-                query = query.Where(qt => qt.Name.Contains(keyword) || (qt.Code != null && qt.Code.Contains(keyword)));
+                var search = keyword.Trim();
+                query = query.Where(qt => qt.Name.Contains(search) 
+                                     || (qt.Code != null && qt.Code.Contains(search))
+                                     || qt.QuestionTypeId.Contains(search));
             }
 
             if (skill.HasValue)
