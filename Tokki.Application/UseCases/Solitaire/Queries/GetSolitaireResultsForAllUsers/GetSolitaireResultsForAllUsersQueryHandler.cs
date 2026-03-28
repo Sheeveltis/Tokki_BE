@@ -59,27 +59,33 @@ namespace Tokki.Application.UseCases.Solitaire.Queries.GetSolitaireResultsForAll
                 request.PageSize
             );
 
-            // Lấy tên user tuần tự để tránh lỗi DbContext concurrency (EF Core không thread-safe)
-            var userNameCache = new Dictionary<string, string>();
+            // Lấy thông tin user tuần tự, cache theo userId để tránh query trùng
+            var userInfoCache = new Dictionary<string, Tokki.Application.UseCases.Accounts.DTOs.AccountBasicInfoDTO?>();
             foreach (var s in result.Items)
             {
-                if (!userNameCache.ContainsKey(s.UserId))
+                if (!userInfoCache.ContainsKey(s.UserId))
                 {
-                    var account = await _accountRepository.GetByIdAsync(s.UserId);
-                    userNameCache[s.UserId] = account?.FullName ?? string.Empty;
+                    userInfoCache[s.UserId] = await _accountRepository.GetBasicInfoAsync(s.UserId);
                 }
             }
 
-            var dtos = result.Items.Select(s => new SolitaireResultDto
+            var dtos = result.Items.Select(s =>
             {
-                GameMatchSessionId = s.GameMatchSessionId,
-                UserId = s.UserId,
-                UserName = userNameCache.GetValueOrDefault(s.UserId, string.Empty),
-                GameId = s.GameId,
-                BestScore = s.BestScore,
-                LatestScore = s.LatestScore,
-                GameDifficulty = s.GameDifficulty,
-                CreatedAt = s.CreatedAt
+                var info = userInfoCache.GetValueOrDefault(s.UserId);
+                return new SolitaireResultDto
+                {
+                    GameMatchSessionId = s.GameMatchSessionId,
+                    UserId = s.UserId,
+                    UserName = info?.FullName ?? string.Empty,
+                    TitleName = info?.CurrentTitleName,
+                    TitleColorHex = info?.CurrentColorHexTitle,
+                    TitleIconUrl = info?.TitleIconUrl,
+                    GameId = s.GameId,
+                    BestScore = s.BestScore,
+                    LatestScore = s.LatestScore,
+                    GameDifficulty = s.GameDifficulty,
+                    CreatedAt = s.CreatedAt
+                };
             }).ToList();
 
             var pagedResult = PagedResult<SolitaireResultDto>.Create(

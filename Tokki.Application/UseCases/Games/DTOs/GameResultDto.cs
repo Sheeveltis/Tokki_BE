@@ -7,6 +7,9 @@ namespace Tokki.Application.UseCases.Games.DTOs
         public string GameMatchSessionId { get; set; } = string.Empty;
         public string UserId { get; set; } = string.Empty;
         public string UserName { get; set; } = string.Empty;
+        public string? TitleName { get; set; }
+        public string? TitleColorHex { get; set; }
+        public string? TitleIconUrl { get; set; }
         public string GameId { get; set; } = string.Empty;
         public string TopicId { get; set; } = string.Empty;
 

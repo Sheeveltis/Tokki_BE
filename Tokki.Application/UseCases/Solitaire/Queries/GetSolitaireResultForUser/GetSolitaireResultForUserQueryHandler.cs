@@ -66,14 +66,16 @@ namespace Tokki.Application.UseCases.Solitaire.Queries.GetSolitaireResultForUser
                 );
             }
 
-            var account = await _accountRepository.GetByIdAsync(session.UserId);
-            var userName = account?.FullName ?? string.Empty;
+            var userInfo = await _accountRepository.GetBasicInfoAsync(session.UserId);
 
             var dto = new SolitaireResultDto
             {
                 GameMatchSessionId = session.GameMatchSessionId,
                 UserId = session.UserId,
-                UserName = userName,
+                UserName = userInfo?.FullName ?? string.Empty,
+                TitleName = userInfo?.CurrentTitleName,
+                TitleColorHex = userInfo?.CurrentColorHexTitle,
+                TitleIconUrl = userInfo?.TitleIconUrl,
                 GameId = session.GameId,
                 BestScore = session.BestScore,
                 LatestScore = session.LatestScore,

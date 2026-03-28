@@ -1,4 +1,5 @@
 using MediatR;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,28 +39,34 @@ namespace Tokki.Application.UseCases.Games.Queries.GetGameResultsForAllUsers
             var sessions = result.Items;
             var totalCount = result.TotalCount;
 
-            // Lấy tên user tuần tự để tránh lỗi DbContext concurrency (EF Core không thread-safe)
-            var userNameCache = new Dictionary<string, string>();
+            // Lấy thông tin user tuần tự, cache theo userId để tránh query trùng
+            var userInfoCache = new Dictionary<string, Tokki.Application.UseCases.Accounts.DTOs.AccountBasicInfoDTO?>();
             foreach (var s in sessions)
             {
-                if (!userNameCache.ContainsKey(s.UserId))
+                if (!userInfoCache.ContainsKey(s.UserId))
                 {
-                    var account = await _accountRepository.GetByIdAsync(s.UserId);
-                    userNameCache[s.UserId] = account?.FullName ?? string.Empty;
+                    userInfoCache[s.UserId] = await _accountRepository.GetBasicInfoAsync(s.UserId);
                 }
             }
 
-            var dtos = sessions.Select(s => new GameResultDto
+            var dtos = sessions.Select(s =>
             {
-                GameMatchSessionId = s.GameMatchSessionId,
-                UserId = s.UserId,
-                UserName = userNameCache.GetValueOrDefault(s.UserId, string.Empty),
-                GameId = s.GameId,
-                TopicId = s.TopicId,
-                BestScore = s.BestScore,
-                LatestScore = s.LatestScore,
-                GameDifficulty = s.GameDifficulty,
-                CreatedAt = s.CreatedAt
+                var info = userInfoCache.GetValueOrDefault(s.UserId);
+                return new GameResultDto
+                {
+                    GameMatchSessionId = s.GameMatchSessionId,
+                    UserId = s.UserId,
+                    UserName = info?.FullName ?? string.Empty,
+                    TitleName = info?.CurrentTitleName,
+                    TitleColorHex = info?.CurrentColorHexTitle,
+                    TitleIconUrl = info?.TitleIconUrl,
+                    GameId = s.GameId,
+                    TopicId = s.TopicId,
+                    BestScore = s.BestScore,
+                    LatestScore = s.LatestScore,
+                    GameDifficulty = s.GameDifficulty,
+                    CreatedAt = s.CreatedAt
+                };
             }).ToList();
 
             var pagedResult = PagedResult<GameResultDto>.Create(
