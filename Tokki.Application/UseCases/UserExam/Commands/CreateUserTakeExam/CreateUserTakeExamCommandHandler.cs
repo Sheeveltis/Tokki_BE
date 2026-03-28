@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
@@ -37,7 +37,11 @@ namespace Tokki.Application.UseCases.UserExam.Commands.CreateUserTakeExam
                 ExamId = originalExam.ExamId,
                 StartTime = DateTime.UtcNow,
                 Status = UserExamStatus.InProgress,
-                Score = 0
+                Score = 0,
+                // Initialize skill time tracking
+                CurrentSkill = originalExam.ExamTemplate.TemplateParts.OrderBy(p => p.QuestionFrom).FirstOrDefault()?.Skill ?? QuestionSkill.Listening,
+                CurrentSkillStartTime = DateTime.UtcNow,
+                FinishedSkills = "[]"
             };
 
             var parts = originalExam.ExamTemplate.TemplateParts;

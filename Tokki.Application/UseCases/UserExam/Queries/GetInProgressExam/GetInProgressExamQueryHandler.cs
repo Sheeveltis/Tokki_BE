@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Tokki.Application.Common.Models;
@@ -61,20 +62,35 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
 
             var parts = session.Exam.ExamTemplate.TemplateParts.OrderBy(p => p.QuestionFrom).ToList();
             var skillSequence = parts.Select(p => p.Skill.ToString()).Distinct().ToList();
-
             var skillRemaining = new Dictionary<string, int>();
-            int currentElapsedSeconds = elapsedSeconds;
+
+            var finishedList = string.IsNullOrEmpty(session.FinishedSkills)
+                ? new List<string>()
+                : JsonSerializer.Deserialize<List<string>>(session.FinishedSkills) ?? new List<string>();
 
             foreach (var s in skillSequence)
             {
-                int skillAllocatedSec = session.Exam.SkillDurationsDict.TryGetValue(s, out int d) ? d * 60 : 0;
+                if (finishedList.Contains(s))
+                {
+                    skillRemaining[s] = 0;
+                    continue;
+                }
 
-                int remainingForSkill = Math.Max(0, skillAllocatedSec - currentElapsedSeconds);
-                skillRemaining[s] = remainingForSkill;
-
-                currentElapsedSeconds = Math.Max(0, currentElapsedSeconds - skillAllocatedSec);
+                if (s == session.CurrentSkill.ToString())
+                {
+                    int skillAllocatedSec = session.Exam.SkillDurationsDict.TryGetValue(s, out int d) ? d * 60 : 0;
+                    int skillSpentSoFar = (int)(DateTime.UtcNow - session.CurrentSkillStartTime).TotalSeconds;
+                    skillRemaining[s] = Math.Max(0, skillAllocatedSec - skillSpentSoFar);
+                }
+                else
+                {
+                    // Skills not yet started
+                    int skillAllocatedSec = session.Exam.SkillDurationsDict.TryGetValue(s, out int d) ? d * 60 : 0;
+                    skillRemaining[s] = skillAllocatedSec;
+                }
             }
 
+            var currentSkillStr = session.CurrentSkill.ToString();
             var response = new UserTakeExamResponse
             {
                 UserExamId = session.UserExamId,
@@ -85,6 +101,8 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
                 TimeRemaining = remaining,
                 SkillDurations = session.Exam.SkillDurationsDict,
                 SkillTimeRemaining = skillRemaining,
+                CurrentSkill = currentSkillStr,
+                SkillTimeRemainingForCurrent = skillRemaining.ContainsKey(currentSkillStr) ? skillRemaining[currentSkillStr] : 0,
                 Part = new ExamSkillsDto()
             };
 
