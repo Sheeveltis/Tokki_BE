@@ -17,7 +17,6 @@ namespace Tokki.Infrastructure.Data
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<Report> Reports { get; set; }
         public DbSet<Account> Accounts { get; set; }
-        public DbSet<Otp> OtpCodes { get; set; }
         public DbSet<SystemConfig> SystemConfig { get; set; }
         public DbSet<VipPackage> VipPackages { get; set; }
         public DbSet<SocialLogin> SocialLogins { get; set; }
@@ -198,25 +197,7 @@ namespace Tokki.Infrastructure.Data
             //    .HasForeignKey(us => us.UserId)
             //    .OnDelete(DeleteBehavior.Cascade);
 
-            // =========================================================
-            // 5. CONFIG OTP
-            // =========================================================
-
-            modelBuilder.Entity<Otp>(entity =>
-            {
-                entity.HasOne(o => o.Account)
-                      .WithMany()
-                      .HasForeignKey(o => o.UserId)
-                      .OnDelete(DeleteBehavior.Cascade);
-
-                entity.Property(o => o.Status)
-                      .HasConversion<int>()
-                      .HasMaxLength(20);
-
-                entity.Property(o => o.Type)
-                      .HasConversion<int>()
-                      .HasMaxLength(30);
-            });
+           
 
             // =========================================================
             // 6. CONFIG SYSTEM CONFIG
