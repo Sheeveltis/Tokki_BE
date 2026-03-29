@@ -2,6 +2,7 @@ using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.Exam.DTOs;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Exam.Queries.GetUserExamsByExamId
 {
@@ -20,6 +21,8 @@ namespace Tokki.Application.UseCases.Exam.Queries.GetUserExamsByExamId
                 request.ExamId,
                 request.PageNumber,
                 request.PageSize,
+                request.SortBy,
+                request.IsDescending,
                 cancellationToken
             );
 

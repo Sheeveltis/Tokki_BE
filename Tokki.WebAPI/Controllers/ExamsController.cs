@@ -20,6 +20,7 @@ using Tokki.Application.UseCases.Exam.Queries.GetQuestionsByPart;
 using Tokki.Application.UseCases.Exam.Queries.GetTemplateSkills;
 using Tokki.Application.UseCases.Exam.Commands.ExportExamToPdf;
 using Tokki.Application.UseCases.UserExam.Commands.CreateUserTakeExam;
+using Tokki.Domain.Enums;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -101,13 +102,20 @@ namespace Tokki.WebAPI.Controllers
 
         [HttpGet("admin/stats/{examId}/participants")]
         [Authorize(Roles = "Admin,Staff")]
-        public async Task<IActionResult> GetExamParticipants(string examId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetExamParticipants(
+            string examId, 
+            [FromQuery] int pageNumber = 1, 
+            [FromQuery] int pageSize = 10,
+            [FromQuery] ExamParticipantSortBy sortBy = ExamParticipantSortBy.SubmitTime,
+            [FromQuery] bool isDescending = true)
         {
             var result = await _sender.Send(new GetUserExamsByExamIdQuery 
             { 
                 ExamId = examId, 
                 PageNumber = pageNumber, 
-                PageSize = pageSize 
+                PageSize = pageSize,
+                SortBy = sortBy,
+                IsDescending = isDescending
             });
             return StatusCode(result.StatusCode, result);
         }

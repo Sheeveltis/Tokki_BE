@@ -53,6 +53,8 @@ namespace Tokki.Application.IRepositories
             string examId,
             int pageNumber,
             int pageSize,
+            ExamParticipantSortBy sortBy = ExamParticipantSortBy.SubmitTime,
+            bool isDescending = true,
             CancellationToken cancellationToken = default);
     }
 }

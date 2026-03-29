@@ -339,23 +339,34 @@ namespace Tokki.Infrastructure.Repositories
             string examId,
             int pageNumber,
             int pageSize,
+            ExamParticipantSortBy sortBy = ExamParticipantSortBy.SubmitTime,
+            bool isDescending = true,
             CancellationToken cancellationToken = default)
         {
             var query = _context.UserExams
                 .AsNoTracking()
                 .Where(ue => ue.ExamId == examId && ue.Status == UserExamStatus.Completed);
 
-            var dtoQuery = query
-                .OrderByDescending(ue => ue.SubmitTime)
-                .Select(ue => new ExamParticipantDTO
-                {
-                    UserExamId = ue.UserExamId,
-                    UserEmail = ue.User.Email,
-                    UserName = ue.User.FullName,
-                    UserAvatar = ue.User.AvatarUrl,
-                    Score = ue.Score,
-                    SubmitTime = ue.SubmitTime
-                });
+            // Apply sorting
+            query = sortBy switch
+            {
+                ExamParticipantSortBy.Score => isDescending 
+                    ? query.OrderByDescending(ue => ue.Score) 
+                    : query.OrderBy(ue => ue.Score),
+                _ => isDescending 
+                    ? query.OrderByDescending(ue => ue.SubmitTime) 
+                    : query.OrderBy(ue => ue.SubmitTime)
+            };
+
+            var dtoQuery = query.Select(ue => new ExamParticipantDTO
+            {
+                UserExamId = ue.UserExamId,
+                UserEmail = ue.User.Email,
+                UserName = ue.User.FullName,
+                UserAvatar = ue.User.AvatarUrl,
+                Score = ue.Score,
+                SubmitTime = ue.SubmitTime
+            });
 
             return await dtoQuery.ToPagedListAsync(pageNumber, pageSize);
         }
