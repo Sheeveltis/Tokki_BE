@@ -199,7 +199,21 @@ namespace Tokki.Application.UseCases.Exam.Commands.ExportExamToPdf
                     "4" => "④", 
                     _   => $"{opt.KeyOption}." 
                 };
-                sb.AppendLine($"<li class='option-item'>{marker} {opt.Content}</li>");
+
+                sb.AppendLine("<li class='option-item'>");
+                sb.AppendLine($"<span class='option-marker'>{marker}</span>");
+                
+                if (!string.IsNullOrEmpty(opt.ImageUrl))
+                {
+                    sb.AppendLine($"<img class='option-image' src='{opt.ImageUrl}' />");
+                }
+                
+                if (!string.IsNullOrEmpty(opt.Content))
+                {
+                    sb.AppendLine($"<span class='option-text'>{opt.Content}</span>");
+                }
+                
+                sb.AppendLine("</li>");
             }
             sb.AppendLine("</ul>");
 

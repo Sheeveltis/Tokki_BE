@@ -18,14 +18,14 @@
         /* Cover Page Styles */
         .cover-page {
             box-sizing: border-box;
-            width: 210mm;
+            width: 100%;
             padding: 15mm;
             display: flex;
             flex-direction: column;
             align-items: center;
             position: relative;
             page-break-after: always;
-            margin: auto;
+            margin: 0;
         }
 
         .cover-header {
@@ -181,8 +181,8 @@
         /* Main Content Styles */
         .page-content {
             box-sizing: border-box;
-            width: 210mm;
-            margin: auto;
+            width: 100%;
+            margin: 0;
             padding: 0 40px;
         }
 
@@ -216,7 +216,7 @@
 
         .part-header-topik {
             font-weight: 700;
-            font-size: 18px;
+            font-size: 15px;
             margin-bottom: 12px;
         }
 
@@ -240,7 +240,7 @@
 
         .question-header {
             font-weight: 400;
-            font-size: 13px;
+            font-size: 14px;
             margin-bottom: 8px;
             display: flex;
         }
@@ -253,15 +253,40 @@
         .option-list {
             list-style: none;
             padding-left: 35px;
-            margin-top: 8px;
-            display: flex;
-            flex-wrap: wrap;
+            margin-top: 10px;
         }
 
         .option-item {
+            display: inline-block;
             width: 48%;
-            margin-bottom: 8px;
-            font-size: 13px;
+            vertical-align: top;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+            font-size: 14px;
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .option-marker {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 25px;
+            font-weight: 400;
+        }
+
+        .option-image {
+            max-height: 128px;
+            max-width: 270px;
+            object-fit: contain;
+            margin-bottom: 5px;
+            display: block;
+            border: 1px solid #eee;
+        }
+
+        .option-text {
+            line-height: 1.5;
+            display: block;
         }
 
         .media-image {
