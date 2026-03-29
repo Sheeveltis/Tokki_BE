@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Tokki.Application.IRepositories;
+using Tokki.Application.UseCases.Exam.DTOs;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 using Tokki.Infrastructure.Data;
@@ -228,6 +229,71 @@ namespace Tokki.Infrastructure.Repositories
             }
 
             return (baseExams, totalCount);
+        }
+
+        public async Task<ExamStatProjection?> GetExamStatsByIdAsync(string examId, CancellationToken cancellationToken = default)
+        {
+            var exam = await _context.Exams.AsNoTracking()
+                .Where(e => e.ExamId == examId)
+                .Select(e => new ExamStatProjection
+                {
+                    ExamId = e.ExamId,
+                    ExamTemplateId = e.ExamTemplateId,
+                    ExamTemplateName = e.ExamTemplate != null ? e.ExamTemplate.Name : "N/A",
+                    Title = e.Title,
+                    Type = e.Type,
+                    Status = e.Status,
+                    Duration = e.Duration,
+                    SkillDurations = e.SkillDurations,
+                    CreatedAt = e.CreatedAt,
+                    PdfDownloadCount = e.PdfDownloadCount,
+                    TemplateParts = e.ExamTemplate != null 
+                        ? e.ExamTemplate.TemplateParts.Select(tp => new TemplatePartStatProjection
+                        {
+                            Skill = tp.Skill,
+                            QuestionFrom = tp.QuestionFrom,
+                            QuestionTo = tp.QuestionTo
+                        }).ToList() 
+                        : new List<TemplatePartStatProjection>()
+                })
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (exam == null) return null;
+
+            // Stats
+            var userStats = await _context.UserExams
+                .Where(ue => ue.ExamId == examId)
+                .GroupBy(ue => ue.ExamId)
+                .Select(g => new {
+                    TotalParticipants = g.Count(),
+                    AverageScore = g.Where(ue => ue.Status == UserExamStatus.Completed).Average(ue => (double?)ue.Score) ?? 0,
+                    TopScore = g.Where(ue => ue.Status == UserExamStatus.Completed).Max(ue => (int?)ue.Score) ?? 0,
+                    AverageDurationMinutes = g.Where(ue => ue.Status == UserExamStatus.Completed && ue.SubmitTime != null)
+                        .Average(ue => (double?)EF.Functions.DateDiffMinute(ue.StartTime, ue.SubmitTime)) ?? 0,
+                    InProgressCount = g.Count(ue => ue.Status == UserExamStatus.InProgress),
+                    CompletedCount = g.Count(ue => ue.Status == UserExamStatus.Completed)
+                })
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (userStats != null)
+            {
+                exam.TotalParticipants = userStats.TotalParticipants;
+                exam.AverageScore = userStats.AverageScore;
+                exam.TopScore = userStats.TopScore;
+                exam.AverageDurationMinutes = userStats.AverageDurationMinutes;
+                exam.InProgressCount = userStats.InProgressCount;
+                exam.CompletedCount = userStats.CompletedCount;
+            }
+
+            var questions = await _context.ExamQuestions
+                .Where(eq => eq.ExamId == examId)
+                .Select(eq => eq.QuestionNo)
+                .ToListAsync(cancellationToken);
+
+            exam.TotalQuestions = questions.Count;
+            exam.QuestionNumbers = questions;
+
+            return exam;
         }
 
         public async Task<bool> IsTitleExistsAsync(string title, string? excludeId = null, CancellationToken cancellationToken = default)
