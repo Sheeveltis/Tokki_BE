@@ -13,5 +13,7 @@ namespace Tokki.Application.UseCases.Exam.Queries.GetExamsStats
         public ExamStatus? Status { get; set; }
         public ExamType? Type { get; set; }
         public ExamCreatorFilter CreatorFilter { get; set; } = ExamCreatorFilter.All;
+        public ExamStatsSortBy SortBy { get; set; } = ExamStatsSortBy.CreatedAt;
+        public bool IsDescending { get; set; } = true;
     }
 }

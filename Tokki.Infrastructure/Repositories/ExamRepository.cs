@@ -100,6 +100,8 @@ namespace Tokki.Infrastructure.Repositories
             ExamType? type = null,
             ExamStatus? status = null,
             ExamCreatorFilter creatorFilter = ExamCreatorFilter.All,
+            ExamStatsSortBy sortBy = ExamStatsSortBy.CreatedAt,
+            bool isDescending = true,
             CancellationToken cancellationToken = default)
         {
             var query = _context.Exams.AsNoTracking();
@@ -128,11 +130,27 @@ namespace Tokki.Infrastructure.Repositories
                 query = query.Where(e => e.CreatedBy != "AI_EXAM_SYSTEM");
             }
 
+            // Apply sorting (BEFORE paging)
+            query = sortBy switch
+            {
+                ExamStatsSortBy.Participants => isDescending 
+                    ? query.OrderByDescending(e => e.UserExams.Count()) 
+                    : query.OrderBy(e => e.UserExams.Count()),
+                ExamStatsSortBy.PdfDownload => isDescending 
+                    ? query.OrderByDescending(e => e.PdfDownloadCount) 
+                    : query.OrderBy(e => e.PdfDownloadCount),
+                ExamStatsSortBy.AverageScore => isDescending 
+                    ? query.OrderByDescending(e => e.UserExams.Where(ue => ue.Status == UserExamStatus.Completed).Average(ue => (double?)ue.Score) ?? 0)
+                    : query.OrderBy(e => e.UserExams.Where(ue => ue.Status == UserExamStatus.Completed).Average(ue => (double?)ue.Score) ?? 0),
+                _ => isDescending 
+                    ? query.OrderByDescending(e => e.CreatedAt) 
+                    : query.OrderBy(e => e.CreatedAt)
+            };
+
             var totalCount = await query.CountAsync(cancellationToken);
 
             // 1. Fetch base exam info first (Fast)
             var baseExams = await query
-                .OrderByDescending(e => e.CreatedAt)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .Select(e => new ExamStatProjection

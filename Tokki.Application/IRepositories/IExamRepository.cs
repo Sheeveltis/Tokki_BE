@@ -61,6 +61,8 @@ namespace Tokki.Application.IRepositories
             ExamType? type = null,
             ExamStatus? status = null,
             ExamCreatorFilter creatorFilter = ExamCreatorFilter.All,
+            ExamStatsSortBy sortBy = ExamStatsSortBy.CreatedAt,
+            bool isDescending = true,
             CancellationToken cancellationToken = default);
 
         Task<bool> IsTitleExistsAsync(string title, string? excludeId = null, CancellationToken cancellationToken = default);

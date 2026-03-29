@@ -25,6 +25,8 @@ namespace Tokki.Application.UseCases.Exam.Queries.GetExamsStats
                 request.Type,
                 request.Status,
                 request.CreatorFilter,
+                request.SortBy,
+                request.IsDescending,
                 cancellationToken
             );
 
