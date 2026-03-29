@@ -28,6 +28,11 @@ namespace Tokki.Application.UseCases.Exam.Commands.ExportExamToPdf
                 return OperationResult<ExportExamPdfResponse>.Failure("Không tìm thấy đề thi.", 404);
             }
 
+            // Increment PDF Download Count
+            exam.PdfDownloadCount++;
+            await _examRepository.UpdateAsync(exam);
+            await _examRepository.SaveChangesAsync(cancellationToken);
+
             string[] possiblePaths = {
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Templates", "ExamExportTemplate.html"),
                 Path.Combine(Directory.GetCurrentDirectory(), "Resources", "Templates", "ExamExportTemplate.html"),
