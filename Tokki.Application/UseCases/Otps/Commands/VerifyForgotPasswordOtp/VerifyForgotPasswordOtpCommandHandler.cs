@@ -1,7 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using MediatR;
 using Tokki.Application.Common.Models;
@@ -11,42 +10,51 @@ using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Otps.Commands.VerifyForgotPasswordOtp
 {
+    // DTO nội bộ để deserialize value trong Redis
+    internal class ForgotPasswordOtpRedisEntry
+    {
+        public string OtpCode { get; set; } = string.Empty;
+        public int AttemptCount { get; set; } = 0;
+    }
+
     public class VerifyForgotPasswordOtpCommandHandler : IRequestHandler<VerifyForgotPasswordOtpCommand, OperationResult<string>>
     {
-        private readonly IOtpRepository _otpRepository;
+        private readonly IRedisService _redisService;
         private readonly IAccountRepository _accountRepository;
         private readonly IJwtTokenGenerator _jwtTokenGenerator;
 
-        public VerifyForgotPasswordOtpCommandHandler(IOtpRepository otpRepository, IAccountRepository accountRepository, IJwtTokenGenerator jwtTokenGenerator)
+        public VerifyForgotPasswordOtpCommandHandler(
+            IRedisService redisService,
+            IAccountRepository accountRepository,
+            IJwtTokenGenerator jwtTokenGenerator)
         {
-            _otpRepository = otpRepository;
+            _redisService = redisService;
             _accountRepository = accountRepository;
             _jwtTokenGenerator = jwtTokenGenerator;
         }
 
         public async Task<OperationResult<string>> Handle(VerifyForgotPasswordOtpCommand request, CancellationToken cancellationToken)
         {
-            // Logic check OTP 
-            var validOtp = await _otpRepository.GetLatestValidOtpAsync(request.Email, OtpType.ResetPassword);
-            if (validOtp == null)
-            {
+            // Tìm OTP trong Redis
+            var otpKey = $"OTP:ResetPassword:{request.Email}";
+            var rawValue = await _redisService.GetAsync(otpKey);
+
+            if (rawValue == null)
                 return OperationResult<string>.Failure(new List<Error> { AppErrors.OtpInvalid });
-            }
 
-            if (validOtp.OtpCode != request.OtpCode)
-            {
+            var entry = JsonSerializer.Deserialize<ForgotPasswordOtpRedisEntry>(rawValue);
+            if (entry == null)
+                return OperationResult<string>.Failure(new List<Error> { AppErrors.OtpInvalid });
+
+            // So sánh mã OTP
+            if (entry.OtpCode != request.OtpCode)
                 return OperationResult<string>.Failure(new List<Error> { AppErrors.OtpCodeWrong });
-            }
 
-            // Đánh dấu OTP đã dùng
-            validOtp.Status = OtpStatus.Used;
-            validOtp.UsedAt = DateTime.UtcNow.AddHours(7);
-            await _otpRepository.UpdateAsync(validOtp);
-            await _otpRepository.SaveChangesAsync(cancellationToken);
+            // Đúng → xóa key (one-time use) và phát token reset
+            await _redisService.DeleteAsync(otpKey);
 
             string resetToken = _jwtTokenGenerator.GenerateForgotPasswordToken(request.Email);
-
             return OperationResult<string>.Success(resetToken, 200, "Xác thực thành công. Dùng Token này để đặt lại mật khẩu.");
         }
     }
-}
+}

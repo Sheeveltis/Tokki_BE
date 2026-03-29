@@ -1,52 +1,49 @@
-﻿using FluentValidation;
+using FluentValidation;
 using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
+using System.Text.Json; // Added for JSON serialization
 
 namespace Tokki.Application.UseCases.Otps.Commands.SendGeneralOtp
 {
     public class SendGeneralOtpCommandHandler
         : IRequestHandler<SendGeneralOtpCommand, OperationResult<string>>
     {
-        private readonly IOtpRepository _otpRepository;
+        private readonly IRedisService _redisService;
         private readonly IEmailService _emailService;
-        private readonly IIdGeneratorService _idGenerator; 
+        private readonly IAccountRepository _accountRepository;
 
         public SendGeneralOtpCommandHandler(
-            IOtpRepository otpRepository,
+            IRedisService redisService,
             IEmailService emailService,
-            IIdGeneratorService idGenerator)
+            IAccountRepository accountRepository)
         {
-            _otpRepository = otpRepository;
+            _redisService = redisService;
             _emailService = emailService;
-            _idGenerator = idGenerator; 
+            _accountRepository = accountRepository;
         }
 
         public async Task<OperationResult<string>> Handle(
             SendGeneralOtpCommand request,
             CancellationToken cancellationToken)
         {
+            // Kiểm tra email tồn tại trong CSDL
+            var user = await _accountRepository.GetByEmailAsync(request.Email);
+            if (user == null)
+            {
+                return OperationResult<string>.Failure(new List<Error> { AppErrors.UserNotFound });
+            }
+
             // Tạo mã OTP ngẫu nhiên
             var otpCode = new Random().Next(100000, 999999).ToString();
 
-            // Tạo Entity OTP (Type = General)
-            var otpEntity = new Otp
-            {
-                OtpId = _idGenerator.Generate(15), 
-                Email = request.Email,
-                OtpCode = otpCode,
-                Type = OtpType.General,
-                Status = OtpStatus.Active,
-                UserId = null,
-                CreatedAt = DateTime.UtcNow.AddHours(7),
-                ExpiredAt = DateTime.UtcNow.AddHours(7).AddMinutes(5)
-            };
-
-            await _otpRepository.AddAsync(otpEntity);
-            await _otpRepository.SaveChangesAsync(cancellationToken);
+            // Lưu vào Redis
+            var redisKey = $"OTP:General:{request.Email}";
+            var redisValue = JsonSerializer.Serialize(new { OtpCode = otpCode, AttemptCount = 0 });
+            await _redisService.SetAsync(redisKey, redisValue, TimeSpan.FromMinutes(5));
 
             // Gửi email 
             string subject = "Mã xác thực ";

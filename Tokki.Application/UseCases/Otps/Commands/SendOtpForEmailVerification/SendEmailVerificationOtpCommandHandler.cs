@@ -1,6 +1,7 @@
-﻿using FluentValidation;
+using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Http;
+using System.Text.Json;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
@@ -12,99 +13,70 @@ namespace Tokki.Application.UseCases.Accounts.Commands.SendEmailVerificationOtp
 {
     public class SendGeneralOtpCommandHandler : IRequestHandler<SendEmailVerificationOtpCommand, OperationResult<string>>
     {
-        private readonly IOtpRepository _otpRepository;
-        private readonly IAccountRepository _accountRepository; // 1. Thêm Repository Account
+        private readonly IRedisService _redisService;
+        private readonly IAccountRepository _accountRepository;
         private readonly IEmailService _emailService;
         private readonly IValidator<SendEmailVerificationOtpCommand> _validator;
         private readonly ISystemConfigRepository _systemConfigRepository;
-        private readonly IIdGeneratorService _idGenerator;
-        private string messFail =  "Gửi OTP thất bại.";
+        private string messFail = "Gửi OTP thất bại.";
 
         public SendGeneralOtpCommandHandler(
-            IOtpRepository otpRepository,
-            IAccountRepository accountRepository, // 2. Inject vào Constructor
+            IRedisService redisService,
+            IAccountRepository accountRepository,
             IEmailService emailService,
             IValidator<SendEmailVerificationOtpCommand> validator,
-            ISystemConfigRepository systemConfigRepository,
-            IIdGeneratorService idGenerator)
+            ISystemConfigRepository systemConfigRepository)
         {
-            _otpRepository = otpRepository;
+            _redisService = redisService;
             _accountRepository = accountRepository;
             _emailService = emailService;
             _validator = validator;
             _systemConfigRepository = systemConfigRepository;
-            _idGenerator = idGenerator;
         }
 
         public async Task<OperationResult<string>> Handle(SendEmailVerificationOtpCommand request, CancellationToken cancellationToken)
         {
-          
+            // Kiểm tra tài khoản đã tồn tại chưa
             var existingAccount = await _accountRepository.GetByEmailAsync(request.Email);
-
             if (existingAccount != null)
             {
                 bool isBannedOrDeleted = existingAccount.Status == AccountStatus.Inactive ||
-                                         existingAccount.Status == AccountStatus.Banned; // Ví dụ enum Banned
+                                         existingAccount.Status == AccountStatus.Banned;
 
                 if (isBannedOrDeleted)
-                {
-                    // Trường hợp bị xóa hoặc ban -> Báo lỗi liên hệ quản trị viên
                     return OperationResult<string>.Failure(AppErrors.AccountUnavailable, 400, messFail);
-                }
 
-                // Trường hợp tài khoản đang hoạt động bình thường -> Báo lỗi đã đăng ký
                 return OperationResult<string>.Failure(AppErrors.EmailAlreadyExists, 400, messFail);
             }
 
-            // ---------------------------------------------
-
-            // Rate Limit Check
-            var existingOtp = await _otpRepository.GetLatestValidOtpAsync(request.Email, OtpType.VerifyEmail);
-            if (existingOtp != null)
+            // Rate Limit: kiểm tra key OTP_RL:VerifyEmail:{email} có tồn tại không
+            var rateLimitKey = $"OTP_RL:VerifyEmail:{request.Email}";
+            var rateLimitEntry = await _redisService.GetAsync(rateLimitKey);
+            if (rateLimitEntry != null)
             {
-                var timeSinceLastOtp =
-    (DateTime.UtcNow.AddHours(7) - existingOtp.CreatedAt).TotalSeconds;
-
-                const int OTP_RESEND_SECONDS = 60;
-
-                if (timeSinceLastOtp < OTP_RESEND_SECONDS)
-                {
-                    var remainingSeconds =
-                        Math.Max(0, OTP_RESEND_SECONDS - (int)timeSinceLastOtp);
-
-                    return OperationResult<string>.Failure(
-                        AppErrors.OtpRateLimitExceeded(remainingSeconds),
-                        StatusCodes.Status429TooManyRequests,
-                        messFail
-                    );
-                }
+                var ttl = await _redisService.GetTtlAsync(rateLimitKey);
+                int remainingSeconds = ttl.HasValue ? (int)Math.Ceiling(ttl.Value.TotalSeconds) : 60;
+                return OperationResult<string>.Failure(
+                    AppErrors.OtpRateLimitExceeded(remainingSeconds),
+                    StatusCodes.Status429TooManyRequests,
+                    messFail
+                );
             }
-
-                var otpCode = new Random().Next(100000, 999999).ToString();
 
             string? configValue = await _systemConfigRepository.GetValueByKeyAsync("OTP_EXPIRATION_SECONDS");
             int otpLifeTimeSeconds = 300;
+            if (!string.IsNullOrEmpty(configValue) && int.TryParse(configValue, out int cfgResult))
+                otpLifeTimeSeconds = cfgResult;
 
-            if (!string.IsNullOrEmpty(configValue) && int.TryParse(configValue, out int result))
-            {
-                otpLifeTimeSeconds = result;
-            }
+            var otpCode = new Random().Next(100000, 999999).ToString();
 
-            var newOtp = new Otp
-            {
-                OtpId = _idGenerator.Generate(15),
-                Email = request.Email,
-                OtpCode = otpCode,
-                Type = OtpType.VerifyEmail,
-                CreatedAt = DateTime.UtcNow.AddHours(7),
-                ExpiredAt = DateTime.UtcNow.AddHours(7).AddSeconds(otpLifeTimeSeconds),
-                Status = OtpStatus.Active,
-                AttemptCount = 0,
-                UsedAt = null
-            };
+            // Lưu OTP vào Redis
+            var otpKey = $"OTP:VerifyEmail:{request.Email}";
+            var otpValue = JsonSerializer.Serialize(new { OtpCode = otpCode, AttemptCount = 0 });
+            await _redisService.SetAsync(otpKey, otpValue, TimeSpan.FromSeconds(otpLifeTimeSeconds));
 
-            await _otpRepository.AddAsync(newOtp);
-            await _otpRepository.SaveChangesAsync(cancellationToken);
+            // Lưu rate-limit key 60 giây
+            await _redisService.SetAsync(rateLimitKey, "1", TimeSpan.FromSeconds(60));
 
             try
             {
@@ -120,8 +92,10 @@ namespace Tokki.Application.UseCases.Accounts.Commands.SendEmailVerificationOtp
             }
             catch (Exception)
             {
-                // Nếu gửi mail lỗi, có thể bạn muốn xóa record OTP vừa tạo để tránh rác DB (tùy chọn)
-                return OperationResult<string>.Failure(new List<Error> { AppErrors.EmailServiceError },400, messFail);
+                // Nếu gửi mail lỗi → xóa key Redis vừa tạo để tránh rác
+                await _redisService.DeleteAsync(otpKey);
+                await _redisService.DeleteAsync(rateLimitKey);
+                return OperationResult<string>.Failure(new List<Error> { AppErrors.EmailServiceError }, 400, messFail);
             }
 
             return OperationResult<string>.Success("Mã OTP đã được gửi đến email của bạn.", 200);

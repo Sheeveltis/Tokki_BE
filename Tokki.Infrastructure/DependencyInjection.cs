@@ -2,6 +2,7 @@ using Application.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using StackExchange.Redis;
 using Tokki.Application.Common.ExcelCore;
 using Tokki.Application.Common.Helpers;
 using Tokki.Application.IRepositories;
@@ -25,13 +26,29 @@ namespace Tokki.Infrastructure
             services.AddDbContext<TokkiDbContext>(options =>
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
+            // Đăng ký Redis
+            services.AddSingleton<IConnectionMultiplexer>(sp => 
+            {
+                var redisHost = configuration["RedisSettings:Host"];
+                var redisPort = configuration["RedisSettings:Port"];
+                var redisPassword = configuration["RedisSettings:Password"];
+                var configOptions = new ConfigurationOptions
+                {
+                    EndPoints = { $"{redisHost}:{redisPort}" },
+                    Password = redisPassword,
+                    Ssl = true,
+                    AbortOnConnectFail = false
+                };
+                return ConnectionMultiplexer.Connect(configOptions);
+            });
+            services.AddScoped<IRedisService, RedisService>();
+
             // 2. Đăng ký Repositories
             services.AddScoped<IBlogRepository, BlogRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<IAccountRepository, AccountRepository>();
             services.AddScoped<ISystemConfigRepository, SystemConfigRepository>();
             services.AddScoped<IEmailService, EmailService>();
-            services.AddScoped<IOtpRepository, OtpRepository>();
             services.AddScoped<IEmailJobRepository, EmailJobRepository>();
             services.AddScoped<IEmailTemplateRepository, EmailTemplateRepository>();
             services.AddScoped<IReportRepository, ReportRepository>();
