@@ -10,6 +10,7 @@ namespace Tokki.Application.IRepositories
     public interface IPronunciationRuleRepository
     {
         Task AddAsync(PronunciationRule rule);
+        Task AddRangeAsync(IEnumerable<PronunciationRule> rules);
         Task UpdateAsync(PronunciationRule rule);
         Task DeleteAsync(PronunciationRule rule);
 

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using OfficeOpenXml;
 using System.Net;
 using System.Text;
@@ -281,6 +281,81 @@ namespace Application.Services
             }
 
             return Task.FromResult(result);
+        }
+
+        public Task<List<PronunciationRuleExcelDTO>> ExtractRuleDataAsync(IFormFile file)
+        {
+            var result = new List<PronunciationRuleExcelDTO>();
+
+            ExcelPackage.License.SetNonCommercialPersonal("TokkiProject");
+
+            using (var stream = file.OpenReadStream())
+            using (var package = new ExcelPackage(stream))
+            {
+                var worksheet = package.Workbook.Worksheets[0];
+
+                if (worksheet.Dimension == null)
+                    return Task.FromResult(result);
+
+                int rowCount = worksheet.Dimension.Rows;
+
+                for (int row = 2; row <= rowCount; row++)
+                {
+                    var ruleName = worksheet.Cells[row, 1].Text;
+                    if (string.IsNullOrWhiteSpace(ruleName)) continue;
+
+                    var description = worksheet.Cells[row, 2].Text;
+                    var content = worksheet.Cells[row, 3].Text;
+                    int.TryParse(worksheet.Cells[row, 4].Text, out int sortOrder);
+
+                    result.Add(new PronunciationRuleExcelDTO
+                    {
+                        RuleName = ruleName.Trim(),
+                        Description = description?.Trim(),
+                        Content = content?.Trim(),
+                        SortOrder = sortOrder
+                    });
+                }
+            }
+
+            return Task.FromResult(result);
+        }
+
+        public Task<byte[]> ExportRulesToExcelAsync(List<PronunciationRuleExcelDTO> data, string sheetName)
+        {
+            ExcelPackage.License.SetNonCommercialPersonal("TokkiProject");
+
+            using (var package = new ExcelPackage())
+            {
+                var worksheet = package.Workbook.Worksheets.Add(sheetName);
+
+                worksheet.Cells[1, 1].Value = "RuleName";
+                worksheet.Cells[1, 2].Value = "Description";
+                worksheet.Cells[1, 3].Value = "Content";
+                worksheet.Cells[1, 4].Value = "SortOrder";
+
+                using (var range = worksheet.Cells[1, 1, 1, 4])
+                {
+                    range.Style.Font.Bold = true;
+                    range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                    range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                }
+
+                for (int i = 0; i < data.Count; i++)
+                {
+                    var item = data[i];
+                    int rowIndex = i + 2;
+
+                    worksheet.Cells[rowIndex, 1].Value = item.RuleName;
+                    worksheet.Cells[rowIndex, 2].Value = item.Description;
+                    worksheet.Cells[rowIndex, 3].Value = item.Content;
+                    worksheet.Cells[rowIndex, 4].Value = item.SortOrder;
+                }
+
+                worksheet.Cells.AutoFitColumns();
+
+                return Task.FromResult(package.GetAsByteArray());
+            }
         }
     }
 }
