@@ -19,6 +19,7 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
         private readonly IValidator<LoginCommand> _validator;
         private readonly IGamificationService _gamificationService;
         private readonly IEmailHistoryRepository _emailHistoryRepository;
+        private readonly IRefreshTokenService _refreshTokenService;
 
         public LoginCommandHandler(
             IAccountRepository accountRepository,
@@ -27,7 +28,8 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
             IIdGeneratorService idGenerator,
             IGamificationService gamificationService,
             IValidator<LoginCommand> validator,
-            IEmailHistoryRepository emailHistoryRepository)
+            IEmailHistoryRepository emailHistoryRepository,
+            IRefreshTokenService refreshTokenService)
         {
             _accountRepository = accountRepository;
             _systemConfigRepository = systemConfigRepository;
@@ -36,8 +38,8 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
             _validator = validator;
             _gamificationService = gamificationService;
             _emailHistoryRepository = emailHistoryRepository;
+            _refreshTokenService = refreshTokenService;
         }
-
 
         public async Task<OperationResult<LoginResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
@@ -45,23 +47,17 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
 
             // 1. Kiểm tra tồn tại
             if (user == null)
-            {
                 return OperationResult<LoginResponse>.Failure(new List<Error> { AppErrors.UserNotFound }, 404, "Tài khoản không tồn tại.");
-            }
 
-            // Lấy thời gian hiện tại
             DateTime utcNow = DateTime.UtcNow;
             DateTime vietnamTimeNow = utcNow.AddHours(7);
-        
+
+            // 2. Kiểm tra trạng thái tài khoản
             if (user.Status == AccountStatus.Inactive)
-            {
                 return OperationResult<LoginResponse>.Failure(new List<Error> { AppErrors.AccountInActive }, 403, "Tài khoản của bạn không hoạt động.");
-            }
-            // 2. Kiểm tra Banned
+
             if (user.Status == AccountStatus.Banned)
-            {
                 return OperationResult<LoginResponse>.Failure(new List<Error> { AppErrors.AccountBanned }, 403, "Tài khoản của bạn đã bị khóa vĩnh viễn.");
-            }
 
             // 3. Kiểm tra Locked (Tạm khóa)
             if (user.LockedUntil.HasValue && user.LockedUntil > vietnamTimeNow)
@@ -72,21 +68,15 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
 
             // 4. Kiểm tra mật khẩu
             bool isPasswordValid = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
-
             if (!isPasswordValid)
             {
                 await HandleFailedLoginAsync(user, vietnamTimeNow, cancellationToken);
                 return OperationResult<LoginResponse>.Failure(new List<Error> { AppErrors.WrongPassword }, 400, AppErrors.WrongPassword.Description);
             }
-            // 4.2. Chặn nếu người dùng đang dùng bất kỳ mật khẩu mặc định nào (3 key)
+
+            // 4.2. Chặn nếu đang dùng mật khẩu mặc định
             if (await IsUsingAnyDefaultPasswordAsync(request.Password, cancellationToken))
-            {
-                return OperationResult<LoginResponse>.Failure(
-                    new List<Error> { AppErrors.DefaultPasswordUsed },
-                    403,
-                    AppErrors.DefaultPasswordUsed.Description
-                );
-            }
+                return OperationResult<LoginResponse>.Failure(new List<Error> { AppErrors.DefaultPasswordUsed }, 403, AppErrors.DefaultPasswordUsed.Description);
 
             // === XỬ LÝ KHI ĐÚNG MẬT KHẨU ===
             if (user.FailedLoginCount > 0 || user.LockedUntil != null)
@@ -95,39 +85,41 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
                 user.LockedUntil = null;
             }
 
-            // Cập nhật LastLoginAt / UpdatedAt (lưu giờ VN như bạn đang dùng)
             await _gamificationService.CheckLoginGamificationAsync(user);
-            
+
             user.LastLoginAt = vietnamTimeNow;
             user.UpdatedAt = vietnamTimeNow;
 
             await _accountRepository.UpdateUserAsync(user);
             await _accountRepository.SaveChangesAsync(cancellationToken);
 
-            // --- 5. TẠO TOKEN & SESSION ---
-
-            // A. Lấy config thời gian hết hạn từ database (mặc định 60 phút)
+            // --- 5. TẠO ACCESS TOKEN ---
             int tokenExpirationMinutes = await GetIntConfig("TOKEN_EXPIRATION_MINUTES", 60);
-
-            // B. Tính toán thời gian hết hạn
-            // - Token JWT: Dùng UTC (chuẩn quốc tế, tránh lỗi validate)
-            // - Database: Lưu giờ Việt Nam (+7) để dễ quản lý
             DateTime tokenExpiresAtUtc = utcNow.AddMinutes(tokenExpirationMinutes);
-
-            // C. Tạo JWT Token (truyền UTC)
             var accessToken = _jwtGenerator.GenerateToken(user, tokenExpiresAtUtc);
+
             await _emailHistoryRepository.DeleteByUserAndTemplateTypeAsync(
-                    user.UserId,
-                    EmailTemplateType.OfflineReminder,
-                    cancellationToken
-                );
-           
+                user.UserId,
+                EmailTemplateType.OfflineReminder,
+                cancellationToken);
 
             await _accountRepository.SaveChangesAsync(cancellationToken);
+
+            // --- 6. XỬ LÝ REFRESH TOKEN (Remember Me) ---
+            string? rawRefreshToken = null;
+
+            if (request.RememberMe)
+            {
+                // Thu hồi tất cả token cũ → chỉ giữ 1 session duy nhất
+                await _refreshTokenService.RevokeAllRefreshTokensAsync(user.UserId);
+                // Tạo refresh token mới, lưu hash vào DB
+                rawRefreshToken = await _refreshTokenService.CreateRefreshTokenAsync(user);
+            }
 
             var response = new LoginResponse
             {
                 Token = accessToken,
+                RefreshToken = rawRefreshToken, // null nếu không tick Remember Me
                 FullName = user.FullName,
                 Role = user.Role.ToString(),
                 AvatarUrl = user.AvatarUrl ?? "default-avatar"
@@ -169,33 +161,24 @@ namespace Tokki.Application.UseCases.Accounts.Queries.Login
         private async Task<int> GetIntConfig(string key, int defaultValue)
         {
             string? val = await _systemConfigRepository.GetValueByKeyAsync(key);
-            if (!string.IsNullOrEmpty(val) && int.TryParse(val, out int result))
-            {
-                return result;
-            }
-            return defaultValue;
+            return (!string.IsNullOrEmpty(val) && int.TryParse(val, out int result)) ? result : defaultValue;
         }
+
         private async Task<bool> IsUsingAnyDefaultPasswordAsync(string inputPassword, CancellationToken ct)
         {
             if (string.IsNullOrWhiteSpace(inputPassword))
                 return false;
 
-            var keys = new[]
-            {
-        "DEFAULT_PASSWORD_FOR_STAFF",
-        "DEFAULT_PASSWORD_FOR_USER",
-        "DEFAULT_PASSWORD_FOR_ADMIN"
-    };
+            var keys = new[] { "DEFAULT_PASSWORD_FOR_STAFF", "DEFAULT_PASSWORD_FOR_USER", "DEFAULT_PASSWORD_FOR_ADMIN" };
 
             foreach (var key in keys)
             {
-                var v = await _systemConfigRepository.GetValueByKeyAsync(key); // tuần tự
+                var v = await _systemConfigRepository.GetValueByKeyAsync(key);
                 if (!string.IsNullOrEmpty(v) && inputPassword == v)
                     return true;
             }
 
             return false;
         }
-
     }
 }
