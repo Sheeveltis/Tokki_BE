@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Tokki.Application.Common.Models;
+using Tokki.Application.UseCases.Exam.DTOs;
 using Tokki.Application.UseCases.UserExam.DTOs;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
@@ -46,6 +47,12 @@ namespace Tokki.Application.IRepositories
 
         Task<CurrentTopikLevel?> GetSelfDeclaredLevelAsync(
             string userExamId,
+            CancellationToken cancellationToken = default);
+
+        Task<PagedResult<ExamParticipantDTO>> GetPagedParticipantsByExamIdAsync(
+            string examId,
+            int pageNumber,
+            int pageSize,
             CancellationToken cancellationToken = default);
     }
 }

@@ -15,6 +15,7 @@ using Tokki.Application.UseCases.Exam.Queries.GetExamDetailQuery;
 using Tokki.Application.UseCases.Exam.Queries.GetExams;
 using Tokki.Application.UseCases.Exam.Queries.GetExamsStats;
 using Tokki.Application.UseCases.Exam.Queries.GetExamDetailStats;
+using Tokki.Application.UseCases.Exam.Queries.GetUserExamsByExamId;
 using Tokki.Application.UseCases.Exam.Queries.GetQuestionsByPart;
 using Tokki.Application.UseCases.Exam.Queries.GetTemplateSkills;
 using Tokki.Application.UseCases.Exam.Commands.ExportExamToPdf;
@@ -95,6 +96,19 @@ namespace Tokki.WebAPI.Controllers
         public async Task<IActionResult> GetExamsStatsDetail(string examId)
         {
             var result = await _sender.Send(new GetExamDetailStatsQuery(examId));
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpGet("admin/stats/{examId}/participants")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> GetExamParticipants(string examId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            var result = await _sender.Send(new GetUserExamsByExamIdQuery 
+            { 
+                ExamId = examId, 
+                PageNumber = pageNumber, 
+                PageSize = pageSize 
+            });
             return StatusCode(result.StatusCode, result);
         }
         [HttpGet("admin/detail")]

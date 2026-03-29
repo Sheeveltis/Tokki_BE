@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Tokki.Application.Common.Mappings;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
+using Tokki.Application.UseCases.Exam.DTOs;
 using Tokki.Application.UseCases.UserExam.DTOs;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
@@ -285,12 +286,6 @@ namespace Tokki.Infrastructure.Repositories
                 if (totalCount == 0) continue;
 
                 // Incorrect count:
-                // For MCQ: IsCorrect is false or null (unanswered/wrong)
-                // For Writing: Based on previous logic, we consider them "issues" for analysis.
-                // However, if we want a ratio, maybe we should differentiate.
-                // But generally, for TOPPIK writing, any mistake is an issue.
-                // Let's count MCQ non-correct and Writing as "issues" but maybe only if score is low?
-                // For now, to keep it consistent with the previous 'Issues' logic:
                 int wrongCount = mcqs.Count(a => a.IsCorrect != true) + writings.Count;
 
                 result.Add(new QuestionTypeDto
@@ -338,6 +333,31 @@ namespace Tokki.Infrastructure.Repositories
                 .Where(ue => ue.UserExamId == userExamId)
                 .Select(ue => ue.SelfDeclaredLevel)
                 .FirstOrDefaultAsync(cancellationToken);
+        }
+
+        public async Task<PagedResult<ExamParticipantDTO>> GetPagedParticipantsByExamIdAsync(
+            string examId,
+            int pageNumber,
+            int pageSize,
+            CancellationToken cancellationToken = default)
+        {
+            var query = _context.UserExams
+                .AsNoTracking()
+                .Where(ue => ue.ExamId == examId && ue.Status == UserExamStatus.Completed);
+
+            var dtoQuery = query
+                .OrderByDescending(ue => ue.SubmitTime)
+                .Select(ue => new ExamParticipantDTO
+                {
+                    UserExamId = ue.UserExamId,
+                    UserEmail = ue.User.Email,
+                    UserName = ue.User.FullName,
+                    UserAvatar = ue.User.AvatarUrl,
+                    Score = ue.Score,
+                    SubmitTime = ue.SubmitTime
+                });
+
+            return await dtoQuery.ToPagedListAsync(pageNumber, pageSize);
         }
     }
 }
