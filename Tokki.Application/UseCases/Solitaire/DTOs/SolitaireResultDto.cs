@@ -7,6 +7,7 @@ namespace Tokki.Application.UseCases.Solitaire.DTOs
         public string GameMatchSessionId { get; set; } = string.Empty;
         public string UserId { get; set; } = string.Empty;
         public string UserName { get; set; } = string.Empty;
+        public string? AvatarUrl { get; set; }
         public string? TitleName { get; set; }
         public string? TitleColorHex { get; set; }
         public string? TitleIconUrl { get; set; }

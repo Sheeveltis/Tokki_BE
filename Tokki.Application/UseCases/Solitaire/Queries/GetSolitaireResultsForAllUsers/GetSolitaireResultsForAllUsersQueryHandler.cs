@@ -77,6 +77,7 @@ namespace Tokki.Application.UseCases.Solitaire.Queries.GetSolitaireResultsForAll
                     GameMatchSessionId = s.GameMatchSessionId,
                     UserId = s.UserId,
                     UserName = info?.FullName ?? string.Empty,
+                    AvatarUrl = info?.AvatarUrl,
                     TitleName = info?.CurrentTitleName,
                     TitleColorHex = info?.CurrentColorHexTitle,
                     TitleIconUrl = info?.TitleIconUrl,
