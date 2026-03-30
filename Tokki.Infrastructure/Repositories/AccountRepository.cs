@@ -281,6 +281,33 @@ namespace Tokki.Infrastructure.Repositories
                         };
             return await query.AsNoTracking().FirstOrDefaultAsync();
         }
+
+        public async Task<Dictionary<string, AccountBasicInfoDTO>> GetBasicInfosAsync(List<string> userIds)
+        {
+            if (userIds == null || !userIds.Any()) return new Dictionary<string, AccountBasicInfoDTO>();
+
+            var query = from a in _context.Accounts
+                        where userIds.Contains(a.UserId)
+                        join t in _context.Titles
+                        on a.CurrentTitleId equals t.TitleId into userTitles
+                        from title in userTitles.DefaultIfEmpty()
+
+                        select new
+                        {
+                            a.UserId,
+                            DTO = new AccountBasicInfoDTO
+                            {
+                                FullName = a.FullName,
+                                AvatarUrl = a.AvatarUrl,
+                                CurrentTitleName = title != null ? title.Name : null,
+                                CurrentColorHexTitle = title != null ? title.ColorHex : null,
+                                TitleIconUrl = title != null ? title.IconUrl : null
+                            }
+                        };
+
+            var items = await query.AsNoTracking().ToListAsync();
+            return items.ToDictionary(x => x.UserId, x => x.DTO);
+        }
         public async Task AddRangeAsync(IEnumerable<Account> accounts, CancellationToken cancellationToken = default)
         {
             if (accounts == null || !accounts.Any())
