@@ -20,6 +20,7 @@ namespace Tokki.Application.UseCases.Exam.DTOs
         public ExamStatus Status { get; set; }
         public string CreatedBy { get; set; }
         public DateTime CreatedAt { get; set; }
+        public int MaxScore { get; set; }
         public List<ExamPartDto> TemplateParts { get; set; } = new();
     }
 

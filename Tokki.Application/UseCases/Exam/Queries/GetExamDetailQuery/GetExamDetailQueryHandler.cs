@@ -51,6 +51,7 @@ namespace Tokki.Application.UseCases.Exam.Queries.GetExamDetailQuery
                 SkillDurations = exam.SkillDurationsDict,
                 TemplateParts = new List<ExamPartDto>(),
                 TotalQuestions = exam.ExamQuestions?.Count ?? 0,
+                MaxScore = 0,
             };
 
             foreach (var part in sortedParts)
@@ -72,6 +73,7 @@ namespace Tokki.Application.UseCases.Exam.Queries.GetExamDetailQuery
 
                 foreach (var eq in questionsInPart)
                 {
+                    result.MaxScore += part.Mark;
                     var qBank = eq.QuestionBank;
                     if (qBank == null) continue;
 

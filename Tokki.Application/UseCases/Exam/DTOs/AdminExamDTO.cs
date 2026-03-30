@@ -19,5 +19,6 @@ namespace Tokki.Application.UseCases.Exam.DTOs
         public Dictionary<string, int> SkillDurations { get; set; } = new();
         public DateTime? CreatedAt { get; set; }
         public int TotalQuestions { get; set; }
+        public int MaxScore { get; set; }
     }
 }
