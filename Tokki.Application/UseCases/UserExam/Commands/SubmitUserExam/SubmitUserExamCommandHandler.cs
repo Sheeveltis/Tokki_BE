@@ -57,7 +57,19 @@ namespace Tokki.Application.UseCases.UserExam.Commands.SubmitUserExam
             var timeSpent = (int)(session.SubmitTime.Value - session.StartTime).TotalMinutes;
             timeSpent = Math.Clamp(timeSpent, 0, maxDurationMinutes);
 
-            int totalScore = session.UserExamAnswers.Count(x => x.IsCorrect == true);
+            // Calculate MCQ Score based on TemplatePart marks
+            int totalScore = 0;
+            var templateParts = session.Exam.ExamTemplate.TemplateParts;
+            var examQuestions = session.Exam.ExamQuestions;
+
+            foreach (var part in templateParts)
+            {
+                var correctInPart = session.UserExamAnswers.Count(ua => 
+                    examQuestions.Any(eq => eq.QuestionBankId == ua.QuestionId && eq.QuestionNo >= part.QuestionFrom && eq.QuestionNo <= part.QuestionTo) && 
+                    ua.IsCorrect == true);
+                
+                totalScore += correctInPart * part.Mark;
+            }
 
             session.Score = totalScore;
             session.Status = UserExamStatus.Completed;

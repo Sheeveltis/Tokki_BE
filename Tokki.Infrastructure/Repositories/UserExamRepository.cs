@@ -68,6 +68,8 @@ namespace Tokki.Infrastructure.Repositories
                 .Include(ue => ue.Exam)
                     .ThenInclude(e => e.ExamTemplate)
                         .ThenInclude(et => et.TemplateParts)
+                .Include(ue => ue.Exam)
+                    .ThenInclude(e => e.ExamQuestions)
                 .Include(ue => ue.UserExamAnswers)
                     .ThenInclude(ua => ua.Question)
                         .ThenInclude(q => q.QuestionOptions)
@@ -343,7 +345,21 @@ namespace Tokki.Infrastructure.Repositories
             bool isDescending = true,
             CancellationToken cancellationToken = default)
         {
+            // 1. Fetch Template Context
+            var templateParts = await _context.Exams
+                .Where(e => e.ExamId == examId)
+                .SelectMany(e => e.ExamTemplate.TemplateParts)
+                .Select(tp => new { tp.Skill, tp.QuestionFrom, tp.QuestionTo, tp.Mark })
+                .ToListAsync(cancellationToken);
+
+            var questionMappings = await _context.ExamQuestions
+                .Where(eq => eq.ExamId == examId)
+                .Select(eq => new { eq.QuestionBankId, eq.QuestionNo })
+                .ToDictionaryAsync(x => x.QuestionBankId, x => x.QuestionNo, cancellationToken);
+
+            // 2. Query UserExams
             var query = _context.UserExams
+                .Include(ue => ue.User)
                 .AsNoTracking()
                 .Where(ue => ue.ExamId == examId && ue.Status == UserExamStatus.Completed);
 
@@ -358,17 +374,58 @@ namespace Tokki.Infrastructure.Repositories
                     : query.OrderBy(ue => ue.SubmitTime)
             };
 
-            var dtoQuery = query.Select(ue => new ExamParticipantDTO
-            {
-                UserExamId = ue.UserExamId,
-                UserEmail = ue.User.Email,
-                UserName = ue.User.FullName,
-                UserAvatar = ue.User.AvatarUrl,
-                Score = ue.Score,
-                SubmitTime = ue.SubmitTime
-            });
+            var pagedParticipants = await query.ToPagedListAsync(pageNumber, pageSize);
+            var ueIds = pagedParticipants.Items.Select(p => p.UserExamId).ToList();
 
-            return await dtoQuery.ToPagedListAsync(pageNumber, pageSize);
+            // 3. Batch fetch answers
+            var allAnswers = await _context.UserExamAnswers
+                .Where(ua => ueIds.Contains(ua.UserExamId))
+                .Select(ua => new { ua.UserExamId, ua.QuestionId, ua.IsCorrect })
+                .ToListAsync(cancellationToken);
+
+            var writingAnswers = await _context.UserExamWritingAnswers
+                .Where(uwa => ueIds.Contains(uwa.UserExamId))
+                .Select(uwa => new { uwa.UserExamId, uwa.Score })
+                .ToListAsync(cancellationToken);
+
+            // 4. Map and Calculate
+            var dtos = pagedParticipants.Items.Select(ue => {
+                var ueAnswers = allAnswers.Where(a => a.UserExamId == ue.UserExamId).ToList();
+                var ueWritings = writingAnswers.Where(w => w.UserExamId == ue.UserExamId).ToList();
+
+                int totalCorrect = ueAnswers.Count(a => a.IsCorrect == true);
+                int calculatedScore = 0;
+                var skillCounts = new Dictionary<string, int>();
+
+                foreach (var part in templateParts)
+                {
+                    var skillName = part.Skill.ToString();
+                    var correctInPart = ueAnswers.Count(a => 
+                        questionMappings.TryGetValue(a.QuestionId, out int qNo) && 
+                        qNo >= part.QuestionFrom && qNo <= part.QuestionTo && 
+                        a.IsCorrect == true);
+
+                    if (!skillCounts.ContainsKey(skillName)) skillCounts[skillName] = 0;
+                    skillCounts[skillName] += correctInPart;
+                    calculatedScore += correctInPart * part.Mark;
+                }
+
+                calculatedScore += ueWritings.Sum(w => w.Score ?? 0);
+
+                return new ExamParticipantDTO
+                {
+                    UserExamId = ue.UserExamId,
+                    UserEmail = ue.User?.Email ?? "N/A",
+                    UserName = ue.User?.FullName ?? "N/A",
+                    UserAvatar = ue.User?.AvatarUrl,
+                    Score = calculatedScore,
+                    TotalCorrectQuestions = totalCorrect,
+                    CorrectCountBySkill = skillCounts,
+                    SubmitTime = ue.SubmitTime
+                };
+            }).ToList();
+
+            return PagedResult<ExamParticipantDTO>.Create(dtos, pagedParticipants.TotalCount, pageNumber, pageSize);
         }
     }
 }
