@@ -21,10 +21,11 @@ namespace Tokki.Application.UseCases.Titles.Queries.GetPagedTitles
                 request.PageSize,
                 request.SearchTerm,
                 request.Status,
+                request.RequirementType,
                 cancellationToken);
 
             var pagedResult = PagedResult<Title>.Create(items, totalCount, request.PageNumber, request.PageSize);
-            return OperationResult<PagedResult<Title>>.Success(pagedResult, 200);
+            return OperationResult<PagedResult<Title>>.Success(pagedResult, 200, "Lấy danh sách danh hiệu thành công.");
         }
     }
 }

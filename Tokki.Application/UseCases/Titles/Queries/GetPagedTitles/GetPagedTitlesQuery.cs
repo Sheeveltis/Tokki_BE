@@ -11,5 +11,6 @@ namespace Tokki.Application.UseCases.Titles.Queries.GetPagedTitles
         public int PageSize { get; set; } = 10;
         public string? SearchTerm { get; set; }
         public TitleStatus? Status { get; set; }
+        public TitleRequirementType? RequirementType { get; set; }
     }
 }
