@@ -22,6 +22,7 @@ using Tokki.Application.UseCases.Accounts.Queries.GetUserProfile;
 using Tokki.Application.UseCases.Blogs.Commands.CreateBlog;
 using Tokki.Application.UseCases.Accounts.Commands.RefreshToken;
 using Tokki.Application.UseCases.Accounts.Commands.UpdateAimLevel;
+using Tokki.Application.UseCases.Accounts.Queries.GetAimLevel;
 
 using Tokki.WebAPI.Utilities;
 
@@ -189,6 +190,20 @@ namespace Tokki.WebAPI.Controllers
 
             var query = new GetUserProfileQuery(userId);
             var result = await _sender.Send(query);
+
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpGet("me/aim-level")]
+        [Authorize]
+        public async Task<IActionResult> GetAimLevel(CancellationToken cancellationToken)
+        {
+            var userId = GetUserId();
+            if (string.IsNullOrWhiteSpace(userId))
+                return Unauthorized(new { message = "Unauthorized" });
+
+            var query = new GetAimLevelQuery { UserId = userId };
+            var result = await _sender.Send(query, cancellationToken);
 
             return StatusCode(result.StatusCode, result);
         }
