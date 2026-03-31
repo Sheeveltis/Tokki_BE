@@ -1,44 +1,30 @@
-﻿using Tokki.Application.IRepositories;
+using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Application.UseCases.Gamification.Commands.AddGameXp;
 using Tokki.Domain.Entities;
 using Tokki.Infrastructure.Data;
-using Tokki.Application.Common.Helpers;
+using Tokki.Domain.Enums;
+
 namespace Tokki.Infrastructure.Services
 {
     public class GamificationService : IGamificationService
     {
         private readonly IAccountRepository _accountRepository;
-        private readonly ITitleRepository _titleRepository;
+        private readonly IUserTitleService _userTitleService;
         private readonly TokkiDbContext _context;
         private readonly IIdGeneratorService _idGenerator;
         private const int TARGET_STUDY_SECONDS = 900;
         private const string LAZY_TITLE_NAME = "Con Lười";
 
-        public GamificationService(IAccountRepository accountRepository, ITitleRepository titleRepository, TokkiDbContext context, IIdGeneratorService idGenerator)
+        public GamificationService(IAccountRepository accountRepository, 
+                                   IUserTitleService userTitleService,
+                                   TokkiDbContext context, 
+                                   IIdGeneratorService idGenerator)
         {
             _accountRepository = accountRepository;
-            _titleRepository = titleRepository;
+            _userTitleService = userTitleService;
             _context = context;
             _idGenerator = idGenerator;
-        }
-
-        private async Task UnlockAndEquipTitleAsync(Account user, Title title)
-        {
-            bool hasTitle = await _accountRepository.HasTitleAsync(user.UserId, title.TitleId);
-
-            if (!hasTitle)
-            {
-                var newUnlock = new AccountTitle
-                {
-                    UserId = user.UserId,
-                    TitleId = title.TitleId,
-                    EarnedAt = DateTime.UtcNow.AddHours(7)
-                };
-                await _accountRepository.AddAccountTitleAsync(newUnlock);
-            }
-
-            user.CurrentTitleId = title.TitleId;
         }
 
         public async Task CheckLoginGamificationAsync(Account user)
@@ -54,14 +40,11 @@ namespace Tokki.Infrastructure.Services
 
                 if (daysInactive > 3)
                 {
-                    var lazyTitle = await _titleRepository.GetTitleByNameAsync(LAZY_TITLE_NAME);
-                    if (lazyTitle != null)
-                    {
-                        await UnlockAndEquipTitleAsync(user, lazyTitle);
-                    }
+                    await _userTitleService.CheckAndUnlockTitlesAsync(user.UserId, TitleRequirementType.InactivityDays, (long)daysInactive);
                 }
             }
         }
+
         public async Task<bool> TrackStudyTimeAsync(string userId, double seconds)
         {
             var user = await _accountRepository.GetByIdAsync(userId);
@@ -118,10 +101,17 @@ namespace Tokki.Infrastructure.Services
                     CreatedAt = vietnamNow
                 });
 
-                var bestTitle = await _titleRepository.GetTitleByXpAsync(user.TotalXP);
-                if (bestTitle != null && user.CurrentTitleId != bestTitle.TitleId)
+                // Check Streak-based Titles
+                await _userTitleService.CheckAndUnlockTitlesAsync(user.UserId, TitleRequirementType.Streak, user.AchievedGoalStreak);
+                
+                // Check XP-based Titles
+                var newlyUnlockedXp = await _userTitleService.CheckAndUnlockTitlesAsync(user.UserId, TitleRequirementType.XP, user.TotalXP);
+                
+                // If anything new unlocked and it's better than current, maybe auto-equip?
+                // For now, let's keep it manual except if they don't have current title
+                if (newlyUnlockedXp.Any() && string.IsNullOrEmpty(user.CurrentTitleId))
                 {
-                    user.CurrentTitleId = bestTitle.TitleId;
+                    user.CurrentTitleId = newlyUnlockedXp.Last().TitleId;
                 }
             }
 
@@ -132,6 +122,7 @@ namespace Tokki.Infrastructure.Services
 
             return isStreakCompletedNow;
         }
+
         private void HandleLazyReset(Account user, DateTime today, DateTime yesterday)
         {
             if (user.UpdatedAt.HasValue && user.UpdatedAt.Value.Date < today)
@@ -155,17 +146,16 @@ namespace Tokki.Infrastructure.Services
 
             user.TotalXP += amount;
 
-            bool isNewTitleUnlocked = false;
-            string? newTitleName = null;
-            string? newTitleColorHex = null;
+            // Check XP Titles
+            var newlyUnlocked = await _userTitleService.CheckAndUnlockTitlesAsync(user.UserId, TitleRequirementType.XP, user.TotalXP);
+            
+            bool isNewTitleUnlocked = newlyUnlocked.Any();
+            string? newTitleName = newlyUnlocked.LastOrDefault()?.Name;
+            string? newTitleColorHex = newlyUnlocked.LastOrDefault()?.ColorHex;
 
-            var bestTitle = await _titleRepository.GetTitleByXpAsync(user.TotalXP);
-            if (bestTitle != null && user.CurrentTitleId != bestTitle.TitleId)
+            if (isNewTitleUnlocked && string.IsNullOrEmpty(user.CurrentTitleId))
             {
-                user.CurrentTitleId = bestTitle.TitleId;
-                isNewTitleUnlocked = true;
-                newTitleName = bestTitle.Name;
-                newTitleColorHex = bestTitle.ColorHex;
+                user.CurrentTitleId = newlyUnlocked.Last().TitleId;
             }
 
             user.UpdatedAt = vietnamNow;

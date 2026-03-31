@@ -85,23 +85,29 @@ namespace Tokki.WebAPI.Controllers
         {
             var result = await _sender.Send(new ExportTitlesQuery());
             if (!result.IsSuccess) return StatusCode(result.StatusCode, result);
-            return File(result.Data, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Danh_hieu_Tokki.xlsx");
+            string fileName = $"Tokki_Title_{DateTime.Now:ddMMyyyy}.xlsx";
+            return File(result.Data, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
         }
 
         // --- NEW USER APIS ---
 
-        [HttpPost("equip")]
+        [HttpPut("equip")]
         public async Task<IActionResult> Equip([FromBody] EquipTitleCommand command)
         {
-            command.UserId = GetUserId()!;
+            if (string.IsNullOrEmpty(command.UserId)) command.UserId = GetUserId()!;
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
         }
 
         [HttpGet("my-titles")]
-        public async Task<IActionResult> GetMyTitles()
+        public async Task<IActionResult> GetMyTitles([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var result = await _sender.Send(new GetUnlockedTitlesQuery { UserId = GetUserId()! });
+            var result = await _sender.Send(new GetUnlockedTitlesQuery 
+            { 
+                UserId = GetUserId()!,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            });
             return StatusCode(result.StatusCode, result);
         }
 
