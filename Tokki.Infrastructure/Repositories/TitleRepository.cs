@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Tokki.Application.IRepositories;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
@@ -56,6 +56,37 @@ namespace Tokki.Infrastructure.Repositories
         {
             _context.Titles.Update(title);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<(List<Title> items, int totalCount)> GetPagedAsync(
+            int pageNumber,
+            int pageSize,
+            string? searchTerm,
+            TitleStatus? status = null,
+            CancellationToken cancellationToken = default)
+        {
+            var query = _context.Titles.AsNoTracking().AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var term = searchTerm.Trim().ToLower();
+                query = query.Where(t => t.TitleId.ToLower().Contains(term) || t.Name.ToLower().Contains(term));
+            }
+
+            if (status.HasValue)
+            {
+                query = query.Where(t => t.Status == status.Value);
+            }
+
+            var totalCount = await query.CountAsync(cancellationToken);
+
+            var items = await query
+                .OrderBy(t => t.RequiredXP)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+
+            return (items, totalCount);
         }
     }
 }

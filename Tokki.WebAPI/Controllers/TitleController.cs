@@ -1,10 +1,11 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tokki.Application.UseCases.Titles.Commands.CreateTitle;
 using Tokki.Application.UseCases.Titles.Commands.DeleteTitle;
 using Tokki.Application.UseCases.Titles.Commands.UpdateTitle;
 using Tokki.Application.UseCases.Titles.Queries.GetAllTitles;
+using Tokki.Application.UseCases.Titles.Queries.GetPagedTitles;
 using Tokki.Application.UseCases.Titles.Queries.GetTitleById;
 
 namespace Tokki.WebAPI.Controllers
@@ -30,13 +31,21 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(201, result);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
+        [HttpGet("admin")]
+        public async Task<IActionResult> GetPaged([FromQuery] GetPagedTitlesQuery query)
         {
-            var result = await _sender.Send(new GetAllTitlesQuery());
+            var result = await _sender.Send(query);
             if (!result.IsSuccess) return StatusCode(result.StatusCode, result);
             return Ok(result);
         }
+
+        // [HttpGet("all")]
+        // public async Task<IActionResult> GetAll()
+        // {
+        //     var result = await _sender.Send(new GetAllTitlesQuery());
+        //     if (!result.IsSuccess) return StatusCode(result.StatusCode, result);
+        //     return Ok(result);
+        // }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
