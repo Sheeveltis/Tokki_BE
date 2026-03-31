@@ -23,6 +23,7 @@ namespace Tokki.Application.UseCases.QuestionTypes.Queries.GetQuestionTypes
                 request.Skill,
                 request.Difficulty,
                 request.ExamType,
+                request.IsActive,
                 cancellationToken
             );
 

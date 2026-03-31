@@ -20,6 +20,7 @@ namespace Tokki.Application.IRepositories
             QuestionSkill? skill = null,
             DifficultyLevel? difficulty = null,
             ExamType? examType = null,
+            bool? isActive = null,
             CancellationToken cancellationToken = default);
         Task<IEnumerable<QuestionType>> GetBySkillAsync(QuestionSkill skill, CancellationToken cancellationToken = default);
         Task<bool> IsCodeExistsAsync(string code, string? excludeId = null);
