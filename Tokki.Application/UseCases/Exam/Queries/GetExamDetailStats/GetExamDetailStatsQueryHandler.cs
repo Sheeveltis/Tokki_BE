@@ -31,16 +31,27 @@ namespace Tokki.Application.UseCases.Exam.Queries.GetExamDetailStats
                 : JsonSerializer.Deserialize<Dictionary<string, int>>(e.SkillDurations) ?? new();
 
             var skillCounts = new Dictionary<string, int>();
+            var skillTotalScores = new Dictionary<string, int>();
+
             foreach (var part in e.TemplateParts)
             {
-                var count = e.QuestionNumbers.Count(qNo => qNo >= part.QuestionFrom && qNo <= part.QuestionTo);
-                if (count > 0)
+                var questionsInPart = e.QuestionNumbers.Count(qNo => qNo >= part.QuestionFrom && qNo <= part.QuestionTo);
+                if (questionsInPart > 0)
                 {
                     var skillName = part.Skill.ToString();
+                    
+                    // Count questions
                     if (skillCounts.ContainsKey(skillName)) 
-                        skillCounts[skillName] += count;
+                        skillCounts[skillName] += questionsInPart;
                     else 
-                        skillCounts[skillName] = count;
+                        skillCounts[skillName] = questionsInPart;
+
+                    // Calculate total score for skill
+                    int partScore = questionsInPart * part.Mark;
+                    if (skillTotalScores.ContainsKey(skillName))
+                        skillTotalScores[skillName] += partScore;
+                    else
+                        skillTotalScores[skillName] = partScore;
                 }
             }
 
@@ -64,7 +75,8 @@ namespace Tokki.Application.UseCases.Exam.Queries.GetExamDetailStats
                 AverageDurationMinutes = Math.Round(e.AverageDurationMinutes, 1),
                 InProgressCount = e.InProgressCount,
                 CompletedCount = e.CompletedCount,
-                SkillQuestionCounts = skillCounts
+                SkillQuestionCounts = skillCounts,
+                SkillTotalScores = skillTotalScores
             };
 
             return OperationResult<AdminExamStatsDTO>.Success(dto);

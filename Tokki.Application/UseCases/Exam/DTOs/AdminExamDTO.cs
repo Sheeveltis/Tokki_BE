@@ -20,5 +20,6 @@ namespace Tokki.Application.UseCases.Exam.DTOs
         public DateTime? CreatedAt { get; set; }
         public int TotalQuestions { get; set; }
         public int MaxScore { get; set; }
+        public Dictionary<string, int> SkillTotalScores { get; set; } = new();
     }
 }

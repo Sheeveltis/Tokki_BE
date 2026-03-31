@@ -105,6 +105,14 @@ namespace Tokki.Application.UseCases.Exam.Queries.GetExamDetailQuery
                 }
 
                 result.TemplateParts.Add(partDto);
+
+                // Calculate total score for skill
+                var skillName = part.Skill.ToString();
+                int scoreInPart = questionsInPart.Count * part.Mark;
+                if (result.SkillTotalScores.ContainsKey(skillName))
+                    result.SkillTotalScores[skillName] += scoreInPart;
+                else
+                    result.SkillTotalScores[skillName] = scoreInPart;
             }
 
             return OperationResult<ExamDetailDTO>.Success(result, 200,OperationMessages.GetSuccess("đề"));
