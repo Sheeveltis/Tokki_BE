@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Domain.Entities;
@@ -33,7 +33,8 @@ namespace Tokki.Application.UseCases.Titles.Commands.UpdateTitle
 
             title.Name = request.Name;
             title.Description = request.Description;
-            title.RequiredXP = request.RequiredXP;
+            title.RequirementType = request.RequirementType;
+            title.RequirementQuantity = request.RequirementQuantity;
             title.ColorHex = request.ColorHex;
             title.IconUrl = request.IconUrl;
             title.IsSystemGiven = request.IsSystemGiven;
