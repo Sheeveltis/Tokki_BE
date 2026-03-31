@@ -24,12 +24,17 @@ namespace Tokki.Infrastructure.Repositories
                 query = query.Where(t => t.Status == TitleStatus.Active);
             }
 
-            return await query.OrderBy(t => t.RequiredXP).ToListAsync();
+            return await query.OrderBy(t => t.RequirementType).ThenBy(t => t.RequirementQuantity).ToListAsync();
         }
 
-        public async Task<Title?> GetTitleByNameAsync(string name)
+        public async Task<Title?> GetTitleByNameAsync(string name, TitleStatus? status = null)
         {
-            return await _context.Titles.FirstOrDefaultAsync(t => t.Name == name);
+            var query = _context.Titles.AsQueryable();
+            if (status.HasValue)
+            {
+                query = query.Where(t => t.Status == status.Value);
+            }
+            return await query.FirstOrDefaultAsync(t => t.Name == name);
         }
 
         public async Task<Title?> GetTitleByIdAsync(string id)
@@ -37,15 +42,15 @@ namespace Tokki.Infrastructure.Repositories
             return await _context.Titles.FindAsync(id);
         }
 
-        public async Task<Title?> GetTitleByXpAsync(long xp)
+        public async Task<List<Title>> GetEligibleTitlesAsync(TitleRequirementType type, long quantity)
         {
-            return await _context.Titles
-                .Where(t => !t.IsSystemGiven
-                            && t.RequiredXP <= xp
-                            && t.Status == TitleStatus.Active) 
-                .OrderByDescending(t => t.RequiredXP)
-                .FirstOrDefaultAsync();
+            var query = _context.Titles.AsNoTracking()
+                .Where(t => t.Status == TitleStatus.Active && t.RequirementType == type);
+
+            // Level/XP/Streak: quantity >= threshold
+            return await query.Where(t => t.RequirementQuantity <= quantity).ToListAsync();
         }
+
         public async Task AddAsync(Title title)
         {
             await _context.Titles.AddAsync(title);
@@ -63,6 +68,7 @@ namespace Tokki.Infrastructure.Repositories
             int pageSize,
             string? searchTerm,
             TitleStatus? status = null,
+            TitleRequirementType? requirementType = null,
             CancellationToken cancellationToken = default)
         {
             var query = _context.Titles.AsNoTracking().AsQueryable();
@@ -78,10 +84,16 @@ namespace Tokki.Infrastructure.Repositories
                 query = query.Where(t => t.Status == status.Value);
             }
 
+            if (requirementType.HasValue)
+            {
+                query = query.Where(t => t.RequirementType == requirementType.Value);
+            }
+
             var totalCount = await query.CountAsync(cancellationToken);
 
             var items = await query
-                .OrderBy(t => t.RequiredXP)
+                .OrderBy(t => t.RequirementType)
+                .ThenBy(t => t.RequirementQuantity)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync(cancellationToken);

@@ -105,6 +105,13 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
+        [HttpPost("user/check-new-title-level")]
+        public async Task<IActionResult> CheckNewTitleLevel()
+        {
+            var result = await _sender.Send(new Tokki.Application.UseCases.Titles.Commands.CheckNewTitles.CheckNewTitlesCommand { UserId = GetUserId()! });
+            return StatusCode(result.StatusCode, result);
+        }
+
         private string? GetUserId()
         {
             return User.FindFirstValue(ClaimTypes.NameIdentifier)

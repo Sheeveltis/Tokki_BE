@@ -7,6 +7,5 @@ namespace Tokki.Domain.Enums
         Streak = 2,          
         StudyDaysTotal = 3,  
         InactivityDays = 4,   
-        SystemGiven = 5      
     }
 }

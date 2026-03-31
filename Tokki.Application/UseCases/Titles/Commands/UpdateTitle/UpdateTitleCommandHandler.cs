@@ -23,7 +23,6 @@ namespace Tokki.Application.UseCases.Titles.Commands.UpdateTitle
                 return OperationResult<Title>.Failure("Không tìm thấy danh hiệu.", 404);
             }
 
-            // Business Logic: Duplicate Check if Name changed
             if (!title.Name.Equals(request.Name.Trim(), StringComparison.OrdinalIgnoreCase))
             {
                 var duplicateCheck = await _titleRepository.GetTitleByNameAsync(request.Name.Trim(), TitleStatus.Active);
@@ -33,14 +32,12 @@ namespace Tokki.Application.UseCases.Titles.Commands.UpdateTitle
                 }
             }
 
-            // Map Changes
             title.Name = request.Name.Trim();
             title.Description = request.Description?.Trim();
             title.RequirementType = request.RequirementType;
             title.RequirementQuantity = request.RequirementQuantity;
             title.ColorHex = request.ColorHex.Trim();
             title.IconUrl = request.IconUrl.Trim();
-            title.IsSystemGiven = request.IsSystemGiven;
 
             await _titleRepository.UpdateAsync(title);
 

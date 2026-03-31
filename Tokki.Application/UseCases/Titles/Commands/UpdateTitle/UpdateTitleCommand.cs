@@ -14,6 +14,5 @@ namespace Tokki.Application.UseCases.Titles.Commands.UpdateTitle
         public long RequirementQuantity { get; set; }
         public string ColorHex { get; set; } = "#000000";
         public string? IconUrl { get; set; }
-        public bool IsSystemGiven { get; set; }
     }
 }

@@ -20,14 +20,12 @@ namespace Tokki.Application.UseCases.Titles.Commands.CreateTitle
 
         public async Task<OperationResult<Title>> Handle(CreateTitleCommand request, CancellationToken cancellationToken)
         {
-            // Business Logic: Duplicate Check
             var existingTitle = await _titleRepository.GetTitleByNameAsync(request.Name.Trim(), TitleStatus.Active);
             if (existingTitle != null)
             {
                 return OperationResult<Title>.Failure($"Danh hiệu '{request.Name}' đã tồn tại và đang hoạt động!", 400);
             }
 
-            // Create Entity
             string newTitleId = _idGenerator.Generate(10);
             var newTitle = new Title
             {
@@ -37,8 +35,7 @@ namespace Tokki.Application.UseCases.Titles.Commands.CreateTitle
                 RequirementType = request.RequirementType,
                 RequirementQuantity = request.RequirementQuantity,
                 ColorHex = request.ColorHex.Trim(),
-                IconUrl = request.IconUrl.Trim(),
-                IsSystemGiven = request.IsSystemGiven
+                IconUrl = request.IconUrl.Trim()
             };
 
             await _titleRepository.AddAsync(newTitle);
