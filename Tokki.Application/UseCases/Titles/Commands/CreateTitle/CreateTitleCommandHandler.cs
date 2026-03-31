@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Domain.Entities;
@@ -25,17 +25,19 @@ namespace Tokki.Application.UseCases.Titles.Commands.CreateTitle
                 return OperationResult<Title>.Failure(new List<Error>(), 400, $"Danh hiệu '{request.Name}' đã tồn tại!");
             }
 
-            if (request.RequiredXP < 0)
+            if (request.RequirementQuantity < 0)
             {
-                return OperationResult<Title>.Failure(new List<Error>(), 400, "XP không được âm.");
+                return OperationResult<Title>.Failure(new List<Error>(), 400, "Giá trị điều kiện không được âm.");
             }
+            
             string newTitleId = _idGenerator.Generate(10);
             var newTitle = new Title
             {
                 TitleId = newTitleId,
                 Name = request.Name,
                 Description = request.Description,
-                RequiredXP = request.RequiredXP,
+                RequirementType = request.RequirementType,
+                RequirementQuantity = request.RequirementQuantity,
                 ColorHex = request.ColorHex,
                 IconUrl = request.IconUrl,
                 IsSystemGiven = request.IsSystemGiven
