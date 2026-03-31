@@ -111,10 +111,17 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
-        [HttpPost("user/check-new-title-level")]
-        public async Task<IActionResult> CheckNewTitleLevel()
+        [HttpPost("user/check-level-titles")]
+        public async Task<IActionResult> CheckLevelTitles()
         {
-            var result = await _sender.Send(new Tokki.Application.UseCases.Titles.Commands.CheckNewTitles.CheckNewTitlesCommand { UserId = GetUserId()! });
+            var result = await _sender.Send(new Tokki.Application.UseCases.Titles.Commands.CheckLevelTitles.CheckLevelTitlesCommand { UserId = GetUserId()! });
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpPost("user/check-daily-titles")]
+        public async Task<IActionResult> CheckDailyTitles()
+        {
+            var result = await _sender.Send(new Tokki.Application.UseCases.Titles.Commands.CheckDailyTitles.CheckDailyTitlesCommand { UserId = GetUserId()! });
             return StatusCode(result.StatusCode, result);
         }
 

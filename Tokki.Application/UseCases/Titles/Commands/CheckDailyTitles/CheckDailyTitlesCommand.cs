@@ -3,9 +3,9 @@ using Tokki.Application.Common.Models;
 using Tokki.Domain.Entities;
 using System.Collections.Generic;
 
-namespace Tokki.Application.UseCases.Titles.Commands.CheckNewTitles
+namespace Tokki.Application.UseCases.Titles.Commands.CheckDailyTitles
 {
-    public class CheckNewTitlesCommand : IRequest<OperationResult<List<Title>>>
+    public class CheckDailyTitlesCommand : IRequest<OperationResult<List<Title>>>
     {
         public string UserId { get; set; } = string.Empty;
     }

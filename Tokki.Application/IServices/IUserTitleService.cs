@@ -13,5 +13,8 @@ namespace Tokki.Application.IServices
         Task<bool> EquipTitleAsync(string userId, string titleId);
         Task<List<Title>> GetUnlockedTitlesAsync(string userId);
         Task<(List<(Title title, DateTime earnedAt)> items, int totalCount)> GetUnlockedTitlesWithPagingAsync(string userId, int pageNumber, int pageSize);
+        
+        // --- NEW ---
+        Task<List<Title>> CheckAndUnlockDailyTitlesAsync(string userId);
     }
 }
