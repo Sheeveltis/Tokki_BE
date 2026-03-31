@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,6 +21,7 @@ using Tokki.Application.UseCases.Accounts.Queries.GetMyLevel;
 using Tokki.Application.UseCases.Accounts.Queries.GetUserProfile;
 using Tokki.Application.UseCases.Blogs.Commands.CreateBlog;
 using Tokki.Application.UseCases.Accounts.Commands.RefreshToken;
+using Tokki.Application.UseCases.Accounts.Commands.UpdateAimLevel;
 
 using Tokki.WebAPI.Utilities;
 
@@ -253,6 +254,20 @@ namespace Tokki.WebAPI.Controllers
             var userId = GetUserId();
             if (string.IsNullOrWhiteSpace(userId))
                 return Unauthorized(OperationResult<bool>.Failure("Unauthorized", 401));
+
+            command.UserId = userId;
+
+            var result = await _sender.Send(command, cancellationToken);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpPut("me/aim-level")]
+        [Authorize]
+        public async Task<IActionResult> UpdateAimLevel([FromBody] UpdateAimLevelCommand command, CancellationToken cancellationToken)
+        {
+            var userId = GetUserId();
+            if (string.IsNullOrWhiteSpace(userId))
+                return Unauthorized(new { message = "Unauthorized" });
 
             command.UserId = userId;
 
