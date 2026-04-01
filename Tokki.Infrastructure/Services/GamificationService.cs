@@ -4,6 +4,7 @@ using Tokki.Application.UseCases.Gamification.Commands.AddGameXp;
 using Tokki.Domain.Entities;
 using Tokki.Infrastructure.Data;
 using Tokki.Domain.Enums;
+using Tokki.Application.Common.Helpers;
 
 namespace Tokki.Infrastructure.Services
 {
@@ -144,16 +145,17 @@ namespace Tokki.Infrastructure.Services
 
             var vietnamNow = DateTime.UtcNow.AddHours(7);
 
+            int oldLevel = Tokki.Application.Common.Helpers.LevelEngine.GetLevel(user.TotalXP);
+
             user.TotalXP += amount;
+
+            int newLevel = Tokki.Application.Common.Helpers.LevelEngine.GetLevel(user.TotalXP);
+            bool isLevelUp = newLevel > oldLevel;
 
             // Check XP Titles
             var newlyUnlocked = await _userTitleService.CheckAndUnlockTitlesAsync(user.UserId, TitleRequirementType.XP, user.TotalXP);
             
-            bool isNewTitleUnlocked = newlyUnlocked.Any();
-            string? newTitleName = newlyUnlocked.LastOrDefault()?.Name;
-            string? newTitleColorHex = newlyUnlocked.LastOrDefault()?.ColorHex;
-
-            if (isNewTitleUnlocked && string.IsNullOrEmpty(user.CurrentTitleId))
+            if (newlyUnlocked.Any() && string.IsNullOrEmpty(user.CurrentTitleId))
             {
                 user.CurrentTitleId = newlyUnlocked.Last().TitleId;
             }
@@ -166,9 +168,8 @@ namespace Tokki.Infrastructure.Services
             {
                 TotalXP = user.TotalXP,
                 XpAdded = amount,
-                IsNewTitleUnlocked = isNewTitleUnlocked,
-                NewTitleName = newTitleName,
-                NewTitleColorHex = newTitleColorHex
+                IsLevelUp = isLevelUp,
+                NewLevel = newLevel
             };
         }
     }

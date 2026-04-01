@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Tokki.Application.Common.Helpers;
@@ -39,16 +39,20 @@ namespace Tokki.WebAPI.Controllers
             });
         }
 
-        [HttpGet("progress/{userId}")]
-        public async Task<IActionResult> GetUserProgress(string userId)
+        [HttpGet("progress")]
+        public async Task<IActionResult> GetUserProgress()
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
             var user = await _accountRepository.GetByIdAsync(userId);
             if (user == null) return NotFound();
 
-            int currentLevel = LevelEngine.GetLevel(user.TotalXP);
+            int currentLevel = Tokki.Application.Common.Helpers.LevelEngine.GetLevel(user.TotalXP);
 
-            long xpAtStartOfLevel = LevelEngine.GetTotalXpRequiredForLevel(currentLevel);
-            long xpAtStartOfNextLevel = LevelEngine.GetTotalXpRequiredForLevel(currentLevel + 1);
+            long xpAtStartOfLevel = Tokki.Application.Common.Helpers.LevelEngine.GetTotalXpRequiredForLevel(currentLevel);
+            long xpAtStartOfNextLevel = Tokki.Application.Common.Helpers.LevelEngine.GetTotalXpRequiredForLevel(currentLevel + 1);
 
             long xpGainedInCurrentLevel = user.TotalXP - xpAtStartOfLevel;
             long xpRequiredForThisLevelRange = xpAtStartOfNextLevel - xpAtStartOfLevel;
@@ -77,6 +81,31 @@ namespace Tokki.WebAPI.Controllers
 
             var result = await _gamificationService.AddGameXpAsync(userId, request.Amount);
             return Ok(result);
+        }
+
+        [HttpGet("level-up-check")]
+        public async Task<IActionResult> CheckLevelUp([FromQuery] long addedXp)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var user = await _accountRepository.GetByIdAsync(userId);
+            if (user == null) return NotFound();
+
+            int oldLevel = Tokki.Application.Common.Helpers.LevelEngine.GetLevel(user.TotalXP);
+            int newLevel = Tokki.Application.Common.Helpers.LevelEngine.GetLevel(user.TotalXP + addedXp);
+            bool isLevelUp = newLevel > oldLevel;
+
+            return Ok(new
+            {
+                CurrentLevel = oldLevel,
+                NewLevel = newLevel,
+                IsLevelUp = isLevelUp,
+                TotalXP = user.TotalXP,
+                XpAfterAddition = user.TotalXP + addedXp,
+                Message = isLevelUp ? $"Chúc mừng! Bạn đã lên cấp {newLevel}!" : "Bạn chưa đủ XP để lên cấp."
+            });
         }
     }
 }
