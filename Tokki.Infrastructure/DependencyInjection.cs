@@ -138,6 +138,7 @@ namespace Tokki.Infrastructure
             services.AddScoped<IUserExamRepository, UserExamRepository>();
             services.AddScoped<IExcelBaseService, ExcelBaseService>();
             services.AddScoped<IPdfService, PdfService>();
+            services.AddScoped<IUserXpHistoryRepository, UserXpHistoryRepository>();
             services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
             return services;
         }

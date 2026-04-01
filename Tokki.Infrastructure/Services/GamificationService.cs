@@ -1,10 +1,9 @@
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
-using Tokki.Application.UseCases.Gamification.Commands.AddGameXp;
 using Tokki.Domain.Entities;
-using Tokki.Infrastructure.Data;
 using Tokki.Domain.Enums;
 using Tokki.Application.Common.Helpers;
+using Tokki.Application.Common.Models;
 
 namespace Tokki.Infrastructure.Services
 {
@@ -12,19 +11,22 @@ namespace Tokki.Infrastructure.Services
     {
         private readonly IAccountRepository _accountRepository;
         private readonly IUserTitleService _userTitleService;
-        private readonly TokkiDbContext _context;
+        private readonly ISystemConfigRepository _systemConfigRepository;
+        private readonly IUserXpHistoryRepository _userXpHistoryRepository;
         private readonly IIdGeneratorService _idGenerator;
         private const int TARGET_STUDY_SECONDS = 900;
         private const string LAZY_TITLE_NAME = "Con Lười";
 
         public GamificationService(IAccountRepository accountRepository, 
                                    IUserTitleService userTitleService,
-                                   TokkiDbContext context, 
+                                   ISystemConfigRepository systemConfigRepository,
+                                   IUserXpHistoryRepository userXpHistoryRepository,
                                    IIdGeneratorService idGenerator)
         {
             _accountRepository = accountRepository;
             _userTitleService = userTitleService;
-            _context = context;
+            _systemConfigRepository = systemConfigRepository;
+            _userXpHistoryRepository = userXpHistoryRepository;
             _idGenerator = idGenerator;
         }
 
@@ -93,12 +95,12 @@ namespace Tokki.Infrastructure.Services
                 long bonusXP = 100;
                 user.TotalXP += bonusXP;
 
-                _context.UserXpHistories.Add(new UserXpHistory
+                await _userXpHistoryRepository.AddAsync(new UserXpHistory
                 {
-                    Id = _idGenerator.Generate(),
+                    Id = _idGenerator.Generate(21),
                     UserId = user.UserId,
                     Amount = bonusXP,
-                    Action = "Daily Streak Achievement",
+                    Action = XpSource.DailyStreak,
                     CreatedAt = vietnamNow
                 });
 
@@ -137,40 +139,5 @@ namespace Tokki.Infrastructure.Services
             }
         }
 
-        public async Task<AddGameXpResultDto> AddGameXpAsync(string userId, long amount)
-        {
-            var user = await _accountRepository.GetByIdAsync(userId);
-            if (user == null)
-                throw new InvalidOperationException($"Không tìm thấy user với id: {userId}");
-
-            var vietnamNow = DateTime.UtcNow.AddHours(7);
-
-            int oldLevel = Tokki.Application.Common.Helpers.LevelEngine.GetLevel(user.TotalXP);
-
-            user.TotalXP += amount;
-
-            int newLevel = Tokki.Application.Common.Helpers.LevelEngine.GetLevel(user.TotalXP);
-            bool isLevelUp = newLevel > oldLevel;
-
-            // Check XP Titles
-            var newlyUnlocked = await _userTitleService.CheckAndUnlockTitlesAsync(user.UserId, TitleRequirementType.XP, user.TotalXP);
-            
-            if (newlyUnlocked.Any() && string.IsNullOrEmpty(user.CurrentTitleId))
-            {
-                user.CurrentTitleId = newlyUnlocked.Last().TitleId;
-            }
-
-            user.UpdatedAt = vietnamNow;
-            await _accountRepository.UpdateUserAsync(user);
-            await _accountRepository.SaveChangesAsync(default);
-
-            return new AddGameXpResultDto
-            {
-                TotalXP = user.TotalXP,
-                XpAdded = amount,
-                IsLevelUp = isLevelUp,
-                NewLevel = newLevel
-            };
-        }
     }
 }

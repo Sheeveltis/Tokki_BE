@@ -1,5 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Domain.Entities
 {
@@ -15,8 +16,7 @@ namespace Tokki.Domain.Entities
 
         public long Amount { get; set; } 
 
-        [MaxLength(50)]
-        public string Action { get; set; } 
+        public XpSource Action { get; set; } 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow.AddHours(7);
 
         [ForeignKey("UserId")]

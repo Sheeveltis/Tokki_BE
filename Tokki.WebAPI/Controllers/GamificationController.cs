@@ -1,3 +1,4 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -16,11 +17,15 @@ namespace Tokki.WebAPI.Controllers
     {
         private readonly IGamificationService _gamificationService;
         private readonly IAccountRepository _accountRepository;
+        private readonly ISender _sender;
 
-        public GamificationController(IGamificationService gamificationService, IAccountRepository accountRepository)
+        public GamificationController(IGamificationService gamificationService, 
+                                      IAccountRepository accountRepository,
+                                      ISender sender)
         {
             _gamificationService = gamificationService;
             _accountRepository = accountRepository;
+            _sender = sender;
         }
 
         [HttpPost("heartbeat")]
@@ -69,18 +74,17 @@ namespace Tokki.WebAPI.Controllers
             });
         }
 
-        [HttpPost("game-xp")]
-        public async Task<IActionResult> AddGameXp([FromBody] AddGameXpRequest request)
+        [HttpPost("add-xp")]
+        public async Task<IActionResult> AddGameXp([FromBody] AddGameXpCommand command)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            if (request.Amount < 1 || request.Amount > 500)
-                return BadRequest("Số XP không hợp lệ. Vui lòng nhập giá trị từ 1 đến 500.");
-
-            var result = await _gamificationService.AddGameXpAsync(userId, request.Amount);
-            return Ok(result);
+            command.UserId = userId; // Ensure UserId is from the token, not the body
+            var result = await _sender.Send(command);
+            
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpGet("level-up-check")]
