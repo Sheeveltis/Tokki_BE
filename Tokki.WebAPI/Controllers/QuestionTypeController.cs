@@ -23,9 +23,33 @@ namespace Tokki.API.Controllers
             _mediator = mediator;
         }
 
-        [HttpGet]
-         [Authorize(Roles = "Admin,Staff")]
-        public async Task<IActionResult> GetAll(
+        [HttpGet("admin")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> GetAdmin(
+            [FromQuery] string? keyword,
+            [FromQuery] QuestionSkill? skill,
+            [FromQuery] DifficultyLevel? difficulty,
+            [FromQuery] ExamType? examType,
+            [FromQuery] bool? isActive,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var query = new GetQuestionTypesQuery
+            {
+                Keyword = keyword,
+                Skill = skill,
+                Difficulty = difficulty,
+                ExamType = examType,
+                IsActive = isActive,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+            var result = await _mediator.Send(query);
+            return result.IsSuccess ? Ok(result) : StatusCode(result.StatusCode, result);
+        }
+
+        [HttpGet("user")]
+        public async Task<IActionResult> GetUser(
             [FromQuery] string? keyword,
             [FromQuery] QuestionSkill? skill,
             [FromQuery] DifficultyLevel? difficulty,
@@ -39,6 +63,7 @@ namespace Tokki.API.Controllers
                 Skill = skill,
                 Difficulty = difficulty,
                 ExamType = examType,
+                IsActive = true,
                 PageNumber = pageNumber,
                 PageSize = pageSize
             };

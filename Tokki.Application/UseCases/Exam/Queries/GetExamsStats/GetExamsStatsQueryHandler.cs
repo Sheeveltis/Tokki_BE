@@ -36,7 +36,6 @@ namespace Tokki.Application.UseCases.Exam.Queries.GetExamsStats
                     ? new Dictionary<string, int>()
                     : JsonSerializer.Deserialize<Dictionary<string, int>>(e.SkillDurations) ?? new();
 
-                // Group questions by skill (in-memory using the provided question numbers)
                 var skillCounts = new Dictionary<string, int>();
                 foreach (var part in e.TemplateParts)
                 {
@@ -63,6 +62,7 @@ namespace Tokki.Application.UseCases.Exam.Queries.GetExamsStats
                     SkillDurations = durations,
                     CreatedAt = e.CreatedAt.AddHours(7),
                     TotalQuestions = e.TotalQuestions,
+                    MaxScore = e.MaxScore,
                     
                     // Stats (already calculated in SQL)
                     TotalParticipants = e.TotalParticipants,

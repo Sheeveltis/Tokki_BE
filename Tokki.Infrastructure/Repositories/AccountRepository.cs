@@ -60,9 +60,7 @@ namespace Tokki.Infrastructure.Repositories
         {
             // Nếu số điện thoại truyền vào rỗng thì coi như không trùng (bỏ qua)
             if (string.IsNullOrWhiteSpace(phoneNumber)) return false;
-
-            return await _context.Accounts
-                .AnyAsync(u => u.PhoneNumber == phoneNumber);
+            return await _context.Accounts.AnyAsync(u => u.PhoneNumber == phoneNumber);
         }
        public async Task<bool> IsPhoneNumberUsedByOtherUserAsync(string phoneNumber, string currentUserId)
         {
@@ -121,7 +119,7 @@ namespace Tokki.Infrastructure.Repositories
                 case LeaderboardTimeFrame.Day:
                     startDate = now.Date;
                     break;
-                case LeaderboardTimeFrame.Week:
+                case LeaderboardTimeFrame.Week: 
                     int diff = (7 + (now.DayOfWeek - DayOfWeek.Monday)) % 7;
                     startDate = now.Date.AddDays(-1 * diff);
                     break;
@@ -281,13 +279,38 @@ namespace Tokki.Infrastructure.Repositories
                         };
             return await query.AsNoTracking().FirstOrDefaultAsync();
         }
+
+        public async Task<Dictionary<string, AccountBasicInfoDTO>> GetBasicInfosAsync(List<string> userIds)
+        {
+            if (userIds == null || !userIds.Any()) return new Dictionary<string, AccountBasicInfoDTO>();
+
+            var query = from a in _context.Accounts
+                        where userIds.Contains(a.UserId)
+                        join t in _context.Titles
+                        on a.CurrentTitleId equals t.TitleId into userTitles
+                        from title in userTitles.DefaultIfEmpty()
+
+                        select new
+                        {
+                            a.UserId,
+                            DTO = new AccountBasicInfoDTO
+                            {
+                                FullName = a.FullName,
+                                AvatarUrl = a.AvatarUrl,
+                                CurrentTitleName = title != null ? title.Name : null,
+                                CurrentColorHexTitle = title != null ? title.ColorHex : null,
+                                TitleIconUrl = title != null ? title.IconUrl : null
+                            }
+                        };
+
+            var items = await query.AsNoTracking().ToListAsync();
+            return items.ToDictionary(x => x.UserId, x => x.DTO);
+        }
+
         public async Task AddRangeAsync(IEnumerable<Account> accounts, CancellationToken cancellationToken = default)
         {
-            if (accounts == null || !accounts.Any())
-                return;
-
+            if (accounts == null || !accounts.Any()) return;
             await _context.Accounts.AddRangeAsync(accounts, cancellationToken);
-
             await _context.SaveChangesAsync(cancellationToken);
         }
         public async Task<List<string>> GetExistingEmailsAsync(List<string> emails, CancellationToken cancellationToken = default)
@@ -303,11 +326,40 @@ namespace Tokki.Infrastructure.Repositories
                 .Select(a => a.Email)
                 .ToListAsync(cancellationToken);
         }
+
         public async Task<IEnumerable<Account>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             return await _context.Accounts
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
+        }
+
+        public async Task<(List<(Title title, DateTime earnedAt)> items, int totalCount)> GetUnlockedTitlesWithPagingAsync(string userId, int pageNumber, int pageSize)
+        {
+            var query = from at in _context.AccountTitles
+                        join t in _context.Titles on at.TitleId equals t.TitleId
+                        where at.UserId == userId
+                        select new { Title = t, EarnedAt = at.EarnedAt };
+
+            int totalCount = await query.CountAsync();
+            var results = await query
+                .OrderByDescending(x => x.EarnedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var items = results.Select(x => (x.Title, x.EarnedAt)).ToList();
+
+            return (items, totalCount);
+        }
+
+        public async Task<List<Title>> GetUnlockedTitlesForUserAsync(string userId)
+        {
+            return await (from at in _context.AccountTitles
+                          join t in _context.Titles on at.TitleId equals t.TitleId
+                          where at.UserId == userId
+                          orderby at.EarnedAt descending
+                          select t).ToListAsync();
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -8,10 +8,12 @@ using Tokki.Application.UseCases.Excel.Commands.ImportAccounts;
 using Tokki.Application.UseCases.Excel.Commands.ImportPronunciationExample;
 using Tokki.Application.UseCases.Excel.Commands.ImportQuestionsFromExcel;
 using Tokki.Application.UseCases.Excel.Commands.ImportQuestionTypes;
+using Tokki.Application.UseCases.Excel.Commands.ImportPronunciationRules;
 using Tokki.Application.UseCases.Excel.DTOs;
 using Tokki.Application.UseCases.Excel.Queries.ExportAccounts;
 using Tokki.Application.UseCases.Excel.Queries.ExportQuestionTypes;
 using Tokki.Application.UseCases.Excel.Queries.ExportVocabByTopic;
+using Tokki.Application.UseCases.Excel.Queries.ExportPronunciationRules;
 using Tokki.Application.UseCases.Excel.Queries.GetTemplate;
 using Tokki.Application.UseCases.Excel.Queries.TemplateQuestionType;
 
@@ -22,7 +24,6 @@ namespace Tokki.WebAPI.Controllers
     [Authorize(Roles = "Admin, Staff")]
     public class ExcelController : ControllerBase
     {
-
         private readonly ISender _sender;
         public ExcelController(ISender sender)
         {
@@ -113,7 +114,6 @@ namespace Tokki.WebAPI.Controllers
         [HttpPost("import/account")]
         public async Task<IActionResult> ImportAccounts(IFormFile file)
         {
-            // Bắt lỗi ngay từ vòng gửi xe nếu FE quên nhét file vào body
             if (file == null || file.Length == 0)
             {
                 return BadRequest(new { Message = "Vui lòng đính kèm file Excel." });
@@ -122,8 +122,6 @@ namespace Tokki.WebAPI.Controllers
             var command = new ImportAccountCommand(file);
             var result = await _sender.Send(command);
 
-            // Dù thành công hay có lỗi (do trùng email, thiếu cột), 
-            // kết quả trả về đều chứa danh sách SuccessList và FailureList chi tiết
             if (!result.IsSuccess)
                 return BadRequest(result);
 
@@ -135,6 +133,35 @@ namespace Tokki.WebAPI.Controllers
             var result = await _sender.Send(new ImportQuestionTypesCommand(file));
             if (!result.IsSuccess) return BadRequest(result);
             return Ok(result);
+        }
+        
+        [HttpPost("import/pronunciation-rule")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> ImportPronunciationRuleByExcel(IFormFile file)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                {
+                    return BadRequest("Vui lòng chọn file Excel.");
+                }
+
+                var userId = User.FindFirst("UserId")?.Value
+                             ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                var command = new ImportPronunciationRulesCommand
+                {
+                    File = file,
+                    UserId = userId!,
+                };
+
+                var result = await _sender.Send(command);
+                return StatusCode(result.StatusCode, result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.ToString());
+            }
         }
         [HttpGet("export/account")]
         public async Task<IActionResult> ExportAccount()
@@ -200,6 +227,13 @@ namespace Tokki.WebAPI.Controllers
         }
 
 
+        [HttpGet("export/pronunciation-rule")]
+        public async Task<IActionResult> ExportPronunciationRule()
+        {
+            var result = await _sender.Send(new ExportPronunciationRulesQuery());
+            if (!result.IsSuccess) return BadRequest(result);
 
+            return File(result.Data.FileContent, result.Data.ContentType, result.Data.FileName);
+        }
     }
 }

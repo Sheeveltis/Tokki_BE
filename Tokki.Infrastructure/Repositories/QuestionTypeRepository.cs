@@ -48,9 +48,15 @@ namespace Tokki.Infrastructure.Repositories
             QuestionSkill? skill = null,
             DifficultyLevel? difficulty = null,
             ExamType? examType = null,
+            bool? isActive = null,
             CancellationToken cancellationToken = default)
         {
-            var query = _context.QuestionTypes.AsNoTracking().Where(qt => qt.IsActive);
+            var query = _context.QuestionTypes.AsNoTracking();
+
+            if (isActive.HasValue)
+            {
+                query = query.Where(qt => qt.IsActive == isActive.Value);
+            }
 
             if (!string.IsNullOrWhiteSpace(keyword))
             {

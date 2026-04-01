@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -54,6 +54,30 @@ namespace Tokki.Infrastructure.Repositories
         public async Task<bool> ExistsAsync(string id, CancellationToken cancellationToken = default)
         {
             return await _context.Categories.AnyAsync(c => c.Id == id, cancellationToken);
+        }
+
+        public async Task<(IEnumerable<Category> Items, int TotalCount)> GetPagedAsync(
+            int pageNumber,
+            int pageSize,
+            string? searchTerm,
+            CancellationToken cancellationToken = default)
+        {
+            var query = _context.Categories.AsNoTracking();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                query = query.Where(c => c.Name.Contains(searchTerm) || c.Slug.Contains(searchTerm));
+            }
+
+            int totalCount = await query.CountAsync(cancellationToken);
+
+            var items = await query
+                .OrderByDescending(c => c.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+
+            return (items, totalCount);
         }
     }
 }

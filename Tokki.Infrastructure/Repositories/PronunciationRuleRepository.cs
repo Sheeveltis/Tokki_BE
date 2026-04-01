@@ -22,6 +22,11 @@ namespace Tokki.Infrastructure.Repositories
             await _context.PronunciationRules.AddAsync(rule);
         }
 
+        public async Task AddRangeAsync(IEnumerable<PronunciationRule> rules)
+        {
+            await _context.PronunciationRules.AddRangeAsync(rules);
+        }
+
         public Task UpdateAsync(PronunciationRule rule)
         {
             _context.PronunciationRules.Update(rule);

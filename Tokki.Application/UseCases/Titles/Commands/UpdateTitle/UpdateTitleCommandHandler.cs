@@ -1,7 +1,8 @@
-﻿using MediatR;
+using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Domain.Entities;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Titles.Commands.UpdateTitle
 {
@@ -19,28 +20,28 @@ namespace Tokki.Application.UseCases.Titles.Commands.UpdateTitle
             var title = await _titleRepository.GetTitleByIdAsync(request.TitleId);
             if (title == null)
             {
-                return OperationResult<Title>.Failure(new List<Error>(), 404, "Không tìm thấy danh hiệu");
+                return OperationResult<Title>.Failure("Không tìm thấy danh hiệu.", 404);
             }
 
-            if (title.Name != request.Name)
+            if (!title.Name.Equals(request.Name.Trim(), StringComparison.OrdinalIgnoreCase))
             {
-                var duplicateCheck = await _titleRepository.GetTitleByNameAsync(request.Name);
+                var duplicateCheck = await _titleRepository.GetTitleByNameAsync(request.Name.Trim(), TitleStatus.Active);
                 if (duplicateCheck != null)
                 {
-                    return OperationResult<Title>.Failure(new List<Error>(), 400, "Tên danh hiệu đã bị trùng với danh hiệu khác.");
+                    return OperationResult<Title>.Failure($"Tên danh hiệu '{request.Name}' đã bị trùng với danh hiệu đang hoạt động khác.", 400);
                 }
             }
 
-            title.Name = request.Name;
-            title.Description = request.Description;
-            title.RequiredXP = request.RequiredXP;
-            title.ColorHex = request.ColorHex;
-            title.IconUrl = request.IconUrl;
-            title.IsSystemGiven = request.IsSystemGiven;
+            title.Name = request.Name.Trim();
+            title.Description = request.Description?.Trim();
+            title.RequirementType = request.RequirementType;
+            title.RequirementQuantity = request.RequirementQuantity;
+            title.ColorHex = request.ColorHex.Trim();
+            title.IconUrl = request.IconUrl.Trim();
 
             await _titleRepository.UpdateAsync(title);
 
-            return OperationResult<Title>.Success(title, 200, "Cập nhật thành công");
+            return OperationResult<Title>.Success(title, 200, "Cập nhật danh hiệu thành công");
         }
     }
 }

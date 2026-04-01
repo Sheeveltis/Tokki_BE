@@ -22,6 +22,7 @@ namespace Tokki.Application.UseCases.Exam.DTOs
         public int InProgressCount { get; set; }
         public int CompletedCount { get; set; }
         public int TotalQuestions { get; set; }
+        public int MaxScore { get; set; }
 
         public List<TemplatePartStatProjection> TemplateParts { get; set; } = new();
         public List<int> QuestionNumbers { get; set; } = new();
@@ -32,5 +33,6 @@ namespace Tokki.Application.UseCases.Exam.DTOs
         public QuestionSkill Skill { get; set; }
         public int QuestionFrom { get; set; }
         public int QuestionTo { get; set; }
+        public int Mark { get; set; }
     }
 }

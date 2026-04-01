@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
@@ -46,6 +46,15 @@ namespace Tokki.Application.UseCases.Accounts.Commands.Login {
             // 1. Kiểm tra tồn tại
             if (user == null)
                 return OperationResult<LoginResponse>.Failure(new List<Error> { AppErrors.UserNotFound }, 404, "Tài khoản không tồn tại.");
+
+            // 1.1. Kiểm tra quyền truy cập (nếu có yêu cầu nhóm role cụ thể)
+            if (request.AllowedRoles != null && request.AllowedRoles.Count > 0)
+            {
+                if (!request.AllowedRoles.Contains(user.Role))
+                {
+                    return OperationResult<LoginResponse>.Failure("Bạn không có quyền đăng nhập vào hệ thống này.", 403);
+                }
+            }
 
             DateTime utcNow = DateTime.UtcNow;
             DateTime vietnamTimeNow = utcNow.AddHours(7);

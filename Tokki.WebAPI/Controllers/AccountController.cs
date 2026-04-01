@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,7 +21,11 @@ using Tokki.Application.UseCases.Accounts.Queries.GetMyLevel;
 using Tokki.Application.UseCases.Accounts.Queries.GetUserProfile;
 using Tokki.Application.UseCases.Blogs.Commands.CreateBlog;
 using Tokki.Application.UseCases.Accounts.Commands.RefreshToken;
+using Tokki.Application.UseCases.Accounts.Commands.UpdateAimLevel;
+using Tokki.Application.UseCases.Accounts.Queries.GetAimLevel;
 
+using Tokki.Domain.Enums;
+using System.Collections.Generic;
 using Tokki.WebAPI.Utilities;
 using Tokki.Application.UseCases.Accounts.Commands.Register;
 
@@ -45,14 +49,35 @@ namespace Tokki.WebAPI.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginCommand command)
         {
+            return await ProcessLogin(command);
+        }
+
+        [HttpPost("login/user")]
+        public async Task<IActionResult> LoginUser([FromBody] LoginCommand command)
+        {
+            command.AllowedRoles = new List<AccountRole> { AccountRole.User, AccountRole.Vip };
+            return await ProcessLogin(command);
+        }
+
+        [HttpPost("login/admin")]
+        public async Task<IActionResult> LoginAdmin([FromBody] LoginCommand command)
+        {
+            command.AllowedRoles = new List<AccountRole> { AccountRole.Admin, AccountRole.Staff };
+            return await ProcessLogin(command);
+        }
+
+        private async Task<IActionResult> ProcessLogin(LoginCommand command)
+        {
             var result = await _sender.Send(command);
             if (!result.IsSuccess) return StatusCode(result.StatusCode, result);
 
             // Set HttpOnly cookie
-            CookieUtil.SetRefreshTokenCookie(Response, result.Data.RefreshToken);
-
-            // Xóa khỏi response body trước khi gửi về client
-            result.Data.RefreshToken = null;
+            if (result.Data != null && !string.IsNullOrEmpty(result.Data.RefreshToken))
+            {
+                CookieUtil.SetRefreshTokenCookie(Response, result.Data.RefreshToken);
+                // Xóa khỏi response body trước khi gửi về client
+                result.Data.RefreshToken = null;
+            }
 
             return Ok(result);
         }
@@ -193,6 +218,20 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
+        [HttpGet("me/aim-level")]
+        [Authorize]
+        public async Task<IActionResult> GetAimLevel(CancellationToken cancellationToken)
+        {
+            var userId = GetUserId();
+            if (string.IsNullOrWhiteSpace(userId))
+                return Unauthorized(new { message = "Unauthorized" });
+
+            var query = new GetAimLevelQuery { UserId = userId };
+            var result = await _sender.Send(query, cancellationToken);
+
+            return StatusCode(result.StatusCode, result);
+        }
+
         [HttpGet("me/level")]
         [Authorize]
         public async Task<IActionResult> GetMyLevel(CancellationToken cancellationToken)
@@ -254,6 +293,20 @@ namespace Tokki.WebAPI.Controllers
             var userId = GetUserId();
             if (string.IsNullOrWhiteSpace(userId))
                 return Unauthorized(OperationResult<bool>.Failure("Unauthorized", 401));
+
+            command.UserId = userId;
+
+            var result = await _sender.Send(command, cancellationToken);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpPut("me/aim-level")]
+        [Authorize]
+        public async Task<IActionResult> UpdateAimLevel([FromBody] UpdateAimLevelCommand command, CancellationToken cancellationToken)
+        {
+            var userId = GetUserId();
+            if (string.IsNullOrWhiteSpace(userId))
+                return Unauthorized(new { message = "Unauthorized" });
 
             command.UserId = userId;
 

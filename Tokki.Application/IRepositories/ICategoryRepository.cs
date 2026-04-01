@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,5 +15,10 @@ namespace Tokki.Application.IRepositories
         Task UpdateAsync(Category category, CancellationToken cancellationToken = default);
         Task DeleteAsync(Category category, CancellationToken cancellationToken = default);
         Task<bool> ExistsAsync(string id, CancellationToken cancellationToken = default);
+        Task<(IEnumerable<Category> Items, int TotalCount)> GetPagedAsync(
+            int pageNumber,
+            int pageSize,
+            string? searchTerm,
+            CancellationToken cancellationToken = default);
     }
 }

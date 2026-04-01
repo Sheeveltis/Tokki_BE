@@ -171,7 +171,8 @@ namespace Tokki.Infrastructure.Repositories
                         {
                             Skill = tp.Skill,
                             QuestionFrom = tp.QuestionFrom,
-                            QuestionTo = tp.QuestionTo
+                            QuestionTo = tp.QuestionTo,
+                            Mark = tp.Mark
                         }).ToList() 
                         : new List<TemplatePartStatProjection>()
                 })
@@ -225,6 +226,10 @@ namespace Tokki.Infrastructure.Repositories
                 {
                     exam.TotalQuestions = qs.TotalQuestions;
                     exam.QuestionNumbers = qs.QuestionNumbers;
+                    
+                    // Final calculation of MaxScore in memory
+                    exam.MaxScore = exam.TemplateParts.Sum(tp => 
+                        qs.QuestionNumbers.Count(qNo => qNo >= tp.QuestionFrom && qNo <= tp.QuestionTo) * tp.Mark);
                 }
             }
 
@@ -252,7 +257,8 @@ namespace Tokki.Infrastructure.Repositories
                         {
                             Skill = tp.Skill,
                             QuestionFrom = tp.QuestionFrom,
-                            QuestionTo = tp.QuestionTo
+                            QuestionTo = tp.QuestionTo,
+                            Mark = tp.Mark
                         }).ToList() 
                         : new List<TemplatePartStatProjection>()
                 })
@@ -292,6 +298,10 @@ namespace Tokki.Infrastructure.Repositories
 
             exam.TotalQuestions = questions.Count;
             exam.QuestionNumbers = questions;
+            
+            // Final calculation in memory
+            exam.MaxScore = exam.TemplateParts.Sum(tp => 
+                questions.Count(qNo => qNo >= tp.QuestionFrom && qNo <= tp.QuestionTo) * tp.Mark);
 
             return exam;
         }
@@ -312,7 +322,7 @@ namespace Tokki.Infrastructure.Repositories
         public async Task<int> GetQuestionCountAsync(string examId, CancellationToken cancellationToken = default)
         {
             return await _context.ExamQuestions
-                .Where(eq => eq.ExamId == examId)
+                .Where(eq => examId.Contains(eq.ExamId))
                 .CountAsync(cancellationToken);
         }
 
@@ -342,6 +352,7 @@ namespace Tokki.Infrastructure.Repositories
         {
             return await _context.Exams
                 .AsNoTracking()
+                .AsSplitQuery()
                 .Include(e => e.ExamTemplate)
                     .ThenInclude(t => t.TemplateParts)
                 .Include(e => e.ExamQuestions)
