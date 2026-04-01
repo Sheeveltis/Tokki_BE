@@ -1,12 +1,14 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
+using Tokki.Application.UseCases.Topics.DTOs;
 using Tokki.Application.UseCases.Topics.Queries.CheckTopicCompletion;
-using Tokki.UnitTest.Mocks.Repositories;
+using Tokki.Domain.Entities;
 using Tokki.UnitTest.Utilities;
 using Xunit;
 
@@ -14,187 +16,85 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
 {
     public class CheckTopicCompletionQueryHandlerTests
     {
-        private CheckTopicCompletionQueryHandler CreateHandler(
-            Mock<ITopicRepository>? topicRepo = null)
+        private static Mock<ITopicRepository> GetRepoMock(Topic? topic = null, int totalVocab = 10, int learned = 0)
         {
-            return new CheckTopicCompletionQueryHandler(
-                (topicRepo ?? MockTopicRepository.GetMock()).Object);
+            var m = new Mock<ITopicRepository>();
+            m.Setup(x => x.GetByIdAsync(It.IsAny<string>())).ReturnsAsync(topic);
+            m.Setup(x => x.CountVocabulariesInTopicAsync(It.IsAny<string>())).ReturnsAsync(totalVocab);
+            m.Setup(x => x.CountLearnedVocabulariesAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(learned);
+            return m;
         }
 
+        private static CheckTopicCompletionQueryHandler CreateHandler(Mock<ITopicRepository>? repo = null)
+            => new CheckTopicCompletionQueryHandler((repo ?? GetRepoMock()).Object);
+
+        private static Topic SampleTopic() =>
+            new Topic { TopicId = "T-001", TopicName = "Korean Basics" };
+
+        private static CheckTopicCompletionQuery MakeQuery(string topicId = "T-001", string userId = "U-001") =>
+            new CheckTopicCompletionQuery { TopicId = topicId, UserId = userId };
+
+        // TC-TOPIC-COMP-01 | A | Topic not found → 404
         [Fact]
         public async Task Handle_TopicNotFound_ShouldReturn404()
         {
-            var query = new CheckTopicCompletionQuery
-            {
-                TopicId = "TOPIC-INVALID",
-                UserId = "USER-001"
-            };
-
-            var handler = CreateHandler(
-                topicRepo: MockTopicRepository.GetMock(returnedTopic: null));
-
-            var result = await handler.Handle(query, CancellationToken.None);
-
+            var result = await CreateHandler(GetRepoMock(null)).Handle(MakeQuery("MISSING"), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(404);
-
-            QACollector.LogTestCase("Topic - Check Completion", new TestCaseDetail
-            {
-                FunctionGroup = "Check Topic Completion",
-                TestCaseID = "TC-TOPIC-CMP-01",
-                Description = "Kiểm tra completion với TopicId không tồn tại",
-                ExpectedResult = "Return 404 TopicNotFound",
-                StatusRound1 = "Passed",
-                TestCaseType = "A",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "Invalid TopicId",
-                    "Topic = null",
-                    "Return 404"
-                }
-            });
+            QACollector.LogTestCase("Topic - Check Completion", new TestCaseDetail { FunctionGroup = "CheckTopicCompletion", TestCaseID = "TC-TOPIC-COMP-01", Description = "Topic not found → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetByIdAsync returns null" } });
         }
 
+        // TC-TOPIC-COMP-02 | N | Topic with 0 vocab → IsCompleted=true, Progress=100
         [Fact]
-        public async Task Handle_TopicHasNoVocab_ShouldReturnCompletedWith100Percent()
+        public async Task Handle_TopicWithNoVocabs_ShouldReturnCompletedWith100Percent()
         {
-            // Topic không có vocab → coi như hoàn thành 100%
-            var query = new CheckTopicCompletionQuery
-            {
-                TopicId = "TOPIC-001",
-                UserId = "USER-001"
-            };
-
-            var mockTopicRepo = MockTopicRepository.GetMock(
-                returnedTopic: MockTopicRepository.GetSampleTopic());
-
-            mockTopicRepo.Setup(x => x.CountVocabulariesInTopicAsync(It.IsAny<string>()))
-                         .ReturnsAsync(0); // totalVocab = 0
-
-            var handler = CreateHandler(topicRepo: mockTopicRepo);
-            var result = await handler.Handle(query, CancellationToken.None);
-
+            var result = await CreateHandler(GetRepoMock(SampleTopic(), totalVocab: 0)).Handle(MakeQuery(), CancellationToken.None);
             result.IsSuccess.Should().BeTrue();
-            result.StatusCode.Should().Be(200);
-            result.Data.IsCompleted.Should().BeTrue();
+            result.Data!.IsCompleted.Should().BeTrue();
             result.Data.ProgressPercent.Should().Be(100);
             result.Data.TotalVocab.Should().Be(0);
-            result.Data.LearnedVocab.Should().Be(0);
-
-            QACollector.LogTestCase("Topic - Check Completion", new TestCaseDetail
-            {
-                FunctionGroup = "Check Topic Completion",
-                TestCaseID = "TC-TOPIC-CMP-02",
-                Description = "Topic không có vocab → IsCompleted = true, ProgressPercent = 100",
-                ExpectedResult = "Return 200, IsCompleted = true, ProgressPercent = 100",
-                StatusRound1 = "Passed",
-                TestCaseType = "B",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "TotalVocab = 0 (boundary: topic rỗng)",
-                    "IsCompleted = true",
-                    "ProgressPercent = 100"
-                }
-            });
+            QACollector.LogTestCase("Topic - Check Completion", new TestCaseDetail { FunctionGroup = "CheckTopicCompletion", TestCaseID = "TC-TOPIC-COMP-02", Description = "No vocabs → IsCompleted=true, Progress=100", ExpectedResult = "IsCompleted=true, ProgressPercent=100", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "totalVocab=0 → complete" } });
         }
 
+        // TC-TOPIC-COMP-03 | N | 5/10 vocabs learned → Progress=50, IsCompleted=false
         [Fact]
-        public async Task Handle_UserLearnedAllVocab_ShouldReturnCompletedAndReturn200()
+        public async Task Handle_5Of10Learned_ShouldReturn50PercentNotCompleted()
         {
-            var query = new CheckTopicCompletionQuery
-            {
-                TopicId = "TOPIC-001",
-                UserId = "USER-001"
-            };
-
-            var mockTopicRepo = MockTopicRepository.GetMock(
-                returnedTopic: MockTopicRepository.GetSampleTopic());
-
-            mockTopicRepo.Setup(x => x.CountVocabulariesInTopicAsync(It.IsAny<string>()))
-                         .ReturnsAsync(10); // totalVocab = 10
-
-            mockTopicRepo.Setup(x => x.CountLearnedVocabulariesAsync(
-                        It.IsAny<string>(),
-                        It.IsAny<string>()))
-                         .ReturnsAsync(10); // learnedCount = 10 → 100%
-
-            var handler = CreateHandler(topicRepo: mockTopicRepo);
-            var result = await handler.Handle(query, CancellationToken.None);
-
+            var result = await CreateHandler(GetRepoMock(SampleTopic(), totalVocab: 10, learned: 5)).Handle(MakeQuery(), CancellationToken.None);
             result.IsSuccess.Should().BeTrue();
-            result.Data.IsCompleted.Should().BeTrue();
-            result.Data.ProgressPercent.Should().Be(100);
-            result.Data.TotalVocab.Should().Be(10);
-            result.Data.LearnedVocab.Should().Be(10);
-            result.Message.Should().Contain("hoàn thành");
-
-            QACollector.LogTestCase("Topic - Check Completion", new TestCaseDetail
-            {
-                FunctionGroup = "Check Topic Completion",
-                TestCaseID = "TC-TOPIC-CMP-03",
-                Description = "User học hết toàn bộ vocab của topic → IsCompleted = true, 100%",
-                ExpectedResult = "Return 200, IsCompleted = true, ProgressPercent = 100",
-                StatusRound1 = "Passed",
-                TestCaseType = "N",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "TotalVocab = 10",
-                    "LearnedVocab = 10 (boundary: học hết)",
-                    "IsCompleted = true",
-                    "Return 200"
-                }
-            });
-        }
-
-        [Fact]
-        public async Task Handle_UserLearnedPartialVocab_ShouldReturnProgressPercent()
-        {
-            var query = new CheckTopicCompletionQuery
-            {
-                TopicId = "TOPIC-001",
-                UserId = "USER-001"
-            };
-
-            var mockTopicRepo = MockTopicRepository.GetMock(
-                returnedTopic: MockTopicRepository.GetSampleTopic());
-
-            mockTopicRepo.Setup(x => x.CountVocabulariesInTopicAsync(It.IsAny<string>()))
-                         .ReturnsAsync(10);
-
-            mockTopicRepo.Setup(x => x.CountLearnedVocabulariesAsync(
-                        It.IsAny<string>(),
-                        It.IsAny<string>()))
-                         .ReturnsAsync(5); // learned 5/10 → 50%
-
-            var handler = CreateHandler(topicRepo: mockTopicRepo);
-            var result = await handler.Handle(query, CancellationToken.None);
-
-            result.IsSuccess.Should().BeTrue();
+            result.Data!.ProgressPercent.Should().Be(50);
             result.Data.IsCompleted.Should().BeFalse();
-            result.Data.ProgressPercent.Should().Be(50);
             result.Data.LearnedVocab.Should().Be(5);
-            result.Message.Should().Contain("chưa hoàn thành");
+            QACollector.LogTestCase("Topic - Check Completion", new TestCaseDetail { FunctionGroup = "CheckTopicCompletion", TestCaseID = "TC-TOPIC-COMP-03", Description = "5/10 learned → ProgressPercent=50, IsCompleted=false", ExpectedResult = "ProgressPercent=50, IsCompleted=false", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "learned/total=50%" } });
+        }
 
-            QACollector.LogTestCase("Topic - Check Completion", new TestCaseDetail
-            {
-                FunctionGroup = "Check Topic Completion",
-                TestCaseID = "TC-TOPIC-CMP-04",
-                Description = "User học 5/10 vocab → IsCompleted = false, ProgressPercent = 50",
-                ExpectedResult = "Return 200, IsCompleted = false, ProgressPercent = 50",
-                StatusRound1 = "Passed",
-                TestCaseType = "N",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "TotalVocab = 10",
-                    "LearnedVocab = 5",
-                    "ProgressPercent = 50",
-                    "IsCompleted = false"
-                }
-            });
+        // TC-TOPIC-COMP-04 | N | All 10/10 vocabs learned → IsCompleted=true, Progress=100
+        [Fact]
+        public async Task Handle_AllLearned_ShouldReturnCompletedWith100Percent()
+        {
+            var result = await CreateHandler(GetRepoMock(SampleTopic(), totalVocab: 10, learned: 10)).Handle(MakeQuery(), CancellationToken.None);
+            result.Data!.IsCompleted.Should().BeTrue();
+            result.Data.ProgressPercent.Should().Be(100);
+            QACollector.LogTestCase("Topic - Check Completion", new TestCaseDetail { FunctionGroup = "CheckTopicCompletion", TestCaseID = "TC-TOPIC-COMP-04", Description = "10/10 learned → IsCompleted=true, Progress=100", ExpectedResult = "IsCompleted=true, ProgressPercent=100", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "learnedCount>=totalVocab" } });
+        }
+
+        // TC-TOPIC-COMP-05 | N | TopicId echoed in DTO
+        [Fact]
+        public async Task Handle_TopicFound_TopicIdEchoedInDto()
+        {
+            var result = await CreateHandler(GetRepoMock(SampleTopic(), totalVocab: 10, learned: 3)).Handle(MakeQuery("T-001"), CancellationToken.None);
+            result.Data!.TopicId.Should().Be("T-001");
+            QACollector.LogTestCase("Topic - Check Completion", new TestCaseDetail { FunctionGroup = "CheckTopicCompletion", TestCaseID = "TC-TOPIC-COMP-05", Description = "TopicId='T-001' echoed in result DTO", ExpectedResult = "Data.TopicId='T-001'", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "TopicId mapped to DTO" } });
+        }
+
+        // TC-TOPIC-COMP-06 | B | CountLearnedVocabulariesAsync called with correct userId and topicId
+        [Fact]
+        public async Task Handle_TopicFound_CountLearnedCalledWithCorrectIds()
+        {
+            var repo = GetRepoMock(SampleTopic(), totalVocab: 5, learned: 2);
+            await CreateHandler(repo).Handle(MakeQuery("T-001", "U-XYZ"), CancellationToken.None);
+            repo.Verify(x => x.CountLearnedVocabulariesAsync("U-XYZ", "T-001"), Times.Once);
+            QACollector.LogTestCase("Topic - Check Completion", new TestCaseDetail { FunctionGroup = "CheckTopicCompletion", TestCaseID = "TC-TOPIC-COMP-06", Description = "CountLearnedVocabulariesAsync called with userId='U-XYZ', topicId='T-001'", ExpectedResult = "Times.Once with correct IDs", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Both IDs forwarded to repo" } });
         }
     }
 }

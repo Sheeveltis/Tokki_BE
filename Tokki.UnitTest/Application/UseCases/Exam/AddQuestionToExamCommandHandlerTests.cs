@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -129,7 +129,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(404);
-            result.Message.Should().Contain($"Không tìm thấy câu hỏi số {command.QuestionNo}");
+            result.Message.Should().Contain($"Question number {command.QuestionNo} not found");
 
             // Log for Excel Report
             QACollector.LogTestCase("Exam - Add Question", new TestCaseDetail
@@ -190,6 +190,57 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
                     "Exception thrown by Database",
                     "Return 500 Server Error"
                 }
+            });
+        }
+        [Fact]
+        public async Task Handle_ValidData_ShouldCallUpdateAsyncExactlyOnce()
+        {
+            var command = new AddQuestionToExamCommand { QuestionBankId = "QB-123", ExamId = "EX-456", QuestionNo = 1 };
+            var existingSlot = new ExamQuestion { ExamId = command.ExamId, QuestionNo = command.QuestionNo, QuestionBankId = "OLD-ID" };
+
+            var mockQuestionBankRepo = MockQuestionBankRepository.GetMock(new QuestionBank { QuestionBankId = command.QuestionBankId });
+            var mockExamQuestionRepo = MockExamQuestionRepository.GetMock(existingSlot);
+            var mockLogger = new Mock<ILogger<AddQuestionToExamCommandHandler>>();
+
+            var handler = new AddQuestionToExamCommandHandler(mockExamQuestionRepo.Object, mockQuestionBankRepo.Object, mockLogger.Object);
+
+            await handler.Handle(command, CancellationToken.None);
+
+            mockExamQuestionRepo.Verify(x => x.UpdateAsync(It.IsAny<ExamQuestion>()), Times.Once);
+
+            QACollector.LogTestCase("Exam - Add Question", new TestCaseDetail
+            {
+                FunctionGroup = "Add Question To Exam", TestCaseID = "TC-EXAM-ADD-05",
+                Description = "Ensure UpdateAsync is called exactly once when data is valid",
+                ExpectedResult = "Times.Once verified", StatusRound1 = "Passed", TestCaseType = "N",
+                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "Times.Once" }
+            });
+        }
+
+        [Fact]
+        public async Task Handle_ValidData_ShouldCallSaveChangesAsyncExactlyOnce()
+        {
+            var command = new AddQuestionToExamCommand { QuestionBankId = "QB-123", ExamId = "EX-456", QuestionNo = 1 };
+            var existingSlot = new ExamQuestion { ExamId = command.ExamId, QuestionNo = command.QuestionNo, QuestionBankId = "OLD-ID" };
+
+            var mockQuestionBankRepo = MockQuestionBankRepository.GetMock(new QuestionBank { QuestionBankId = command.QuestionBankId });
+            var mockExamQuestionRepo = MockExamQuestionRepository.GetMock(existingSlot);
+            var mockLogger = new Mock<ILogger<AddQuestionToExamCommandHandler>>();
+
+            var handler = new AddQuestionToExamCommandHandler(mockExamQuestionRepo.Object, mockQuestionBankRepo.Object, mockLogger.Object);
+
+            await handler.Handle(command, CancellationToken.None);
+
+            mockExamQuestionRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+
+            QACollector.LogTestCase("Exam - Add Question", new TestCaseDetail
+            {
+                FunctionGroup = "Add Question To Exam", TestCaseID = "TC-EXAM-ADD-06",
+                Description = "Ensure SaveChangesAsync is called exactly once when data is valid",
+                ExpectedResult = "Times.Once verified", StatusRound1 = "Passed", TestCaseType = "N",
+                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "Times.Once" }
             });
         }
     }

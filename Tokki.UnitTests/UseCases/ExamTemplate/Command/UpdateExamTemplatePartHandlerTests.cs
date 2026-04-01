@@ -78,7 +78,7 @@ namespace Tokki.UnitTests.Features.ExamTemplates.Commands
             var result = await _handler.Handle(command, CancellationToken.None);
 
             result.IsSuccess.Should().BeFalse();
-            result.Message.Should().Contain("Không tìm thấy phần thi này");
+            result.Message.Should().Contain("This test was not found");
         }
 
         [Fact]
@@ -102,7 +102,7 @@ namespace Tokki.UnitTests.Features.ExamTemplates.Commands
             var result = await _handler.Handle(command, CancellationToken.None);
 
             result.IsSuccess.Should().BeFalse();
-            result.Message.Should().Contain("trùng lặp");
+            result.Message.Should().Contain("duplicate");
         }
 
         [Fact]
@@ -136,7 +136,7 @@ namespace Tokki.UnitTests.Features.ExamTemplates.Commands
             var result = await _handler.Handle(command, CancellationToken.None);
 
             result.IsSuccess.Should().BeFalse();
-            result.Message.Should().Contain("Kỹ năng không khớp");
+            result.Message.Should().Contain("Skills do not match");
         }
     }
 }

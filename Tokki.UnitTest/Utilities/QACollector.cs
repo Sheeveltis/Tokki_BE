@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -63,10 +63,16 @@ namespace Tokki.UnitTest.Utilities
 
                 if (hasTest)
                 {
-                    int loc = 0;
-                    lock (_lock)
+                    // Resolve LOC directly for this specific feature folder
+                    int loc = SourceCodeCounter.GetLinesOfCode(featureName);
+
+                    // Fall back to master-function LOC if set manually
+                    if (loc == 0)
                     {
-                        _masterFunctions.TryGetValue(featureName, out loc);
+                        lock (_lock)
+                        {
+                            _masterFunctions.TryGetValue(featureName, out loc);
+                        }
                     }
 
                     featureSheets.Add(new FeatureSheet
@@ -74,7 +80,7 @@ namespace Tokki.UnitTest.Utilities
                         FeatureName = featureName,
                         TestRequirement = $"Verify all logics in {featureName} module",
                         TotalTCs = testCases.Count,
-                        LinesOfCode = loc, // ADDED: Map LOC to the sheet
+                        LinesOfCode = loc,
                         TestCases = testCases.OrderBy(tc => tc.FunctionGroup).ThenBy(tc => tc.TestCaseID).ToList()
                     });
                 }
@@ -86,6 +92,7 @@ namespace Tokki.UnitTest.Utilities
 
             return (summary, featureSheets);
         }
+
 
         public static void Clear()
         {

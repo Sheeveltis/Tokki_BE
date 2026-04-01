@@ -126,9 +126,9 @@ namespace Tokki.UnitTests.UseCases.Accounts.Commands
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
 
-            // Handler đang gọi: Success("Đổi mật khẩu thành công!", 200)
+            // Handler đang gọi: Success("Password changed successfully!", 200)
             // => string này thường nằm ở Data (không phải Message)
-            result.Data.Should().Be("Đổi mật khẩu thành công!");
+            result.Data.Should().Be("Password changed successfully!");
 
             _mockAccountRepo.Verify(x => x.GetByEmailAsync(command.Email), Times.Once);
             _mockAccountRepo.Verify(x => x.UpdateUserAsync(It.IsAny<AccountEntity>()), Times.Once);

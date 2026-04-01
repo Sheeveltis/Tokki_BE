@@ -85,7 +85,7 @@ namespace Tokki.UnitTests.Features.EmailTemplates.Commands
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
             result.Data.Should().Be(existing.TemplateId);
-            result.Message.Should().Be("Không có dữ liệu hợp lệ để cập nhật!");
+            result.Message.Should().Be("There is no valid data to update!");
 
             _mockRepo.Verify(x => x.UpdateAsync(It.IsAny<EmailTemplate>()), Times.Never);
             _mockRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
@@ -237,7 +237,7 @@ namespace Tokki.UnitTests.Features.EmailTemplates.Commands
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
             result.Data.Should().Be(template.TemplateId);
-            result.Message.Should().Be("Cập nhật template thành công!");
+            result.Message.Should().Be("Update template successfully!");
 
             _mockRepo.Verify(x => x.UpdateAsync(It.IsAny<EmailTemplate>()), Times.Once);
             _mockRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
@@ -284,7 +284,7 @@ namespace Tokki.UnitTests.Features.EmailTemplates.Commands
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
-            result.Message.Should().Be("Cập nhật template thành công!");
+            result.Message.Should().Be("Update template successfully!");
 
             template.Status.Should().Be(EmailTemplateStatus.Active);
 

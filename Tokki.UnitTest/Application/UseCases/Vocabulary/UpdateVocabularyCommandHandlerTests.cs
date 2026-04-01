@@ -54,7 +54,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             {
                 FunctionGroup = "Update Vocabulary",
                 TestCaseID = "TC-VOCAB-UPD-01",
-                Description = "Update vocabulary khi không có token xác thực",
+                Description = "Update vocabulary when there is no authentication token",
                 ExpectedResult = "Return 401 Unauthorized",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
@@ -88,7 +88,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             {
                 FunctionGroup = "Update Vocabulary",
                 TestCaseID = "TC-VOCAB-UPD-02",
-                Description = "Update vocabulary với ID không tồn tại",
+                Description = "Update vocabulary with ID does not exist",
                 ExpectedResult = "Return 404 VocabularyNotFound",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
@@ -123,7 +123,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             {
                 FunctionGroup = "Update Vocabulary",
                 TestCaseID = "TC-VOCAB-UPD-03",
-                Description = "Update vocabulary đã bị xóa (Status = Deleted)",
+                Description = "Update vocabulary has been deleted (Status = Deleted)",
                 ExpectedResult = "Return 409 VocabularyDeletedCannotUpdate",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
@@ -170,8 +170,8 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             {
                 FunctionGroup = "Update Vocabulary",
                 TestCaseID = "TC-VOCAB-UPD-04",
-                Description = "Update Text giống Text hiện tại → textChanged = false → TTS không được gọi",
-                ExpectedResult = "TTS.SynthesizeKoreanAudioAsync không được gọi, return 200",
+                Description = "Update Text is the same as current Text → textChanged = false → TTS is not called",
+                ExpectedResult = "TTS.SynthesizeKoreanAudioAsync not called, return 200",
                 StatusRound1 = "Passed",
                 TestCaseType = "B",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -223,8 +223,8 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             {
                 FunctionGroup = "Update Vocabulary",
                 TestCaseID = "TC-VOCAB-UPD-05",
-                Description = "Update Text mới (khác Text hiện tại) → hệ thống tự động regenerate audio",
-                ExpectedResult = "TTS được gọi đúng 1 lần, AudioURL cập nhật, return 200",
+                Description = "Update new Text (different from current Text) → system automatically regenerates audio",
+                ExpectedResult = "TTS is called exactly once, AudioURL updated, return 200",
                 StatusRound1 = "Passed",
                 TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -266,8 +266,8 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             {
                 FunctionGroup = "Update Vocabulary",
                 TestCaseID = "TC-VOCAB-UPD-06",
-                Description = "Update Status → Deleted → cascade Topics và Examples thành Deleted",
-                ExpectedResult = "Topics + Examples đều Status = Deleted, return 200",
+                Description = "Update Status → Deleted → cascade Topics and Examples to Deleted",
+                ExpectedResult = "Topics + Examples both Status = Deleted, return 200",
                 StatusRound1 = "Passed",
                 TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -309,8 +309,8 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             {
                 FunctionGroup = "Update Vocabulary",
                 TestCaseID = "TC-VOCAB-UPD-07",
-                Description = "Update Status → Draft → cascade Topics và Examples thành Draft",
-                ExpectedResult = "Topics + Examples đều Status = Draft, return 200",
+                Description = "Update Status → Draft → cascade Topics and Examples to Draft",
+                ExpectedResult = "Topics + Examples both Status = Draft, return 200",
                 StatusRound1 = "Passed",
                 TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -356,8 +356,8 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             {
                 FunctionGroup = "Update Vocabulary",
                 TestCaseID = "TC-VOCAB-UPD-08",
-                Description = "Update Status → Active → KHÔNG cascade xuống children (nghiệp vụ giữ nguyên children)",
-                ExpectedResult = "Children giữ nguyên Status, return 200",
+                Description = "Update Status → Active → DO NOT cascade down to children (service keeps children intact)",
+                ExpectedResult = "Children keep their Status, return 200",
                 StatusRound1 = "Passed",
                 TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

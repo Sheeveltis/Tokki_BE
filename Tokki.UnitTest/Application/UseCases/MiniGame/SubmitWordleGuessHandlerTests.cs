@@ -48,7 +48,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             {
                 FunctionGroup = "Submit Wordle Guess",
                 TestCaseID = "TC-WDL-GUS-01",
-                Description = "Submit guess với DailyWordleId không tồn tại",
+                Description = "Submit guess with DailyWordleId does not exist",
                 ExpectedResult = "Return Failure",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
@@ -86,8 +86,8 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             {
                 FunctionGroup = "Submit Wordle Guess",
                 TestCaseID = "TC-WDL-GUS-02",
-                Description = "GuessWord độ dài sai so với target",
-                ExpectedResult = "Return Failure với message độ dài không hợp lệ",
+                Description = "GuessWord's length is wrong compared to the target",
+                ExpectedResult = "Return Failure with invalid message length",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -135,14 +135,14 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             var result = await handler.Handle(command, CancellationToken.None);
 
             result.IsSuccess.Should().BeFalse();
-            result.Message.Should().Contain("kết thúc");
+            result.Message.Should().Contain("end");
 
             QACollector.LogTestCase("Wordle - Submit Guess", new TestCaseDetail
             {
                 FunctionGroup = "Submit Wordle Guess",
                 TestCaseID = "TC-WDL-GUS-03",
-                Description = "User đã thắng (IsWon = true) → không cho đoán thêm",
-                ExpectedResult = "Return Failure 'lượt chơi đã kết thúc'",
+                Description = "User has won (IsWon = true) → no more guesses are allowed",
+                ExpectedResult = "Return Failure 'turn has ended'",
                 StatusRound1 = "Passed",
                 TestCaseType = "B",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

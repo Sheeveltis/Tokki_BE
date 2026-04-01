@@ -21,11 +21,11 @@ namespace Tokki.UnitTests.Common.TestData
             return new VipPackage
             {
                 Id = "vip-goi-thang",
-                Name = "Gói VIP 1 Tháng",
+                Name = "VIP Package 1 Month",
                 Price = 50000,
                 DurationDays = 30,
                 IsActive = true,
-                Description = "Gói cơ bản"
+                Description = "Basic package"
             };
         }
 
@@ -34,7 +34,7 @@ namespace Tokki.UnitTests.Common.TestData
             return new VipPackage
             {
                 Id = "vip-ngung-kd",
-                Name = "Gói Cũ",
+                Name = "Old Package",
                 Price = 20000,
                 IsActive = false 
             };

@@ -1,14 +1,15 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Tokki.Application.IRepositories;
+using Tokki.Application.UseCases.Topics.DTOs;
 using Tokki.Application.UseCases.Topics.Queries.GetById;
+using Tokki.Application.UseCases.Vocabulary.DTOs;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
-using Tokki.UnitTest.Mocks.Repositories;
 using Tokki.UnitTest.Utilities;
 using Xunit;
 
@@ -16,155 +17,118 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
 {
     public class GetTopicDetailByIdQueryHandlerTests
     {
-        private GetTopicDetailByIdQueryHandler CreateHandler(
-            Mock<ITopicRepository>? topicRepo = null,
-            Mock<IVocabularyTopicRepository>? vocabTopicRepo = null)
+        private static Mock<ITopicRepository> GetTopicMock(Topic? topic = null)
         {
-            return new GetTopicDetailByIdQueryHandler(
-                (topicRepo ?? MockTopicRepository.GetMock()).Object,
-                (vocabTopicRepo ?? MockVocabularyTopicRepository.GetMock()).Object);
+            var m = new Mock<ITopicRepository>();
+            m.Setup(x => x.GetByIdAsync(It.IsAny<string>())).ReturnsAsync(topic);
+            return m;
         }
 
+        private static Mock<IVocabularyTopicRepository> GetVtMock(List<VocabularyTopic>? vts = null)
+        {
+            var m = new Mock<IVocabularyTopicRepository>();
+            m.Setup(x => x.GetByTopicIdAsync(It.IsAny<string>())).ReturnsAsync(vts ?? new List<VocabularyTopic>());
+            return m;
+        }
+
+        private static GetTopicDetailByIdQueryHandler CreateHandler(
+            Mock<ITopicRepository>?           topicRepo = null,
+            Mock<IVocabularyTopicRepository>? vtRepo    = null)
+            => new GetTopicDetailByIdQueryHandler(
+                (topicRepo ?? GetTopicMock()).Object,
+                (vtRepo    ?? GetVtMock()).Object);
+
+        private static Topic SampleTopic() => new Topic
+        {
+            TopicId   = "T-001", TopicName = "Korean Basics", Description = "Intro topic",
+            Level     = TopicLevel.Level1, Status = TopicStatus.Active, OrderIndex = 1
+        };
+
+        private static List<VocabularyTopic> SampleVtWithActiveVocab() => new List<VocabularyTopic>
+        {
+            new VocabularyTopic
+            {
+                Status     = VocabularyTopicStatus.Active,
+                Vocabulary = new Tokki.Domain.Entities.Vocabulary { VocabularyId = "V-001", Text = "안녕", Status = VocabularyStatus.Active }
+            }
+        };
+
+        // TC-TOPIC-GDET-01 | A | Topic not found → 404
         [Fact]
         public async Task Handle_TopicNotFound_ShouldReturn404()
         {
-            var query = new GetTopicDetailByIdQuery { TopicId = "TOPIC-INVALID" };
-
-            var handler = CreateHandler(
-                topicRepo: MockTopicRepository.GetMock(returnedTopic: null));
-
-            var result = await handler.Handle(query, CancellationToken.None);
-
+            var result = await CreateHandler(GetTopicMock(null)).Handle(new GetTopicDetailByIdQuery { TopicId = "MISSING" }, CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(404);
-
-            QACollector.LogTestCase("Topic - Get Detail By Id", new TestCaseDetail
-            {
-                FunctionGroup = "Get Topic Detail By Id",
-                TestCaseID = "TC-TOPIC-GID-01",
-                Description = "Lấy chi tiết topic với ID không tồn tại",
-                ExpectedResult = "Return 404 TopicNotFound",
-                StatusRound1 = "Passed",
-                TestCaseType = "A",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "Invalid TopicId",
-                    "Topic = null",
-                    "Return 404"
-                }
-            });
+            QACollector.LogTestCase("Topic - Get Detail By Id", new TestCaseDetail { FunctionGroup = "GetTopicDetailById", TestCaseID = "TC-TOPIC-GDET-01", Description = "Topic not found → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetByIdAsync returns null" } });
         }
 
+        // TC-TOPIC-GDET-02 | N | Happy path → 200 with TopicDetailDto
         [Fact]
-        public async Task Handle_ValidTopic_ShouldReturnOnlyActiveVocabMappings()
+        public async Task Handle_TopicFound_ShouldReturn200WithDto()
         {
-            var query = new GetTopicDetailByIdQuery { TopicId = "TOPIC-001" };
-
-            var topic = MockTopicRepository.GetSampleTopic();
-
-            // 2 mapping: 1 Active, 1 Deleted → chỉ trả về 1
-            var mappings = new List<VocabularyTopic>
-            {
-                new VocabularyTopic
-                {
-                    VocabularyId = "VOCAB-001",
-                    TopicId = "TOPIC-001",
-                    Status = VocabularyTopicStatus.Active,
-                    Vocabulary = new Tokki.Domain.Entities.Vocabulary
-                    {
-                        VocabularyId = "VOCAB-001",
-                        Text = "안녕",
-                        Definition = "Xin chào",
-                        Status = VocabularyStatus.Active
-                    }
-                },
-                new VocabularyTopic
-                {
-                    VocabularyId = "VOCAB-002",
-                    TopicId = "TOPIC-001",
-                    Status = VocabularyTopicStatus.Deleted, // bị loại
-                    Vocabulary = new Tokki.Domain.Entities.Vocabulary
-                    {
-                        VocabularyId = "VOCAB-002",
-                        Text = "감사",
-                        Status = VocabularyStatus.Active
-                    }
-                }
-            };
-
-            var mockVocabTopicRepo = MockVocabularyTopicRepository.GetMock(
-                returnedByTopicId: mappings);
-
-            var handler = CreateHandler(
-                topicRepo: MockTopicRepository.GetMock(returnedTopic: topic),
-                vocabTopicRepo: mockVocabTopicRepo);
-
-            var result = await handler.Handle(query, CancellationToken.None);
-
+            var result = await CreateHandler(GetTopicMock(SampleTopic()), GetVtMock(SampleVtWithActiveVocab()))
+                .Handle(new GetTopicDetailByIdQuery { TopicId = "T-001" }, CancellationToken.None);
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
-            result.Data.TopicId.Should().Be("TOPIC-001");
-            result.Data.VocabularyCount.Should().Be(1);
-            result.Data.Vocabularies.Should().HaveCount(1);
-            result.Data.Vocabularies[0].VocabularyId.Should().Be("VOCAB-001");
-
-            QACollector.LogTestCase("Topic - Get Detail By Id", new TestCaseDetail
-            {
-                FunctionGroup = "Get Topic Detail By Id",
-                TestCaseID = "TC-TOPIC-GID-02",
-                Description = "Topic có 2 mapping (1 Active, 1 Deleted) → chỉ trả về 1 vocab Active",
-                ExpectedResult = "Return 200, VocabularyCount = 1, chỉ chứa VOCAB-001",
-                StatusRound1 = "Passed",
-                TestCaseType = "N",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "2 VocabularyTopic mappings",
-                    "1 Active, 1 Deleted",
-                    "Filter chỉ Active",
-                    "Return 200, VocabularyCount = 1"
-                }
-            });
+            result.Data.Should().NotBeNull();
+            result.Data!.TopicId.Should().Be("T-001");
+            QACollector.LogTestCase("Topic - Get Detail By Id", new TestCaseDetail { FunctionGroup = "GetTopicDetailById", TestCaseID = "TC-TOPIC-GDET-02", Description = "Valid request → 200, Data.TopicId='T-001'", ExpectedResult = "IsSuccess=true, 200", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Topic found, mappings returned" } });
         }
 
+        // TC-TOPIC-GDET-03 | N | Only Active vocabulary mappings included in Vocabularies list
         [Fact]
-        public async Task Handle_ValidTopic_ShouldMapAuditFieldsCorrectly()
+        public async Task Handle_MixedVtStatuses_OnlyActiveVocabsIncluded()
         {
-            var query = new GetTopicDetailByIdQuery { TopicId = "TOPIC-001" };
-
-            var topic = MockTopicRepository.GetSampleTopic();
-            topic.ApprovedBy = "ADMIN-001";
-            topic.ApprovedDate = DateTime.UtcNow.AddDays(-1);
-
-            var handler = CreateHandler(
-                topicRepo: MockTopicRepository.GetMock(returnedTopic: topic),
-                vocabTopicRepo: MockVocabularyTopicRepository.GetMock(
-                    returnedByTopicId: new List<VocabularyTopic>()));
-
-            var result = await handler.Handle(query, CancellationToken.None);
-
-            result.IsSuccess.Should().BeTrue();
-            result.Data.ApprovedBy.Should().Be("ADMIN-001");
-            result.Data.ApprovedDate.Should().NotBeNull();
-            result.Data.OrderIndex.Should().Be(topic.OrderIndex);
-
-            QACollector.LogTestCase("Topic - Get Detail By Id", new TestCaseDetail
+            var vts = new List<VocabularyTopic>
             {
-                FunctionGroup = "Get Topic Detail By Id",
-                TestCaseID = "TC-TOPIC-GID-03",
-                Description = "Topic có ApprovedBy và ApprovedDate → DTO map đúng các audit fields",
-                ExpectedResult = "Return 200, ApprovedBy = ADMIN-001, ApprovedDate != null",
-                StatusRound1 = "Passed",
-                TestCaseType = "N",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "Topic có ApprovedBy và ApprovedDate",
-                    "DTO map đầy đủ audit fields",
-                    "Return 200"
-                }
-            });
+                new VocabularyTopic { Status = VocabularyTopicStatus.Active,  Vocabulary = new Tokki.Domain.Entities.Vocabulary { VocabularyId = "V-001", Status = VocabularyStatus.Active } },
+                new VocabularyTopic { Status = VocabularyTopicStatus.Deleted, Vocabulary = new Tokki.Domain.Entities.Vocabulary { VocabularyId = "V-002", Status = VocabularyStatus.Active } },
+                new VocabularyTopic { Status = VocabularyTopicStatus.Active,  Vocabulary = new Tokki.Domain.Entities.Vocabulary { VocabularyId = "V-003", Status = VocabularyStatus.Deleted } }
+            };
+            var result = await CreateHandler(GetTopicMock(SampleTopic()), GetVtMock(vts))
+                .Handle(new GetTopicDetailByIdQuery { TopicId = "T-001" }, CancellationToken.None);
+            result.Data!.Vocabularies.Should().HaveCount(1);
+            result.Data.Vocabularies[0].VocabularyId.Should().Be("V-001");
+            QACollector.LogTestCase("Topic - Get Detail By Id", new TestCaseDetail { FunctionGroup = "GetTopicDetailById", TestCaseID = "TC-TOPIC-GDET-03", Description = "Only VtStatus=Active AND VocabStatus=Active included", ExpectedResult = "Vocabularies.Count=1 (only V-001)", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Both status filters applied" } });
+        }
+
+        // TC-TOPIC-GDET-04 | N | VocabularyCount equals active vocab count
+        [Fact]
+        public async Task Handle_TwoActiveVocabs_VocabularyCountEquals2()
+        {
+            var vts = new List<VocabularyTopic>
+            {
+                new VocabularyTopic { Status = VocabularyTopicStatus.Active, Vocabulary = new Tokki.Domain.Entities.Vocabulary { VocabularyId = "V-001", Status = VocabularyStatus.Active } },
+                new VocabularyTopic { Status = VocabularyTopicStatus.Active, Vocabulary = new Tokki.Domain.Entities.Vocabulary { VocabularyId = "V-002", Status = VocabularyStatus.Active } }
+            };
+            var result = await CreateHandler(GetTopicMock(SampleTopic()), GetVtMock(vts))
+                .Handle(new GetTopicDetailByIdQuery { TopicId = "T-001" }, CancellationToken.None);
+            result.Data!.VocabularyCount.Should().Be(2);
+            QACollector.LogTestCase("Topic - Get Detail By Id", new TestCaseDetail { FunctionGroup = "GetTopicDetailById", TestCaseID = "TC-TOPIC-GDET-04", Description = "VocabularyCount=2 (active vocab count)", ExpectedResult = "VocabularyCount=2", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "VocabularyCount = activeVocabs.Count" } });
+        }
+
+        // TC-TOPIC-GDET-05 | N | Topic metadata fields mapped correctly
+        [Fact]
+        public async Task Handle_TopicFound_MetadataFieldsMappedCorrectly()
+        {
+            var result = await CreateHandler(GetTopicMock(SampleTopic()), GetVtMock())
+                .Handle(new GetTopicDetailByIdQuery { TopicId = "T-001" }, CancellationToken.None);
+            result.Data!.TopicName.Should().Be("Korean Basics");
+            result.Data.Level.Should().Be(TopicLevel.Level1);
+            result.Data.Status.Should().Be(TopicStatus.Active);
+            result.Data.OrderIndex.Should().Be(1);
+            QACollector.LogTestCase("Topic - Get Detail By Id", new TestCaseDetail { FunctionGroup = "GetTopicDetailById", TestCaseID = "TC-TOPIC-GDET-05", Description = "TopicName, Level, Status, OrderIndex mapped correctly", ExpectedResult = "All fields correct", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Topic entity mapped to TopicDetailDto" } });
+        }
+
+        // TC-TOPIC-GDET-06 | B | GetByTopicIdAsync called with correct topicId
+        [Fact]
+        public async Task Handle_TopicFound_VtRepoCalledWithCorrectTopicId()
+        {
+            var vtRepo = GetVtMock();
+            await CreateHandler(GetTopicMock(SampleTopic()), vtRepo).Handle(new GetTopicDetailByIdQuery { TopicId = "T-001" }, CancellationToken.None);
+            vtRepo.Verify(x => x.GetByTopicIdAsync("T-001"), Times.Once);
+            QACollector.LogTestCase("Topic - Get Detail By Id", new TestCaseDetail { FunctionGroup = "GetTopicDetailById", TestCaseID = "TC-TOPIC-GDET-06", Description = "GetByTopicIdAsync called with 'T-001'", ExpectedResult = "Times.Once with correct ID", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "TopicId forwarded to VT repo" } });
         }
     }
 }

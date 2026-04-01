@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -56,7 +56,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             {
                 FunctionGroup = "Create User Take Exam",
                 TestCaseID = "TC-UEXM-CRE-01",
-                Description = "Tạo session với ExamId không tồn tại",
+                Description = "Create session with non-existent ExamId",
                 ExpectedResult = "Return 404",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
@@ -111,8 +111,8 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             {
                 FunctionGroup = "Create User Take Exam",
                 TestCaseID = "TC-UEXM-CRE-02",
-                Description = "Đã có session InProgress → trả về session cũ, không tạo mới",
-                ExpectedResult = "Return Success với UserExamId = SESSION-EXISTING",
+                Description = "There is already an InProgress session → return the old session, do not create a new one",
+                ExpectedResult = "Return Success with UserExamId = SESSION-EXISTING",
                 StatusRound1 = "Passed",
                 TestCaseType = "B",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -201,7 +201,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             {
                 FunctionGroup = "Create User Take Exam",
                 TestCaseID = "TC-UEXM-CRE-03",
-                Description = "Tạo session mới cho exam hợp lệ → AddSessionAsync được gọi",
+                Description = "Create a new session for a valid exam → AddSessionAsync is called",
                 ExpectedResult = "Return Success, AddSessionAsync called once",
                 StatusRound1 = "Passed",
                 TestCaseType = "N",
@@ -212,6 +212,223 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
                     "Valid Exam with questions",
                     "AddSessionAsync called once",
                     "Return Success"
+                }
+            });
+        }
+
+        [Fact]
+        public async Task Handle_ExamWithWritingQuestions_ShouldCreateWritingAnswers()
+        {
+            // Arrange
+            var command = new CreateUserTakeExamCommand
+            {
+                UserId = "USER-002",
+                ExamId = "EXAM-WRITING"
+            };
+
+            var exam = new Tokki.Domain.Entities.Exam
+            {
+                ExamId = "EXAM-WRITING",
+                ExamTemplate = new ExamTemplate
+                {
+                    TemplateParts = new List<TemplatePart>
+                    {
+                        new TemplatePart
+                        {
+                            Skill = QuestionSkill.Writing,
+                            QuestionFrom = 1,
+                            QuestionTo = 2
+                        }
+                    }
+                },
+                ExamQuestions = new List<ExamQuestion>
+                {
+                    new ExamQuestion { QuestionNo = 1, QuestionBankId = "QB-W01" },
+                    new ExamQuestion { QuestionNo = 2, QuestionBankId = "QB-W02" }
+                }
+            };
+
+            var mockRepo = new Mock<IUserExamRepository>();
+            mockRepo.Setup(x => x.GetInProgressSessionAsync(
+                        It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync((Domain.Entities.UserExam?)null);
+
+            mockRepo.Setup(x => x.GetExamWithFullStructureAsync("EXAM-WRITING", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(exam);
+
+            Domain.Entities.UserExam? captured = null;
+            mockRepo.Setup(x => x.AddSessionAsync(It.IsAny<Domain.Entities.UserExam>(), It.IsAny<CancellationToken>()))
+                    .Callback<Domain.Entities.UserExam, CancellationToken>((s, _) => captured = s)
+                    .Returns(Task.CompletedTask);
+
+            var handler = CreateHandler(repo: mockRepo);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            captured.Should().NotBeNull();
+            captured!.UserExamWritingAnswers.Should().HaveCount(2);
+            captured.UserExamAnswers.Should().BeEmpty();
+
+            QACollector.LogTestCase("UserExam - Create Session", new TestCaseDetail
+            {
+                FunctionGroup = "Create User Take Exam",
+                TestCaseID = "TC-UEXM-CRE-04",
+                Description = "Exam has only Writing questions → creates UserExamWritingAnswer for each question",
+                ExpectedResult = "2 UserExamWritingAnswers created, UserExamAnswers empty",
+                StatusRound1 = "Passed",
+                TestCaseType = "N",
+                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string>
+                {
+                    "All questions belong to Writing part",
+                    "UserExamWritingAnswers.Count = 2",
+                    "UserExamAnswers is empty"
+                }
+            });
+        }
+
+        [Fact]
+        public async Task Handle_ExamWithMixedSkills_ShouldCreateBothAnswerTypes()
+        {
+            // Arrange
+            var command = new CreateUserTakeExamCommand
+            {
+                UserId = "USER-003",
+                ExamId = "EXAM-MIXED"
+            };
+
+            var exam = new Tokki.Domain.Entities.Exam
+            {
+                ExamId = "EXAM-MIXED",
+                ExamTemplate = new ExamTemplate
+                {
+                    TemplateParts = new List<TemplatePart>
+                    {
+                        new TemplatePart { Skill = QuestionSkill.Reading,  QuestionFrom = 1, QuestionTo = 2 },
+                        new TemplatePart { Skill = QuestionSkill.Writing,  QuestionFrom = 3, QuestionTo = 4 }
+                    }
+                },
+                ExamQuestions = new List<ExamQuestion>
+                {
+                    new ExamQuestion { QuestionNo = 1, QuestionBankId = "QB-R01" },
+                    new ExamQuestion { QuestionNo = 2, QuestionBankId = "QB-R02" },
+                    new ExamQuestion { QuestionNo = 3, QuestionBankId = "QB-W01" },
+                    new ExamQuestion { QuestionNo = 4, QuestionBankId = "QB-W02" }
+                }
+            };
+
+            var mockRepo = new Mock<IUserExamRepository>();
+            mockRepo.Setup(x => x.GetInProgressSessionAsync(
+                        It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync((Domain.Entities.UserExam?)null);
+
+            mockRepo.Setup(x => x.GetExamWithFullStructureAsync("EXAM-MIXED", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(exam);
+
+            Domain.Entities.UserExam? captured = null;
+            mockRepo.Setup(x => x.AddSessionAsync(It.IsAny<Domain.Entities.UserExam>(), It.IsAny<CancellationToken>()))
+                    .Callback<Domain.Entities.UserExam, CancellationToken>((s, _) => captured = s)
+                    .Returns(Task.CompletedTask);
+
+            var handler = CreateHandler(repo: mockRepo);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            captured.Should().NotBeNull();
+            captured!.UserExamAnswers.Should().HaveCount(2);
+            captured.UserExamWritingAnswers.Should().HaveCount(2);
+
+            QACollector.LogTestCase("UserExam - Create Session", new TestCaseDetail
+            {
+                FunctionGroup = "Create User Take Exam",
+                TestCaseID = "TC-UEXM-CRE-05",
+                Description = "Exam has Reading and Writing questions → creates both UserExamAnswer and UserExamWritingAnswer",
+                ExpectedResult = "2 UserExamAnswers + 2 UserExamWritingAnswers",
+                StatusRound1 = "Passed",
+                TestCaseType = "N",
+                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string>
+                {
+                    "Questions 1-2 are Reading, Questions 3-4 are Writing",
+                    "UserExamAnswers.Count = 2",
+                    "UserExamWritingAnswers.Count = 2"
+                }
+            });
+        }
+
+        [Fact]
+        public async Task Handle_ValidExam_ShouldSetCurrentSkillToFirstPartOrderedByQuestionFrom()
+        {
+            // Arrange – Writing part has lower QuestionFrom so it should be CurrentSkill
+            var command = new CreateUserTakeExamCommand
+            {
+                UserId = "USER-004",
+                ExamId = "EXAM-ORDER"
+            };
+
+            var exam = new Tokki.Domain.Entities.Exam
+            {
+                ExamId = "EXAM-ORDER",
+                ExamTemplate = new ExamTemplate
+                {
+                    TemplateParts = new List<TemplatePart>
+                    {
+                        // Reading starts at 5 (later)
+                        new TemplatePart { Skill = QuestionSkill.Reading,  QuestionFrom = 5, QuestionTo = 6 },
+                        // Listening starts at 1 (first) → should become CurrentSkill
+                        new TemplatePart { Skill = QuestionSkill.Listening, QuestionFrom = 1, QuestionTo = 4 }
+                    }
+                },
+                ExamQuestions = new List<ExamQuestion>
+                {
+                    new ExamQuestion { QuestionNo = 1, QuestionBankId = "QB-L01" },
+                    new ExamQuestion { QuestionNo = 5, QuestionBankId = "QB-R01" }
+                }
+            };
+
+            var mockRepo = new Mock<IUserExamRepository>();
+            mockRepo.Setup(x => x.GetInProgressSessionAsync(
+                        It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync((Domain.Entities.UserExam?)null);
+
+            mockRepo.Setup(x => x.GetExamWithFullStructureAsync("EXAM-ORDER", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(exam);
+
+            Domain.Entities.UserExam? captured = null;
+            mockRepo.Setup(x => x.AddSessionAsync(It.IsAny<Domain.Entities.UserExam>(), It.IsAny<CancellationToken>()))
+                    .Callback<Domain.Entities.UserExam, CancellationToken>((s, _) => captured = s)
+                    .Returns(Task.CompletedTask);
+
+            var handler = CreateHandler(repo: mockRepo);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            captured.Should().NotBeNull();
+            captured!.CurrentSkill.Should().Be(QuestionSkill.Listening);
+
+            QACollector.LogTestCase("UserExam - Create Session", new TestCaseDetail
+            {
+                FunctionGroup = "Create User Take Exam",
+                TestCaseID = "TC-UEXM-CRE-06",
+                Description = "CurrentSkill is assigned to the skill of the TemplatePart with the smallest QuestionFrom",
+                ExpectedResult = "CurrentSkill = Listening (QuestionFrom=1 < Reading QuestionFrom=5)",
+                StatusRound1 = "Passed",
+                TestCaseType = "B",
+                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string>
+                {
+                    "TemplateParts added in reverse order (Reading first, Listening second)",
+                    "OrderBy(QuestionFrom) picks Listening as first skill",
+                    "CurrentSkill = QuestionSkill.Listening"
                 }
             });
         }

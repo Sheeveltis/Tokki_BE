@@ -71,7 +71,7 @@ namespace Tokki.UnitTests.Features.SystemConfigs.Commands
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
             result.Data.Should().Be("CFG_TEST");
-            result.Message.Should().Be("Cập nhật thành công");
+            result.Message.Should().Be("Updated successfully");
 
             entity.Value.Should().Be("999");
             entity.Description.Should().Be("updated");

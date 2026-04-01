@@ -76,7 +76,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.QuestionOptions.Commands
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
             result.Errors.Should().Contain(e => e.Code == AppErrors.ValidationFailed.Code);
-            result.Message.Should().Be("QuestionTypeId của câu hỏi đang rỗng.");
+            result.Message.Should().Be("QuestionTypeId of the question is empty.");
         }
 
         [Fact]
@@ -121,7 +121,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.QuestionOptions.Commands
 
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            result.Message.Should().Be("Câu hỏi Writing không được có đáp án trắc nghiệm.");
+            result.Message.Should().Be("Writing questions cannot have multiple choice answers.");
         }
 
         [Fact]
@@ -184,7 +184,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.QuestionOptions.Commands
 
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            result.Message.Should().Contain("KeyOption '2' đã tồn tại");
+            result.Message.Should().Contain("KeyOption '2' already exists");
         }
 
         [Fact]
@@ -217,7 +217,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.QuestionOptions.Commands
 
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            result.Message.Should().Be("Đáp án phải có nội dung text hoặc ảnh.");
+            result.Message.Should().Be("The answer must have text or image content.");
 
             _mockQuestionOptionRepo.Verify(x => x.UpdateAsync(It.IsAny<QuestionOption>()), Times.Never);
         }
@@ -252,7 +252,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.QuestionOptions.Commands
 
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            result.Message.Should().Be("Câu hỏi phải có ít nhất một đáp án đúng. Không thể bỏ chọn đáp án đúng duy nhất.");
+            result.Message.Should().Be("The question must have at least one correct answer. The only correct answer cannot be unchecked.");
         }
 
         [Fact]
@@ -289,7 +289,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.QuestionOptions.Commands
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
             result.Data.Should().Be("opt-01");
-            result.Message.Should().Be("Cập nhật đáp án thành công.");
+            result.Message.Should().Be("Updated answer successfully.");
 
             otherCorrect.IsCorrect.Should().BeFalse();
             target.IsCorrect.Should().BeTrue();

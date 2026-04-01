@@ -67,7 +67,7 @@ namespace Tokki.UnitTests.Features.Passages.Commands
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            result.Message.Should().Be("Loại Văn bản bắt buộc phải có nội dung.");
+            result.Message.Should().Be("The Text type must have content.");
 
             _mockPassageRepo.Verify(x => x.UpdateAsync(It.IsAny<Tokki.Domain.Entities.Passage>()), Times.Never);
             _mockPassageRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
@@ -98,7 +98,7 @@ namespace Tokki.UnitTests.Features.Passages.Commands
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            result.Message.Should().Be("Loại Hình ảnh bắt buộc phải có link hình.");
+            result.Message.Should().Be("Image type must have an image link.");
         }
 
         [Fact]
@@ -126,7 +126,7 @@ namespace Tokki.UnitTests.Features.Passages.Commands
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            result.Message.Should().Be("Loại Audio bắt buộc phải có link audio.");
+            result.Message.Should().Be("Audio type must have an audio link.");
         }
 
         [Fact]
@@ -207,7 +207,7 @@ namespace Tokki.UnitTests.Features.Passages.Commands
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
             result.Data.Should().Be("pass-01");
-            result.Message.Should().Be("Cập nhật đoạn văn thành công.");
+            result.Message.Should().Be("Updated paragraph successfully.");
 
             passage.Title.Should().Be("Title");
             passage.MediaType.Should().Be(PassageMediaType.Audio);

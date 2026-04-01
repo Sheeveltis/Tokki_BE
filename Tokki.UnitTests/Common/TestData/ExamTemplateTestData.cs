@@ -13,8 +13,8 @@ namespace Tokki.UnitTests.Common.TestData
             return new ExamTemplate
             {
                 ExamTemplateId = id,
-                Name = "Đề thi thử TOEIC 2024",
-                Description = "Mô tả đề thi",
+                Name = "TOEIC 2024 practice test",
+                Description = "Test description",
                 Type = ExamType.TopikII,
                 Status = ExamTemplateStatus.Draft,
                 TemplateParts = new List<TemplatePart>()
@@ -25,7 +25,7 @@ namespace Tokki.UnitTests.Common.TestData
             return new ExamTemplate
             {
                 ExamTemplateId = id,
-                Name = "Đề thi chính thức",
+                Name = "Official exam",
                 Status = ExamTemplateStatus.Published
             };
         }

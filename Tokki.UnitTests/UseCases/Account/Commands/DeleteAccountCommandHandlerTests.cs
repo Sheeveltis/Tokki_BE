@@ -107,7 +107,7 @@ namespace Tokki.UnitTests.UseCases.Accounts.Commands
             result.IsSuccess.Should().BeFalse();
             result.Errors.Should().NotBeNull();
             result.Errors.Should().Contain(e => e.Code == "Account.AlreadyDeleted");
-            result.Errors.Should().Contain(e => e.Description == "Tài khoản đã bị xóa trước đó.");
+            result.Errors.Should().Contain(e => e.Description == "The account was previously deleted.");
 
             _mockAccountRepo.Verify(x => x.UpdateUserAsync(It.IsAny<AccountEntity>()), Times.Never);
             _mockAccountRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
@@ -150,7 +150,7 @@ namespace Tokki.UnitTests.UseCases.Accounts.Commands
             result.StatusCode.Should().Be(200);
 
             // IMPORTANT: Với Success("...", 200) thì chuỗi thường nằm ở Data, không phải Message
-            result.Data.Should().Be("Tài khoản đã được xóa thành công!");
+            result.Data.Should().Be("Account has been successfully deleted!");
 
             _mockAccountRepo.Verify(x => x.GetByIdAsync(command.UserId), Times.Once);
             _mockAccountRepo.Verify(x => x.UpdateUserAsync(It.IsAny<AccountEntity>()), Times.Once);

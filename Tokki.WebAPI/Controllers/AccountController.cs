@@ -23,6 +23,7 @@ using Tokki.Application.UseCases.Blogs.Commands.CreateBlog;
 using Tokki.Application.UseCases.Accounts.Commands.RefreshToken;
 
 using Tokki.WebAPI.Utilities;
+using Tokki.Application.UseCases.Accounts.Commands.Register;
 
 namespace Tokki.WebAPI.Controllers
 {

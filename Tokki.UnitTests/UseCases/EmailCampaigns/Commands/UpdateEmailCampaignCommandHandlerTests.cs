@@ -43,7 +43,7 @@ namespace Tokki.UnitTests.Features.EmailCampaigns.Commands
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(404);
-            result.Message.Should().Be("Không tìm thấy campaign!");
+            result.Message.Should().Be("Campaign not found!");
 
             _mockRepo.Verify(x => x.UpdateAsync(It.IsAny<EmailJob>()), Times.Never);
             _mockRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
@@ -78,7 +78,7 @@ namespace Tokki.UnitTests.Features.EmailCampaigns.Commands
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            result.Message.Should().Be("Chỉ được cập nhật campaign khi trạng thái là Pending (chưa gửi).");
+            result.Message.Should().Be("Campaigns can only be updated when the status is Pending (not sent).");
 
             _mockRepo.Verify(x => x.UpdateAsync(It.IsAny<EmailJob>()), Times.Never);
             _mockRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
@@ -139,7 +139,7 @@ namespace Tokki.UnitTests.Features.EmailCampaigns.Commands
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
             result.Data.Should().Be(command.JobId);
-            result.Message.Should().Be("Cập nhật campaign thành công!");
+            result.Message.Should().Be("Successfully updated campaign!");
 
             _mockRepo.Verify(x => x.GetByIdAsync(command.JobId), Times.Once);
             _mockRepo.Verify(x => x.UpdateAsync(It.IsAny<EmailJob>()), Times.Once);
@@ -222,7 +222,7 @@ namespace Tokki.UnitTests.Features.EmailCampaigns.Commands
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            result.Message.Should().Be("Chỉ cho phép cập nhật Status sang Deleted (xóa mềm).");
+            result.Message.Should().Be("Only status updates to Deleted are allowed.");
 
             _mockRepo.Verify(x => x.UpdateAsync(It.IsAny<EmailJob>()), Times.Never);
             _mockRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
@@ -261,7 +261,7 @@ namespace Tokki.UnitTests.Features.EmailCampaigns.Commands
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().Be(command.JobId);
-            result.Message.Should().Be("Cập nhật campaign thành công!");
+            result.Message.Should().Be("Successfully updated campaign!");
 
             updatedEntity.Should().NotBeNull();
             updatedEntity!.Status.Should().Be(EmailJobStatus.Deleted);

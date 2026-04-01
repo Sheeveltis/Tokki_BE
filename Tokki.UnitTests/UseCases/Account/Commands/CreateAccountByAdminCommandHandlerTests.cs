@@ -66,7 +66,7 @@ namespace Tokki.UnitTests.UseCases.Accounts.Commands
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(409);
-            result.Message.Should().Be("Email đã tồn tại.");
+            result.Message.Should().Be("Email already exists.");
             result.Errors.Should().Contain(e => e.Code == AppErrors.EmailDuplicated.Code);
 
             _mockAccountRepo.Verify(x => x.IsPhoneNumberExistsAsync(It.IsAny<string>()), Times.Never);
@@ -101,7 +101,7 @@ namespace Tokki.UnitTests.UseCases.Accounts.Commands
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(409);
-            result.Message.Should().Be("Số điện thoại đã tồn tại.");
+            result.Message.Should().Be("Phone number already exists.");
             result.Errors.Should().Contain(e => e.Code == AppErrors.PhoneNumberDuplicated.Code);
 
             _mockSystemConfigRepo.Verify(x => x.GetValueByKeyAsync(It.IsAny<string>()), Times.Never);
@@ -178,7 +178,7 @@ namespace Tokki.UnitTests.UseCases.Accounts.Commands
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(500);
             result.Errors.Should().Contain(e => e.Code == AppErrors.ServerError.Code);
-            result.Message.Should().Contain("Cấu hình mật khẩu mặc định");
+            result.Message.Should().Contain("Configure default password");
 
             _mockAccountRepo.Verify(x => x.AddAsync(It.IsAny<AccountEntity>()), Times.Never);
             _mockAccountRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
@@ -231,7 +231,7 @@ namespace Tokki.UnitTests.UseCases.Accounts.Commands
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(201);
             result.Data.Should().Be("U-STF-99");
-            result.Message.Should().Be("Tạo tài khoản Staff và gửi email thông tin đăng nhập thành công.");
+            result.Message.Should().Be("Create a Staff account and email login information successfully.");
 
             _mockAccountRepo.Verify(x => x.AddAsync(It.IsAny<AccountEntity>()), Times.Once);
             _mockAccountRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
@@ -295,7 +295,7 @@ namespace Tokki.UnitTests.UseCases.Accounts.Commands
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(201);
             result.Data.Should().Be("U-STF-02");
-            result.Message.Should().Be("Tạo tài khoản Staff và gửi email thông tin đăng nhập thành công.");
+            result.Message.Should().Be("Create a Staff account and email login information successfully.");
 
             _mockAccountRepo.Verify(x => x.AddAsync(It.IsAny<AccountEntity>()), Times.Once);
             _mockAccountRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
@@ -345,7 +345,7 @@ namespace Tokki.UnitTests.UseCases.Accounts.Commands
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(201);
             result.Data.Should().Be("U-ADM-01");
-            result.Message.Should().Be("Tạo tài khoản Admin và gửi email thông tin đăng nhập thành công.");
+            result.Message.Should().Be("Create an Admin account and email login information successfully.");
 
             _mockSystemConfigRepo.Verify(x => x.GetValueByKeyAsync("DEFAULT_PASSWORD_FOR_ADMIN"), Times.Once);
             _mockSystemConfigRepo.Verify(x => x.GetValueByKeyAsync("DEFAULT_PASSWORD_FOR_STAFF"), Times.Once);

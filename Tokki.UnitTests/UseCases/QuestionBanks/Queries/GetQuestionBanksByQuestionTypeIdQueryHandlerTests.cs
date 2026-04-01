@@ -65,7 +65,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.Queries
             dto.Options[0].KeyOption.Should().Be("1");
             dto.Options[1].KeyOption.Should().Be("2");
 
-            result.Message.Should().Be("Tìm thấy 1 câu hỏi.");
+            result.Message.Should().Be("Found 1 question.");
 
             _mockQuestionBankRepo.Verify(x => x.GetByQuestionTypeIdAsync(
                 "qt-01",

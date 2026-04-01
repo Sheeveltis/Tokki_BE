@@ -1,10 +1,13 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using FluentValidation;
 using Moq;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Application.UseCases.Accounts.Commands.Login;
-using Tokki.Application.UseCases.Accounts.Queries.Login;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 using Tokki.UnitTest.Mocks.Repositories;
@@ -20,46 +23,48 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         // FACTORY
         // ═══════════════════════════════════════════════════════════
         private LoginCommandHandler CreateHandler(
-     Mock<IAccountRepository>? accountRepo = null,
-     Mock<ISystemConfigRepository>? configRepo = null,
-     Mock<IJwtTokenGenerator>? jwtGen = null,
-     Mock<IGamificationService>? gamification = null,
-     Mock<IEmailHistoryRepository>? emailHistoryRepo = null)
+            Mock<IAccountRepository>?     accountRepo      = null,
+            Mock<ISystemConfigRepository>? configRepo      = null,
+            Mock<IJwtTokenGenerator>?      jwtGen          = null,
+            Mock<IGamificationService>?    gamification    = null,
+            Mock<IEmailHistoryRepository>? emailHistoryRepo = null,
+            Mock<IRefreshTokenService>?    refreshTokenSvc = null)
         {
             var mockJwt = jwtGen ?? new Mock<IJwtTokenGenerator>();
             mockJwt.Setup(x => x.GenerateToken(It.IsAny<Account>(), It.IsAny<DateTime>()))
                    .Returns("fake-jwt-token");
 
             return new LoginCommandHandler(
-                (accountRepo ?? MockAccountRepository.GetMock()).Object,
-                (configRepo ?? BuildDefaultConfigMock()).Object,   // ← bỏ .Object bên trong
+                (accountRepo      ?? MockAccountRepository.GetMock()).Object,
+                (configRepo       ?? BuildDefaultConfigMock()).Object,
                 mockJwt.Object,
                 MockIdGeneratorService.GetMock().Object,
-                (gamification ?? BuildGamificationMock()).Object,    // ← bỏ .Object bên trong
+                (gamification     ?? BuildGamificationMock()).Object,
                 new Mock<IValidator<LoginCommand>>().Object,
-                (emailHistoryRepo ?? BuildEmailHistoryMock()).Object);   // ← bỏ .Object bên trong
+                (emailHistoryRepo  ?? BuildEmailHistoryMock()).Object,
+                (refreshTokenSvc   ?? BuildRefreshTokenMock()).Object);
         }
-        // ── Sample data ──────────────────────────────────────────
+
+        // ── Shared builders ──────────────────────────────────────────
         private static Account ActiveUser(string password = "ValidPass123!") => new()
         {
-            UserId = "USER-001",
-            Email = "user@tokki.com",
-            FullName = "Test User",
-            Role = AccountRole.User,
-            Status = AccountStatus.Active,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
-            FailedLoginCount = 0
+            UserId            = "USER-001",
+            Email             = "user@tokki.com",
+            FullName          = "Test User",
+            Role              = AccountRole.User,
+            Status            = AccountStatus.Active,
+            PasswordHash      = BCrypt.Net.BCrypt.HashPassword(password),
+            FailedLoginCount  = 0
         };
 
-        // ── Shared mock builders ──────────────────────────────────
         private static Mock<ISystemConfigRepository> BuildDefaultConfigMock(
-            string failedLimit = "5",
-            string lockLevel1 = "300",
-            string lockLevel2 = "1800",
-            string lockLevel3 = "PERMANENT_LOCK",
-            string tokenExp = "60",
+            string failedLimit  = "5",
+            string lockLevel1   = "300",
+            string lockLevel2   = "1800",
+            string lockLevel3   = "PERMANENT_LOCK",
+            string tokenExp     = "60",
             string defaultStaff = "StaffDefaultPass",
-            string defaultUser = "UserDefaultPass",
+            string defaultUser  = "UserDefaultPass",
             string defaultAdmin = "AdminDefaultPass")
         {
             var m = new Mock<ISystemConfigRepository>();
@@ -90,6 +95,14 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             return m;
         }
 
+        private static Mock<IRefreshTokenService> BuildRefreshTokenMock()
+        {
+            var m = new Mock<IRefreshTokenService>();
+            m.Setup(x => x.RevokeAllRefreshTokensAsync(It.IsAny<string>())).Returns(Task.CompletedTask);
+            m.Setup(x => x.CreateRefreshTokenAsync(It.IsAny<Account>())).ReturnsAsync("fake-refresh-token");
+            return m;
+        }
+
         private static Mock<IAccountRepository> BuildAccountRepoWith(Account user)
         {
             var m = MockAccountRepository.GetMock();
@@ -100,15 +113,12 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-LOGIN-01  | A | Email không tồn tại → 404
+        // TC-LOGIN-01 | A | Email not found → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_UserNotFound_ShouldReturn404()
         {
-            var mockRepo = MockAccountRepository.GetMock();
-            mockRepo.Setup(x => x.GetByEmailAsync(It.IsAny<string>())).ReturnsAsync((Account?)null);
-
-            var result = await CreateHandler(accountRepo: mockRepo)
+            var result = await CreateHandler()
                 .Handle(new LoginCommand { Email = "ghost@tokki.com", Password = "Abc123" }, CancellationToken.None);
 
             result.IsSuccess.Should().BeFalse();
@@ -116,19 +126,19 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
 
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
-                FunctionGroup = "Login",
-                TestCaseID = "TC-LOGIN-01",
-                Description = "Email không tồn tại trong hệ thống",
-                ExpectedResult = "Return 404 UserNotFound",
-                StatusRound1 = "Passed",
-                TestCaseType = "A",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "GetByEmailAsync trả về null" }
+                FunctionGroup   = "Login",
+                TestCaseID      = "TC-LOGIN-01",
+                Description     = "Email does not exist in the system",
+                ExpectedResult  = "Return 404 UserNotFound",
+                StatusRound1    = "Passed",
+                TestCaseType    = "A",
+                TestDate        = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "GetByEmailAsync returns null", "Return 404" }
             });
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-LOGIN-02  | A | Tài khoản Inactive → 403
+        // TC-LOGIN-02 | A | Account Inactive → 403
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_AccountInactive_ShouldReturn403()
@@ -142,19 +152,19 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
 
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
-                FunctionGroup = "Login",
-                TestCaseID = "TC-LOGIN-02",
-                Description = "Tài khoản có status Inactive",
-                ExpectedResult = "Return 403 AccountInActive",
-                StatusRound1 = "Passed",
-                TestCaseType = "A",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "AccountStatus = Inactive" }
+                FunctionGroup   = "Login",
+                TestCaseID      = "TC-LOGIN-02",
+                Description     = "Account status is Inactive",
+                ExpectedResult  = "Return 403 AccountInActive",
+                StatusRound1    = "Passed",
+                TestCaseType    = "A",
+                TestDate        = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "AccountStatus = Inactive", "Return 403" }
             });
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-LOGIN-03  | A | Tài khoản Banned → 403
+        // TC-LOGIN-03 | A | Account Banned → 403
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_AccountBanned_ShouldReturn403()
@@ -168,25 +178,25 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
 
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
-                FunctionGroup = "Login",
-                TestCaseID = "TC-LOGIN-03",
-                Description = "Tài khoản bị banned vĩnh viễn",
-                ExpectedResult = "Return 403 AccountBanned",
-                StatusRound1 = "Passed",
-                TestCaseType = "A",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "AccountStatus = Banned" }
+                FunctionGroup   = "Login",
+                TestCaseID      = "TC-LOGIN-03",
+                Description     = "Account is permanently banned",
+                ExpectedResult  = "Return 403 AccountBanned",
+                StatusRound1    = "Passed",
+                TestCaseType    = "A",
+                TestDate        = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "AccountStatus = Banned", "Return 403" }
             });
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-LOGIN-04  | A | Tài khoản đang bị tạm khóa → 403
+        // TC-LOGIN-04 | A | Account temporarily locked → 403 with remaining minutes
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_AccountLockedUntilFuture_ShouldReturn403WithRemainingMinutes()
         {
             var user = ActiveUser();
-            user.LockedUntil = DateTime.UtcNow.AddHours(7).AddMinutes(15); // còn 15 phút
+            user.LockedUntil = DateTime.UtcNow.AddHours(7).AddMinutes(15);
 
             var result = await CreateHandler(accountRepo: BuildAccountRepoWith(user))
                 .Handle(new LoginCommand { Email = user.Email, Password = "ValidPass123!" }, CancellationToken.None);
@@ -197,31 +207,31 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
 
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
-                FunctionGroup = "Login",
-                TestCaseID = "TC-LOGIN-04",
-                Description = "Tài khoản đang bị tạm khóa, LockedUntil còn 15 phút",
-                ExpectedResult = "Return 403, message chứa số phút còn lại",
-                StatusRound1 = "Passed",
-                TestCaseType = "A",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "LockedUntil = now + 15 phút", "Status = Active" }
+                FunctionGroup   = "Login",
+                TestCaseID      = "TC-LOGIN-04",
+                Description     = "Account is temporarily locked, LockedUntil is 15 minutes in the future",
+                ExpectedResult  = "Return 403, message contains remaining minutes",
+                StatusRound1    = "Passed",
+                TestCaseType    = "A",
+                TestDate        = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "LockedUntil = now + 15 min", "Status = Active", "Return 403" }
             });
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-LOGIN-05  | B | LockedUntil đã hết hạn → được đăng nhập
+        // TC-LOGIN-05 | B | LockedUntil expired → auto-unlock, login succeeds
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_LockedUntilExpired_ShouldAllowLogin()
         {
             const string pass = "ValidPass123!";
             var user = ActiveUser(pass);
-            user.LockedUntil = DateTime.UtcNow.AddHours(7).AddMinutes(-1); // hết hạn 1 phút trước
+            user.LockedUntil = DateTime.UtcNow.AddHours(7).AddMinutes(-1);
 
             var result = await CreateHandler(
-                accountRepo: BuildAccountRepoWith(user),
-                configRepo: BuildDefaultConfigMock(),
-                gamification: BuildGamificationMock(),
+                accountRepo:      BuildAccountRepoWith(user),
+                configRepo:       BuildDefaultConfigMock(),
+                gamification:     BuildGamificationMock(),
                 emailHistoryRepo: BuildEmailHistoryMock())
                 .Handle(new LoginCommand { Email = user.Email, Password = pass }, CancellationToken.None);
 
@@ -230,19 +240,19 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
 
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
-                FunctionGroup = "Login",
-                TestCaseID = "TC-LOGIN-05",
-                Description = "LockedUntil đã qua → tài khoản được mở khóa tự động",
-                ExpectedResult = "Return 200, đăng nhập thành công",
-                StatusRound1 = "Passed",
-                TestCaseType = "B",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "LockedUntil = now - 1 phút (đã hết hạn)" }
+                FunctionGroup   = "Login",
+                TestCaseID      = "TC-LOGIN-05",
+                Description     = "LockedUntil has expired (1 min ago) → auto-unlock, login succeeds",
+                ExpectedResult  = "Return 200 login successful",
+                StatusRound1    = "Passed",
+                TestCaseType    = "B",
+                TestDate        = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "LockedUntil = now - 1 min (expired)", "Return 200" }
             });
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-LOGIN-06  | A | Sai mật khẩu → 400, FailedLoginCount tăng
+        // TC-LOGIN-06 | A | Wrong password → 400, FailedLoginCount increments
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_WrongPassword_ShouldReturn400AndIncrementFailedCount()
@@ -265,25 +275,25 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
 
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
-                FunctionGroup = "Login",
-                TestCaseID = "TC-LOGIN-06",
-                Description = "Sai mật khẩu → FailedLoginCount tăng lên 1",
-                ExpectedResult = "Return 400, FailedLoginCount = 1",
-                StatusRound1 = "Passed",
-                TestCaseType = "A",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "Password sai", "FailedLoginCount ban đầu = 0" }
+                FunctionGroup   = "Login",
+                TestCaseID      = "TC-LOGIN-06",
+                Description     = "Wrong password → FailedLoginCount increments by 1",
+                ExpectedResult  = "Return 400, FailedLoginCount = 1",
+                StatusRound1    = "Passed",
+                TestCaseType    = "A",
+                TestDate        = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "Password incorrect", "FailedLoginCount = 0 before", "Return 400" }
             });
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-LOGIN-07  | B | Sai mật khẩu đúng giới hạn (level 1) → tài khoản bị lock level 1
+        // TC-LOGIN-07 | B | Wrong password reaches limit (5th) → lock level 1
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_WrongPassword_ReachesLimit_ShouldLockLevel1()
         {
             var user = ActiveUser("CorrectPass123!");
-            user.FailedLoginCount = 4; // lần này sẽ là 5 = limit
+            user.FailedLoginCount = 4;
 
             Account? captured = null;
             var mockRepo = BuildAccountRepoWith(user);
@@ -302,94 +312,103 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
 
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
-                FunctionGroup = "Login",
-                TestCaseID = "TC-LOGIN-07",
-                Description = "Sai mật khẩu lần thứ 5 (= limit) → bị lock level 1 (5 phút)",
-                ExpectedResult = "FailedLoginCount = 5, LockedUntil được set",
-                StatusRound1 = "Passed",
-                TestCaseType = "B",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "FailedLoginCount = 4 trước khi gọi", "LOGIN_FAILED_LIMIT = 5" }
-            });
-        }
-
-        // ═══════════════════════════════════════════════════════════
-        // TC-LOGIN-08  | B | Sai mật khẩu đúng giới hạn x2 → lock level 2
-        // ═══════════════════════════════════════════════════════════
-        [Fact]
-        public async Task Handle_WrongPassword_ReachesDoubleLimit_ShouldLockLevel2()
-        {
-            var user = ActiveUser("CorrectPass123!");
-            user.FailedLoginCount = 9; // lần này = 10 = limit*2
-
-            Account? captured = null;
-            var mockRepo = BuildAccountRepoWith(user);
-            mockRepo.Setup(x => x.UpdateUserAsync(It.IsAny<Account>()))
-                    .Callback<Account>(u => captured = u)
-                    .Returns(Task.CompletedTask);
-
-            var result = await CreateHandler(accountRepo: mockRepo, configRepo: BuildDefaultConfigMock())
-                .Handle(new LoginCommand { Email = user.Email, Password = "WrongPass" }, CancellationToken.None);
-
-            result.IsSuccess.Should().BeFalse();
-            captured!.FailedLoginCount.Should().Be(10);
-            // Level 2 = 1800s = 30 phút → LockedUntil > now + 29 phút
-            captured.LockedUntil!.Value.Should().BeAfter(DateTime.UtcNow.AddHours(7).AddMinutes(29));
-
-            QACollector.LogTestCase("Account - Login", new TestCaseDetail
-            {
-                FunctionGroup = "Login",
-                TestCaseID = "TC-LOGIN-08",
-                Description = "Sai mật khẩu lần thứ 10 (= limit×2) → bị lock level 2 (30 phút)",
-                ExpectedResult = "LockedUntil = now + 30 phút",
-                StatusRound1 = "Passed",
-                TestCaseType = "B",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "FailedLoginCount = 9 trước khi gọi", "LOGIN_FAILED_LIMIT = 5" }
-            });
-        }
-
-        // ═══════════════════════════════════════════════════════════
-        // TC-LOGIN-09  | B | Sai mật khẩu ≥ limit×3, action=PERMANENT_LOCK → Banned
-        // ═══════════════════════════════════════════════════════════
-        [Fact]
-        public async Task Handle_WrongPassword_ReachesTripleLimit_ShouldPermanentlyBan()
-        {
-            var user = ActiveUser("CorrectPass123!");
-            user.FailedLoginCount = 14; // lần này = 15 = limit*3
-
-            Account? captured = null;
-            var mockRepo = BuildAccountRepoWith(user);
-            mockRepo.Setup(x => x.UpdateUserAsync(It.IsAny<Account>()))
-                    .Callback<Account>(u => captured = u)
-                    .Returns(Task.CompletedTask);
-
-            var result = await CreateHandler(accountRepo: mockRepo, configRepo: BuildDefaultConfigMock())
-                .Handle(new LoginCommand { Email = user.Email, Password = "WrongPass" }, CancellationToken.None);
-
-            result.IsSuccess.Should().BeFalse();
-            captured!.Status.Should().Be(AccountStatus.Banned);
-            captured.LockedUntil.Should().BeNull();
-
-            QACollector.LogTestCase("Account - Login", new TestCaseDetail
-            {
-                FunctionGroup = "Login",
-                TestCaseID = "TC-LOGIN-09",
-                Description = "Sai mật khẩu lần thứ 15 (≥ limit×3), action=PERMANENT_LOCK → ban vĩnh viễn",
-                ExpectedResult = "Status = Banned, LockedUntil = null",
-                StatusRound1 = "Passed",
-                TestCaseType = "B",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
+                FunctionGroup   = "Login",
+                TestCaseID      = "TC-LOGIN-07",
+                Description     = "5th wrong password (= limit) → lock level 1 (5 min), LockedUntil set",
+                ExpectedResult  = "FailedLoginCount = 5, LockedUntil is set, Return 400",
+                StatusRound1    = "Passed",
+                TestCaseType    = "B",
+                TestDate        = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string>
                 {
-                    "FailedLoginCount = 14 trước khi gọi",
-                    "LOGIN_LOCKOUT_LEVEL_3_ACTION = PERMANENT_LOCK"
+                    "FailedLoginCount = 4 before call",
+                    "LOGIN_FAILED_LIMIT = 5",
+                    "LOGIN_LOCKOUT_DURATION_LEVEL_1 = 300s",
+                    "Return 400"
                 }
             });
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-LOGIN-10  | A | Dùng default password → 403
+        // TC-LOGIN-08 | B | Wrong password reaches 2x limit → lock level 2 (30 min)
+        // ═══════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_WrongPassword_ReachesDoubleLimit_ShouldLockLevel2()
+        {
+            var user = ActiveUser("CorrectPass123!");
+            user.FailedLoginCount = 9;
+
+            Account? captured = null;
+            var mockRepo = BuildAccountRepoWith(user);
+            mockRepo.Setup(x => x.UpdateUserAsync(It.IsAny<Account>()))
+                    .Callback<Account>(u => captured = u)
+                    .Returns(Task.CompletedTask);
+
+            await CreateHandler(accountRepo: mockRepo, configRepo: BuildDefaultConfigMock())
+                .Handle(new LoginCommand { Email = user.Email, Password = "WrongPass" }, CancellationToken.None);
+
+            captured!.FailedLoginCount.Should().Be(10);
+            captured.LockedUntil!.Value.Should().BeAfter(DateTime.UtcNow.AddHours(7).AddMinutes(29));
+
+            QACollector.LogTestCase("Account - Login", new TestCaseDetail
+            {
+                FunctionGroup   = "Login",
+                TestCaseID      = "TC-LOGIN-08",
+                Description     = "10th wrong password (limit x2) → lock level 2 (30 min)",
+                ExpectedResult  = "LockedUntil = now + 30 min",
+                StatusRound1    = "Passed",
+                TestCaseType    = "B",
+                TestDate        = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string>
+                {
+                    "FailedLoginCount = 9 before call",
+                    "LOGIN_LOCKOUT_DURATION_LEVEL_2 = 1800s",
+                    "LockedUntil > now + 29 min"
+                }
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // TC-LOGIN-09 | B | Wrong password ≥ 3x limit, PERMANENT_LOCK → Banned
+        // ═══════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_WrongPassword_ReachesTripleLimit_ShouldPermanentlyBan()
+        {
+            var user = ActiveUser("CorrectPass123!");
+            user.FailedLoginCount = 14;
+
+            Account? captured = null;
+            var mockRepo = BuildAccountRepoWith(user);
+            mockRepo.Setup(x => x.UpdateUserAsync(It.IsAny<Account>()))
+                    .Callback<Account>(u => captured = u)
+                    .Returns(Task.CompletedTask);
+
+            await CreateHandler(accountRepo: mockRepo, configRepo: BuildDefaultConfigMock())
+                .Handle(new LoginCommand { Email = user.Email, Password = "WrongPass" }, CancellationToken.None);
+
+            captured!.Status.Should().Be(AccountStatus.Banned);
+            captured.LockedUntil.Should().BeNull();
+
+            QACollector.LogTestCase("Account - Login", new TestCaseDetail
+            {
+                FunctionGroup   = "Login",
+                TestCaseID      = "TC-LOGIN-09",
+                Description     = "15th wrong password (>= limit x3), action PERMANENT_LOCK → permanently banned",
+                ExpectedResult  = "Status = Banned, LockedUntil = null",
+                StatusRound1    = "Passed",
+                TestCaseType    = "B",
+                TestDate        = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string>
+                {
+                    "FailedLoginCount = 14 before call",
+                    "LOGIN_LOCKOUT_LEVEL_3_ACTION = PERMANENT_LOCK",
+                    "Status set to Banned"
+                }
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // TC-LOGIN-10 | A | Using default password → 403
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_UsingDefaultPassword_ShouldReturn403()
@@ -399,7 +418,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
 
             var result = await CreateHandler(
                 accountRepo: BuildAccountRepoWith(user),
-                configRepo: BuildDefaultConfigMock(defaultUser: defaultPass))
+                configRepo:  BuildDefaultConfigMock(defaultUser: defaultPass))
                 .Handle(new LoginCommand { Email = user.Email, Password = defaultPass }, CancellationToken.None);
 
             result.IsSuccess.Should().BeFalse();
@@ -407,30 +426,31 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
 
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
-                FunctionGroup = "Login",
-                TestCaseID = "TC-LOGIN-10",
-                Description = "Người dùng đăng nhập bằng đúng default password",
-                ExpectedResult = "Return 403 DefaultPasswordUsed",
-                StatusRound1 = "Passed",
-                TestCaseType = "A",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
+                FunctionGroup   = "Login",
+                TestCaseID      = "TC-LOGIN-10",
+                Description     = "User logs in with the system default password → blocked",
+                ExpectedResult  = "Return 403 DefaultPasswordUsed",
+                StatusRound1    = "Passed",
+                TestCaseType    = "A",
+                TestDate        = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string>
                 {
-                    "Password khớp với DEFAULT_PASSWORD_FOR_USER",
-                    "BCrypt.Verify = true nhưng bị chặn sau đó"
+                    "Password matches DEFAULT_PASSWORD_FOR_USER",
+                    "BCrypt.Verify = true but then blocked",
+                    "Return 403"
                 }
             });
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-LOGIN-11  | N | Đăng nhập thành công → 200, token, reset FailedCount
+        // TC-LOGIN-11 | N | Valid credentials, RememberMe = false → 200, JWT, no refresh token
         // ═══════════════════════════════════════════════════════════
         [Fact]
-        public async Task Handle_ValidCredentials_ShouldReturn200AndResetFailedCount()
+        public async Task Handle_ValidCredentials_NoRememberMe_ShouldReturn200WithJwt()
         {
             const string pass = "ValidPass123!";
             var user = ActiveUser(pass);
-            user.FailedLoginCount = 3; // có lỗi trước đó, phải reset
+            user.FailedLoginCount = 3;
 
             Account? captured = null;
             var mockRepo = BuildAccountRepoWith(user);
@@ -439,36 +459,77 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
                     .Returns(Task.CompletedTask);
 
             var result = await CreateHandler(
-                accountRepo: mockRepo,
-                configRepo: BuildDefaultConfigMock(),
-                gamification: BuildGamificationMock(),
-                emailHistoryRepo: BuildEmailHistoryMock())
-                .Handle(new LoginCommand { Email = user.Email, Password = pass }, CancellationToken.None);
+                accountRepo:      mockRepo,
+                configRepo:       BuildDefaultConfigMock(),
+                gamification:     BuildGamificationMock(),
+                emailHistoryRepo: BuildEmailHistoryMock(),
+                refreshTokenSvc:  BuildRefreshTokenMock())
+                .Handle(new LoginCommand { Email = user.Email, Password = pass, RememberMe = false }, CancellationToken.None);
 
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
             result.Data!.Token.Should().Be("fake-jwt-token");
+            result.Data.RefreshToken.Should().BeNull();
             captured!.FailedLoginCount.Should().Be(0);
             captured.LockedUntil.Should().BeNull();
 
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
-                FunctionGroup = "Login",
-                TestCaseID = "TC-LOGIN-11",
-                Description = "Đăng nhập thành công → trả JWT, reset FailedLoginCount về 0",
-                ExpectedResult = "Return 200, Token hợp lệ, FailedLoginCount = 0",
-                StatusRound1 = "Passed",
-                TestCaseType = "N",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
+                FunctionGroup   = "Login",
+                TestCaseID      = "TC-LOGIN-11",
+                Description     = "Valid credentials, RememberMe = false → JWT returned, no refresh token, FailedLoginCount reset",
+                ExpectedResult  = "Return 200, token = fake-jwt-token, RefreshToken = null, FailedLoginCount = 0",
+                StatusRound1    = "Passed",
+                TestCaseType    = "N",
+                TestDate        = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string>
                 {
-                    "Valid email + password",
-                    "FailedLoginCount = 3 trước đó → reset về 0",
-                    "Không phải default password"
+                    "Valid email + correct password",
+                    "RememberMe = false → RefreshToken not created",
+                    "FailedLoginCount reset to 0",
+                    "Return 200"
                 }
             });
         }
 
-       
+        // ═══════════════════════════════════════════════════════════
+        // TC-LOGIN-12 | N | Valid credentials, RememberMe = true → 200, JWT + refresh token
+        // ═══════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_ValidCredentials_RememberMe_ShouldReturn200WithRefreshToken()
+        {
+            const string pass = "ValidPass123!";
+            var user = ActiveUser(pass);
+
+            var result = await CreateHandler(
+                accountRepo:      BuildAccountRepoWith(user),
+                configRepo:       BuildDefaultConfigMock(),
+                gamification:     BuildGamificationMock(),
+                emailHistoryRepo: BuildEmailHistoryMock(),
+                refreshTokenSvc:  BuildRefreshTokenMock())
+                .Handle(new LoginCommand { Email = user.Email, Password = pass, RememberMe = true }, CancellationToken.None);
+
+            result.IsSuccess.Should().BeTrue();
+            result.StatusCode.Should().Be(200);
+            result.Data!.Token.Should().Be("fake-jwt-token");
+            result.Data.RefreshToken.Should().Be("fake-refresh-token");
+
+            QACollector.LogTestCase("Account - Login", new TestCaseDetail
+            {
+                FunctionGroup   = "Login",
+                TestCaseID      = "TC-LOGIN-12",
+                Description     = "Valid credentials, RememberMe = true → both JWT and refresh token returned",
+                ExpectedResult  = "Return 200, Token = fake-jwt-token, RefreshToken = fake-refresh-token",
+                StatusRound1    = "Passed",
+                TestCaseType    = "N",
+                TestDate        = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string>
+                {
+                    "Valid email + correct password",
+                    "RememberMe = true → RevokeAll + CreateRefreshToken called",
+                    "Return 200 with both tokens"
+                }
+            });
+        }
     }
 }

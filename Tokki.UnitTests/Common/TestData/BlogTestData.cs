@@ -12,9 +12,9 @@ namespace Tokki.UnitTests.Common.TestData
         {
             return new CreateBlogCommand
             {
-                Title = "Học Tiếng Hàn Cùng Tokki",
-                Content = "Nội dung bài viết mẫu...",
-                ShortDescription = "Mô tả ngắn chuẩn SEO",
+                Title = "Learn Korean With Tokki",
+                Content = "Sample article content...",
+                ShortDescription = "Short description of SEO standards",
                 ThumbnailUrl = "https://example.com/image.jpg",
                 CategoryId = "cate-xin",
                 Status = BlogStatus.Published,
@@ -44,9 +44,9 @@ namespace Tokki.UnitTests.Common.TestData
             return new UpdateBlogCommand
             {
                 Id = id,
-                Title = "Tiêu Đề Mới Toanh",
-                Content = "Nội dung đã chỉnh sửa",
-                ShortDescription = "Mô tả mới",
+                Title = "Brand New Title",
+                Content = "Edited content",
+                ShortDescription = "New description",
                 CategoryId = "cate-moi", 
                 Status = BlogStatus.Hidden,
                 Tags = new List<string> { "tag-moi-1", "tag-moi-2" },
@@ -60,14 +60,14 @@ namespace Tokki.UnitTests.Common.TestData
                 new Blog
                 {
                     Id = "blog-1",
-                    Title = "Blog Test Chuẩn",
+                    Title = "Standard Test Blog",
                     Slug = "blog-test-chuan",
                     Status = BlogStatus.Published,
                     CreatedAt = DateTimeOffset.UtcNow,
                     AuthorId = "ACC-Gum",
                     CategoryId = "cate-van-hoa",
                     
-                    Category = new Category { Id = "cate-van-hoa", Name = "Văn Hóa" },
+                    Category = new Category { Id = "cate-van-hoa", Name = "Culture" },
                     Tags = new List<Tag>
                     {
                         new Tag { Id = "tag-1", Name = "Tag1" },
@@ -83,7 +83,7 @@ namespace Tokki.UnitTests.Common.TestData
                 new Blog
                 {
                     Id = "blog-orphan",
-                    Title = "Blog Mất Gốc",
+                    Title = "Lost Roots Blog",
                     Category = null 
                 }
             };
@@ -93,17 +93,17 @@ namespace Tokki.UnitTests.Common.TestData
             return new Blog
             {
                 Id = "blog-detail-1",
-                Title = "Chi tiết Blog",
+                Title = "Blog details",
                 Slug = "chi-tiet-blog",
-                Content = "<p>Nội dung chi tiết rất dài...</p>",
+                Content = "<p>The detailed content is very long...</p>",
                 ThumbnailUrl = "https://img.com/1.jpg",
-                ShortDescription = "Mô tả ngắn",
+                ShortDescription = "Short description",
                 ViewCount = 100,
                 Status = BlogStatus.Published,
                 CreatedAt = System.DateTimeOffset.UtcNow,
                 AuthorId = "ACC-Gum",
                 CategoryId = "cate-van-hoa",
-                Category = new Category { Name = "Văn Hóa" },
+                Category = new Category { Name = "Culture" },
                 Tags = new System.Collections.Generic.List<Tag>
                 {
                     new Tag { Name = "Tag1" },

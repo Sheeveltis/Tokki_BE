@@ -92,7 +92,7 @@ namespace Tokki.UnitTests.UseCases.Account.Commands
             // Assert
             Assert.True(result.IsSuccess);
             Assert.Equal(201, result.StatusCode);
-            Assert.Equal("Đăng ký tài khoản thành công", result.Message);
+            Assert.Equal("Account registration successful", result.Message);
             Assert.NotNull(result.Data);
             Assert.Equal("User123", result.Data);
 
@@ -137,7 +137,7 @@ namespace Tokki.UnitTests.UseCases.Account.Commands
 
             Assert.True(result.IsSuccess);
             Assert.Equal(201, result.StatusCode);
-            Assert.Equal("Đăng ký tài khoản thành công", result.Message);
+            Assert.Equal("Account registration successful", result.Message);
 
             _mockAccountRepo.Verify(r => r.IsPhoneNumberExistsAsync(It.IsAny<string>()), Times.Never);
             _mockAccountRepo.Verify(r => r.AddAsync(It.IsAny<EntityAccount>()), Times.Once);
@@ -229,8 +229,8 @@ namespace Tokki.UnitTests.UseCases.Account.Commands
             // Setup validator trả lỗi (nhưng handler sẽ không gọi)
             var validationResult = new ValidationResult(new List<ValidationFailure>
             {
-                new ValidationFailure("Email", "Định dạng email không hợp lệ."),
-                new ValidationFailure("Password", "'Mật khẩu' không được để trống.")
+                new ValidationFailure("Email", "Invalid email format."),
+                new ValidationFailure("Password", "'Password' cannot be blank.")
             });
 
             _mockValidator.Setup(v => v.ValidateAsync(It.IsAny<RegisterUserAccountCommand>(), It.IsAny<CancellationToken>()))
@@ -253,7 +253,7 @@ namespace Tokki.UnitTests.UseCases.Account.Commands
             // Assert: Với code handler hiện tại, kết quả vẫn success (không validate)
             Assert.True(result.IsSuccess);
             Assert.Equal(201, result.StatusCode);
-            Assert.Equal("Đăng ký tài khoản thành công", result.Message);
+            Assert.Equal("Account registration successful", result.Message);
             Assert.Equal("UserIgnoreValidation", result.Data);
 
             // Quan trọng: validator không được gọi
@@ -282,7 +282,7 @@ namespace Tokki.UnitTests.UseCases.Account.Commands
             // Validator trả lỗi (nhưng handler sẽ không gọi)
             var validationResult = new ValidationResult(new List<ValidationFailure>
     {
-        new ValidationFailure("Password", "'Mật khẩu' không được để trống.")
+        new ValidationFailure("Password", "'Password' cannot be blank.")
     });
 
             _mockValidator.Setup(v => v.ValidateAsync(It.IsAny<RegisterUserAccountCommand>(), It.IsAny<CancellationToken>()))
@@ -308,7 +308,7 @@ namespace Tokki.UnitTests.UseCases.Account.Commands
             // Assert: với code handler hiện tại => vẫn success
             Assert.True(result.IsSuccess);
             Assert.Equal(201, result.StatusCode);
-            Assert.Equal("Đăng ký tài khoản thành công", result.Message);
+            Assert.Equal("Account registration successful", result.Message);
             Assert.Equal("UserEmptyPass", result.Data);
 
             // Validator không được gọi
@@ -331,9 +331,9 @@ namespace Tokki.UnitTests.UseCases.Account.Commands
 
             var validationResult = new ValidationResult(new List<ValidationFailure>
     {
-        new ValidationFailure("Email", "'Email' không được để trống."),
-        new ValidationFailure("Password", "'Mật khẩu' không được để trống."),
-        new ValidationFailure("FullName", "'Họ và tên' không được để trống.")
+        new ValidationFailure("Email", "'Email' cannot be empty."),
+        new ValidationFailure("Password", "'Password' cannot be blank."),
+        new ValidationFailure("FullName", "'Full name' cannot be blank.")
     });
 
             _mockValidator.Setup(v => v.ValidateAsync(It.IsAny<RegisterUserAccountCommand>(), It.IsAny<CancellationToken>()))
@@ -358,7 +358,7 @@ namespace Tokki.UnitTests.UseCases.Account.Commands
             // Assert: với code handler hiện tại, vẫn success (không validate)
             Assert.True(result.IsSuccess);
             Assert.Equal(201, result.StatusCode);
-            Assert.Equal("Đăng ký tài khoản thành công", result.Message);
+            Assert.Equal("Account registration successful", result.Message);
             Assert.Equal("UserIgnoreValidationMany", result.Data);
 
             // Validator không được gọi

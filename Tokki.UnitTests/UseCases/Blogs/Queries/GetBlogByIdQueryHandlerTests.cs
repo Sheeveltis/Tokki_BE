@@ -55,7 +55,7 @@ namespace Tokki.UnitTests.Features.Blogs.Queries
 
             dto.Content.Should().Be(fakeBlog.Content);
 
-            dto.CategoryName.Should().Be("Văn Hóa");
+            dto.CategoryName.Should().Be("Culture");
             dto.Tags.Should().HaveCount(2);
             dto.Tags.Should().Contain("Tag1");
 

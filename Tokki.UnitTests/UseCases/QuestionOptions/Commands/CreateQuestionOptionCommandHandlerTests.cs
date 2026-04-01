@@ -79,7 +79,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.QuestionOptions.Commands
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
             result.Errors.Should().Contain(e => e.Code == AppErrors.ValidationFailed.Code);
-            result.Message.Should().Be("QuestionTypeId của câu hỏi đang rỗng.");
+            result.Message.Should().Be("QuestionTypeId of the question is empty.");
         }
 
         [Fact]
@@ -125,7 +125,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.QuestionOptions.Commands
 
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            result.Message.Should().Be("Câu hỏi Writing không được có đáp án trắc nghiệm.");
+            result.Message.Should().Be("Writing questions cannot have multiple choice answers.");
         }
 
         [Fact]
@@ -152,7 +152,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.QuestionOptions.Commands
 
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            result.Message.Should().Be("Không thể thêm quá 4 đáp án.");
+            result.Message.Should().Be("You cannot add more than 4 answers.");
         }
 
         [Fact]
@@ -182,7 +182,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.QuestionOptions.Commands
 
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            result.Message.Should().Contain("KeyOption '1' đã tồn tại");
+            result.Message.Should().Contain("KeyOption '1' already exists");
         }
 
         [Fact]
@@ -270,7 +270,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.QuestionOptions.Commands
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(201);
             result.Data.Should().Be("opt-99");
-            result.Message.Should().Be("Thêm đáp án thành công.");
+            result.Message.Should().Be("Added answer successfully.");
 
             captured.Should().NotBeNull();
             captured!.OptionId.Should().Be("opt-99");

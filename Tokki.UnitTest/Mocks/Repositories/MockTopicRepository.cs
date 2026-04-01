@@ -81,8 +81,8 @@ namespace Tokki.UnitTest.Mocks.Repositories
             return new Topic
             {
                 TopicId = topicId,
-                TopicName = "Chào hỏi cơ bản",
-                Description = "Các câu chào hỏi thông dụng",
+                TopicName = "Basic greetings",
+                Description = "Common greetings",
                 Level = TopicLevel.Level1,
                 Status = status,
                 CreateBy = "STAFF-001",
@@ -96,7 +96,7 @@ namespace Tokki.UnitTest.Mocks.Repositories
             return new Topic
             {
                 TopicId = topicId,
-                TopicName = "Gia đình",
+                TopicName = "Family",
                 Level = TopicLevel.Level1,
                 Status = TopicStatus.PendingApproval,
                 CreateBy = "STAFF-001",
@@ -109,7 +109,7 @@ namespace Tokki.UnitTest.Mocks.Repositories
             return new Topic
             {
                 TopicId = topicId,
-                TopicName = "Công việc",
+                TopicName = "Job",
                 Level = TopicLevel.Level3,
                 Status = TopicStatus.Draft,
                 CreateBy = "STAFF-001",
@@ -122,7 +122,7 @@ namespace Tokki.UnitTest.Mocks.Repositories
             return new Topic
             {
                 TopicId = topicId,
-                TopicName = "Topic đã xóa",
+                TopicName = "Topic has been deleted",
                 Level = TopicLevel.Level1,
                 Status = TopicStatus.Deleted,
                 CreateBy = "STAFF-001",

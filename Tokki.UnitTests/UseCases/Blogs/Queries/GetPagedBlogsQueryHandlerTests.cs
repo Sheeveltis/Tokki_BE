@@ -51,8 +51,8 @@ namespace Tokki.UnitTests.Features.Blogs.Queries
 
             var item = result.Data.Items.First();
 
-            item.Title.Should().Be("Blog Test Chuẩn");
-            item.CategoryName.Should().Be("Văn Hóa");
+            item.Title.Should().Be("Standard Test Blog");
+            item.CategoryName.Should().Be("Culture");
             item.Tags.Should().Contain("Tag1");
             item.Tags.Should().HaveCount(2);
             item.Status.Should().NotBeNullOrEmpty(); 
@@ -73,7 +73,7 @@ namespace Tokki.UnitTests.Features.Blogs.Queries
 
             var item = result.Data.Items.First();
 
-            item.CategoryName.Should().Be("Không xác định");
+            item.CategoryName.Should().Be("Not determined");
         }
 
         [Fact]

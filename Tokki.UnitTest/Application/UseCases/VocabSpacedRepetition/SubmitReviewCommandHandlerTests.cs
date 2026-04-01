@@ -54,7 +54,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabSpacedRepetition
             {
                 FunctionGroup = "Submit Review",
                 TestCaseID = "TC-SR-01",
-                Description = "Submit review với VocabularyId không tồn tại trong hệ thống",
+                Description = "Submit review with VocabularyId does not exist in the system",
                 ExpectedResult = "Return 400 VocabularyNotFound",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
@@ -105,8 +105,8 @@ namespace Tokki.UnitTest.Application.UseCases.VocabSpacedRepetition
             {
                 FunctionGroup = "Submit Review",
                 TestCaseID = "TC-SR-02",
-                Description = "Lần đầu review vocab: chưa có progress, trả lời đúng → tạo progress mới và tăng BoxLevel",
-                ExpectedResult = "Progress mới được tạo, IsMastered = false, return 200",
+                Description = "First time reviewing vocab: no progress yet, correct answer → create new progress and increase BoxLevel",
+                ExpectedResult = "New progress created, IsMastered = false, return 200",
                 StatusRound1 = "Passed",
                 TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -154,7 +154,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabSpacedRepetition
             {
                 FunctionGroup = "Submit Review",
                 TestCaseID = "TC-SR-03",
-                Description = "BoxLevel = Mastered, Streak = 1, trả lời đúng → Streak đạt 2 → IsMastered = true, IntervalDays = 90",
+                Description = "BoxLevel = Mastered, Streak = 1, correct answer → Streak reaches 2 → IsMastered = true, IntervalDays = 90",
                 ExpectedResult = "IsMastered = true, Streak = 2, IntervalDays = 90, return 200",
                 StatusRound1 = "Passed",
                 TestCaseType = "B",
@@ -162,7 +162,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabSpacedRepetition
                 AppliedConditions = new List<string>
                 {
                     "BoxLevel = Mastered",
-                    "Streak = 1 (boundary: 1 bước trước khi mastered)",
+                    "Streak = 1 (boundary: 1 step before mastered)",
                     "IsCorrect = true",
                     "Streak >= 2 → IsMastered = true"
                 }
@@ -203,17 +203,17 @@ namespace Tokki.UnitTest.Application.UseCases.VocabSpacedRepetition
             {
                 FunctionGroup = "Submit Review",
                 TestCaseID = "TC-SR-04",
-                Description = "BoxLevel = Learning (minimum), trả lời sai → BoxLevel giữ nguyên Learning, Streak reset = 0",
+                Description = "BoxLevel = Learning (minimum), wrong answer → BoxLevel remains Learning, Streak reset = 0",
                 ExpectedResult = "BoxLevel = Learning, Streak = 0, return 200",
                 StatusRound1 = "Passed",
                 TestCaseType = "B",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string>
                 {
-                    "BoxLevel = Learning (boundary: mức tối thiểu)",
+                    "BoxLevel = Learning (boundary: minimum level)",
                     "IsCorrect = false",
-                    "BoxLevel không thể giảm thêm",
-                    "Streak reset về 0"
+                    "BoxLevel cannot be reduced further",
+                    "Streak resets to 0"
                 }
             });
         }
@@ -259,7 +259,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabSpacedRepetition
             {
                 FunctionGroup = "Submit Review",
                 TestCaseID = "TC-SR-05",
-                Description = "Đang IsMastered = true, trả lời sai → IsMastered = false, BoxLevel giảm 1 bậc",
+                Description = "IsMastered = true, wrong answer → IsMastered = false, BoxLevel decreases by 1 level",
                 ExpectedResult = "IsMastered = false, BoxLevel = Advanced, Streak = 0, return 200",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
@@ -268,8 +268,8 @@ namespace Tokki.UnitTest.Application.UseCases.VocabSpacedRepetition
                 {
                     "IsMastered = true",
                     "IsCorrect = false",
-                    "IsMastered bị thu hồi → false",
-                    "BoxLevel giảm từ Mastered → Advanced"
+                    "IsMastered revoked → false",
+                    "BoxLevel decreases from Mastered → Advanced"
                 }
             });
         }
@@ -315,7 +315,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabSpacedRepetition
             {
                 FunctionGroup = "Submit Review",
                 TestCaseID = "TC-SR-06",
-                Description = "BoxLevel = Reviewing, trả lời đúng → BoxLevel tăng lên Mastering → IntervalDays = 7",
+                Description = "BoxLevel = Reviewing, correct answer → BoxLevel increases to Mastering → IntervalDays = 7",
                 ExpectedResult = "BoxLevel = Mastering, IntervalDays = 7, NextReviewAt ≈ now + 7 days",
                 StatusRound1 = "Passed",
                 TestCaseType = "N",
@@ -324,7 +324,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabSpacedRepetition
                 {
                     "BoxLevel = Reviewing",
                     "IsCorrect = true",
-                    "BoxLevel tăng lên Mastering",
+                    "BoxLevel increased to Mastering",
                     "IntervalDays = 7 theo GetIntervalByLevel"
                 }
             });

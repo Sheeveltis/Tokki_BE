@@ -87,7 +87,7 @@ namespace Tokki.UnitTests.Features.Accounts.Queries
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
-            result.Message.Should().Be("Lấy danh sách tài khoản (User/Vip) thành công");
+            result.Message.Should().Be("Retrieve account list (User/Vip) successfully");
 
             result.Data.Should().NotBeNull();
 

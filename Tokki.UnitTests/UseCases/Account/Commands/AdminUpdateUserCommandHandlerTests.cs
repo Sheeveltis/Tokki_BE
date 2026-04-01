@@ -180,7 +180,7 @@ namespace Tokki.UnitTests.UseCases.Accounts.Commands
             result.IsSuccess.Should().BeTrue();
 
             // Vì handler dùng Success(string) => chuỗi thường nằm ở Data (không phải Message)
-            result.Data.Should().Be($"Admin {command.AdminId} đã cập nhật người dùng {command.TargetUserId} thành công!");
+            result.Data.Should().Be($"Admin {command.AdminId} has successfully updated user {command.TargetUserId}!");
 
             _mockAccountRepo.Verify(x => x.GetByIdAsync(command.TargetUserId), Times.Once);
             _mockAccountRepo.Verify(x => x.IsPhoneNumberUsedByOtherUserAsync(command.PhoneNumber!, command.TargetUserId), Times.Once);

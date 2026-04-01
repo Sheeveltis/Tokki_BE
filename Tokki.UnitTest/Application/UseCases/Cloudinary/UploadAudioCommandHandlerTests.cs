@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Moq;
 using System;
@@ -16,16 +16,16 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary
 {
     public class UploadAudioCommandHandlerTests
     {
-        private UploadAudioCommandHandler CreateHandler(
-            Mock<ICloudinaryService>? cloudinary = null)
+        // ═══════════════════════════════════════════════════════════
+        // FACTORY
+        // ═══════════════════════════════════════════════════════════
+        private static UploadAudioCommandHandler CreateHandler(Mock<ICloudinaryService>? cloudinary = null)
         {
             return new UploadAudioCommandHandler(
                 (cloudinary ?? MockCloudinaryService.GetMock()).Object);
         }
 
-        private IFormFile CreateFakeAudioFile(
-            string fileName = "test.mp3",
-            long size = 1024)
+        private static IFormFile CreateFakeAudioFile(string fileName = "test.mp3", long size = 1024)
         {
             var bytes = new byte[size];
             var stream = new MemoryStream(bytes);
@@ -33,83 +33,193 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary
             mock.Setup(x => x.FileName).Returns(fileName);
             mock.Setup(x => x.Length).Returns(size);
             mock.Setup(x => x.ContentType).Returns("audio/mpeg");
-            mock.Setup(x => x.CopyToAsync(
-                        It.IsAny<Stream>(),
-                        It.IsAny<CancellationToken>()))
-                .Callback<Stream, CancellationToken>((s, ct) =>
-                    stream.CopyToAsync(s, ct))
+            mock.Setup(x => x.CopyToAsync(It.IsAny<Stream>(), It.IsAny<CancellationToken>()))
+                .Callback<Stream, CancellationToken>((s, ct) => stream.CopyToAsync(s, ct))
                 .Returns(Task.CompletedTask);
             return mock.Object;
         }
 
+        // ═══════════════════════════════════════════════════════════
+        // TC-CUA-01 | N | Valid audio file → 200 Success with URL
+        // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidAudioFile_ShouldReturnAudioUrl()
         {
-            var command = new UploadAudioCommand
-            {
-                AudioFile = CreateFakeAudioFile(),
-                FolderName = "tokki/audio"
-            };
+            // Arrange
+            var command = new UploadAudioCommand { AudioFile = CreateFakeAudioFile(), FolderName = "tokki/audio" };
 
-            var handler = CreateHandler();
-            var result = await handler.Handle(command, CancellationToken.None);
+            // Act
+            var result = await CreateHandler().Handle(command, CancellationToken.None);
 
+            // Assert
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().Be("https://cloudinary.com/audio/test.mp3");
 
             QACollector.LogTestCase("Cloudinary - Upload Audio", new TestCaseDetail
             {
-                FunctionGroup = "Upload Audio",
-                TestCaseID = "TC-AUD-UPL-01",
-                Description = "Upload audio hợp lệ → trả về URL từ Cloudinary",
-                ExpectedResult = "Return Success, Data = audio URL",
-                StatusRound1 = "Passed",
-                TestCaseType = "N",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "Valid audio file",
-                    "Cloudinary returns valid URL",
-                    "Return Success"
-                }
+                FunctionGroup     = "Upload Audio",
+                TestCaseID        = "TC-CUA-01",
+                Description       = "Upload valid MP3 audio file to specified folder",
+                ExpectedResult    = "Return 200 Success with Cloudinary audio URL",
+                StatusRound1      = "Passed",
+                TestCaseType      = "N",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "Valid IFormFile (MP3)", "Cloudinary returns valid URL" }
             });
         }
 
+        // ═══════════════════════════════════════════════════════════
+        // TC-CUA-02 | A | Cloudinary throws exception → Failure
+        // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_CloudinaryThrowsException_ShouldReturnFailure()
         {
-            var command = new UploadAudioCommand
-            {
-                AudioFile = CreateFakeAudioFile(),
-                FolderName = "tokki/audio"
-            };
-
+            // Arrange
             var mockCloudinary = MockCloudinaryService.GetMock();
-            mockCloudinary.Setup(x => x.UploadAudioAsync(
-                        It.IsAny<byte[]>(),
-                        It.IsAny<string>(),
-                        It.IsAny<string>()))
+            mockCloudinary.Setup(x => x.UploadAudioAsync(It.IsAny<byte[]>(), It.IsAny<string>(), It.IsAny<string>()))
                           .ThrowsAsync(new Exception("Cloudinary timeout"));
 
-            var handler = CreateHandler(cloudinary: mockCloudinary);
-            var result = await handler.Handle(command, CancellationToken.None);
+            var command = new UploadAudioCommand { AudioFile = CreateFakeAudioFile(), FolderName = "tokki/audio" };
 
+            // Act
+            var result = await CreateHandler(mockCloudinary).Handle(command, CancellationToken.None);
+
+            // Assert
             result.IsSuccess.Should().BeFalse();
 
             QACollector.LogTestCase("Cloudinary - Upload Audio", new TestCaseDetail
             {
-                FunctionGroup = "Upload Audio",
-                TestCaseID = "TC-AUD-UPL-02",
-                Description = "Cloudinary throw exception khi upload audio → return Failure",
-                ExpectedResult = "Return Failure với message lỗi",
-                StatusRound1 = "Passed",
-                TestCaseType = "A",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "UploadAudioAsync throws Exception",
-                    "Return Failure"
-                }
+                FunctionGroup     = "Upload Audio",
+                TestCaseID        = "TC-CUA-02",
+                Description       = "Cloudinary service throws a timeout exception during upload",
+                ExpectedResult    = "Exception is caught, return Failure",
+                StatusRound1      = "Passed",
+                TestCaseType      = "A",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "UploadAudioAsync throws Exception", "try/catch swallows and returns Failure" }
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // TC-CUA-03 | N | Returned URL contains expected domain
+        // ═══════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_ValidAudio_ReturnedUrlContainsCloudinaryDomain()
+        {
+            // Arrange
+            var command = new UploadAudioCommand { AudioFile = CreateFakeAudioFile(), FolderName = "tokki/audio" };
+
+            // Act
+            var result = await CreateHandler().Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().Contain("cloudinary.com");
+
+            QACollector.LogTestCase("Cloudinary - Upload Audio", new TestCaseDetail
+            {
+                FunctionGroup     = "Upload Audio",
+                TestCaseID        = "TC-CUA-03",
+                Description       = "Verify the returned URL references the Cloudinary CDN",
+                ExpectedResult    = "URL contains 'cloudinary.com'",
+                StatusRound1      = "Passed",
+                TestCaseType      = "N",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "URL domain validation" }
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // TC-CUA-04 | N | UploadAudioAsync is called exactly once
+        // ═══════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_ValidAudio_ShouldCallUploadAudioAsyncOnce()
+        {
+            // Arrange
+            var mockCloudinary = MockCloudinaryService.GetMock();
+            var command = new UploadAudioCommand { AudioFile = CreateFakeAudioFile(), FolderName = "tokki/audio" };
+
+            // Act
+            await CreateHandler(mockCloudinary).Handle(command, CancellationToken.None);
+
+            // Assert
+            mockCloudinary.Verify(
+                x => x.UploadAudioAsync(It.IsAny<byte[]>(), It.IsAny<string>(), "tokki/audio"),
+                Times.Once);
+
+            QACollector.LogTestCase("Cloudinary - Upload Audio", new TestCaseDetail
+            {
+                FunctionGroup     = "Upload Audio",
+                TestCaseID        = "TC-CUA-04",
+                Description       = "Verify handler calls the audio upload service exactly once with correct folder",
+                ExpectedResult    = "UploadAudioAsync called once with folder = 'tokki/audio'",
+                StatusRound1      = "Passed",
+                TestCaseType      = "N",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "Moq.Verify confirms single invocation", "Folder argument forwarded correctly" }
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // TC-CUA-05 | B | 0-byte audio file → reads empty bytes
+        // ═══════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_ZeroByteFile_ShouldStillCallService()
+        {
+            // Arrange
+            var mockCloudinary = MockCloudinaryService.GetMock();
+            var command = new UploadAudioCommand { AudioFile = CreateFakeAudioFile(size: 0), FolderName = "tokki/audio" };
+
+            // Act
+            var result = await CreateHandler(mockCloudinary).Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue(); // handler doesn't validate length, service mock succeeds
+            mockCloudinary.Verify(x => x.UploadAudioAsync(It.IsAny<byte[]>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+
+            QACollector.LogTestCase("Cloudinary - Upload Audio", new TestCaseDetail
+            {
+                FunctionGroup     = "Upload Audio",
+                TestCaseID        = "TC-CUA-05",
+                Description       = "Upload a 0-byte audio file (boundary case for empty stream)",
+                ExpectedResult    = "Handler passes empty bytes to service; mock returns Success",
+                StatusRound1      = "Passed",
+                TestCaseType      = "B",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "File size = 0 bytes", "No file-size guard in handler" }
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // TC-CUA-06 | N | Error message is included in failure result
+        // ═══════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_CloudinaryThrows_ErrorMessageForwardedInResult()
+        {
+            // Arrange
+            var mockCloudinary = MockCloudinaryService.GetMock();
+            mockCloudinary.Setup(x => x.UploadAudioAsync(It.IsAny<byte[]>(), It.IsAny<string>(), It.IsAny<string>()))
+                          .ThrowsAsync(new Exception("Storage quota exceeded"));
+
+            var command = new UploadAudioCommand { AudioFile = CreateFakeAudioFile(), FolderName = "tokki/audio" };
+
+            // Act
+            var result = await CreateHandler(mockCloudinary).Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Message.Should().Contain("Storage quota exceeded");
+
+            QACollector.LogTestCase("Cloudinary - Upload Audio", new TestCaseDetail
+            {
+                FunctionGroup     = "Upload Audio",
+                TestCaseID        = "TC-CUA-06",
+                Description       = "Exception message from Cloudinary is surfaced in the result message",
+                ExpectedResult    = "Result.Message contains the original exception text",
+                StatusRound1      = "Passed",
+                TestCaseType      = "N",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "Exception message forwarding", "Failure message contains exception detail" }
             });
         }
     }

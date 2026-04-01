@@ -53,7 +53,7 @@ namespace Tokki.UnitTests.Features.Topics.Queries
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
-            result.Message.Should().Be("Lấy danh sách chủ đề thành công");
+            result.Message.Should().Be("Get the topic list successfully");
 
             result.Data.Should().NotBeNull();
             result.Data.Items.Should().HaveCount(2);
@@ -101,7 +101,7 @@ namespace Tokki.UnitTests.Features.Topics.Queries
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
-            result.Message.Should().Be("Lấy danh sách chủ đề thành công");
+            result.Message.Should().Be("Get the topic list successfully");
 
             result.Data.Should().NotBeNull();
             result.Data.Items.Should().HaveCount(1);

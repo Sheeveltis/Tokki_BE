@@ -70,7 +70,7 @@ namespace Tokki.UnitTest.Mocks.Repositories
                 ExampleId = exampleId,
                 VocabularyId = vocabId,
                 Sentence = "안녕하세요, 만나서 반갑습니다.",
-                Translation = "Xin chào, rất vui được gặp bạn.",
+                Translation = "Hi, nice to meet you.",
                 CreateBy = "USER-001",
                 Status = status
             };
@@ -82,7 +82,7 @@ namespace Tokki.UnitTest.Mocks.Repositories
             {
                 ExampleId = exampleId,
                 VocabularyId = "VOCAB-001",
-                Sentence = "Câu đã xóa.",
+                Sentence = "Sentence deleted.",
                 Status = VocabularyExampleStatus.Deleted
             };
         }
@@ -96,7 +96,7 @@ namespace Tokki.UnitTest.Mocks.Repositories
                     ExampleId = "EX-001",
                     VocabularyId = vocabId,
                     Sentence = "안녕하세요.",
-                    Translation = "Xin chào.",
+                    Translation = "Hello.",
                     Status = VocabularyExampleStatus.Active
                 },
                 new VocabularyExample
@@ -104,7 +104,7 @@ namespace Tokki.UnitTest.Mocks.Repositories
                     ExampleId = "EX-002",
                     VocabularyId = vocabId,
                     Sentence = "감사합니다.",
-                    Translation = "Cảm ơn.",
+                    Translation = "Thank.",
                     Status = VocabularyExampleStatus.Active
                 }
             };

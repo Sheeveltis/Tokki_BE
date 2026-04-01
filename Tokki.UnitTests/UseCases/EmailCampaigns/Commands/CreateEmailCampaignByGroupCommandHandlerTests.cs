@@ -65,7 +65,7 @@ namespace Tokki.UnitTests.Features.EmailCampaigns.Commands
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
-            result.Message.Should().Be("Đã lên lịch gửi email thành công!");
+            result.Message.Should().Be("Email scheduled successfully!");
             result.Data.Should().Be("job-123");
 
             _mockRepo.Verify(x => x.AddAsync(It.IsAny<EmailJob>()), Times.Once);
@@ -228,7 +228,7 @@ namespace Tokki.UnitTests.Features.EmailCampaigns.Commands
 
             var result = _validator.TestValidate(cmd);
             result.ShouldHaveValidationErrorFor(x => x.ScheduledTime)
-                  .WithErrorMessage("Thời gian lên lịch gửi phải lớn hơn thời gian hiện tại (giờ Việt Nam).");
+                  .WithErrorMessage("The scheduled sending time must be greater than the current time (Vietnam time).");
         }
 
         [Fact]
@@ -244,7 +244,7 @@ namespace Tokki.UnitTests.Features.EmailCampaigns.Commands
 
             var result = _validator.TestValidate(cmd);
             result.ShouldHaveValidationErrorFor(x => x.SpecificEmails)
-                  .WithErrorMessage("Danh sách email chứa địa chỉ không hợp lệ");
+                  .WithErrorMessage("The email list contains invalid addresses");
         }
 
         [Fact]

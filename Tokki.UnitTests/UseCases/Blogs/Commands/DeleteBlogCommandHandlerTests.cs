@@ -37,7 +37,7 @@ namespace Tokki.UnitTests.Features.Blogs.Commands
         public async Task Handle_Should_ExecuteSoftDelete_When_BlogExists()
         {
             var command = new DeleteBlogCommand { Id = "blog-bi-xoa" };
-            var existingBlog = new Blog { Id = "blog-bi-xoa", Title = "Blog Cũ" };
+            var existingBlog = new Blog { Id = "blog-bi-xoa", Title = "Old Blog" };
 
             _mockRepo.Setup(x => x.GetByIdAsync(command.Id)).ReturnsAsync(existingBlog);
 

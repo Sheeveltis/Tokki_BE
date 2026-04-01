@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -37,7 +37,7 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
             {
                 FunctionGroup = "Delete Vip Package",
                 TestCaseID = "TC-VIP-DEL-01",
-                Description = "Xóa gói VIP với ID không tồn tại",
+                Description = "Delete VIP package with non-existing ID",
                 ExpectedResult = "Return Failure VipPackageNotFound",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
@@ -78,7 +78,7 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
             {
                 FunctionGroup = "Delete Vip Package",
                 TestCaseID = "TC-VIP-DEL-02",
-                Description = "Xóa gói VIP Active hợp lệ → IsActive = false (soft delete), return Success",
+                Description = "Delete a valid VIP Active package → IsActive = false (soft delete), return Success",
                 ExpectedResult = "Return Success, IsActive = false, UpdateAsync called once",
                 StatusRound1 = "Passed",
                 TestCaseType = "N",
@@ -113,15 +113,129 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
             {
                 FunctionGroup = "Delete Vip Package",
                 TestCaseID = "TC-VIP-DEL-03",
-                Description = "Xóa gói VIP đã IsActive = false → idempotent, vẫn return Success",
-                ExpectedResult = "Return Success, IsActive giữ = false",
+                Description = "Delete the VIP package with IsActive = false → idempotent, still return Success",
+                ExpectedResult = "Return Success, IsActive hold = false",
                 StatusRound1 = "Passed",
                 TestCaseType = "B",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string>
                 {
-                    "IsActive = false (boundary: đã inactive)",
+                    "IsActive = false (boundary: already inactive)",
                     "Idempotent → return Success"
+                }
+            });
+        }
+
+        // ── TC-04: GetByIdAsync được gọi đúng Id ────────────────────────
+        [Fact]
+        public async Task Handle_ValidId_ShouldCallGetByIdAsyncWithCorrectId()
+        {
+            // Arrange
+            var package = MockVipPackageRepository.GetSamplePackage("PKG-XYZ");
+            var mockRepo = MockVipPackageRepository.GetMock(returnedPackage: package);
+
+            var command = new DeleteVipPackageCommand { Id = "PKG-XYZ" };
+            var handler = CreateHandler(repo: mockRepo);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            mockRepo.Verify(x => x.GetByIdAsync("PKG-XYZ"), Times.Once);
+
+            QACollector.LogTestCase("VipPackage - Delete", new TestCaseDetail
+            {
+                FunctionGroup = "Delete Vip Package",
+                TestCaseID = "TC-VIP-DEL-04",
+                Description = "GetByIdAsync is invoked with the exact Id from the command",
+                ExpectedResult = "GetByIdAsync(\"PKG-XYZ\") called once",
+                StatusRound1 = "Passed",
+                TestCaseType = "N",
+                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string>
+                {
+                    "Command.Id = \"PKG-XYZ\"",
+                    "GetByIdAsync called with exactly that Id"
+                }
+            });
+        }
+
+        // ── TC-05: UpdateAsync nhận đúng package object ──────────────────
+        [Fact]
+        public async Task Handle_ValidPackage_ShouldPassCorrectObjectToUpdateAsync()
+        {
+            // Arrange
+            var package = MockVipPackageRepository.GetSamplePackage("PKG-001");
+            package.IsActive = true;
+
+            Tokki.Domain.Entities.VipPackage? passedToUpdate = null;
+            var mockRepo = MockVipPackageRepository.GetMock(returnedPackage: package);
+            mockRepo.Setup(x => x.UpdateAsync(It.IsAny<Tokki.Domain.Entities.VipPackage>()))
+                    .Callback<Tokki.Domain.Entities.VipPackage>(p => passedToUpdate = p)
+                    .Returns(Task.CompletedTask);
+
+            var command = new DeleteVipPackageCommand { Id = "PKG-001" };
+            var handler = CreateHandler(repo: mockRepo);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            passedToUpdate.Should().NotBeNull();
+            passedToUpdate!.Id.Should().Be("PKG-001");
+            passedToUpdate.IsActive.Should().BeFalse();
+
+            QACollector.LogTestCase("VipPackage - Delete", new TestCaseDetail
+            {
+                FunctionGroup = "Delete Vip Package",
+                TestCaseID = "TC-VIP-DEL-05",
+                Description = "UpdateAsync receives the same package object with IsActive=false",
+                ExpectedResult = "UpdateAsync called with package.Id=\"PKG-001\" and IsActive=false",
+                StatusRound1 = "Passed",
+                TestCaseType = "N",
+                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string>
+                {
+                    "Captured via Callback",
+                    "Package.Id = \"PKG-001\"",
+                    "Package.IsActive = false"
+                }
+            });
+        }
+
+        // ── TC-06: AddAsync không bao giờ được gọi khi xóa ──────────────
+        [Fact]
+        public async Task Handle_ValidPackage_ShouldNeverCallAddAsync()
+        {
+            // Arrange
+            var package = MockVipPackageRepository.GetSamplePackage();
+            var mockRepo = MockVipPackageRepository.GetMock(returnedPackage: package);
+
+            var command = new DeleteVipPackageCommand { Id = "PKG-001" };
+            var handler = CreateHandler(repo: mockRepo);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            mockRepo.Verify(x => x.AddAsync(It.IsAny<Tokki.Domain.Entities.VipPackage>()), Times.Never);
+
+            QACollector.LogTestCase("VipPackage - Delete", new TestCaseDetail
+            {
+                FunctionGroup = "Delete Vip Package",
+                TestCaseID = "TC-VIP-DEL-06",
+                Description = "Delete flow must never call AddAsync",
+                ExpectedResult = "IsSuccess=true, AddAsync Times.Never",
+                StatusRound1 = "Passed",
+                TestCaseType = "B",
+                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string>
+                {
+                    "Valid package found",
+                    "AddAsync never called (soft delete, not create)"
                 }
             });
         }

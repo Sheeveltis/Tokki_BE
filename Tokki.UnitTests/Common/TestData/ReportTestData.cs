@@ -13,7 +13,7 @@ namespace Tokki.UnitTests.Common.TestData
             return new CreateReportCommand
             {
                 UserId = "user-test-01",
-                Description = "Lỗi hiển thị hình ảnh",
+                Description = "Image display error",
                 ImageUrl = "https://img.com/err.png",
                 TargetUrl = "https://tokki.com/post/1"
             };
@@ -35,7 +35,7 @@ namespace Tokki.UnitTests.Common.TestData
             {
                 ReportId = reportId,
                 NewStatus = newStatus,
-                AdminReply = "Đã xử lý xong"
+                AdminReply = "Processed"
             };
         }
 

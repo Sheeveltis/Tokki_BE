@@ -1,15 +1,17 @@
-﻿using FluentAssertions;
-using Microsoft.Extensions.Logging;
+using FluentAssertions;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Tokki.Application.IRepositories;
+using Tokki.Application.IServices;
 using Tokki.Application.UseCases.Topics.Commands.CreateTopicByStaff;
+using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
-using Tokki.UnitTest.Mocks.Repositories;
-using Tokki.UnitTest.Mocks.Services;
 using Tokki.UnitTest.Utilities;
 using Xunit;
 
@@ -17,88 +19,112 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
 {
     public class CreateTopicByStaffCommandHandlerTests
     {
-        private CreateTopicByStaffCommandHandler CreateHandler(
-            Mock<ITopicRepository>? topicRepo = null,
-            bool unauthorized = false)
+        private static Mock<ITopicRepository> GetRepoMock(bool nameExists = false)
         {
-            return new CreateTopicByStaffCommandHandler(
-                (topicRepo ?? MockTopicRepository.GetMock()).Object,
-                MockIdGeneratorService.GetMock().Object,
-                unauthorized
-                    ? MockHttpContextAccessor.GetUnauthorizedMock().Object
-                    : MockHttpContextAccessor.GetMock("STAFF-001").Object,
-                new Mock<ILogger<CreateTopicByStaffCommandHandler>>().Object);
+            var m = new Mock<ITopicRepository>();
+            m.Setup(x => x.IsTopicNameExistsAsync(It.IsAny<string>(), It.IsAny<string?>())).ReturnsAsync(nameExists);
+            m.Setup(x => x.AddAsync(It.IsAny<Topic>())).Returns(Task.CompletedTask);
+            m.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+            return m;
         }
 
-        [Fact]
-        public async Task Handle_DuplicateTopicName_ShouldReturn409()
+        private static Mock<IIdGeneratorService> GetIdGenMock(string id = "TP-STAFF-001")
         {
-            var command = new CreateTopicByStaffCommand
-            {
-                TopicName = "Chào hỏi cơ bản",
-                Level = TopicLevel.Level1
-            };
+            var m = new Mock<IIdGeneratorService>();
+            m.Setup(x => x.GenerateCustom(It.IsAny<int>())).Returns(id);
+            return m;
+        }
 
-            var handler = CreateHandler(
-                topicRepo: MockTopicRepository.GetMock(isTopicNameExists: true));
+        private static Mock<IHttpContextAccessor> GetHttpContextMock(string? userId = "STAFF-01")
+        {
+            var m    = new Mock<IHttpContextAccessor>();
+            var ctx  = new Mock<HttpContext>();
+            var user = new ClaimsPrincipal(new ClaimsIdentity(
+                userId != null ? new[] { new Claim(ClaimTypes.NameIdentifier, userId) } : Array.Empty<Claim>()));
+            ctx.Setup(x => x.User).Returns(user);
+            m.Setup(x => x.HttpContext).Returns(ctx.Object);
+            return m;
+        }
 
-            var result = await handler.Handle(command, CancellationToken.None);
+        private static CreateTopicByStaffCommandHandler CreateHandler(
+            Mock<ITopicRepository>?      repo  = null,
+            Mock<IIdGeneratorService>?   idGen = null,
+            Mock<IHttpContextAccessor>?  http  = null)
+            => new CreateTopicByStaffCommandHandler(
+                (repo  ?? GetRepoMock()).Object,
+                (idGen ?? GetIdGenMock()).Object,
+                (http  ?? GetHttpContextMock()).Object,
+                NullLogger<CreateTopicByStaffCommandHandler>.Instance);
 
+        private static CreateTopicByStaffCommand MakeCmd(string name = "Korean Grammar") =>
+            new CreateTopicByStaffCommand { TopicName = name, Level = TopicLevel.Level1 };
+
+        // TC-TOPIC-CSTAFF-01 | A | No auth user → 401
+        [Fact]
+        public async Task Handle_NoAuthUser_ShouldReturn401()
+        {
+            var result = await CreateHandler(http: GetHttpContextMock(null)).Handle(MakeCmd(), CancellationToken.None);
+            result.IsSuccess.Should().BeFalse();
+            result.StatusCode.Should().Be(401);
+            QACollector.LogTestCase("Topic - Create By Staff", new TestCaseDetail { FunctionGroup = "CreateTopicByStaff", TestCaseID = "TC-TOPIC-CSTAFF-01", Description = "No auth user → 401", ExpectedResult = "IsSuccess=false, 401", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "No NameIdentifier claim" } });
+        }
+
+        // TC-TOPIC-CSTAFF-02 | A | Duplicate topic name → 409
+        [Fact]
+        public async Task Handle_DuplicateName_ShouldReturn409()
+        {
+            var result = await CreateHandler(repo: GetRepoMock(nameExists: true)).Handle(MakeCmd(), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(409);
-
-            QACollector.LogTestCase("Topic - Create By Staff", new TestCaseDetail
-            {
-                FunctionGroup = "Create Topic By Staff",
-                TestCaseID = "TC-TOPIC-STA-01",
-                Description = "Staff tạo topic với tên đã tồn tại",
-                ExpectedResult = "Return 409 TopicNameDuplicated",
-                StatusRound1 = "Passed",
-                TestCaseType = "A",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "TopicName duplicate",
-                    "Return 409"
-                }
-            });
+            QACollector.LogTestCase("Topic - Create By Staff", new TestCaseDetail { FunctionGroup = "CreateTopicByStaff", TestCaseID = "TC-TOPIC-CSTAFF-02", Description = "Duplicate name → 409", ExpectedResult = "IsSuccess=false, 409", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "IsTopicNameExistsAsync returns true" } });
         }
 
+        // TC-TOPIC-CSTAFF-03 | N | Happy path → 201 with TopicId
         [Fact]
-        public async Task Handle_ValidData_ShouldReturn201WithPendingApprovalStatus()
+        public async Task Handle_ValidRequest_ShouldReturn201WithTopicId()
         {
-            var command = new CreateTopicByStaffCommand
-            {
-                TopicName = "Topic Staff Mới",
-                Level = TopicLevel.Level3
-            };
-
-            var handler = CreateHandler(
-                topicRepo: MockTopicRepository.GetMock(isTopicNameExists: false));
-
-            var result = await handler.Handle(command, CancellationToken.None);
-
+            var result = await CreateHandler(idGen: GetIdGenMock("TP-STAFF-NEW")).Handle(MakeCmd(), CancellationToken.None);
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(201);
-            result.Message.Should().Contain("chờ phê duyệt");
+            result.Data.Should().Be("TP-STAFF-NEW");
+            QACollector.LogTestCase("Topic - Create By Staff", new TestCaseDetail { FunctionGroup = "CreateTopicByStaff", TestCaseID = "TC-TOPIC-CSTAFF-03", Description = "Valid request → 201, TopicId='TP-STAFF-NEW'", ExpectedResult = "IsSuccess=true, 201", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Auth OK, no duplicate" } });
+        }
 
-            QACollector.LogTestCase("Topic - Create By Staff", new TestCaseDetail
-            {
-                FunctionGroup = "Create Topic By Staff",
-                TestCaseID = "TC-TOPIC-STA-02",
-                Description = "Staff tạo topic hợp lệ → Status = PendingApproval, chờ duyệt",
-                ExpectedResult = "Return 201, message chứa 'chờ phê duyệt'",
-                StatusRound1 = "Passed",
-                TestCaseType = "N",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "Staff role",
-                    "No duplicate",
-                    "Status = PendingApproval",
-                    "Return 201"
-                }
-            });
+        // TC-TOPIC-CSTAFF-04 | N | Topic created with Status=PendingApproval
+        [Fact]
+        public async Task Handle_ValidRequest_TopicCreatedWithPendingApprovalStatus()
+        {
+            Topic? captured = null;
+            var repo = GetRepoMock();
+            repo.Setup(x => x.AddAsync(It.IsAny<Topic>())).Callback<Topic>(t => captured = t).Returns(Task.CompletedTask);
+            await CreateHandler(repo: repo).Handle(MakeCmd(), CancellationToken.None);
+            captured.Should().NotBeNull();
+            captured!.Status.Should().Be(TopicStatus.PendingApproval);
+            captured.TopicType.Should().Be(TopicType.VocabStudy);
+            QACollector.LogTestCase("Topic - Create By Staff", new TestCaseDetail { FunctionGroup = "CreateTopicByStaff", TestCaseID = "TC-TOPIC-CSTAFF-04", Description = "Topic has Status=PendingApproval (awaiting admin approval)", ExpectedResult = "Status=PendingApproval, TopicType=VocabStudy", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Staff topics require approval" } });
+        }
+
+        // TC-TOPIC-CSTAFF-05 | B | AddAsync and SaveChangesAsync called once
+        [Fact]
+        public async Task Handle_ValidRequest_AddAndSaveCalledOnce()
+        {
+            var repo = GetRepoMock();
+            await CreateHandler(repo: repo).Handle(MakeCmd(), CancellationToken.None);
+            repo.Verify(x => x.AddAsync(It.IsAny<Topic>()), Times.Once);
+            repo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+            QACollector.LogTestCase("Topic - Create By Staff", new TestCaseDetail { FunctionGroup = "CreateTopicByStaff", TestCaseID = "TC-TOPIC-CSTAFF-05", Description = "AddAsync and SaveChangesAsync each called once", ExpectedResult = "Both Times.Once", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Persist calls verified" } });
+        }
+
+        // TC-TOPIC-CSTAFF-06 | N | CreateBy set to current userId from HttpContext
+        [Fact]
+        public async Task Handle_ValidRequest_CreateBySetToCurrentUserId()
+        {
+            Topic? captured = null;
+            var repo = GetRepoMock();
+            repo.Setup(x => x.AddAsync(It.IsAny<Topic>())).Callback<Topic>(t => captured = t).Returns(Task.CompletedTask);
+            await CreateHandler(repo: repo, http: GetHttpContextMock("STAFF-XYZ")).Handle(MakeCmd(), CancellationToken.None);
+            captured!.CreateBy.Should().Be("STAFF-XYZ");
+            QACollector.LogTestCase("Topic - Create By Staff", new TestCaseDetail { FunctionGroup = "CreateTopicByStaff", TestCaseID = "TC-TOPIC-CSTAFF-06", Description = "CreateBy='STAFF-XYZ' from HttpContext", ExpectedResult = "CreateBy='STAFF-XYZ'", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "userId from claim mapped to CreateBy" } });
         }
     }
 }

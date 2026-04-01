@@ -11,10 +11,10 @@ namespace Tokki.UnitTests.Common.TestData
         {
             return new CreateVipPackageCommand
             {
-                Name = "Gói VIP Tháng",
+                Name = "Monthly VIP Package",
                 Price = 50000,
                 DurationDays = 30,
-                Description = "Gói cơ bản"
+                Description = "Basic package"
             };
         }
 
@@ -23,7 +23,7 @@ namespace Tokki.UnitTests.Common.TestData
             return new UpdateVipPackageCommand
             {
                 Id = id,
-                Name = "Gói VIP Updated",
+                Name = "VIP Package Updated",
                 Price = 60000,
                 IsActive = true
             };
@@ -34,11 +34,11 @@ namespace Tokki.UnitTests.Common.TestData
             return new VipPackage
             {
                 Id = id,
-                Name = "Gói VIP Chuẩn",
+                Name = "Standard VIP Package",
                 Price = 50000,
                 DurationDays = 30,
                 IsActive = isActive,
-                Description = "Mô tả gốc"
+                Description = "Original description"
             };
         }
     }

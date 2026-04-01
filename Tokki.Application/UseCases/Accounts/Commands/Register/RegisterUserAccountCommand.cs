@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Tokki.Application.Common.Models;
 using Tokki.Domain.Enums;
 
-namespace Tokki.Application.UseCases.Blogs.Commands.CreateBlog
+namespace Tokki.Application.UseCases.Accounts.Commands.Register
 {
     public class RegisterUserAccountCommand : IRequest<OperationResult<string>>
     {

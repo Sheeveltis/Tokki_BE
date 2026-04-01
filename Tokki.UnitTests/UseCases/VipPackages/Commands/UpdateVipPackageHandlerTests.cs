@@ -42,7 +42,7 @@ namespace Tokki.UnitTests.Features.VipPackages.Commands
 
             result.IsSuccess.Should().BeTrue();
 
-            package.Name.Should().Be("Gói VIP Updated");
+            package.Name.Should().Be("VIP Package Updated");
             package.Price.Should().Be(60000);
             package.IsActive.Should().BeTrue();
 

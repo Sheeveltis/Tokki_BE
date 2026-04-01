@@ -120,7 +120,7 @@ namespace Tokki.UnitTests.Features.FavoriteVocabulary.Commands
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
             result.Data.Should().BeTrue();
-            result.Message.Should().Be("Đã tồn tại trong danh sách yêu thích.");
+            result.Message.Should().Be("Already exists in favorites list.");
 
             _mockFavoriteRepo.Verify(x => x.AddAsync(It.IsAny<UserFavoriteVocabulary>(), It.IsAny<CancellationToken>()), Times.Never);
             _mockIdGenerator.Verify(x => x.GenerateCustom(It.IsAny<int>()), Times.Never);
@@ -161,7 +161,7 @@ namespace Tokki.UnitTests.Features.FavoriteVocabulary.Commands
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
             result.Data.Should().BeTrue();
-            result.Message.Should().Be("Thêm vào danh sách yêu thích thành công.");
+            result.Message.Should().Be("Added to favorites list successfully.");
 
             _mockIdGenerator.Verify(x => x.GenerateCustom(15), Times.Once);
             _mockFavoriteRepo.Verify(x => x.AddAsync(It.IsAny<UserFavoriteVocabulary>(), It.IsAny<CancellationToken>()), Times.Once);

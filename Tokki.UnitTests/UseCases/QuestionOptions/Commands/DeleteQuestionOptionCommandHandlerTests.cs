@@ -114,7 +114,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.QuestionOptions.Commands
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
             result.Data.Should().BeTrue();
-            result.Message.Should().Be("Xóa đáp án thành công.");
+            result.Message.Should().Be("Successfully deleted answer.");
 
             _mockQuestionOptionRepo.Verify(x => x.DeleteAsync(It.Is<QuestionOption>(o => o.OptionId == "opt-01")), Times.Once);
             _mockQuestionOptionRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);

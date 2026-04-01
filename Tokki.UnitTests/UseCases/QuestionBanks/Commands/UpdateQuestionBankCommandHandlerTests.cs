@@ -110,7 +110,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.Commands
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            result.Message.Should().Contain("QuestionTypeId sau patch không hợp lệ (rỗng)");
+            result.Message.Should().Contain("QuestionTypeId after patch is invalid (empty)");
         }
 
         [Fact]
@@ -177,7 +177,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.Commands
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            result.Message.Should().Be("Loại câu hỏi đang bị vô hiệu hóa.");
+            result.Message.Should().Be("Question types are disabled.");
         }
 
         [Fact]
@@ -215,7 +215,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.Commands
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            result.Message.Should().Contain("phải gửi options: []");
+            result.Message.Should().Contain("must send options: []");
         }
 
         [Fact]

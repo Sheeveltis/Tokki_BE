@@ -73,7 +73,7 @@ namespace Tokki.UnitTests.Common.TestData
             {
                 VocabularyId = vocabularyId ?? "vocab-01",
                 Text = "hello",
-                Definition = "xin chào",
+                Definition = "Hello",
                 Pronunciation = "həˈləʊ",
                 ImgURL = "img",
                 AudioURL = "audio",

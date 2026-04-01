@@ -48,7 +48,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             {
                 FunctionGroup = "Toggle Like Wordle",
                 TestCaseID = "TC-WDL-LKE-01",
-                Description = "Like/Unlike với SubmissionId không tồn tại",
+                Description = "Like/Unlike with SubmissionId does not exist",
                 ExpectedResult = "Return 404 Failure",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
@@ -111,7 +111,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             {
                 FunctionGroup = "Toggle Like Wordle",
                 TestCaseID = "TC-WDL-LKE-02",
-                Description = "User đã like → unlike, LikeCount giảm 1",
+                Description = "User liked → unlike, LikeCount decreased by 1",
                 ExpectedResult = "Return Success, LikeCount = 4, RemoveLike called once",
                 StatusRound1 = "Passed",
                 TestCaseType = "N",
@@ -168,7 +168,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             {
                 FunctionGroup = "Toggle Like Wordle",
                 TestCaseID = "TC-WDL-LKE-03",
-                Description = "User chưa like → add like, LikeCount tăng 1",
+                Description = "User has not liked yet → add like, LikeCount increases by 1",
                 ExpectedResult = "Return Success, LikeCount = 4, AddLike called once",
                 StatusRound1 = "Passed",
                 TestCaseType = "N",

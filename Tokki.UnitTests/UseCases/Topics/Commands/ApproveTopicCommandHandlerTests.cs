@@ -79,7 +79,7 @@ namespace Tokki.UnitTests.Features.Topics.Commands
 
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
-            result.Message.Should().Contain("đã được duyệt");
+            result.Message.Should().Contain("has been approved");
         }
 
         [Fact]

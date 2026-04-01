@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -15,21 +15,19 @@ namespace Tokki.UnitTest.Application.UseCases.Comments
 {
     public class CreateCommentCommandHandlerTests
     {
-        private CreateCommentCommandHandler CreateHandler(
+        // ═══════════════════════════════════════════════════════════
+        // FACTORY
+        // ═══════════════════════════════════════════════════════════
+        private static CreateCommentCommandHandler CreateHandler(
             Mock<ICommentRepository>? commentRepo = null,
-            Mock<IBlogRepository>? blogRepo = null)
+            Mock<IBlogRepository>?   blogRepo     = null)
         {
             var mockComment = commentRepo ?? new Mock<ICommentRepository>();
-            var mockBlog = blogRepo ?? new Mock<IBlogRepository>();
+            var mockBlog    = blogRepo    ?? new Mock<IBlogRepository>();
 
-            // Default: blog exists
-            mockBlog.Setup(x => x.ExistsAsync(It.IsAny<string>()))
-                    .ReturnsAsync(true);
-
-            mockComment.Setup(x => x.AddAsync(It.IsAny<Comment>()))
-                       .Returns(Task.CompletedTask);
-            mockComment.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
-                       .Returns(Task.CompletedTask);
+            mockBlog.Setup(x => x.ExistsAsync(It.IsAny<string>())).ReturnsAsync(true);
+            mockComment.Setup(x => x.AddAsync(It.IsAny<Comment>())).Returns(Task.CompletedTask);
+            mockComment.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
 
             return new CreateCommentCommandHandler(
                 mockComment.Object,
@@ -37,127 +35,209 @@ namespace Tokki.UnitTest.Application.UseCases.Comments
                 mockBlog.Object);
         }
 
+        // ═══════════════════════════════════════════════════════════
+        // TC-CMC-01 | A | Blog not found → 404
+        // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_BlogNotFound_ShouldReturn404()
         {
-            var command = new CreateCommentCommand
-            {
-                BlogId = "BLOG-INVALID",
-                Content = "Bình luận test",
-                UserId = "USER-001"
-            };
-
+            // Arrange
             var mockBlog = new Mock<IBlogRepository>();
-            mockBlog.Setup(x => x.ExistsAsync(It.IsAny<string>()))
-                    .ReturnsAsync(false); // blog không tồn tại
+            mockBlog.Setup(x => x.ExistsAsync(It.IsAny<string>())).ReturnsAsync(false);
 
-            var handler = CreateHandler(blogRepo: mockBlog);
-            var result = await handler.Handle(command, CancellationToken.None);
+            var command = new CreateCommentCommand { BlogId = "BLOG-INVALID", Content = "Test", UserId = "U-001" };
 
+            // Act
+            var result = await CreateHandler(blogRepo: mockBlog).Handle(command, CancellationToken.None);
+
+            // Assert
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(404);
 
             QACollector.LogTestCase("Comment - Create", new TestCaseDetail
             {
-                FunctionGroup = "Create Comment",
-                TestCaseID = "TC-CMT-CRE-01",
-                Description = "Tạo comment với BlogId không tồn tại",
-                ExpectedResult = "Return 404 BlogNotFound",
-                StatusRound1 = "Passed",
-                TestCaseType = "A",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "Invalid BlogId",
-                    "Blog không tồn tại",
-                    "Return 404"
-                }
+                FunctionGroup     = "Create Comment",
+                TestCaseID        = "TC-CMC-01",
+                Description       = "Create comment with BlogId that does not exist",
+                ExpectedResult    = "Return 404 BlogNotFound",
+                StatusRound1      = "Passed",
+                TestCaseType      = "A",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "ExistsAsync returns false", "Return 404" }
             });
         }
 
+        // ═══════════════════════════════════════════════════════════
+        // TC-CMC-02 | A | ParentComment not found → 404
+        // ═══════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_ParentCommentNotFound_ShouldReturn404()
+        {
+            // Arrange
+            var mockComment = new Mock<ICommentRepository>();
+            mockComment.Setup(x => x.GetByIdAsync("CMT-GHOST")).ReturnsAsync((Comment?)null);
+            mockComment.Setup(x => x.AddAsync(It.IsAny<Comment>())).Returns(Task.CompletedTask);
+            mockComment.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+
+            var command = new CreateCommentCommand
+            {
+                BlogId   = "BLOG-001",
+                Content  = "Reply",
+                UserId   = "U-001",
+                ParentId = "CMT-GHOST"
+            };
+
+            // Act
+            var result = await CreateHandler(commentRepo: mockComment).Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.StatusCode.Should().Be(404);
+
+            QACollector.LogTestCase("Comment - Create", new TestCaseDetail
+            {
+                FunctionGroup     = "Create Comment",
+                TestCaseID        = "TC-CMC-02",
+                Description       = "Reply to a ParentId that does not exist in the repository",
+                ExpectedResult    = "Return 404 CommentNotFound",
+                StatusRound1      = "Passed",
+                TestCaseType      = "A",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "ParentId specified", "GetByIdAsync returns null", "Return 404" }
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // TC-CMC-03 | N | Valid comment → 201 Created
+        // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidComment_ShouldReturn201()
         {
-            var command = new CreateCommentCommand
-            {
-                BlogId = "BLOG-001",
-                Content = "Bình luận hay lắm!",
-                UserId = "USER-001"
-            };
+            // Arrange
+            var command = new CreateCommentCommand { BlogId = "BLOG-001", Content = "Great post!", UserId = "U-001" };
 
-            var handler = CreateHandler();
-            var result = await handler.Handle(command, CancellationToken.None);
+            // Act
+            var result = await CreateHandler().Handle(command, CancellationToken.None);
 
+            // Assert
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(201);
-            result.Data.Content.Should().Be("Bình luận hay lắm!");
+            result.Data.Content.Should().Be("Great post!");
 
             QACollector.LogTestCase("Comment - Create", new TestCaseDetail
             {
-                FunctionGroup = "Create Comment",
-                TestCaseID = "TC-CMT-CRE-02",
-                Description = "Tạo comment hợp lệ → return 201",
-                ExpectedResult = "Return 201, Data.Content = content",
-                StatusRound1 = "Passed",
-                TestCaseType = "N",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "Valid BlogId",
-                    "Valid Content",
-                    "Return 201"
-                }
+                FunctionGroup     = "Create Comment",
+                TestCaseID        = "TC-CMC-03",
+                Description       = "Create a top-level comment on a valid blog",
+                ExpectedResult    = "Return 201 Created with populated CommentDTO",
+                StatusRound1      = "Passed",
+                TestCaseType      = "N",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "Valid BlogId", "No ParentId", "Return 201" }
             });
         }
 
+        // ═══════════════════════════════════════════════════════════
+        // TC-CMC-04 | N | Reply to nested comment flattens to top-level
+        // ═══════════════════════════════════════════════════════════
         [Fact]
-        public async Task Handle_ReplyToComment_ParentIsNested_ShouldFlattenToTopLevel()
+        public async Task Handle_ReplyToNestedComment_ShouldFlattenParentId()
         {
-            // ParentId của parent có giá trị → flatten lên top-level
+            // Arrange
+            var parentComment = new Comment { CommentId = "CMT-002", ParentId = "CMT-001" };
+
+            var mockComment = new Mock<ICommentRepository>();
+            mockComment.Setup(x => x.GetByIdAsync("CMT-002")).ReturnsAsync(parentComment);
+            mockComment.Setup(x => x.AddAsync(It.IsAny<Comment>())).Returns(Task.CompletedTask);
+            mockComment.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+
             var command = new CreateCommentCommand
             {
-                BlogId = "BLOG-001",
-                Content = "Reply nested",
-                UserId = "USER-001",
+                BlogId   = "BLOG-001",
+                Content  = "Reply to reply",
+                UserId   = "U-001",
                 ParentId = "CMT-002"
             };
 
-            var parentComment = new Comment
-            {
-                CommentId = "CMT-002",
-                ParentId = "CMT-001" // nested → flatten lên CMT-001
-            };
+            // Act
+            var result = await CreateHandler(commentRepo: mockComment).Handle(command, CancellationToken.None);
 
-            var mockComment = new Mock<ICommentRepository>();
-            mockComment.Setup(x => x.GetByIdAsync("CMT-002"))
-                       .ReturnsAsync(parentComment);
-            mockComment.Setup(x => x.AddAsync(It.IsAny<Comment>()))
-                       .Returns(Task.CompletedTask);
-            mockComment.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
-                       .Returns(Task.CompletedTask);
-
-            var handler = CreateHandler(commentRepo: mockComment);
-            var result = await handler.Handle(command, CancellationToken.None);
-
+            // Assert
             result.IsSuccess.Should().BeTrue();
-            // ParentId nên được flatten về CMT-001
-            command.ParentId.Should().Be("CMT-001");
+            command.ParentId.Should().Be("CMT-001"); // flattened
 
             QACollector.LogTestCase("Comment - Create", new TestCaseDetail
             {
-                FunctionGroup = "Create Comment",
-                TestCaseID = "TC-CMT-CRE-03",
-                Description = "Reply vào comment đã là nested → ParentId tự động flatten về top-level",
-                ExpectedResult = "ParentId = CMT-001 (top-level), return 201",
-                StatusRound1 = "Passed",
-                TestCaseType = "N",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "ParentComment.ParentId != null (nested)",
-                    "Flatten ParentId lên top-level",
-                    "Return 201"
-                }
+                FunctionGroup     = "Create Comment",
+                TestCaseID        = "TC-CMC-04",
+                Description       = "Reply to a nested comment — ParentId should be flattened to the top-level parent",
+                ExpectedResult    = "Command.ParentId = CMT-001 (top-level), return 201",
+                StatusRound1      = "Passed",
+                TestCaseType      = "N",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "Parent has non-null ParentId", "Flatten to parent.ParentId" }
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // TC-CMC-05 | A | Repository throws exception → 500
+        // ═══════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_RepositoryThrows_ShouldReturn500()
+        {
+            // Arrange
+            var mockComment = new Mock<ICommentRepository>();
+            mockComment.Setup(x => x.AddAsync(It.IsAny<Comment>())).ThrowsAsync(new Exception("DB Error"));
+            mockComment.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+
+            var command = new CreateCommentCommand { BlogId = "BLOG-001", Content = "Comment", UserId = "U-001" };
+
+            // Act
+            var result = await CreateHandler(commentRepo: mockComment).Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.StatusCode.Should().Be(500);
+
+            QACollector.LogTestCase("Comment - Create", new TestCaseDetail
+            {
+                FunctionGroup     = "Create Comment",
+                TestCaseID        = "TC-CMC-05",
+                Description       = "AddAsync throws exception during persistence",
+                ExpectedResult    = "Return 500 ServerError",
+                StatusRound1      = "Passed",
+                TestCaseType      = "A",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "AddAsync throws Exception", "try/catch returns 500" }
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // TC-CMC-06 | N | DTO UserId matches command UserId
+        // ═══════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_ValidComment_DtoUserIdMatchesCommand()
+        {
+            // Arrange
+            var command = new CreateCommentCommand { BlogId = "BLOG-001", Content = "Hello", UserId = "U-XYZ" };
+
+            // Act
+            var result = await CreateHandler().Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Data.UserId.Should().Be("U-XYZ");
+
+            QACollector.LogTestCase("Comment - Create", new TestCaseDetail
+            {
+                FunctionGroup     = "Create Comment",
+                TestCaseID        = "TC-CMC-06",
+                Description       = "Verify the returned DTO carries the same UserId as the command",
+                ExpectedResult    = "Data.UserId = 'U-XYZ'",
+                StatusRound1      = "Passed",
+                TestCaseType      = "N",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "DTO projection checks", "UserId field forwarded correctly" }
             });
         }
     }

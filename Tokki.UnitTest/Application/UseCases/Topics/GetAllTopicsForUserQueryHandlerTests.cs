@@ -1,15 +1,16 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
+using Tokki.Application.UseCases.Topics.DTOs;
 using Tokki.Application.UseCases.Topics.Queries;
 using Tokki.Application.UseCases.Topics.Queries.GetTopicForUser;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
-using Tokki.UnitTest.Mocks.Repositories;
 using Tokki.UnitTest.Utilities;
 using Xunit;
 
@@ -17,171 +18,106 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
 {
     public class GetAllTopicsForUserQueryHandlerTests
     {
-        private Mock<IUserTopicProgressRepository> _mockProgressRepo = new Mock<IUserTopicProgressRepository>();
-
-        private GetAllTopicsForUserQueryHandler CreateHandler(
-            Mock<ITopicRepository>? topicRepo = null)
+        private static Mock<ITopicRepository> GetTopicMock(
+            List<Topic>? items = null, int total = 0, int vocabCount = 5, int learnedCount = 0)
         {
-            return new GetAllTopicsForUserQueryHandler(
-                (topicRepo ?? MockTopicRepository.GetMock()).Object,
-                _mockProgressRepo.Object);
+            var m = new Mock<ITopicRepository>();
+            m.Setup(x => x.GetVocabTopicsPagedForUserAsync(
+                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<TopicLevel?>()))
+             .ReturnsAsync((items ?? new List<Topic>(), total));
+            m.Setup(x => x.CountVocabulariesInTopicAsync(It.IsAny<string>())).ReturnsAsync(vocabCount);
+            m.Setup(x => x.CountLearnedVocabulariesAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(learnedCount);
+            return m;
         }
 
-        [Fact]
-        public async Task Handle_NoTopics_ShouldReturnEmptyPagedResult()
+        private static Mock<IUserTopicProgressRepository> GetProgressMock()
+            => new Mock<IUserTopicProgressRepository>();
+
+        private static GetAllTopicsForUserQueryHandler CreateHandler(
+            Mock<ITopicRepository>?              topicRepo    = null,
+            Mock<IUserTopicProgressRepository>?  progressRepo = null)
+            => new GetAllTopicsForUserQueryHandler(
+                (topicRepo    ?? GetTopicMock()).Object,
+                (progressRepo ?? GetProgressMock()).Object);
+
+        private static List<Topic> SampleTopics(int count = 2)
         {
-            var query = new GetAllTopicsForUserQuery
-            {
-                UserId = "USER-001",
-                PageNumber = 1,
-                PageSize = 10
-            };
+            var list = new List<Topic>();
+            for (int i = 1; i <= count; i++)
+                list.Add(new Topic { TopicId = $"T-{i:000}", TopicName = $"Topic {i}", Level = TopicLevel.Level1, Status = TopicStatus.Active });
+            return list;
+        }
 
-            var mockTopicRepo = MockTopicRepository.GetMock();
-            mockTopicRepo.Setup(x => x.GetVocabTopicsPagedForUserAsync(
-                        It.IsAny<int>(),
-                        It.IsAny<int>(),
-                        It.IsAny<string?>(),
-                        It.IsAny<TopicLevel?>()))
-                         .ReturnsAsync((new List<Topic>(), 0));
+        private static GetAllTopicsForUserQuery MakeQuery(string userId = "U-001", int page = 1, int size = 10) =>
+            new GetAllTopicsForUserQuery { UserId = userId, PageNumber = page, PageSize = size };
 
-            var handler = CreateHandler(topicRepo: mockTopicRepo);
-            var result = await handler.Handle(query, CancellationToken.None);
-
+        // TC-TOPIC-GUSER-01 | N | Happy path: 2 topics → 200, Items.Count=2
+        [Fact]
+        public async Task Handle_TwoTopics_ShouldReturn200WithCount2()
+        {
+            var repo   = GetTopicMock(SampleTopics(2), total: 2);
+            var result = await CreateHandler(repo).Handle(MakeQuery(), CancellationToken.None);
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
-            result.Data.Items.Should().BeEmpty();
-
-            QACollector.LogTestCase("Topic - Get All For User", new TestCaseDetail
-            {
-                FunctionGroup = "Get All Topics For User",
-                TestCaseID = "TC-TOPIC-GUS-01",
-                Description = "Không có topic nào → trả về empty paged result",
-                ExpectedResult = "Return 200, Items = empty",
-                StatusRound1 = "Passed",
-                TestCaseType = "N",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "No topics available",
-                    "Return 200 empty"
-                }
-            });
+            result.Data!.Items.Should().HaveCount(2);
+            result.Data.TotalCount.Should().Be(2);
+            QACollector.LogTestCase("Topic - Get For User", new TestCaseDetail { FunctionGroup = "GetAllTopicsForUser", TestCaseID = "TC-TOPIC-GUSER-01", Description = "2 topics → 200, Items.Count=2, TotalCount=2", ExpectedResult = "IsSuccess=true, 200", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetVocabTopicsPagedForUserAsync returns 2" } });
         }
 
+        // TC-TOPIC-GUSER-02 | N | Progress 5/10 → Progress=50, IsLearned=false
         [Fact]
-        public async Task Handle_UserWithProgress_ShouldReturnCorrectProgressPercent()
+        public async Task Handle_5Of10Learned_ProgressIs50AndNotLearned()
         {
-            var query = new GetAllTopicsForUserQuery
-            {
-                UserId = "USER-001",
-                PageNumber = 1,
-                PageSize = 10
-            };
-
-            var topics = new List<Topic>
-            {
-                MockTopicRepository.GetSampleTopic("TOPIC-001")
-            };
-
-            var mockTopicRepo = MockTopicRepository.GetMock();
-            mockTopicRepo.Setup(x => x.GetVocabTopicsPagedForUserAsync(
-                        It.IsAny<int>(),
-                        It.IsAny<int>(),
-                        It.IsAny<string?>(),
-                        It.IsAny<TopicLevel?>()))
-                         .ReturnsAsync((topics, 1));
-
-            // 10 vocab, user học 6 → 60%
-            mockTopicRepo.Setup(x => x.CountVocabulariesInTopicAsync("TOPIC-001"))
-                         .ReturnsAsync(10);
-
-            mockTopicRepo.Setup(x => x.CountLearnedVocabulariesAsync("USER-001", "TOPIC-001"))
-                         .ReturnsAsync(6);
-
-            var handler = CreateHandler(topicRepo: mockTopicRepo);
-            var result = await handler.Handle(query, CancellationToken.None);
-
-            result.IsSuccess.Should().BeTrue();
-            result.StatusCode.Should().Be(200);
-            result.Data.Items.Should().HaveCount(1);
-            result.Data.Items[0].Progress.Should().Be(60);
-            result.Data.Items[0].IsLearned.Should().BeFalse();
-
-            QACollector.LogTestCase("Topic - Get All For User", new TestCaseDetail
-            {
-                FunctionGroup = "Get All Topics For User",
-                TestCaseID = "TC-TOPIC-GUS-02",
-                Description = "User học 6/10 vocab → Progress = 60%, IsLearned = false",
-                ExpectedResult = "Return 200, Progress = 60, IsLearned = false",
-                StatusRound1 = "Passed",
-                TestCaseType = "N",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "TotalVocab = 10",
-                    "LearnedCount = 6",
-                    "Progress = 60%",
-                    "IsLearned = false",
-                    "Return 200"
-                }
-            });
+            var repo   = GetTopicMock(SampleTopics(1), total: 1, vocabCount: 10, learnedCount: 5);
+            var result = await CreateHandler(repo).Handle(MakeQuery(), CancellationToken.None);
+            var dto    = result.Data!.Items[0];
+            dto.Progress.Should().Be(50);
+            dto.IsLearned.Should().BeFalse();
+            QACollector.LogTestCase("Topic - Get For User", new TestCaseDetail { FunctionGroup = "GetAllTopicsForUser", TestCaseID = "TC-TOPIC-GUSER-02", Description = "5/10 learned → Progress=50, IsLearned=false", ExpectedResult = "Progress=50, IsLearned=false", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "learnedCount/totalVocab=50%" } });
         }
 
+        // TC-TOPIC-GUSER-03 | N | All 10/10 learned → Progress=100, IsLearned=true
         [Fact]
-        public async Task Handle_UserCompletedTopic_ShouldReturnIsLearnedTrue()
+        public async Task Handle_AllLearned_ProgressIs100AndIsLearnedTrue()
         {
-            var query = new GetAllTopicsForUserQuery
-            {
-                UserId = "USER-001",
-                PageNumber = 1,
-                PageSize = 10
-            };
+            var repo   = GetTopicMock(SampleTopics(1), total: 1, vocabCount: 10, learnedCount: 10);
+            var result = await CreateHandler(repo).Handle(MakeQuery(), CancellationToken.None);
+            var dto    = result.Data!.Items[0];
+            dto.Progress.Should().Be(100);
+            dto.IsLearned.Should().BeTrue();
+            QACollector.LogTestCase("Topic - Get For User", new TestCaseDetail { FunctionGroup = "GetAllTopicsForUser", TestCaseID = "TC-TOPIC-GUSER-03", Description = "10/10 learned → Progress=100, IsLearned=true", ExpectedResult = "Progress=100, IsLearned=true", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "learnedCount>=totalVocab" } });
+        }
 
-            var topics = new List<Topic>
-            {
-                MockTopicRepository.GetSampleTopic("TOPIC-001")
-            };
-
-            var mockTopicRepo = MockTopicRepository.GetMock();
-            mockTopicRepo.Setup(x => x.GetVocabTopicsPagedForUserAsync(
-                        It.IsAny<int>(),
-                        It.IsAny<int>(),
-                        It.IsAny<string?>(),
-                        It.IsAny<TopicLevel?>()))
-                         .ReturnsAsync((topics, 1));
-
-            // Học hết 10/10 → 100%
-            mockTopicRepo.Setup(x => x.CountVocabulariesInTopicAsync("TOPIC-001"))
-                         .ReturnsAsync(10);
-
-            mockTopicRepo.Setup(x => x.CountLearnedVocabulariesAsync("USER-001", "TOPIC-001"))
-                         .ReturnsAsync(10);
-
-            var handler = CreateHandler(topicRepo: mockTopicRepo);
-            var result = await handler.Handle(query, CancellationToken.None);
-
+        // TC-TOPIC-GUSER-04 | N | Empty list → 200 with empty Items
+        [Fact]
+        public async Task Handle_NoTopics_ShouldReturn200WithEmptyItems()
+        {
+            var result = await CreateHandler(GetTopicMock(new List<Topic>(), total: 0)).Handle(MakeQuery(), CancellationToken.None);
             result.IsSuccess.Should().BeTrue();
-            result.Data.Items[0].Progress.Should().Be(100);
-            result.Data.Items[0].IsLearned.Should().BeTrue();
+            result.Data!.Items.Should().BeEmpty();
+            QACollector.LogTestCase("Topic - Get For User", new TestCaseDetail { FunctionGroup = "GetAllTopicsForUser", TestCaseID = "TC-TOPIC-GUSER-04", Description = "No topics → 200, empty Items", ExpectedResult = "IsSuccess=true, Items=[]", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "No active topics for user" } });
+        }
 
-            QACollector.LogTestCase("Topic - Get All For User", new TestCaseDetail
-            {
-                FunctionGroup = "Get All Topics For User",
-                TestCaseID = "TC-TOPIC-GUS-03",
-                Description = "User học hết 10/10 vocab → Progress = 100%, IsLearned = true",
-                ExpectedResult = "Return 200, Progress = 100, IsLearned = true",
-                StatusRound1 = "Passed",
-                TestCaseType = "B",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "TotalVocab = 10",
-                    "LearnedCount = 10 (boundary: học hết)",
-                    "Progress = 100%",
-                    "IsLearned = true"
-                }
-            });
+        // TC-TOPIC-GUSER-05 | N | Paging metadata correct
+        [Fact]
+        public async Task Handle_Page2Size5Total20_PagingMetadataCorrect()
+        {
+            var repo   = GetTopicMock(SampleTopics(2), total: 20);
+            var result = await CreateHandler(repo).Handle(MakeQuery(page: 2, size: 5), CancellationToken.None);
+            result.Data!.PageNumber.Should().Be(2);
+            result.Data.PageSize.Should().Be(5);
+            result.Data.TotalCount.Should().Be(20);
+            QACollector.LogTestCase("Topic - Get For User", new TestCaseDetail { FunctionGroup = "GetAllTopicsForUser", TestCaseID = "TC-TOPIC-GUSER-05", Description = "Page=2, Size=5, Total=20 paging metadata correct", ExpectedResult = "Metadata correct", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Paging values in PagedResult" } });
+        }
+
+        // TC-TOPIC-GUSER-06 | B | GetVocabTopicsPagedForUserAsync called with correct params
+        [Fact]
+        public async Task Handle_WithParams_RepoCalledWithCorrectParams()
+        {
+            var repo = GetTopicMock();
+            await CreateHandler(repo).Handle(new GetAllTopicsForUserQuery { UserId = "U-001", PageNumber = 3, PageSize = 8, Level = TopicLevel.Level3 }, CancellationToken.None);
+            repo.Verify(x => x.GetVocabTopicsPagedForUserAsync(3, 8, null, TopicLevel.Level3), Times.Once);
+            QACollector.LogTestCase("Topic - Get For User", new TestCaseDetail { FunctionGroup = "GetAllTopicsForUser", TestCaseID = "TC-TOPIC-GUSER-06", Description = "RepoAsync called with Page=3, Size=8, Level=Level3", ExpectedResult = "Times.Once with correct params", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "All query params forwarded" } });
         }
     }
 }

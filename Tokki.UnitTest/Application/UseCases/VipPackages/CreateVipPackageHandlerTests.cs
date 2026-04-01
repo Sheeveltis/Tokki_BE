@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -53,7 +53,7 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
             {
                 FunctionGroup = "Create Vip Package",
                 TestCaseID = "TC-VIP-CRE-01",
-                Description = "Tạo gói VIP với Price âm (-1)",
+                Description = "Create VIP package with negative price (-1)",
                 ExpectedResult = "Return Failure VipPackageInvalidPrice",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
@@ -85,7 +85,7 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
             {
                 FunctionGroup = "Create Vip Package",
                 TestCaseID = "TC-VIP-CRE-02",
-                Description = "Tạo gói VIP với DurationDays = 0 (boundary: tối thiểu không hợp lệ)",
+                Description = "Create a VIP package with DurationDays = 0 (boundary: invalid minimum)",
                 ExpectedResult = "Return Failure VipPackageInvalidDuration",
                 StatusRound1 = "Passed",
                 TestCaseType = "B",
@@ -108,7 +108,7 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
                 PackageType = "Monthly",
                 Price = 99000,
                 DurationDays = 30,
-                Description = "Gói cơ bản"
+                Description = "Basic package"
             };
 
             // Capture package được AddAsync nhận vào
@@ -142,17 +142,144 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
             {
                 FunctionGroup = "Create Vip Package",
                 TestCaseID = "TC-VIP-CRE-03",
-                Description = "Tạo gói VIP hợp lệ → IsActive = false (chưa kích hoạt), trả về PackageId",
+                Description = "Create a valid VIP package → IsActive = false (not activated), return PackageId",
                 ExpectedResult = "Return Success, Data = PackageId, IsActive = false",
                 StatusRound1 = "Passed",
                 TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string>
                 {
-                    "Valid Price và DurationDays",
-                    "IsActive = false (mặc định chưa active)",
+                    "Valid Price and DurationDays",
+                    "IsActive = false (default not active)",
                     "AddAsync called once",
                     "Return Success"
+                }
+            });
+        }
+
+        // ── TC-04: AddAsync ném exception → catch trả về failure ─────────
+        [Fact]
+        public async Task Handle_AddAsyncThrows_ShouldReturnFailure()
+        {
+            // Arrange
+            var command = new CreateVipPackageCommand
+            {
+                Name = "Error Plan",
+                Price = 99000,
+                DurationDays = 30
+            };
+
+            var mockRepo = new Mock<IVipPackageRepository>();
+            mockRepo.Setup(x => x.AddAsync(It.IsAny<Tokki.Domain.Entities.VipPackage>()))
+                    .ThrowsAsync(new Exception("DB write error"));
+
+            var handler = CreateHandler(repo: mockRepo);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+
+            QACollector.LogTestCase("VipPackage - Create", new TestCaseDetail
+            {
+                FunctionGroup = "Create Vip Package",
+                TestCaseID = "TC-VIP-CRE-04",
+                Description = "AddAsync throws exception → catch block returns failure",
+                ExpectedResult = "IsSuccess=false (VipPackageCreationFailed)",
+                StatusRound1 = "Passed",
+                TestCaseType = "E",
+                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string>
+                {
+                    "AddAsync throws Exception",
+                    "Catch block returns failure"
+                }
+            });
+        }
+
+        // ── TC-05: Price = 0 là hợp lệ (boundary: Price không âm) ────────
+        [Fact]
+        public async Task Handle_ZeroPrice_ShouldBeValidAndCreatePackage()
+        {
+            // Arrange
+            var command = new CreateVipPackageCommand
+            {
+                Name = "Free Trial",
+                Price = 0,
+                DurationDays = 3
+            };
+
+            var mockRepo = MockVipPackageRepository.GetMock();
+            mockRepo.Setup(x => x.AddAsync(It.IsAny<Tokki.Domain.Entities.VipPackage>()))
+                    .Returns(Task.CompletedTask);
+
+            var handler = CreateHandler(repo: mockRepo);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            mockRepo.Verify(x => x.AddAsync(It.IsAny<Tokki.Domain.Entities.VipPackage>()), Times.Once);
+
+            QACollector.LogTestCase("VipPackage - Create", new TestCaseDetail
+            {
+                FunctionGroup = "Create Vip Package",
+                TestCaseID = "TC-VIP-CRE-05",
+                Description = "Price = 0 is valid (boundary: condition is Price < 0)",
+                ExpectedResult = "IsSuccess=true, AddAsync called once",
+                StatusRound1 = "Passed",
+                TestCaseType = "B",
+                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string>
+                {
+                    "Price = 0 (boundary, not < 0)",
+                    "DurationDays = 3 (valid)",
+                    "Return success"
+                }
+            });
+        }
+
+        // ── TC-06: UpdateAsync không bao giờ được gọi khi tạo mới ────────
+        [Fact]
+        public async Task Handle_ValidCreate_ShouldNeverCallUpdateAsync()
+        {
+            // Arrange
+            var command = new CreateVipPackageCommand
+            {
+                Name = "Standard Plan",
+                Price = 149000,
+                DurationDays = 30
+            };
+
+            var mockRepo = MockVipPackageRepository.GetMock();
+            mockRepo.Setup(x => x.AddAsync(It.IsAny<Tokki.Domain.Entities.VipPackage>()))
+                    .Returns(Task.CompletedTask);
+
+            var handler = CreateHandler(repo: mockRepo);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            mockRepo.Verify(x => x.UpdateAsync(It.IsAny<Tokki.Domain.Entities.VipPackage>()), Times.Never);
+
+            QACollector.LogTestCase("VipPackage - Create", new TestCaseDetail
+            {
+                FunctionGroup = "Create Vip Package",
+                TestCaseID = "TC-VIP-CRE-06",
+                Description = "Create flow should never call UpdateAsync",
+                ExpectedResult = "IsSuccess=true, UpdateAsync never called",
+                StatusRound1 = "Passed",
+                TestCaseType = "B",
+                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string>
+                {
+                    "Valid command",
+                    "UpdateAsync Times.Never",
+                    "Only AddAsync is called"
                 }
             });
         }

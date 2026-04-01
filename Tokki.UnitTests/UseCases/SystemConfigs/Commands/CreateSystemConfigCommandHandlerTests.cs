@@ -79,7 +79,7 @@ namespace Tokki.UnitTests.Features.SystemConfigs.Commands
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(201);
             result.Data.Should().Be("CFG_TEST");
-            result.Message.Should().Be("Tạo cấu hình thành công");
+            result.Message.Should().Be("Configuration created successfully");
 
             captured.Should().NotBeNull();
             captured!.Key.Should().Be("CFG_TEST");

@@ -63,7 +63,7 @@ namespace Tokki.UnitTests.Features.EmailTemplates.Commands
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(201);
             result.Data.Should().Be("tpl-new-01");
-            result.Message.Should().Be("Tạo template thành công!");
+            result.Message.Should().Be("Template creation successfully!");
 
             _mockRepo.Verify(x => x.AddAsync(It.Is<EmailTemplate>(t =>
                 t.TemplateId == "tpl-new-01" &&
@@ -130,7 +130,7 @@ namespace Tokki.UnitTests.Features.EmailTemplates.Commands
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(201);
             result.Data.Should().Be("tpl-new-02");
-            result.Message.Should().Be("Tạo template thành công!");
+            result.Message.Should().Be("Template creation successfully!");
 
             _mockRepo.Verify(x => x.AddAsync(It.Is<EmailTemplate>(t =>
                 t.TemplateId == "tpl-new-02" &&

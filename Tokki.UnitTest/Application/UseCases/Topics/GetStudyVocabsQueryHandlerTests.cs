@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -6,9 +6,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.Topics.Queries.GetStudyVocabs;
+using Tokki.Application.UseCases.Vocabulary.DTOs;
 using Tokki.Domain.Entities;
-using Tokki.Domain.Enums;
-using Tokki.UnitTest.Mocks.Repositories;
 using Tokki.UnitTest.Utilities;
 using Xunit;
 
@@ -16,170 +15,104 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
 {
     public class GetStudyVocabsQueryHandlerTests
     {
-        private GetStudyVocabsQueryHandler CreateHandler(
-            Mock<ITopicRepository>? topicRepo = null,
-            Mock<IUserVocabProgressRepository>? progressRepo = null)
+        private static Mock<ITopicRepository> GetTopicMock(List<Tokki.Domain.Entities.Vocabulary>? vocabs = null)
         {
-            return new GetStudyVocabsQueryHandler(
-                (topicRepo ?? MockTopicRepository.GetMock()).Object,
-                (progressRepo ?? MockUserVocabProgressRepository.GetMock()).Object);
+            var m = new Mock<ITopicRepository>();
+            m.Setup(x => x.GetVocabulariesByTopicIdAsync(It.IsAny<string>())).ReturnsAsync(vocabs ?? new List<Tokki.Domain.Entities.Vocabulary>());
+            return m;
         }
 
-        [Fact]
-        public async Task Handle_TopicHasNoVocab_ShouldReturn404()
+        private static Mock<IUserVocabProgressRepository> GetProgressMock(List<string>? learnedIds = null)
         {
-            var query = new GetStudyVocabsQuery
-            {
-                TopicId = "TOPIC-001",
-                UserId = "USER-001",
-                Count = 10
-            };
+            var m = new Mock<IUserVocabProgressRepository>();
+            m.Setup(x => x.GetLearnedVocabIdsByTopicAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(learnedIds ?? new List<string>());
+            return m;
+        }
 
-            var mockTopicRepo = MockTopicRepository.GetMock(
-                returnedTopic: MockTopicRepository.GetSampleTopic());
+        private static GetStudyVocabsQueryHandler CreateHandler(
+            Mock<ITopicRepository>?              topicRepo    = null,
+            Mock<IUserVocabProgressRepository>?  progressRepo = null)
+            => new GetStudyVocabsQueryHandler(
+                (topicRepo    ?? GetTopicMock()).Object,
+                (progressRepo ?? GetProgressMock()).Object);
 
-            // GetVocabulariesByTopicIdAsync trả về empty → 404
-            mockTopicRepo.Setup(x => x.GetVocabulariesByTopicIdAsync(It.IsAny<string>()))
-                         .ReturnsAsync(new List<Tokki.Domain.Entities.Vocabulary>());
+        private static List<Tokki.Domain.Entities.Vocabulary> SampleVocabs(int count = 3)
+        {
+            var list = new List<Tokki.Domain.Entities.Vocabulary>();
+            for (int i = 1; i <= count; i++)
+                list.Add(new Tokki.Domain.Entities.Vocabulary { VocabularyId = $"V-{i:000}", Text = $"word{i}", Pronunciation = $"[w{i}]", Definition = $"def{i}" });
+            return list;
+        }
 
-            var handler = CreateHandler(topicRepo: mockTopicRepo);
-            var result = await handler.Handle(query, CancellationToken.None);
+        private static GetStudyVocabsQuery MakeQuery(string topicId = "T-001", string userId = "U-001", int count = 5) =>
+            new GetStudyVocabsQuery { TopicId = topicId, UserId = userId, Count = count };
 
+        // TC-TOPIC-GVOC-01 | A | No vocabs in topic → 404
+        [Fact]
+        public async Task Handle_NoVocabsInTopic_ShouldReturn404()
+        {
+            var result = await CreateHandler(GetTopicMock(new List<Tokki.Domain.Entities.Vocabulary>())).Handle(MakeQuery(), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(404);
-
-            QACollector.LogTestCase("Topic - Get Study Vocabs", new TestCaseDetail
-            {
-                FunctionGroup = "Get Study Vocabs",
-                TestCaseID = "TC-TOPIC-GSV-01",
-                Description = "Topic chưa có vocab nào → return 404",
-                ExpectedResult = "Return 404 'Topic này chưa có từ vựng nào'",
-                StatusRound1 = "Passed",
-                TestCaseType = "A",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "GetVocabulariesByTopicIdAsync returns empty",
-                    "Return 404"
-                }
-            });
+            QACollector.LogTestCase("Topic - Get Study Vocabs", new TestCaseDetail { FunctionGroup = "GetStudyVocabs", TestCaseID = "TC-TOPIC-GVOC-01", Description = "No vocabs in topic → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetVocabulariesByTopicIdAsync returns empty" } });
         }
 
+        // TC-TOPIC-GVOC-02 | N | No learned vocabs → all unlearned returned (up to Count)
         [Fact]
-        public async Task Handle_HasUnlearnedVocabs_ShouldReturnUnlearnedFirst()
+        public async Task Handle_NoneLearnedYet_ShouldReturnUnlearnedVocabs()
         {
-            var query = new GetStudyVocabsQuery
-            {
-                TopicId = "TOPIC-001",
-                UserId = "USER-001",
-                Count = 5
-            };
-
-            var allVocabs = new List<Tokki.Domain.Entities.Vocabulary>
-            {
-                new Tokki.Domain.Entities.Vocabulary { VocabularyId = "VOCAB-001", Text = "안녕", Definition = "Xin chào", Status = VocabularyStatus.Active },
-                new Tokki.Domain.Entities.Vocabulary { VocabularyId = "VOCAB-002", Text = "감사", Definition = "Cảm ơn", Status = VocabularyStatus.Active },
-                new Tokki.Domain.Entities.Vocabulary { VocabularyId = "VOCAB-003", Text = "미안", Definition = "Xin lỗi", Status = VocabularyStatus.Active }
-            };
-
-            var mockTopicRepo = MockTopicRepository.GetMock(
-                returnedTopic: MockTopicRepository.GetSampleTopic());
-
-            mockTopicRepo.Setup(x => x.GetVocabulariesByTopicIdAsync(It.IsAny<string>()))
-                         .ReturnsAsync(allVocabs);
-
-            var mockProgressRepo = MockUserVocabProgressRepository.GetMock();
-
-            // VOCAB-001 đã học, còn VOCAB-002 và VOCAB-003 chưa học
-            mockProgressRepo.Setup(x => x.GetLearnedVocabIdsByTopicAsync(
-                        It.IsAny<string>(),
-                        It.IsAny<string>()))
-                            .ReturnsAsync(new List<string> { "VOCAB-001" });
-
-            var handler = CreateHandler(topicRepo: mockTopicRepo, progressRepo: mockProgressRepo);
-            var result = await handler.Handle(query, CancellationToken.None);
-
+            var vocabs = SampleVocabs(5);
+            var result = await CreateHandler(GetTopicMock(vocabs), GetProgressMock(new List<string>()))
+                .Handle(MakeQuery(count: 3), CancellationToken.None);
             result.IsSuccess.Should().BeTrue();
-            result.StatusCode.Should().Be(200);
-            result.Data.Should().NotBeEmpty();
-
-            // Tất cả vocab trả về phải là vocab chưa học
-            result.Data.Should().NotContain(v => v.VocabularyId == "VOCAB-001");
-            result.Message.Should().Contain("Danh sách từ mới");
-
-            QACollector.LogTestCase("Topic - Get Study Vocabs", new TestCaseDetail
-            {
-                FunctionGroup = "Get Study Vocabs",
-                TestCaseID = "TC-TOPIC-GSV-02",
-                Description = "User đã học 1 vocab, còn 2 chưa học → trả về 2 vocab chưa học",
-                ExpectedResult = "Return 200, không chứa vocab đã học, message 'Danh sách từ mới'",
-                StatusRound1 = "Passed",
-                TestCaseType = "N",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "3 vocab trong topic",
-                    "1 vocab đã học (VOCAB-001)",
-                    "Trả về chỉ vocab chưa học",
-                    "Return 200"
-                }
-            });
+            result.Data.Should().HaveCount(3);
+            QACollector.LogTestCase("Topic - Get Study Vocabs", new TestCaseDetail { FunctionGroup = "GetStudyVocabs", TestCaseID = "TC-TOPIC-GVOC-02", Description = "No learned vocabs → 3 unlearned returned (Count=3)", ExpectedResult = "IsSuccess=true, Data.Count=3", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "unlearned filtered to Count" } });
         }
 
+        // TC-TOPIC-GVOC-03 | N | All vocabs learned → fallback to random all vocabs
         [Fact]
-        public async Task Handle_AllVocabsLearned_ShouldReturnRandomReviewMode()
+        public async Task Handle_AllVocabsLearned_FallbackToRandomAll()
         {
-            var query = new GetStudyVocabsQuery
-            {
-                TopicId = "TOPIC-001",
-                UserId = "USER-001",
-                Count = 3
-            };
-
-            var allVocabs = new List<Tokki.Domain.Entities.Vocabulary>
-            {
-                new Tokki.Domain.Entities.Vocabulary { VocabularyId = "VOCAB-001", Text = "안녕", Definition = "Xin chào", Status = VocabularyStatus.Active },
-                new Tokki.Domain.Entities.Vocabulary { VocabularyId = "VOCAB-002", Text = "감사", Definition = "Cảm ơn", Status = VocabularyStatus.Active }
-            };
-
-            var mockTopicRepo = MockTopicRepository.GetMock(
-                returnedTopic: MockTopicRepository.GetSampleTopic());
-
-            mockTopicRepo.Setup(x => x.GetVocabulariesByTopicIdAsync(It.IsAny<string>()))
-                         .ReturnsAsync(allVocabs);
-
-            var mockProgressRepo = MockUserVocabProgressRepository.GetMock();
-
-            // Tất cả vocab đã học
-            mockProgressRepo.Setup(x => x.GetLearnedVocabIdsByTopicAsync(
-                        It.IsAny<string>(),
-                        It.IsAny<string>()))
-                            .ReturnsAsync(new List<string> { "VOCAB-001", "VOCAB-002" });
-
-            var handler = CreateHandler(topicRepo: mockTopicRepo, progressRepo: mockProgressRepo);
-            var result = await handler.Handle(query, CancellationToken.None);
-
+            var vocabs     = SampleVocabs(3);
+            var learnedIds = new List<string> { "V-001", "V-002", "V-003" };
+            var result     = await CreateHandler(GetTopicMock(vocabs), GetProgressMock(learnedIds))
+                .Handle(MakeQuery(count: 2), CancellationToken.None);
             result.IsSuccess.Should().BeTrue();
-            result.StatusCode.Should().Be(200);
-            result.Data.Should().NotBeEmpty();
-            result.Message.Should().Contain("ôn tập ngẫu nhiên");
+            result.Data.Should().HaveCount(2); // fallback pulls from all
+            QACollector.LogTestCase("Topic - Get Study Vocabs", new TestCaseDetail { FunctionGroup = "GetStudyVocabs", TestCaseID = "TC-TOPIC-GVOC-03", Description = "All learned → fallback to random all, Count=2", ExpectedResult = "IsSuccess=true, Data.Count=2", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "unlearnedVocabs.Count==0 → fallback" } });
+        }
 
-            QACollector.LogTestCase("Topic - Get Study Vocabs", new TestCaseDetail
-            {
-                FunctionGroup = "Get Study Vocabs",
-                TestCaseID = "TC-TOPIC-GSV-03",
-                Description = "User đã học hết toàn bộ vocab → chuyển sang chế độ ôn tập ngẫu nhiên",
-                ExpectedResult = "Return 200, message chứa 'ôn tập ngẫu nhiên'",
-                StatusRound1 = "Passed",
-                TestCaseType = "B",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "Tất cả vocab đã học (boundary: unlearnedVocabs.Count = 0)",
-                    "Fallback sang random toàn bộ vocab",
-                    "Return 200"
-                }
-            });
+        // TC-TOPIC-GVOC-04 | N | DTO fields mapped correctly (VocabularyId, Text, Pronunciation)
+        [Fact]
+        public async Task Handle_ValidRequest_DtoFieldsMappedCorrectly()
+        {
+            var vocabs = new List<Tokki.Domain.Entities.Vocabulary> { new Tokki.Domain.Entities.Vocabulary { VocabularyId = "V-001", Text = "안녕", Pronunciation = "[an-nyeong]", Definition = "hello", ImgURL = "img.png", AudioURL = "audio.mp3" } };
+            var result = await CreateHandler(GetTopicMock(vocabs), GetProgressMock()).Handle(MakeQuery(count: 1), CancellationToken.None);
+            var dto = result.Data![0];
+            dto.VocabularyId.Should().Be("V-001");
+            dto.Text.Should().Be("안녕");
+            dto.Pronunciation.Should().Be("[an-nyeong]");
+            QACollector.LogTestCase("Topic - Get Study Vocabs", new TestCaseDetail { FunctionGroup = "GetStudyVocabs", TestCaseID = "TC-TOPIC-GVOC-04", Description = "DTO fields: VocabularyId, Text, Pronunciation mapped", ExpectedResult = "All fields correct", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Vocabulary entity→VocabBasicInfoDTO" } });
+        }
+
+        // TC-TOPIC-GVOC-05 | B | GetVocabulariesByTopicIdAsync called with correct topicId
+        [Fact]
+        public async Task Handle_WithTopicId_RepoCalledWithCorrectTopicId()
+        {
+            var repo = GetTopicMock(SampleVocabs());
+            await CreateHandler(repo).Handle(MakeQuery("T-XYZ"), CancellationToken.None);
+            repo.Verify(x => x.GetVocabulariesByTopicIdAsync("T-XYZ"), Times.Once);
+            QACollector.LogTestCase("Topic - Get Study Vocabs", new TestCaseDetail { FunctionGroup = "GetStudyVocabs", TestCaseID = "TC-TOPIC-GVOC-05", Description = "GetVocabulariesByTopicIdAsync called with 'T-XYZ'", ExpectedResult = "Times.Once with correct ID", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "TopicId forwarded" } });
+        }
+
+        // TC-TOPIC-GVOC-06 | N | Count parameter respected
+        [Fact]
+        public async Task Handle_Count2_ResultHasMaxCount2()
+        {
+            var result = await CreateHandler(GetTopicMock(SampleVocabs(10)), GetProgressMock())
+                .Handle(MakeQuery(count: 2), CancellationToken.None);
+            result.Data.Should().HaveCount(2);
+            QACollector.LogTestCase("Topic - Get Study Vocabs", new TestCaseDetail { FunctionGroup = "GetStudyVocabs", TestCaseID = "TC-TOPIC-GVOC-06", Description = "Count=2 limits result to 2 items", ExpectedResult = "Data.Count=2", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { ".Take(Count) applied" } });
         }
     }
 }

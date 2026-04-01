@@ -77,7 +77,7 @@ namespace Tokki.UnitTests.Features.EmailTemplates.Commands
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
             result.Data.Should().Be(command.TemplateId);
-            result.Message.Should().Be("Template đã ở trạng thái Deleted.");
+            result.Message.Should().Be("Template is in Deleted state.");
 
             // Idempotent: không update DB
             _mockRepo.Verify(x => x.UpdateAsync(It.IsAny<EmailTemplate>()), Times.Never);
@@ -117,7 +117,7 @@ namespace Tokki.UnitTests.Features.EmailTemplates.Commands
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
             result.Data.Should().Be(command.TemplateId);
-            result.Message.Should().Be("Xóa template thành công!");
+            result.Message.Should().Be("Template deletion successfully!");
 
             _mockRepo.Verify(x => x.UpdateAsync(It.IsAny<EmailTemplate>()), Times.Once);
             _mockRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
