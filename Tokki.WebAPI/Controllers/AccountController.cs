@@ -24,6 +24,8 @@ using Tokki.Application.UseCases.Accounts.Commands.RefreshToken;
 using Tokki.Application.UseCases.Accounts.Commands.UpdateAimLevel;
 using Tokki.Application.UseCases.Accounts.Queries.GetAimLevel;
 
+using Tokki.Domain.Enums;
+using System.Collections.Generic;
 using Tokki.WebAPI.Utilities;
 
 namespace Tokki.WebAPI.Controllers
@@ -46,14 +48,35 @@ namespace Tokki.WebAPI.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginCommand command)
         {
+            return await ProcessLogin(command);
+        }
+
+        [HttpPost("login/user")]
+        public async Task<IActionResult> LoginUser([FromBody] LoginCommand command)
+        {
+            command.AllowedRoles = new List<AccountRole> { AccountRole.User, AccountRole.Vip };
+            return await ProcessLogin(command);
+        }
+
+        [HttpPost("login/admin")]
+        public async Task<IActionResult> LoginAdmin([FromBody] LoginCommand command)
+        {
+            command.AllowedRoles = new List<AccountRole> { AccountRole.Admin, AccountRole.Staff };
+            return await ProcessLogin(command);
+        }
+
+        private async Task<IActionResult> ProcessLogin(LoginCommand command)
+        {
             var result = await _sender.Send(command);
             if (!result.IsSuccess) return StatusCode(result.StatusCode, result);
 
             // Set HttpOnly cookie
-            CookieUtil.SetRefreshTokenCookie(Response, result.Data.RefreshToken);
-
-            // Xóa khỏi response body trước khi gửi về client
-            result.Data.RefreshToken = null;
+            if (result.Data != null && !string.IsNullOrEmpty(result.Data.RefreshToken))
+            {
+                CookieUtil.SetRefreshTokenCookie(Response, result.Data.RefreshToken);
+                // Xóa khỏi response body trước khi gửi về client
+                result.Data.RefreshToken = null;
+            }
 
             return Ok(result);
         }
