@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,8 +37,9 @@ namespace Tokki.Infrastructure.Repositories
                 .Include(b => b.Tags)     
                 .FirstOrDefaultAsync(b => b.Id == id);
         }
-        public async Task<PagedResult<Blog>> GetPagedAsync(int pageNumber,int pageSize,string? categoryId,
-        BlogStatus? status,CancellationToken cancellationToken)
+
+        public async Task<PagedResult<Blog>> GetPagedAsync(int pageNumber, int pageSize, string? categoryId,
+            string? tag, string? keyword, BlogStatus? status, CancellationToken cancellationToken)
         {
             var query = _context.Blogs
                 .AsNoTracking()
@@ -50,6 +51,18 @@ namespace Tokki.Infrastructure.Repositories
             if (!string.IsNullOrWhiteSpace(categoryId))
             {
                 query = query.Where(b => b.CategoryId == categoryId);
+            }
+
+            if (!string.IsNullOrWhiteSpace(tag))
+            {
+                query = query.Where(b => b.Tags.Any(t => t.Name.ToLower() == tag.ToLower()));
+            }
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                string lowerKeyword = keyword.ToLower();
+                query = query.Where(b => b.Title.ToLower().Contains(lowerKeyword) || 
+                                         b.ShortDescription.ToLower().Contains(lowerKeyword));
             }
 
             if (status.HasValue)
@@ -73,11 +86,8 @@ namespace Tokki.Infrastructure.Repositories
         public Task DeleteAsync(Blog blog)
         {
             blog.Status = BlogStatus.Hidden;
-
             blog.UpdatedAt = DateTimeOffset.UtcNow;
-
             _context.Blogs.Update(blog);
-
             return Task.CompletedTask;
         }
 
@@ -137,16 +147,18 @@ namespace Tokki.Infrastructure.Repositories
         {
             await _context.SaveChangesAsync(cancellationToken);
         }
+
         public async Task<bool> ExistsAsync(string blogId)
         {
             return await _context.Blogs
                                  .AsNoTracking() 
-                                 .AnyAsync(b => b.Id  == blogId && b.Status != BlogStatus.Hidden);
+                                 .AnyAsync(b => b.Id == blogId && b.Status != BlogStatus.Hidden);
         }
+
         public async Task<bool> IncreaseViewCountAsync(string blogId)
         {
-            var rowsAffected = await _context.Database.ExecuteSqlRawAsync(
-                "UPDATE Blogs SET ViewCount = ViewCount + 1 WHERE Id = {0}", blogId
+            var rowsAffected = await _context.Database.ExecuteSqlInterpolatedAsync(
+                $"UPDATE Blogs SET ViewCount = ViewCount + 1 WHERE Id = {blogId}"
             );
             return rowsAffected > 0;
         }

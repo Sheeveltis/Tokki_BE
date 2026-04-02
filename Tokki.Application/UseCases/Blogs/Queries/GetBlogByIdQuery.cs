@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,5 +12,6 @@ namespace Tokki.Application.UseCases.Blogs.Queries
     public class GetBlogByIdQuery : IRequest<OperationResult<BlogDetailDTO>>
     {
         public string Id { get; set; } = string.Empty;
+        public bool IsAdminView { get; set; } = false;
     }
 }

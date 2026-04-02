@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.Extensions.Logging;
 using Tokki.Application.Common.Helpers;
 using Tokki.Application.Common.Models;
@@ -69,11 +69,11 @@ namespace Tokki.Application.UseCases.Blogs.Commands.CreateBlog
             }
             catch (Exception ex)
             {
-                var realError = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                _logger.LogError(ex, "Lỗi khi tạo bài viết mới: {Message}", ex.Message);
                 return OperationResult<string>.Failure(
                     AppErrors.ServerError,
                     500,
-                    $"Lỗi SQL chi tiết: {realError}" 
+                    OperationMessages.CreateFail("Bài viết")
                 );
             }
         }
