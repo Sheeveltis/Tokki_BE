@@ -76,32 +76,42 @@ namespace Tokki.Infrastructure.BackgroundJobs
 
             foreach (var part in writingParts)
             {
-                var matchingAnswer = writingAnswers
-                    .FirstOrDefault(a => a.OrderIndex == part.QuestionFrom);
+                // Lấy toàn bộ danh sách các câu trả lời khớp với part hiện tại
+                var matchingAnswers = writingAnswers
+                    .Where(a => a.OrderIndex == part.QuestionFrom)
+                    .ToList();
 
-                if (matchingAnswer == null) continue;
+                // Bỏ qua nếu không có câu trả lời nào
+                if (!matchingAnswers.Any()) continue;
 
+                // Lấy mã câu hỏi (Code này nằm ở part, nên để ngoài vòng lặp con cho tối ưu)
                 var code = part.QuestionType?.Code ?? string.Empty;
-                var answerId = matchingAnswer.UserExamWritingAnswerId;
 
-                switch (code)
+                // Lặp qua từng câu trả lời để đưa vào hàng đợi chấm điểm
+                foreach (var matchingAnswer in matchingAnswers)
                 {
-                    case "TOPIK2_W_Q51":
-                        backgroundJobs.Enqueue<IWritingGradingBackgroundService>(
-                            s => s.GradeQuestion51Async(answerId));
-                        break;
-                    case "TOPIK2_W_Q52":
-                        backgroundJobs.Enqueue<IWritingGradingBackgroundService>(
-                            s => s.GradeQuestion52Async(answerId));
-                        break;
-                    case "TOPIK2_W_Q53":
-                        backgroundJobs.Enqueue<IWritingGradingBackgroundService>(
-                            s => s.GradeQuestion53Async(answerId));
-                        break;
-                    case "TOPIK2_W_Q54":
-                        backgroundJobs.Enqueue<IWritingGradingBackgroundService>(
-                            s => s.GradeQuestion54Async(answerId));
-                        break;
+                    var answerId = matchingAnswer.UserExamWritingAnswerId;
+
+                    // Phân loại và gọi Background Job tương ứng cho từng answerId
+                    switch (code)
+                    {
+                        case "TOPIK2_W_Q51":
+                            backgroundJobs.Enqueue<IWritingGradingBackgroundService>(
+                                s => s.GradeQuestion51Async(answerId));
+                            break;
+                        case "TOPIK2_W_Q52":
+                            backgroundJobs.Enqueue<IWritingGradingBackgroundService>(
+                                s => s.GradeQuestion52Async(answerId));
+                            break;
+                        case "TOPIK2_W_Q53":
+                            backgroundJobs.Enqueue<IWritingGradingBackgroundService>(
+                                s => s.GradeQuestion53Async(answerId));
+                            break;
+                        case "TOPIK2_W_Q54":
+                            backgroundJobs.Enqueue<IWritingGradingBackgroundService>(
+                                s => s.GradeQuestion54Async(answerId));
+                            break;
+                    }
                 }
             }
         }
