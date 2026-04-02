@@ -9,5 +9,6 @@ namespace Tokki.Application.UseCases.PronunciationRule.DTOs
     public class PronunciationResponse : PronunciationAssessmentDTO
     {
         public string AiFeedback { get; set; } = string.Empty;
+        public bool IsIrrelevant { get; set; } = false;
     }
 }

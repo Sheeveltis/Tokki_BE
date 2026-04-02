@@ -14,8 +14,9 @@ namespace Tokki.Application.IServices
             int durationDays,
             List<string> weaknesses,
             List<QuestionTypeMenuItem> weakTypeInfos,    
-            List<GrammarMenuItem> grammarMenu,           
-            List<QuestionTypeMenuItem> questionTypeMenu); 
+            List<QuestionTypeMenuItem> questionTypeMenu,
+            int typesPerWeek,   
+            int totalWeeks); 
 
         Task<AiRoadmapResponse?> GenerateNextWeekPlanAsync(
             TargetAimLevel target,
@@ -26,7 +27,15 @@ namespace Tokki.Application.IServices
             List<string> persistentFailTypes,
             List<string> originalWeaknesses,
             List<QuestionTypeMenuItem> weakTypeInfos,    
-            List<GrammarMenuItem> grammarMenu,          
-            List<QuestionTypeMenuItem> questionTypeMenu); 
+            List<QuestionTypeMenuItem> questionTypeMenu);
+        Task<string?> GenerateEntranceFeedbackAsync(
+            TargetAimLevel targetAim,
+            int readingWeakCount,
+            int listeningWeakCount,
+            int writingWeakCount,
+            List<string> readingNames,
+            List<string> listeningNames,
+            List<string> writingNames,
+            int recommendedDays);
     }
 }

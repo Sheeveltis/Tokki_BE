@@ -1,4 +1,4 @@
-﻿// File: Tokki.API/Controllers/QuestionTypeController.cs
+// File: Tokki.API/Controllers/QuestionTypeController.cs
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,22 +23,52 @@ namespace Tokki.API.Controllers
             _mediator = mediator;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAll(
+        [HttpGet("admin")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> GetAdmin(
             [FromQuery] string? keyword,
             [FromQuery] QuestionSkill? skill,
             [FromQuery] DifficultyLevel? difficulty,
-            [FromQuery] ExamType? examType)
+            [FromQuery] ExamType? examType,
+            [FromQuery] bool? isActive,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
         {
             var query = new GetQuestionTypesQuery
             {
                 Keyword = keyword,
                 Skill = skill,
                 Difficulty = difficulty,
-                ExamType = examType
+                ExamType = examType,
+                IsActive = isActive,
+                PageNumber = pageNumber,
+                PageSize = pageSize
             };
             var result = await _mediator.Send(query);
-            return result.IsSuccess ? Ok(result) : BadRequest(result);
+            return result.IsSuccess ? Ok(result) : StatusCode(result.StatusCode, result);
+        }
+
+        [HttpGet("user")]
+        public async Task<IActionResult> GetUser(
+            [FromQuery] string? keyword,
+            [FromQuery] QuestionSkill? skill,
+            [FromQuery] DifficultyLevel? difficulty,
+            [FromQuery] ExamType? examType,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var query = new GetQuestionTypesQuery
+            {
+                Keyword = keyword,
+                Skill = skill,
+                Difficulty = difficulty,
+                ExamType = examType,
+                IsActive = true,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+            var result = await _mediator.Send(query);
+            return result.IsSuccess ? Ok(result) : StatusCode(result.StatusCode, result);
         }
 
         [HttpGet("{id}")]
@@ -59,6 +89,7 @@ namespace Tokki.API.Controllers
         }
 
         [HttpPost]
+         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> Create([FromBody] CreateQuestionTypeCommand command)
         {
             var result = await _mediator.Send(command);
@@ -68,6 +99,7 @@ namespace Tokki.API.Controllers
         }
 
         [HttpPut("{id}")]
+         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> Update(string id, [FromBody] UpdateQuestionTypeCommand command)
         {
             command.QuestionTypeId = id;
@@ -76,6 +108,7 @@ namespace Tokki.API.Controllers
         }
 
         [HttpDelete("{id}")]
+         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> Delete(string id)
         {
             var command = new DeleteQuestionTypeCommand(id);

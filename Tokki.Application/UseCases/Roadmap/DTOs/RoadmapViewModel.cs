@@ -12,7 +12,6 @@ namespace Tokki.Application.UseCases.Roadmap.DTOs
         public string UserRoadmapId { get; set; }
         public TargetAimLevel TargetAim { get; set; }
         public string Assessment { get; set; }
-        public int ProgressPercent { get; set; } 
         public List<WeekViewModel> Weeks { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,6 +14,10 @@ namespace Tokki.Application.UseCases.UserExam.DTOs
         public int Duration { get; set; }
         public int TotalQuestions { get; set; }
         public int TimeRemaining { get; set; }
+        public Dictionary<string, int> SkillDurations { get; set; } = new();
+        public Dictionary<string, int> SkillTimeRemaining { get; set; } = new();
+        public string CurrentSkill { get; set; } = string.Empty;
+        public int SkillTimeRemainingForCurrent { get; set; }
 
         public ExamSkillsDto Part { get; set; } = new();
     }

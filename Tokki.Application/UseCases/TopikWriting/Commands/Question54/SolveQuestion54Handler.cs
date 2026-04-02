@@ -24,9 +24,8 @@ namespace Tokki.Application.UseCases.TopikWriting.Question54.Commands
         {
             try
             {
-                var jobId = _backgroundJobs.Enqueue<IWritingGradingBackgroundService>(
-                    service => service.GradeQuestion54Async(request.Payload.UserExamWritingAnswerId));
-
+                _backgroundJobs.Enqueue<IWritingGradingBackgroundService>(
+     service => service.GradeQuestion51Async(request.Payload.UserExamWritingAnswerId));
                 var result = new Question54ResultDto
                 {
                     Score = -1,

@@ -2,18 +2,19 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Tokki.Application.IRepositories;
 using Tokki.Application.Common.Constants;
+using Tokki.Application.IRepositories;
+using Tokki.Application.IServices;
+using Tokki.Application.UseCases.Roadmap.Commands.CancelRoadmap;
 using Tokki.Application.UseCases.Roadmap.Commands.CompleteTask;
 using Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek;
 using Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap;
+using Tokki.Application.UseCases.Roadmap.Commands.ProcessWeeklyResult;
 using Tokki.Application.UseCases.Roadmap.DTOs;
-using Tokki.Application.UseCases.Roadmap.Queries.GetDurationRecommendation;
+using Tokki.Application.UseCases.Roadmap.Queries.GetEntranceExam;
+using Tokki.Application.UseCases.Roadmap.Queries.GetEntranceFeedback;
 using Tokki.Application.UseCases.Roadmap.Queries.GetRoadmap;
 using Tokki.Application.UseCases.Roadmap.Queries.GetVirtualQuiz;
-using Tokki.Application.UseCases.Roadmap.Queries.GetEntranceExam;
-using Tokki.Application.UseCases.Roadmap.Commands.CancelRoadmap;
-using Tokki.Application.UseCases.Roadmap.Commands.ProcessWeeklyResult;
 using Tokki.Domain.Enums;
 
 namespace Tokki.WebAPI.Controllers
@@ -25,13 +26,16 @@ namespace Tokki.WebAPI.Controllers
     {
         private readonly IMediator _mediator;
         private readonly IUserRoadmapRepository _userRoadmapRepository;
+        private readonly IRoadmapProgressService _progressService;
 
         public RoadmapController(
             IMediator mediator,
-            IUserRoadmapRepository userRoadmapRepository) 
+            IUserRoadmapRepository userRoadmapRepository,
+            IRoadmapProgressService progressService) 
         {
             _mediator = mediator;
             _userRoadmapRepository = userRoadmapRepository;
+            _progressService = progressService;
         }
      
         [HttpGet("target-aims")]
@@ -61,30 +65,18 @@ namespace Tokki.WebAPI.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized("Không tìm thấy thông tin người dùng.");
 
-            var existingRoadmap = await _userRoadmapRepository
-                .GetActiveRoadmapByUserIdAsync(userId, CancellationToken.None);
-
-            if (existingRoadmap != null)
-                return BadRequest(new
-                {
-                    message = "Bạn đang có một lộ trình học đang hoạt động. Vui lòng hoàn thành hoặc hủy lộ trình cũ trước khi tạo mới."
-                });
-
             var command = new GenerateRoadmapCommand
             {
                 UserId = userId,
                 TargetAim = request.TargetAim,
                 DurationDays = request.DurationDays,
-                Weaknesses = request.Weaknesses,
-                CurrentLevel = request.CurrentLevel
+                UserExamId = request.UserExamId
             };
 
             var result = await _mediator.Send(command);
 
-            if (result.IsSuccess)
-                return CreatedAtAction(nameof(GenerateRoadmap), new { id = result.Data }, result);
-
-            return BadRequest(result);
+            if (!result.IsSuccess) return BadRequest(result);
+            return StatusCode(202, result); 
         }
 
         [HttpGet("current")]
@@ -142,8 +134,8 @@ namespace Tokki.WebAPI.Controllers
 
             return Ok(new { ExamId = task.ExamId });
         }
-
         [HttpPost("next-week")]
+        [Authorize(Roles = nameof(AccountRole.Vip))]
         public async Task<IActionResult> GenerateNextWeek([FromBody] GenerateNextWeekDTO request)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -185,28 +177,6 @@ namespace Tokki.WebAPI.Controllers
             if (result.IsSuccess) return Ok(result);
             if (result.StatusCode == 404) return NotFound(result);
             return BadRequest(result);
-        }
-
-        [HttpGet("duration-recommendation")]
-        public async Task<IActionResult> GetDurationRecommendation(
-            [FromQuery] TargetAimLevel targetAim,
-            [FromQuery] List<string> weakTypeIds)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized("Không tìm thấy thông tin người dùng.");
-
-            var query = new GetDurationRecommendationQuery
-            {
-                UserId = userId,
-                TargetAim = targetAim,
-                WeakQuestionTypeIds = weakTypeIds ?? new List<string>()
-            };
-
-            var result = await _mediator.Send(query);
-
-            if (!result.IsSuccess) return BadRequest(result);
-            return Ok(result);
         }
 
         [HttpGet("entrance-exam")]
@@ -255,5 +225,60 @@ namespace Tokki.WebAPI.Controllers
             return Ok(result);
         }
 
+        [HttpGet("entrance-feedback")]
+        public async Task<IActionResult> GetEntranceFeedback(
+            [FromQuery] string userExamId,
+            [FromQuery] TargetAimLevel targetAim,
+            [FromQuery] CurrentTopikLevel selfDeclaredLevel) 
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("Không tìm thấy thông tin người dùng.");
+
+            var query = new GetEntranceFeedbackQuery
+            {
+                UserId = userId,
+                UserExamId = userExamId,
+                TargetAim = targetAim,
+                SelfDeclaredLevel = selfDeclaredLevel 
+            };
+
+            var result = await _mediator.Send(query);
+
+            if (result.StatusCode == 202)
+                return StatusCode(202, result);
+
+            if (!result.IsSuccess)
+                return StatusCode(result.StatusCode, result);
+
+            return Ok(result);
+        }
+        [HttpGet("task/{taskId}/detail")]
+        public async Task<IActionResult> GetTaskDetail(string taskId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var query = new GetTaskDetailQuery
+            {
+                TaskId = taskId,
+            };
+
+            var result = await _mediator.Send(query);
+            if (!result.IsSuccess) return StatusCode(result.StatusCode, result);
+            return Ok(result);
+        }
+
+        [HttpGet("progress/{jobId}")]
+        public IActionResult GetProgress(string jobId)
+        {
+            var state = _progressService.Get(jobId);
+
+            if (state == null)
+                return NotFound(new { message = "Không tìm thấy job. Có thể đã hết hạn hoặc jobId không hợp lệ." });
+
+            return Ok(state);
+        }
     }
 }

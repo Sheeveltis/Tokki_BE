@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,8 +48,10 @@ namespace Tokki.Application.UseCases.Exam.Queries.GetExamDetailQuery
                 Status = exam.Status, 
                 CreatedAt = exam.CreatedAt,
                 CreatedBy = exam.CreatedBy,
+                SkillDurations = exam.SkillDurationsDict,
                 TemplateParts = new List<ExamPartDto>(),
                 TotalQuestions = exam.ExamQuestions?.Count ?? 0,
+                MaxScore = 0,
             };
 
             foreach (var part in sortedParts)
@@ -59,6 +61,8 @@ namespace Tokki.Application.UseCases.Exam.Queries.GetExamDetailQuery
                     TemplatePartId = part.TemplatePartId,
                     TemplatePartsTitle = $"[{part.QuestionFrom}~{part.QuestionTo}] {part.Instruction} (각 {part.Mark} 점)",
                     ExampleUrl = part.ExampleUrl,
+                    Skill = part.Skill.ToString(),
+                    SkillDuration = exam.SkillDurationsDict.TryGetValue(part.Skill.ToString(), out int dur) ? dur : 0,
                     Questions = new List<ExamQuestionDetailDto>()
                 };
 
@@ -69,6 +73,7 @@ namespace Tokki.Application.UseCases.Exam.Queries.GetExamDetailQuery
 
                 foreach (var eq in questionsInPart)
                 {
+                    result.MaxScore += part.Mark;
                     var qBank = eq.QuestionBank;
                     if (qBank == null) continue;
 
@@ -100,6 +105,14 @@ namespace Tokki.Application.UseCases.Exam.Queries.GetExamDetailQuery
                 }
 
                 result.TemplateParts.Add(partDto);
+
+                // Calculate total score for skill
+                var skillName = part.Skill.ToString();
+                int scoreInPart = questionsInPart.Count * part.Mark;
+                if (result.SkillTotalScores.ContainsKey(skillName))
+                    result.SkillTotalScores[skillName] += scoreInPart;
+                else
+                    result.SkillTotalScores[skillName] = scoreInPart;
             }
 
             return OperationResult<ExamDetailDTO>.Success(result, 200,OperationMessages.GetSuccess("đề"));

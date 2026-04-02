@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -57,6 +57,7 @@ namespace Tokki.Domain.Entities
         public virtual ICollection<AccountTitle> UnlockedTitles { get; set; } = new List<AccountTitle>();
 
         public TopicLevel? Level { get; set; } = null;
+        public TopicLevel? AimLevel { get; set; } = null;
 
         // --- MỚI THÊM LẠI (Bảo mật & Tracking) ---
 
@@ -76,7 +77,6 @@ namespace Tokki.Domain.Entities
         public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow.AddHours(7);
 
         // Navigation Properties
-        public virtual ICollection<Session> Sessions { get; set; } = new List<Session>();
         public virtual ICollection<SocialLogin> SocialLogins { get; set; } = new List<SocialLogin>();
 
            }

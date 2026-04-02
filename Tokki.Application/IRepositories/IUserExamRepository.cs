@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Tokki.Application.Common.Models;
+using Tokki.Application.UseCases.Exam.DTOs;
 using Tokki.Application.UseCases.UserExam.DTOs;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
@@ -36,5 +37,24 @@ namespace Tokki.Application.IRepositories
         Task<UserExam?> GetWritingDetailAsync(string userExamId, CancellationToken token);
         Task<bool> HasPendingWritingAnswersAsync(string userExamId, CancellationToken token);
         Task<List<QuestionType>> GetIncorrectQuestionTypesByExamIdAsync(string userExamId, CancellationToken cancellationToken);
+        Task<List<QuestionTypeDto>> GetExamAnalysisSummaryAsync(string userExamId, CancellationToken cancellationToken);
+        Task SaveSelfDeclaredLevelAsync(
+            string userExamId,
+            CurrentTopikLevel level,
+            CancellationToken cancellationToken = default);
+        //hàm của kiệt để lấy chi tiết bài thi kèm phần writing
+        Task<UserExam?> GetByIdWithWritingDetailsAsync(string userExamId, CancellationToken token);
+
+        Task<CurrentTopikLevel?> GetSelfDeclaredLevelAsync(
+            string userExamId,
+            CancellationToken cancellationToken = default);
+
+        Task<PagedResult<ExamParticipantDTO>> GetPagedParticipantsByExamIdAsync(
+            string examId,
+            int pageNumber,
+            int pageSize,
+            ExamParticipantSortBy sortBy = ExamParticipantSortBy.SubmitTime,
+            bool isDescending = true,
+            CancellationToken cancellationToken = default);
     }
 }

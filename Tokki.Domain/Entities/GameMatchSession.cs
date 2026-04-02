@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 using Tokki.Domain.Enums;
 
@@ -14,8 +14,8 @@ namespace Tokki.Domain.Entities
         // Game nào (Matching card, Solitaire, ...)
         public string GameId { get; set; } = null!;
 
-        // Topic nào
-        public string TopicId { get; set; } = null!;
+        // Topic nào (null nếu là game không cần topic, ví dụ Solitaire)
+        public string? TopicId { get; set; }
         public DateTime CreatedAt { get; set; }
 
 
@@ -30,7 +30,7 @@ namespace Tokki.Domain.Entities
 
         // Navigation
         public Game Game { get; set; } = null!;
-        public Topic Topic { get; set; } = null!;
+        public Topic? Topic { get; set; }
         public Account User { get; set; } = null!;
     }
 }

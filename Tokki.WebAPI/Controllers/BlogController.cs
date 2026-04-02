@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -26,6 +26,12 @@ namespace Tokki.WebAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] GetPagedBlogsQuery query)
         {
+            // If user is not Admin/Staff/Moderator, filter to only Published blogs
+            if (!(User.IsInRole("Admin") || User.IsInRole("Staff") || User.IsInRole("Moderator")))
+            {
+                query.Status = Domain.Enums.BlogStatus.Published;
+            }
+
             var result = await _sender.Send(query);
             return StatusCode(result.StatusCode, result);
         }

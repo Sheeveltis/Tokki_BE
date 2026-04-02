@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Tokki.Application.UseCases.Exam.DTOs;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 
@@ -19,7 +20,22 @@ namespace Tokki.Application.IRepositories
             ExamType? type = null,
             ExamStatus? status = null,
             string? examTemplateId = null,
+            ExamCreatorFilter creatorFilter = ExamCreatorFilter.All,
             CancellationToken cancellationToken = default);
+
+        Task<(IEnumerable<ExamStatProjection> items, int totalCount)> GetPagedWithStatsAsync(
+            int pageNumber,
+            int pageSize,
+            string? searchTerm = null,
+            ExamType? type = null,
+            ExamStatus? status = null,
+            ExamCreatorFilter creatorFilter = ExamCreatorFilter.All,
+            ExamStatsSortBy sortBy = ExamStatsSortBy.CreatedAt,
+            bool isDescending = true,
+            CancellationToken cancellationToken = default);
+
+        Task<ExamStatProjection?> GetExamStatsByIdAsync(string examId, CancellationToken cancellationToken = default);
+
         Task<bool> IsTitleExistsAsync(string title, string? excludeId = null, CancellationToken cancellationToken = default);
         Task<int> GetQuestionCountAsync(string examId, CancellationToken cancellationToken = default);
         Task AddAsync(Exam exam);
@@ -30,5 +46,6 @@ namespace Tokki.Application.IRepositories
         Task<Exam?> GetEntranceExamByTypeAsync(
             ExamType examType,
             CancellationToken cancellationToken = default);
+        Task<List<string>> GetRecentQuestionIdsAsync(int examCount, CancellationToken cancellationToken = default);
     }
 }

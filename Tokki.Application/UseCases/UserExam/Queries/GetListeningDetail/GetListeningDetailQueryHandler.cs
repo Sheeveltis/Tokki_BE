@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,6 +26,9 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetListeningDetail
 
             if (session == null)
                 return OperationResult<ListeningDetailResponse>.Failure("Không tìm thấy kết quả bài thi.", 404);
+
+            if (session.Status == UserExamStatus.InProgress)
+                return OperationResult<ListeningDetailResponse>.Failure("Bạn chưa nộp bài thi nên chưa thể xem kết quả.", 400);
 
             var templateParts = session.Exam?.ExamTemplate?.TemplateParts;
             if (templateParts == null || !templateParts.Any())
@@ -74,6 +77,7 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetListeningDetail
                         SelectedOptionId = answer.SelectedOptionId,
                         CorrectOptionId = correctOption?.OptionId,
                         IsCorrect = isCorrect,
+                        Explanation = question.Explanation,
                         Options = question.QuestionOptions.Select(o => new ExamOptionDto
                         {
                             OptionId = o.OptionId,

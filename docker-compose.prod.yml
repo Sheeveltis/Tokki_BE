@@ -1,0 +1,30 @@
+version: '3.9'
+
+# ================================
+# Production override
+# Dùng lệnh: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# ================================
+
+services:
+
+  sqlserver:
+    environment:
+      SA_PASSWORD: "${SQL_SA_PASSWORD}"      # Lấy từ .env file hoặc server env
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Standard"
+    ports: []                                 # Không expose port SQL Server ra ngoài ở production
+    restart: always
+
+  api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=TokkiDB;User Id=SA;Password=${SQL_SA_PASSWORD};TrustServerCertificate=True;MultipleActiveResultSets=True
+
+      # Điền các secrets từ environment variables của server
+      # - JwtSettings__SecretKey=${JWT_SECRET_KEY}
+      # - Cloudinary__CloudName=${CLOUDINARY_NAME}
+      # - Cloudinary__ApiKey=${CLOUDINARY_KEY}
+      # - Cloudinary__ApiSecret=${CLOUDINARY_SECRET}
+
+    restart: always

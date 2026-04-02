@@ -1,15 +1,20 @@
-﻿using Application.Services;
+using Application.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using StackExchange.Redis;
 using Tokki.Application.Common.ExcelCore;
 using Tokki.Application.Common.Helpers;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
+using Tokki.Infrastructure.BackgroundJobs;
 using Tokki.Infrastructure.Data;
 using Tokki.Infrastructure.Repositories;
 using Tokki.Infrastructure.Services;
 using Tokki.Infrastructure.Services.WritingAi;
+using WkHtmlToPdfDotNet;
+using WkHtmlToPdfDotNet.Contracts;
+
 namespace Tokki.Infrastructure
 {
     public static class DependencyInjection
@@ -21,13 +26,29 @@ namespace Tokki.Infrastructure
             services.AddDbContext<TokkiDbContext>(options =>
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
+            // Đăng ký Redis
+            services.AddSingleton<IConnectionMultiplexer>(sp => 
+            {
+                var redisHost = configuration["RedisSettings:Host"];
+                var redisPort = configuration["RedisSettings:Port"];
+                var redisPassword = configuration["RedisSettings:Password"];
+                var configOptions = new ConfigurationOptions
+                {
+                    EndPoints = { $"{redisHost}:{redisPort}" },
+                    Password = redisPassword,
+                    Ssl = true,
+                    AbortOnConnectFail = false
+                };
+                return ConnectionMultiplexer.Connect(configOptions);
+            });
+            services.AddScoped<IRedisService, RedisService>();
+
             // 2. Đăng ký Repositories
             services.AddScoped<IBlogRepository, BlogRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<IAccountRepository, AccountRepository>();
             services.AddScoped<ISystemConfigRepository, SystemConfigRepository>();
             services.AddScoped<IEmailService, EmailService>();
-            services.AddScoped<IOtpRepository, OtpRepository>();
             services.AddScoped<IEmailJobRepository, EmailJobRepository>();
             services.AddScoped<IEmailTemplateRepository, EmailTemplateRepository>();
             services.AddScoped<IReportRepository, ReportRepository>();
@@ -35,6 +56,7 @@ namespace Tokki.Infrastructure
             services.AddScoped<IStatisticsRepository, StatisticsRepository>();
             services.AddScoped<IStatisticBlogRepository, StatisticBlogRepository>();
             services.AddScoped<ITitleRepository, TitleRepository>();
+            services.AddScoped<IUserTitleService, UserTitleService>();
             services.AddScoped<IGamificationService, GamificationService>();
             services.AddScoped<ITopicRepository, TopicRepository>();
             services.AddScoped<IQuestionTypeRepository, QuestionTypeRepository>();
@@ -52,14 +74,15 @@ namespace Tokki.Infrastructure
             services.AddScoped<IUserFavoriteVocabularyRepository, UserFavoriteVocabularyRepository>();
             services.AddScoped<IGameRepository, GameRepository>();
             services.AddScoped<IGameMatchSessionRepository, GameMatchSessionRepository>();
+            services.AddScoped<ISolitaireSessionRepository, SolitaireSessionRepository>();
             services.AddScoped<IEmailHistoryRepository, EmailHistoryRepository>();
             services.AddScoped<IUserExamWritingAnswerRepository, UserExamWritingAnswerRepository>();
             services.AddScoped<IQuestion51Pipeline,
         Tokki.Infrastructure.Services.WritingAi.Question51GeminiPipeline>();
             services.AddScoped<IUserWeaknessRepository, UserWeaknessRepository>();
             services.AddScoped<IRoadmapKnowledgeProfileRepository, RoadmapKnowledgeProfileRepository>();
-
-            // Bạn cũng cần kiểm tra và đăng ký các Repository khác mà Command Handler đang yêu cầu:
+            services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+            services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
             services.AddSingleton<IIdGeneratorService, IdGeneratorService>();
             services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
             services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
@@ -114,6 +137,9 @@ namespace Tokki.Infrastructure
             //User take exam
             services.AddScoped<IUserExamRepository, UserExamRepository>();
             services.AddScoped<IExcelBaseService, ExcelBaseService>();
+            services.AddScoped<IPdfService, PdfService>();
+            services.AddScoped<IUserXpHistoryRepository, UserXpHistoryRepository>();
+            services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
             return services;
         }
     }

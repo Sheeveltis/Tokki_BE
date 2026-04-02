@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.Games.DTOs;
@@ -9,21 +9,25 @@ namespace Tokki.Application.UseCases.Games.Queries.GetGameResultForUser
         : IRequestHandler<GetGameResultForUserQuery, OperationResult<GameResultDto?>>
     {
         private readonly IGameMatchSessionRepository _sessionRepository;
+        private readonly IAccountRepository _accountRepository;
 
-        public GetGameResultForUserQueryHandler(IGameMatchSessionRepository sessionRepository)
+        public GetGameResultForUserQueryHandler(
+            IGameMatchSessionRepository sessionRepository,
+            IAccountRepository accountRepository)
         {
             _sessionRepository = sessionRepository;
+            _accountRepository = accountRepository;
         }
 
         public async Task<OperationResult<GameResultDto?>> Handle(
-        GetGameResultForUserQuery request,
-        CancellationToken cancellationToken)
+            GetGameResultForUserQuery request,
+            CancellationToken cancellationToken)
         {
             var session = await _sessionRepository.GetByUserGameTopicAsync(
                 request.UserId,
                 request.GameId,
                 request.TopicId,
-                request.GameDifficulty   // lọc thêm theo độ khó
+                request.GameDifficulty
             );
 
             if (session == null)
@@ -35,10 +39,17 @@ namespace Tokki.Application.UseCases.Games.Queries.GetGameResultForUser
                 );
             }
 
+            var userInfo = await _accountRepository.GetBasicInfoAsync(session.UserId);
+
             var dto = new GameResultDto
             {
                 GameMatchSessionId = session.GameMatchSessionId,
                 UserId = session.UserId,
+                UserName = userInfo?.FullName ?? string.Empty,
+                AvatarUrl = userInfo?.AvatarUrl,
+                TitleName = userInfo?.CurrentTitleName,
+                TitleColorHex = userInfo?.CurrentColorHexTitle,
+                TitleIconUrl = userInfo?.TitleIconUrl,
                 GameId = session.GameId,
                 TopicId = session.TopicId,
                 BestScore = session.BestScore,
@@ -53,6 +64,5 @@ namespace Tokki.Application.UseCases.Games.Queries.GetGameResultForUser
                 "Lấy kết quả trò chơi thành công"
             );
         }
-
     }
 }

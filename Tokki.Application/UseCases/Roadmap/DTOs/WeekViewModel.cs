@@ -11,7 +11,8 @@ namespace Tokki.Application.UseCases.Roadmap.DTOs
         public string RoadmapWeekId { get; set; }
         public int WeekIndex { get; set; }
         public string FocusGoal { get; set; }
-        public string Status { get; set; } 
+        public string Status { get; set; }
+        public int ProgressPercent { get; set; }
         public List<TaskViewModel> Tasks { get; set; }
     }
 }

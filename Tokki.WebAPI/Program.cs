@@ -1,4 +1,7 @@
 ﻿// 1. THÊM CÁC NAMESPACE NÀY
+using System.Globalization;
+using System.Text;
+using System.Text.Json;
 using FluentValidation;
 using Hangfire;
 using Hangfire.SqlServer;
@@ -7,9 +10,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models; // Dùng cho Swagger
-using System.Globalization;
-using System.Text;
-using System.Text.Json;
 using Tokki.Application;
 using Tokki.Application.Common.Helpers;
 using Tokki.Application.Common.Helpers.ValidationVietnameseLanguageManager;
@@ -17,6 +17,7 @@ using Tokki.Application.IServices;
 using Tokki.Infrastructure;
 using Tokki.Infrastructure.BackgroundJobs; // Nơi chứa class JwtSettings
 using Tokki.Infrastructure.Configurations;
+using Tokki.Infrastructure.Data;
 using Tokki.Infrastructure.Repositories;
 using Tokki.Infrastructure.Services;
 using Tokki.WebAPI.BackgroundServices;
@@ -153,9 +154,10 @@ builder.Services.AddHttpClient<IAiRoadmapService, AiRoadmapService>();
 
 builder.Services.AddScoped<IUserRoadmapRepository, UserRoadmapRepository>();
 builder.Services.AddScoped<IExamAssemblyService, ExamAssemblyService>();
+    builder.Services.AddMemoryCache();
+    builder.Services.AddScoped<IRoadmapProgressService, RoadmapProgressService>();
 
-
-builder.Services.AddMemoryCache(options =>
+    builder.Services.AddMemoryCache(options =>
 {
     //options.SizeLimit = 1024; // Giới hạn 1024 entries
     options.CompactionPercentage = 0.25; // Khi đầy, xóa 25% entries cũ nhất
@@ -182,29 +184,32 @@ builder.Services.AddCors(options =>
     });
 });
 
-// ===== HANGFIRE CONFIGURATION =====
-builder.Services.AddHangfire(configuration => configuration
-    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-    .UseSimpleAssemblyNameTypeSerializer()
-    .UseRecommendedSerializerSettings()
-    .UseSqlServerStorage(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        new SqlServerStorageOptions
-        {
-            CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
-            SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
-            QueuePollInterval = TimeSpan.Zero,
-            UseRecommendedIsolationLevel = true,
-            DisableGlobalLocks = true
-        }));
-// Add Hangfire server
-builder.Services.AddHangfireServer(options =>
-{
-    options.WorkerCount = 5; // Số worker chạy đồng thời (tùy chỉnh theo server)
-});
+    // ===== HANGFIRE CONFIGURATION =====
+    builder.Services.AddHangfire(configuration => configuration
+     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+     .UseSimpleAssemblyNameTypeSerializer()
+     .UseRecommendedSerializerSettings()
+     .UseSqlServerStorage(
+         builder.Configuration.GetConnectionString("DefaultConnection"),
+         new SqlServerStorageOptions
+         {
+             CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+             SlidingInvisibilityTimeout = TimeSpan.FromMinutes(15),
+             QueuePollInterval = TimeSpan.FromSeconds(0), 
+             UseRecommendedIsolationLevel = true,
+             DisableGlobalLocks = true 
+         }));
 
-//SignalR
-builder.Services.AddSignalR();
+    builder.Services.AddHangfireServer(options =>
+    {
+        options.WorkerCount = 15;
+        options.ServerTimeout = TimeSpan.FromMinutes(30);
+        options.HeartbeatInterval = TimeSpan.FromSeconds(6); 
+        options.ServerCheckInterval = TimeSpan.FromSeconds(10);
+        options.ShutdownTimeout = TimeSpan.FromMinutes(5);
+    });
+    //SignalR
+    builder.Services.AddSignalR();
 
 // ==========================================
 
@@ -242,8 +247,13 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<TokkiDbContext>();
+        db.Database.EnsureCreated();
+    }
 
-app.Run();
+    app.Run();
 }
 catch (Exception ex)
 {

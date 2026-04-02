@@ -1,9 +1,4 @@
-﻿using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using FluentValidation;
 
 namespace Tokki.Application.UseCases.Categories.Commands.UpdateCategory
 {
@@ -12,13 +7,11 @@ namespace Tokki.Application.UseCases.Categories.Commands.UpdateCategory
         public UpdateCategoryCommandValidator()
         {
             RuleFor(x => x.Id)
-                .NotEmpty()
-                .WithName("Mã danh mục");
+                .NotEmpty().WithMessage("Mã danh mục là bắt buộc.");
 
             RuleFor(x => x.Name)
-                .NotEmpty()
-                .MaximumLength(100) 
-                .WithName("Tên danh mục");
+                .NotEmpty().WithMessage("Tên danh mục là bắt buộc.")
+                .MaximumLength(100).WithMessage("Tên danh mục không vượt quá 100 ký tự.");
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -13,8 +13,14 @@ using Tokki.Application.UseCases.Exam.Commands.UpdateExamStatus;
 using Tokki.Application.UseCases.Exam.Queries.GetExamById;
 using Tokki.Application.UseCases.Exam.Queries.GetExamDetailQuery;
 using Tokki.Application.UseCases.Exam.Queries.GetExams;
+using Tokki.Application.UseCases.Exam.Queries.GetExamsStats;
+using Tokki.Application.UseCases.Exam.Queries.GetExamDetailStats;
+using Tokki.Application.UseCases.Exam.Queries.GetUserExamsByExamId;
 using Tokki.Application.UseCases.Exam.Queries.GetQuestionsByPart;
+using Tokki.Application.UseCases.Exam.Queries.GetTemplateSkills;
+using Tokki.Application.UseCases.Exam.Commands.ExportExamToPdf;
 using Tokki.Application.UseCases.UserExam.Commands.CreateUserTakeExam;
+using Tokki.Domain.Enums;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -29,22 +35,34 @@ namespace Tokki.WebAPI.Controllers
         {
             _sender = sender;
         }
-
+        [HttpGet("{examTemplateId}/skills")]
+        public async Task<ActionResult<OperationResult<List<string>>>> GetSkills(string examTemplateId)
+        {
+            var result = await _sender.Send(new GetTemplateSkillsQuery { TemplateId = examTemplateId });
+            return result.IsSuccess ? Ok(result) : StatusCode(result.StatusCode, result);
+        }
         [HttpPost]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> CreateExam([FromBody] CreateExamCommand command)
         {
+            if (command == null)
+            {
+                return BadRequest("Dữ liệu đầu vào không hợp lệ hoặc sai định dạng JSON.");
+            }
+
             var userId = User.FindFirst("UserId")?.Value
-                         ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                        ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized("Không xác định được người dùng.");
             }
+            
             command.CreatedBy = userId;
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
         }
+
         [HttpPost("regenerate-part")]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> RegenerateExamPart([FromBody] RegenerateExamPartCommand command)
@@ -63,6 +81,42 @@ namespace Tokki.WebAPI.Controllers
         public async Task<IActionResult> GetAllExamsForAdmin([FromQuery] GetExamsQuery query )
         {
             var result = await _sender.Send(query);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpGet("admin/stats")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> GetExamsStats([FromQuery] GetExamsStatsQuery query)
+        {
+            var result = await _sender.Send(query);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpGet("admin/stats/{examId}")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> GetExamsStatsDetail(string examId)
+        {
+            var result = await _sender.Send(new GetExamDetailStatsQuery(examId));
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpGet("admin/stats/{examId}/participants")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> GetExamParticipants(
+            string examId, 
+            [FromQuery] int pageNumber = 1, 
+            [FromQuery] int pageSize = 10,
+            [FromQuery] ExamParticipantSortBy sortBy = ExamParticipantSortBy.SubmitTime,
+            [FromQuery] bool isDescending = true)
+        {
+            var result = await _sender.Send(new GetUserExamsByExamIdQuery 
+            { 
+                ExamId = examId, 
+                PageNumber = pageNumber, 
+                PageSize = pageSize,
+                SortBy = sortBy,
+                IsDescending = isDescending
+            });
             return StatusCode(result.StatusCode, result);
         }
         [HttpGet("admin/detail")]
@@ -140,6 +194,22 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
        
+        [HttpPost("{id}/export-pdf")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> ExportExamToPdf(string id, [FromQuery] bool showExplanation = false)
+        {
+            var command = new ExportExamToPdfCommand(id, showExplanation);
+            var result = await _sender.Send(command);
+
+            if (result.IsSuccess)
+            {
+                // Trả về file PDF cho Frontend tải xuống
+                return File(result.Data.PdfData, "application/pdf", result.Data.FileName);
+            }
+
+            return StatusCode(result.StatusCode, result);
+        }
+
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> DeleteExam(string id)

@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.Extensions.Logging;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
@@ -8,7 +8,7 @@ using Tokki.Application.UseCases.Excel.DTOs;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 
-namespace Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate
+namespace Tokki.Application.UseCases.Excel.Commands.AddVocabByExcel
 {
     public class AddVocabByExcelCommandHandler : IRequestHandler<AddVocabByExcelCommand, OperationResult<ImportVocabularyResponse>>
     {
@@ -40,166 +40,186 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate
 
         public async Task<OperationResult<ImportVocabularyResponse>> Handle(AddVocabByExcelCommand request, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Start ImportVocabulary. StaffId: {StaffId}, TopicId: {TopicId}, File: {FileName}",
-                request.StaffId, request.TopicId, request.File.FileName);
-
             var response = new ImportVocabularyResponse();
-
-            var extractedVocabs = await _excelService.ExtractVocabularyDataAsync(request.File);
-            if (extractedVocabs == null || !extractedVocabs.Any())
+            try
             {
-                return OperationResult<ImportVocabularyResponse>.Failure(AppErrors.ExcelNoValidDataFound);
-            }
+                _logger.LogInformation("Start ImportVocabulary. StaffId: {StaffId}, TopicId: {TopicId}, File: {FileName}",
+                    request.StaffId, request.TopicId, request.File.FileName);
 
-            var vocabsToCheck = extractedVocabs.Select(x => (x.Text, x.Definition)).ToList();
-            var existingEntities = await _vocabRepo.GetExistingVocabEntitiesAsync(vocabsToCheck);
-
-            var existingVocabIdsInTopic = new HashSet<string>();
-            if (!string.IsNullOrEmpty(request.TopicId))
-            {
-                var ids = await _vocabTopicRepo.GetVocabIdsByTopicIdAsync(request.TopicId);
-                existingVocabIdsInTopic = new HashSet<string>(ids);
-            }
-
-            var newItemsToProcess = new List<VocabularyExcelDTO>(); 
-            var finalVocabsForTopic = new List<Domain.Entities.Vocabulary>(); 
-
-            foreach (var item in extractedVocabs)
-            {
-                var existingMatch = existingEntities.FirstOrDefault(e =>
-                    e.Text.Equals(item.Text, StringComparison.OrdinalIgnoreCase) &&
-                    e.Definition.Equals(item.Definition, StringComparison.OrdinalIgnoreCase));
-
-                if (existingMatch != null)
+                var extractedVocabs = await _excelService.ExtractVocabularyDataAsync(request.File);
+                if (extractedVocabs == null || !extractedVocabs.Any())
                 {
+                    return OperationResult<ImportVocabularyResponse>.Failure(AppErrors.ExcelNoValidDataFound);
+                }
 
-                    if (!string.IsNullOrEmpty(request.TopicId))
+                var vocabsToCheck = extractedVocabs.Select(x => (x.Text, x.Definition)).ToList();
+                var existingEntities = await _vocabRepo.GetExistingVocabEntitiesAsync(vocabsToCheck);
+
+                var existingVocabIdsInTopic = new HashSet<string>();
+                if (!string.IsNullOrEmpty(request.TopicId))
+                {
+                    var ids = await _vocabTopicRepo.GetVocabIdsByTopicIdAsync(request.TopicId);
+                    existingVocabIdsInTopic = new HashSet<string>(ids);
+                }
+
+                var newItemsToProcess = new List<VocabularyExcelDTO>(); 
+                var finalVocabsForTopic = new List<Domain.Entities.Vocabulary>(); 
+
+                foreach (var item in extractedVocabs)
+                {
+                    var existingMatch = existingEntities.FirstOrDefault(e =>
+                        e.Text.Equals(item.Text, StringComparison.OrdinalIgnoreCase) &&
+                        e.Definition.Equals(item.Definition, StringComparison.OrdinalIgnoreCase));
+
+                    if (existingMatch != null)
                     {
-                        if (existingVocabIdsInTopic.Contains(existingMatch.VocabularyId))
+                        // Check if this vocab is already picked earlier in THIS excel file
+                        if (finalVocabsForTopic.Any(v => v.VocabularyId == existingMatch.VocabularyId)) 
                         {
                             response.FailureList.Add(new VocabularyPreviewDTO
                             {
                                 Text = item.Text,
                                 Definition = item.Definition,
-                                Reason = "Từ vựng này đã tồn tại trong Topic rồi."
+                                Reason = "Từ vựng này bị lặp lại trong file Excel."
+                            });
+                            continue;
+                        }
+
+                        if (!string.IsNullOrEmpty(request.TopicId))
+                        {
+                            if (existingVocabIdsInTopic.Contains(existingMatch.VocabularyId))
+                            {
+                                response.FailureList.Add(new VocabularyPreviewDTO
+                                {
+                                    Text = item.Text,
+                                    Definition = item.Definition,
+                                    Reason = "Từ vựng này đã tồn tại trong Topic rồi."
+                                });
+                            }
+                            else
+                            {
+                                finalVocabsForTopic.Add(existingMatch);
+
+                                response.LinkedExistingVocabList.Add(new VocabularyPreviewDTO
+                                {
+                                    Text = existingMatch.Text,
+                                    Definition = existingMatch.Definition,
+                                    Pronunciation = existingMatch.Pronunciation,
+                                    ImageUrl = existingMatch.ImgURL,
+                                    Reason = "Đã có sẵn trong từ điển -> Đã thêm vào Topic"
+                                });
+                            }
+                        }
+                        else
+                        {
+                            response.FailureList.Add(new VocabularyPreviewDTO
+                            {
+                                Text = item.Text,
+                                Definition = item.Definition,
+                                Reason = "Từ vựng và nghĩa này đã tồn tại trong hệ thống."
+                            });
+                        }
+                    }
+                    else
+                    {
+                        bool isDuplicateInFile = newItemsToProcess.Any(n =>
+                            n.Text.Equals(item.Text, StringComparison.OrdinalIgnoreCase) &&
+                            n.Definition.Equals(item.Definition, StringComparison.OrdinalIgnoreCase));
+
+                        if (isDuplicateInFile)
+                        {
+                            response.FailureList.Add(new VocabularyPreviewDTO
+                            {
+                                Text = item.Text,
+                                Definition = item.Definition,
+                                Reason = "Từ vựng này bị lặp lại nhiều lần trong file Excel."
                             });
                         }
                         else
                         {
-                            finalVocabsForTopic.Add(existingMatch);
-
-                            response.LinkedExistingVocabList.Add(new VocabularyPreviewDTO
-                            {
-                                Text = existingMatch.Text,
-                                Definition = existingMatch.Definition,
-                                Pronunciation = existingMatch.Pronunciation,
-                                ImageUrl = existingMatch.ImgURL,
-                                Reason = "Đã có sẵn trong từ điển -> Đã thêm vào Topic"
-                            });
+                            newItemsToProcess.Add(item);
                         }
                     }
-                    else
+                }
+
+                if (response.FailureList.Any())
+                {
+                    // Trộn các list khác về rỗng vì chúng ta dừng hoàn toàn
+                    response.AddedNewVocabList.Clear();
+                    response.LinkedExistingVocabList.Clear();
+                    var errorMsg = $"Phát hiện {response.FailureList.Count} dòng lỗi. Quá trình import bị dừng để đảm bảo tính hoàn vẹn, hãy sửa file Excel và thử lại.";
+                    
+                    // Trả về Success nhưng kèm Data là response (có FailureList) để FE hiển thị lỗi
+                    // Sử dụng status 200 để FE lấy được data dể dàng, nhưng message sẽ báo lỗi
+                    return OperationResult<ImportVocabularyResponse>.Success(response, 200, errorMsg);
+                }
+
+                if (!newItemsToProcess.Any() && !finalVocabsForTopic.Any())
+                {
+                    return OperationResult<ImportVocabularyResponse>.Success(response, 200, "Không có thao tác nào được thực hiện.");
+                }
+
+                var newlyCreatedEntities = new System.Collections.Concurrent.ConcurrentBag<Domain.Entities.Vocabulary>();
+                const string CLOUDINARY_FOLDER = "tokki/vocab-image";
+                const string AUDIO_FOLDER = "tokki/vocab-audio";
+
+                var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 5, CancellationToken = cancellationToken };
+
+                await Parallel.ForEachAsync(newItemsToProcess, parallelOptions, async (item, token) =>
+                {
+                    try
                     {
-                        response.FailureList.Add(new VocabularyPreviewDTO
+                        string? finalImageUrl = null;
+                        if (!string.IsNullOrWhiteSpace(item.ImageUrl) && Uri.TryCreate(item.ImageUrl, UriKind.Absolute, out _))
                         {
-                            Text = item.Text,
-                            Definition = item.Definition,
-                            Reason = "Từ vựng và nghĩa này đã tồn tại trong hệ thống."
-                        });
-                    }
-                }
-                else
-                {
+                            finalImageUrl = await _cloudinaryService.UploadImageFromUrlAsync(item.ImageUrl, CLOUDINARY_FOLDER);
+                        }
 
-                    bool isDuplicateInFile = newItemsToProcess.Any(n =>
-                        n.Text.Equals(item.Text, StringComparison.OrdinalIgnoreCase) &&
-                        n.Definition.Equals(item.Definition, StringComparison.OrdinalIgnoreCase));
+                        string? audioUrl = null;
+                        var audioBytes = await _ttsService.SynthesizeKoreanAudioAsync(item.Text);
+                        audioUrl = await _cloudinaryService.UploadAudioAsync(audioBytes, $"VOCAB_{_idGenerator.Generate(8)}", AUDIO_FOLDER);
 
-                    if (isDuplicateInFile)
-                    {
-                        response.FailureList.Add(new VocabularyPreviewDTO
+                        var entity = new Domain.Entities.Vocabulary
                         {
+                            VocabularyId = _idGenerator.Generate(15),
                             Text = item.Text,
+                            Pronunciation = item.Pronunciation,
                             Definition = item.Definition,
-                            Reason = "Từ vựng này bị lặp lại nhiều lần trong file Excel."
-                        });
+                            ImgURL = finalImageUrl, 
+                            AudioURL = audioUrl,
+                            CreateBy = request.StaffId,
+                            CreateDate = DateTime.UtcNow.AddHours(7), 
+                            Status = VocabularyStatus.Active
+                        };
+
+                        newlyCreatedEntities.Add(entity);
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        newItemsToProcess.Add(item);
+                        throw new Exception($"Lỗi tại từ vựng '{item.Text}': {ex.Message}", ex);
                     }
-                }
-            }
-
-            if (!newItemsToProcess.Any() && !finalVocabsForTopic.Any())
-            {
-                return OperationResult<ImportVocabularyResponse>.Success(response, 200, "Không có thao tác nào được thực hiện.");
-            }
-
-            var newlyCreatedEntities = new List<Domain.Entities.Vocabulary>();
-            const string CLOUDINARY_FOLDER = "tokki/vocab-image";
-            const string AUDIO_FOLDER = "tokki/vocab-audio";
-
-            foreach (var item in newItemsToProcess)
-            {
-                string finalImageUrl = null;
-                if (!string.IsNullOrWhiteSpace(item.ImageUrl) && IsValidUrl(item.ImageUrl))
-                {
-                    try { finalImageUrl = await _cloudinaryService.UploadImageFromUrlAsync(item.ImageUrl, CLOUDINARY_FOLDER); }
-                    catch { finalImageUrl = null; } 
-                }
-
-                string? audioUrl = null;
-                try
-                {
-                    var audioBytes = await _ttsService.SynthesizeKoreanAudioAsync(item.Text);
-                    audioUrl = await _cloudinaryService.UploadAudioAsync(audioBytes, $"VOCAB_{Guid.NewGuid()}", AUDIO_FOLDER);
-                }
-                catch (Exception ex) { _logger.LogWarning(ex, "TTS Error"); }
-
-                var entity = new Domain.Entities.Vocabulary
-                {
-                    VocabularyId = _idGenerator.Generate(15),
-                    Text = item.Text,
-                    Pronunciation = item.Pronunciation,
-                    Definition = item.Definition,
-                    ImgURL = finalImageUrl, 
-                    AudioURL = audioUrl,
-                    CreateBy = request.StaffId,
-                    CreateDate = DateTime.UtcNow.AddHours(7),
-                    Status = VocabularyStatus.Active
-                };
-
-                newlyCreatedEntities.Add(entity);
-
-                response.AddedNewVocabList.Add(new VocabularyPreviewDTO
-                {
-                    Text = entity.Text,
-                    Definition = entity.Definition,
-                    Pronunciation = entity.Pronunciation,
-                    ImageUrl = entity.ImgURL,
-                    Reason = "Tạo mới thành công"
                 });
-            }
 
-            if (newlyCreatedEntities.Any())
-            {
-                try
+                foreach (var entity in newlyCreatedEntities.OrderBy(e => e.Text))
                 {
-                    await _vocabRepo.AddRangeAsync(newlyCreatedEntities);
-                    finalVocabsForTopic.AddRange(newlyCreatedEntities);
+                    response.AddedNewVocabList.Add(new VocabularyPreviewDTO
+                    {
+                        Text = entity.Text,
+                        Definition = entity.Definition,
+                        Pronunciation = entity.Pronunciation,
+                        ImageUrl = entity.ImgURL,
+                        Reason = "Tạo mới thành công"
+                    });
                 }
-                catch (Exception ex)
+
+                if (newlyCreatedEntities.Any())
                 {
-                    _logger.LogError(ex, "DB Save Error");
-                    return OperationResult<ImportVocabularyResponse>.Failure(new Error("DB_ERROR", "Lỗi khi lưu từ mới."));
+                    var entitiesList = newlyCreatedEntities.ToList();
+                    await _vocabRepo.AddRangeAsync(entitiesList);
+                    finalVocabsForTopic.AddRange(entitiesList);
                 }
-            }
 
-
-            if (!string.IsNullOrEmpty(request.TopicId) && finalVocabsForTopic.Any())
-            {
-                try
+                if (!string.IsNullOrEmpty(request.TopicId) && finalVocabsForTopic.Any())
                 {
                     var topicResult = await _vocabTopicRepo.AddVocabulariesToTopicWithTransactionAsync(
                         request.TopicId,
@@ -208,25 +228,23 @@ namespace Tokki.Application.UseCases.ExamTemplates.Commands.UpdateExamTemplate
                         cancellationToken
                     );
 
-                    _logger.LogInformation("Linked {Count} vocabs to Topic {TopicId}", topicResult.AddedCount, request.TopicId);
+                    if (!topicResult.Success)
+                    {
+                        throw new Exception($"Không thể liên kết từ vựng vào Topic. Lỗi: {string.Join(", ", topicResult.FailedItems)}");
+                    }
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Topic Link Error");
-                }
+
+                var msg = $"Xử lý xong. Thêm mới: {response.AddedNewVocabList.Count}. Link vào Topic: {response.LinkedExistingVocabList.Count}. Lỗi: {response.FailureList.Count}";
+                return OperationResult<ImportVocabularyResponse>.Success(response, 200, msg);
             }
-
-            // Tổng kết message
-            var msg = $"Xử lý xong. Thêm mới: {response.AddedNewVocabList.Count}. Link vào Topic: {response.LinkedExistingVocabList.Count}. Lỗi: {response.FailureList.Count}";
-
-            return OperationResult<ImportVocabularyResponse>.Success(response, 200, msg);
-        }
-        private bool IsValidUrl(string url)
-        {
-            if (string.IsNullOrWhiteSpace(url)) return false;
-
-            return url.Trim().StartsWith("http://", StringComparison.OrdinalIgnoreCase)
-                || url.Trim().StartsWith("https://", StringComparison.OrdinalIgnoreCase);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "ImportVocabulary Error Rollback.");
+                // Thay vì trả về data null, ta trả về response hiện tại (có thể chứa thông tin parse dở dang)
+                // để FE dễ dàng hiển thị hoặc debug, nhưng statusCode báo 400 (Bad Request)
+                var errorMsg = $"Đã có lỗi hệ thống hoặc lỗi dữ liệu (Lỗi: {ex.Message}). Quá trình đã dừng lại.";
+                return OperationResult<ImportVocabularyResponse>.Success(response, 400, errorMsg);
+            }
         }
     }
 }

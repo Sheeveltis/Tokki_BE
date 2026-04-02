@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -25,6 +25,9 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetUserExamResult
 
             if (session == null)
                 return OperationResult<UserExamResultResponse>.Failure("Không tìm thấy kết quả bài thi.", 404);
+
+            if (session.Status == UserExamStatus.InProgress)
+                return OperationResult<UserExamResultResponse>.Failure("Bạn chưa nộp bài thi nên chưa thể xem kết quả.", 400);
 
             var response = new UserExamResultResponse
             {
@@ -98,7 +101,8 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetUserExamResult
                 CorrectAnswers = totalCorrect,
                 Score = totalScore,
                 MaxScore = maxScore,
-                IsGraded = isGraded
+                IsGraded = isGraded,
+                Duration = session.Exam?.SkillDurationsDict.TryGetValue(targetSkill.ToString(), out int d) ?? false ? d : 0
             };
         }
     }

@@ -39,18 +39,18 @@ namespace Tokki.Application.UseCases.PronunciationRule.Commands.EvaluatePronunci
 
             using var stream = request.AudioFile.OpenReadStream();
             var azureResult = await _speechService.AssessPronunciationAsync(stream, example.RawScript);
+
             if (azureResult.CompletenessScore < 30 || azureResult.AccuracyScore < 20)
             {
                 return OperationResult<PronunciationResponse>.Success(new PronunciationResponse
                 {
+                    IsIrrelevant = true,
                     AccuracyScore = azureResult.AccuracyScore,
-                    AiFeedback = "Tokki nhận thấy bạn đọc chưa đúng câu mẫu, hoặc âm thanh quá ồn. Bạn hãy nghe lại audio mẫu và thử đọc lại thật to rõ nhé!",
-                    Words = azureResult.Words,
-                    FluencyScore = azureResult.FluencyScore,
-                    CompletenessScore = azureResult.CompletenessScore,
-                    ProsodyScore = azureResult.ProsodyScore
+                    AiFeedback = "Tokki nhận thấy bạn đọc chưa đúng câu mẫu, hoặc âm thanh quá ồn. Hãy thử lại to rõ hơn nhé!",
+                    Words = new List<WordAssessmentDTO>()
                 });
             }
+
             var rule = await _ruleRepository.GetByIdAsync(example.PronunciationRuleId);
             string ruleContext = rule != null ? $"{rule.RuleName}: {rule.Description}" : "Quy tắc phát âm cơ bản";
 
@@ -61,6 +61,7 @@ namespace Tokki.Application.UseCases.PronunciationRule.Commands.EvaluatePronunci
 
             return OperationResult<PronunciationResponse>.Success(new PronunciationResponse
             {
+                IsIrrelevant = false,
                 AccuracyScore = finalScore,
                 AiFeedback = feedback,
                 Words = azureResult.Words,

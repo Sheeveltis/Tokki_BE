@@ -9,12 +9,7 @@ namespace Tokki.Application.IServices
 {
     public interface IAIPronunciationService
     {
-        Task<(string Feedback, double FinalAccuracyScore)> GenerateFeedbackWithAudioAsync(
-         PronunciationAssessmentDTO assessment,
-         string targetText,
-         string ruleContext,
-         string base64Audio,
-         string mimeType);
+   
         Task<(string GeneralFeedback, double FinalAccuracyScore)> GenerateFeedbackAsync(
      PronunciationAssessmentDTO assessment,
      string targetText,

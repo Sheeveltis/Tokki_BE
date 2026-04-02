@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -7,11 +7,13 @@ using Tokki.Application.UseCases.UserExam.Commands.CreateUserTakeExam;
 using Tokki.Application.UseCases.UserExam.Commands.SubmitUserExam;
 using Tokki.Application.UseCases.UserExam.Commands.SyncMCQProgress;
 using Tokki.Application.UseCases.UserExam.Commands.SyncWritingProgress;
+using Tokki.Application.UseCases.UserExam.Commands.MoveToNextSkill;
 using Tokki.Application.UseCases.UserExam.DTOs;
 using Tokki.Application.UseCases.UserExam.Queries.CheckGradingStatus;
 using Tokki.Application.UseCases.UserExam.Queries.GetExamAnalysis;
 using Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam;
 using Tokki.Application.UseCases.UserExam.Queries.GetListeningDetail;
+using Tokki.Application.UseCases.UserExam.Queries.GetPracticeQuestions;
 using Tokki.Application.UseCases.UserExam.Queries.GetReadingDetail;
 using Tokki.Application.UseCases.UserExam.Queries.GetUserExamResult;
 using Tokki.Application.UseCases.UserExam.Queries.GetUserExamReview;
@@ -99,13 +101,16 @@ namespace Tokki.WebAPI.Controllers
             command.UserId = userId;
             var result = await _sender.Send(command);
 
-            if (!result.IsSuccess)
-            {
-                return StatusCode(result.StatusCode, result);
-            }
-
             return Ok(result);
         }
+
+        [HttpPut("user/{userExamId}/next-skill")]
+        public async Task<IActionResult> MoveToNextSkill(string userExamId)
+        {
+            var result = await _sender.Send(new MoveToNextSkillCommand { UserExamId = userExamId });
+            return StatusCode(result.StatusCode, result);
+        }
+
         [HttpGet("user/history")]
         public async Task<IActionResult> GetHistoryExam([FromQuery] string? examId, [FromQuery] UserExamStatus? status, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
@@ -184,6 +189,26 @@ namespace Tokki.WebAPI.Controllers
             if (!result.IsSuccess)
             {
                 return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
+        [HttpGet("{questionTypeId}")]
+        public async Task<ActionResult<OperationResult<List<QuestionResultGroupDto>>>> GetPracticeByTypeId(
+            [FromRoute] string questionTypeId,
+            [FromQuery] int quantity = 10)
+        {
+            var query = new GetPracticeQuestionsQuery
+            {
+                QuestionTypeId = questionTypeId,
+                Quantity = quantity
+            };
+
+            var result = await _sender.Send(query);
+
+            if (!result.IsSuccess)
+            {
+                return StatusCode(result.StatusCode, result);
             }
 
             return Ok(result);

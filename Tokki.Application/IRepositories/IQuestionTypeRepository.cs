@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -13,11 +13,14 @@ namespace Tokki.Application.IRepositories
     {
         Task<QuestionType?> GetByIdAsync(string questionTypeId, CancellationToken cancellationToken = default);
         Task<IEnumerable<QuestionType>> GetAllAsync(CancellationToken cancellationToken = default);
-        Task<IEnumerable<QuestionType>> GetAsync(
+        Task<(IEnumerable<QuestionType> items, int totalCount)> GetPagedAsync(
+            int pageNumber,
+            int pageSize,
             string? keyword = null,
             QuestionSkill? skill = null,
             DifficultyLevel? difficulty = null,
             ExamType? examType = null,
+            bool? isActive = null,
             CancellationToken cancellationToken = default);
         Task<IEnumerable<QuestionType>> GetBySkillAsync(QuestionSkill skill, CancellationToken cancellationToken = default);
         Task<bool> IsCodeExistsAsync(string code, string? excludeId = null);

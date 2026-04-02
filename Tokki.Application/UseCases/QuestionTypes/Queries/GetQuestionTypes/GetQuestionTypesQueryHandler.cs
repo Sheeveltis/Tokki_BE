@@ -1,11 +1,11 @@
-﻿using MediatR;
+using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Domain.Entities;
 
 namespace Tokki.Application.UseCases.QuestionTypes.Queries.GetQuestionTypes
 {
-    public class GetQuestionTypesQueryHandler : IRequestHandler<GetQuestionTypesQuery, OperationResult<IEnumerable<QuestionType>>>
+    public class GetQuestionTypesQueryHandler : IRequestHandler<GetQuestionTypesQuery, OperationResult<PagedResult<QuestionType>>>
     {
         private readonly IQuestionTypeRepository _repository;
 
@@ -14,17 +14,27 @@ namespace Tokki.Application.UseCases.QuestionTypes.Queries.GetQuestionTypes
             _repository = repository;
         }
 
-        public async Task<OperationResult<IEnumerable<QuestionType>>> Handle(GetQuestionTypesQuery request, CancellationToken cancellationToken)
+        public async Task<OperationResult<PagedResult<QuestionType>>> Handle(GetQuestionTypesQuery request, CancellationToken cancellationToken)
         {
-            var result = await _repository.GetAsync(
+            var (items, totalCount) = await _repository.GetPagedAsync(
+                request.PageNumber,
+                request.PageSize,
                 request.Keyword,
                 request.Skill,
                 request.Difficulty,
                 request.ExamType,
+                request.IsActive,
                 cancellationToken
             );
 
-            return OperationResult<IEnumerable<QuestionType>>.Success(result);
+            var pagedResult = PagedResult<QuestionType>.Create(
+                items.ToList(),
+                totalCount,
+                request.PageNumber,
+                request.PageSize
+            );
+
+            return OperationResult<PagedResult<QuestionType>>.Success(pagedResult);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,13 +40,7 @@ namespace Tokki.Application.UseCases.Blogs.Queries.GetPagedBlogs
                                     .Distinct()
                                     .ToList();
 
-            var authorMap = new Dictionary<string, AccountBasicInfoDTO?>();
-
-            foreach (var authorId in distinctAuthorIds)
-            {
-                var info = await _accountRepository.GetBasicInfoAsync(authorId);
-                authorMap[authorId] = info;
-            }
+            var authorMap = await _accountRepository.GetBasicInfosAsync(distinctAuthorIds);
 
             var dtoItems = pagedEntities.Items.Select(blog =>
             {

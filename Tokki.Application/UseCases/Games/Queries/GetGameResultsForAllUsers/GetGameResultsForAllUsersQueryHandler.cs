@@ -1,4 +1,5 @@
-﻿using MediatR;
+using MediatR;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,10 +13,14 @@ namespace Tokki.Application.UseCases.Games.Queries.GetGameResultsForAllUsers
         : IRequestHandler<GetGameResultsForAllUsersQuery, OperationResult<PagedResult<GameResultDto>>>
     {
         private readonly IGameMatchSessionRepository _sessionRepository;
+        private readonly IAccountRepository _accountRepository;
 
-        public GetGameResultsForAllUsersQueryHandler(IGameMatchSessionRepository sessionRepository)
+        public GetGameResultsForAllUsersQueryHandler(
+            IGameMatchSessionRepository sessionRepository,
+            IAccountRepository accountRepository)
         {
             _sessionRepository = sessionRepository;
+            _accountRepository = accountRepository;
         }
 
         public async Task<OperationResult<PagedResult<GameResultDto>>> Handle(
@@ -34,16 +39,35 @@ namespace Tokki.Application.UseCases.Games.Queries.GetGameResultsForAllUsers
             var sessions = result.Items;
             var totalCount = result.TotalCount;
 
-            var dtos = sessions.Select(s => new GameResultDto
+            // Lấy thông tin user tuần tự, cache theo userId để tránh query trùng
+            var userInfoCache = new Dictionary<string, Tokki.Application.UseCases.Accounts.DTOs.AccountBasicInfoDTO?>();
+            foreach (var s in sessions)
             {
-                GameMatchSessionId = s.GameMatchSessionId,
-                UserId = s.UserId,
-                GameId = s.GameId,
-                TopicId = s.TopicId,
-                BestScore = s.BestScore,
-                LatestScore = s.LatestScore,
-                GameDifficulty = s.GameDifficulty,
-                CreatedAt = s.CreatedAt
+                if (!userInfoCache.ContainsKey(s.UserId))
+                {
+                    userInfoCache[s.UserId] = await _accountRepository.GetBasicInfoAsync(s.UserId);
+                }
+            }
+
+            var dtos = sessions.Select(s =>
+            {
+                var info = userInfoCache.GetValueOrDefault(s.UserId);
+                return new GameResultDto
+                {
+                    GameMatchSessionId = s.GameMatchSessionId,
+                    UserId = s.UserId,
+                    UserName = info?.FullName ?? string.Empty,
+                    AvatarUrl = info?.AvatarUrl,
+                    TitleName = info?.CurrentTitleName,
+                    TitleColorHex = info?.CurrentColorHexTitle,
+                    TitleIconUrl = info?.TitleIconUrl,
+                    GameId = s.GameId,
+                    TopicId = s.TopicId,
+                    BestScore = s.BestScore,
+                    LatestScore = s.LatestScore,
+                    GameDifficulty = s.GameDifficulty,
+                    CreatedAt = s.CreatedAt
+                };
             }).ToList();
 
             var pagedResult = PagedResult<GameResultDto>.Create(

@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System.Collections.Generic;
 using Tokki.Domain.Entities;
@@ -17,8 +17,6 @@ namespace Tokki.Infrastructure.Data
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<Report> Reports { get; set; }
         public DbSet<Account> Accounts { get; set; }
-        public DbSet<Session> Session { get; set; }
-        public DbSet<Otp> OtpCodes { get; set; }
         public DbSet<SystemConfig> SystemConfig { get; set; }
         public DbSet<VipPackage> VipPackages { get; set; }
         public DbSet<SocialLogin> SocialLogins { get; set; }
@@ -73,7 +71,7 @@ namespace Tokki.Infrastructure.Data
         public DbSet<KnowledgeMetadata> KnowledgeMetadatas { get; set; }
         public DbSet<ExamTemplateStructure> ExamTemplateStructures { get; set; }
         public DbSet<UserWeakness> UserWeaknesses { get; set; }
-
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -189,35 +187,17 @@ namespace Tokki.Infrastructure.Data
                 .HasIndex(e => new { e.UserId, e.Provider })
                 .IsUnique();
 
-            // =========================================================
-            // 4. CONFIG SESSION
-            // =========================================================
+            //// =========================================================
+            //// 4. CONFIG SESSION
+            //// =========================================================
 
-            modelBuilder.Entity<Session>()
-                .HasOne(us => us.Account)
-                .WithMany(a => a.Sessions)
-                .HasForeignKey(us => us.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+            //modelBuilder.Entity<Session>()
+            //    .HasOne(us => us.Account)
+            //    .WithMany(a => a.Sessions)
+            //    .HasForeignKey(us => us.UserId)
+            //    .OnDelete(DeleteBehavior.Cascade);
 
-            // =========================================================
-            // 5. CONFIG OTP
-            // =========================================================
-
-            modelBuilder.Entity<Otp>(entity =>
-            {
-                entity.HasOne(o => o.Account)
-                      .WithMany()
-                      .HasForeignKey(o => o.UserId)
-                      .OnDelete(DeleteBehavior.Cascade);
-
-                entity.Property(o => o.Status)
-                      .HasConversion<int>()
-                      .HasMaxLength(20);
-
-                entity.Property(o => o.Type)
-                      .HasConversion<int>()
-                      .HasMaxLength(30);
-            });
+           
 
             // =========================================================
             // 6. CONFIG SYSTEM CONFIG
@@ -701,8 +681,8 @@ namespace Tokki.Infrastructure.Data
                       .HasMaxLength(15);   // khớp với Games.GameId
 
                 entity.Property(s => s.TopicId)
-                      .IsRequired()
-                      .HasMaxLength(50);   // khớp với Topics.TopicId
+                      .IsRequired(false)
+                      .HasMaxLength(50);   // nullable — Solitaire lưu NULL
 
                 entity.Property(s => s.BestScore)
                       .IsRequired();
@@ -720,11 +700,12 @@ namespace Tokki.Infrastructure.Data
                       .HasForeignKey(s => s.GameId)
                       .OnDelete(DeleteBehavior.Restrict);
 
-                // Quan hệ tới Topic
+                // Quan hệ tới Topic (nullable — Solitaire không có topic)
                 entity.HasOne(s => s.Topic)
                       .WithMany()
                       .HasForeignKey(s => s.TopicId)
-                      .OnDelete(DeleteBehavior.Restrict);
+                      .IsRequired(false)
+                      .OnDelete(DeleteBehavior.SetNull);
 
                 // Quan hệ tới Account (User)
                 entity.HasOne(s => s.User)

@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,39 +22,39 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetExamAnalysis
 
         public async Task<OperationResult<ExamAnalysisResponse>> Handle(GetExamAnalysisQuery request, CancellationToken cancellationToken)
         {
-            var questionTypes = await _userExamRepository.GetIncorrectQuestionTypesByExamIdAsync(request.UserExamId, cancellationToken);
+            var session = await _userExamRepository.GetByIdAsync(request.UserExamId, cancellationToken);
+            if (session == null)
+                return OperationResult<ExamAnalysisResponse>.Failure("Không tìm thấy kết quả bài thi.", 404);
+
+            if (session.Status == UserExamStatus.InProgress)
+                return OperationResult<ExamAnalysisResponse>.Failure("Bạn chưa nộp bài thi nên chưa thể xem phân tích.", 400);
+
+            var analysis = await _userExamRepository.GetExamAnalysisSummaryAsync(request.UserExamId, cancellationToken);
 
             var response = new ExamAnalysisResponse();
 
-            if (questionTypes == null || !questionTypes.Any())
+            if (analysis == null || !analysis.Any())
             {
-                return OperationResult<ExamAnalysisResponse>.Success(response, 200, "Tuyệt vời! Không phát hiện điểm yếu nào.");
+                return OperationResult<ExamAnalysisResponse>.Success(response, 200, "Không tìm thấy dữ liệu để phân tích.");
             }
 
-            foreach (var qt in questionTypes)
+            foreach (var dto in analysis)
             {
-                var dto = new QuestionTypeDto
-                {
-                    QuestionTypeId = qt.QuestionTypeId,
-                    Code = qt.Code,
-                    Name = qt.Name
-                };
-
-                switch (qt.Skill)
+                switch (dto.Skill)
                 {
                     case QuestionSkill.Reading:
-                        response.ReadingIssues.Add(dto);
+                        response.ReadingAnalysis.Add(dto);
                         break;
                     case QuestionSkill.Listening:
-                        response.ListeningIssues.Add(dto);
+                        response.ListeningAnalysis.Add(dto);
                         break;
                     case QuestionSkill.Writing:
-                        response.WritingIssues.Add(dto);
+                        response.WritingAnalysis.Add(dto);
                         break;
                 }
             }
 
-            return OperationResult<ExamAnalysisResponse>.Success(response, 200, "Phân tích điểm yếu hoàn tất.");
+            return OperationResult<ExamAnalysisResponse>.Success(response, 200, "Phân tích bài thi hoàn tất.");
         }
     }
 }

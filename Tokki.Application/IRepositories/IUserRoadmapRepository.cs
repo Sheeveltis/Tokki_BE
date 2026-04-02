@@ -30,4 +30,7 @@ public interface IUserRoadmapRepository
     Task<List<string>> GetValidQuestionTypeIdsByLevelAsync(
     CurrentTopikLevel level,
     CancellationToken cancellationToken = default);
+    Task<Exam?> GetEntranceExamByConfigKeyAsync(
+    string configKey,
+    CancellationToken cancellationToken = default);
 }

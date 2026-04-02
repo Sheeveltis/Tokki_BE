@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -27,6 +27,9 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetWritingDetail
 
             if (session == null)
                 return OperationResult<WritingDetailResponse>.Failure("Không tìm thấy kết quả bài thi.", 404);
+
+            if (session.Status == UserExamStatus.InProgress)
+                return OperationResult<WritingDetailResponse>.Failure("Bạn chưa nộp bài thi nên chưa thể xem kết quả.", 400);
 
             var templateParts = session.Exam?.ExamTemplate?.TemplateParts;
             if (templateParts == null || !templateParts.Any())

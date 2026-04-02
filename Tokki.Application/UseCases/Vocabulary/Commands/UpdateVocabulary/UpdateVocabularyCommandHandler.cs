@@ -110,22 +110,23 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.UpdateVocabulary
                 {
                     vocabulary.Status = newStatus;
 
-                    // 1) Vocab -> Deleted: cascade ALL children -> Deleted
+                    // 1) Vocab -> Deleted: cascade cả Topics và Examples -> Deleted
                     if (newStatus == VocabularyStatus.Deleted)
                     {
                         CascadeTopicsToDeleted(vocabulary, currentUserId);
                         CascadeExamplesToDeleted(vocabulary);
                     }
-                    // 2) Vocab -> Draft: cascade ALL children -> Draft
+                    // 2) Vocab -> Draft: cascade cả Topics và Examples -> Draft
                     else if (newStatus == VocabularyStatus.Draft)
                     {
                         CascadeTopicsToDraft(vocabulary, currentUserId);
                         CascadeExamplesToDraft(vocabulary);
                     }
-                    // 3) Vocab -> Active: chỉ vocab Active, children giữ nguyên (không cascade)
+                    // 3) Vocab -> Active: cascade cả Topics và Examples -> Active
                     else if (newStatus == VocabularyStatus.Active)
                     {
-                        // Không cascade theo nghiệp vụ
+                        CascadeTopicsToActive(vocabulary, currentUserId);
+                        CascadeExamplesToActive(vocabulary);
                     }
                 }
             }
@@ -201,6 +202,16 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.UpdateVocabulary
             }
         }
 
+        private static void CascadeTopicsToActive(Tokki.Domain.Entities.Vocabulary vocabulary, string userId)
+        {
+            foreach (var vt in vocabulary.VocabularyTopics)
+            {
+                vt.Status = VocabularyTopicStatus.Active;
+                vt.UpdateBy = userId;
+                vt.UpdateDate = DateTime.UtcNow.AddHours(7);
+            }
+        }
+
         private static void CascadeExamplesToDeleted(Tokki.Domain.Entities.Vocabulary vocabulary)
         {
             foreach (var ex in vocabulary.VocabularyExamples)
@@ -214,6 +225,14 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.UpdateVocabulary
             foreach (var ex in vocabulary.VocabularyExamples)
             {
                 ex.Status = VocabularyExampleStatus.Draft;
+            }
+        }
+
+        private static void CascadeExamplesToActive(Tokki.Domain.Entities.Vocabulary vocabulary)
+        {
+            foreach (var ex in vocabulary.VocabularyExamples)
+            {
+                ex.Status = VocabularyExampleStatus.Active;
             }
         }
     }

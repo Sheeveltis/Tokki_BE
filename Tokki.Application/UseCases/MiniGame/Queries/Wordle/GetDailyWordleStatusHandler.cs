@@ -1,8 +1,9 @@
-﻿using MediatR;
+using MediatR;
 using System.Net; 
 using Tokki.Application.Common.Models; 
 using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.MiniGame.DTOs;
+using Tokki.Application.Common.Helpers;
 
 namespace Tokki.Application.UseCases.MiniGame.Queries.Wordle
 {
@@ -47,7 +48,13 @@ namespace Tokki.Application.UseCases.MiniGame.Queries.Wordle
                     IsWon = userProgress?.IsWon ?? false,
                     AttemptCount = userProgress?.AttemptCount ?? 0,
                     MaxAttempts = 6,
-                    Guesses = userProgress?.Guesses ?? new List<string>()
+                    Attempts = (userProgress?.Guesses ?? new List<string>())
+                                        .Select(g => new WordleAttemptDTO
+                                        {
+                                            Guess = g,
+                                            Feedbacks = WordleHelper.CalculateFeedback(game.Word, g)
+                                        })
+                                        .ToList()
                 });
             }
 

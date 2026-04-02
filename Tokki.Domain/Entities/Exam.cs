@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Tokki.Domain.Enums;
 
@@ -24,11 +25,13 @@ namespace Tokki.Domain.Entities
         public string Title { get; set; } = string.Empty;
 
         public int Duration { get; set; }
+        public string? SkillDurations { get; set; }
 
         [Required]
         public ExamType Type { get; set; }
 
         public ExamStatus Status { get; set; } = ExamStatus.Draft;
+        public int PdfDownloadCount { get; set; } = 0;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public string CreatedBy { get; set; } = string.Empty;
@@ -37,6 +40,12 @@ namespace Tokki.Domain.Entities
         [ForeignKey(nameof(ExamTemplateId))]
         public virtual ExamTemplate ExamTemplate { get; set; } = null!;
         public virtual ICollection<ExamQuestion> ExamQuestions { get; set; } = new List<ExamQuestion>();
+        public virtual ICollection<UserExam> UserExams { get; set; } = new List<UserExam>();
+        [NotMapped]
+        public Dictionary<string, int> SkillDurationsDict =>
+            string.IsNullOrEmpty(SkillDurations)
+            ? new Dictionary<string, int>()
+            : JsonSerializer.Deserialize<Dictionary<string, int>>(SkillDurations) ?? new();
     }
 
 }
