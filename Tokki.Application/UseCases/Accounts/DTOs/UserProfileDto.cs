@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Accounts.DTOs
@@ -21,6 +21,7 @@ namespace Tokki.Application.UseCases.Accounts.DTOs
 
         public string? CurrentTitle { get; set; } // tối thiểu: CurrentTitleId
         public TopicLevel? Level { get; set; } // nullable theo DB bạn thêm
+        public TopicLevel? AimLevel { get; set; } // level mục tiêu
         public DateTime? LastLoginAt { get; set; } // nullable
     }
 }
