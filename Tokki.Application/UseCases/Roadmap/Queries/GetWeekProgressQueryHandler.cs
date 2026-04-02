@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using System.Linq;
 using Tokki.Application.Common.Models;
 
 namespace Tokki.Application.UseCases.Roadmap.Queries
@@ -19,7 +20,11 @@ namespace Tokki.Application.UseCases.Roadmap.Queries
             if (week == null)
                 return OperationResult<int>.Failure("Không tìm thấy tuần học.", 404);
 
-            return OperationResult<int>.Success(week.ProgressPercent);
+            int progressPercent = week.DailyTasks == null || week.DailyTasks.Count == 0
+                ? 0
+                : (int)((double)week.DailyTasks.Count(t => t.IsCompleted) / week.DailyTasks.Count * 100);
+
+            return OperationResult<int>.Success(progressPercent);
         }
     }
 }
