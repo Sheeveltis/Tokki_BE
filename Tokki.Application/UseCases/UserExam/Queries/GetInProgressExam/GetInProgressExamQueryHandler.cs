@@ -175,10 +175,14 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
                 }
             }
 
+            string qRange = part.QuestionFrom == part.QuestionTo 
+                ? $"({part.QuestionFrom})" 
+                : $"({part.QuestionFrom}~{part.QuestionTo})";
+
             return new ExamPartDto
             {
                 PartId = part.TemplatePartId,
-                PartName = part.PartTitle,
+                PartName = $"{qRange} {part.PartTitle} (각 {part.Mark} 점)",
                 Description = part.Instruction ?? string.Empty,
                 ExampleUrl = part.ExampleUrl,
                 QuestionGroups = groups
@@ -231,10 +235,14 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
                 }
             }
 
+            string qRange = part.QuestionFrom == part.QuestionTo 
+                ? $"({part.QuestionFrom})" 
+                : $"({part.QuestionFrom}~{part.QuestionTo})";
+
             return new ExamPartWritingDto
             {
                 PartId = part.TemplatePartId,
-                PartName = part.PartTitle,
+                PartName = $"{qRange} {part.PartTitle} (각 {part.Mark} 점)",
                 Description = part.Instruction ?? string.Empty,
                 ExampleUrl = part.ExampleUrl,
                 QuestionGroups = groups
