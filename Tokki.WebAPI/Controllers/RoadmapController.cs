@@ -11,6 +11,7 @@ using Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek;
 using Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap;
 using Tokki.Application.UseCases.Roadmap.Commands.ProcessWeeklyResult;
 using Tokki.Application.UseCases.Roadmap.DTOs;
+using Tokki.Application.UseCases.Roadmap.Queries;
 using Tokki.Application.UseCases.Roadmap.Queries.GetEntranceExam;
 using Tokki.Application.UseCases.Roadmap.Queries.GetEntranceFeedback;
 using Tokki.Application.UseCases.Roadmap.Queries.GetRoadmap;
@@ -279,6 +280,20 @@ namespace Tokki.WebAPI.Controllers
                 return NotFound(new { message = "Không tìm thấy job. Có thể đã hết hạn hoặc jobId không hợp lệ." });
 
             return Ok(state);
+        }
+
+        [HttpGet("week/{roadmapWeekId}/progress")]
+        public async Task<IActionResult> GetWeekProgress(string roadmapWeekId)
+        {
+            var query = new GetWeekProgressQuery
+            {
+                RoadmapWeekId = roadmapWeekId,
+            };
+
+            var result = await _mediator.Send(query);
+
+            if (result.StatusCode == 404) return NotFound(result);
+            return Ok(result);
         }
     }
 }

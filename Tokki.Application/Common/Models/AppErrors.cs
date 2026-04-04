@@ -1,4 +1,4 @@
-﻿using System.Net.NetworkInformation;
+using System.Net.NetworkInformation;
 using Tokki.Application.Common.Models;
 using Tokki.Domain.Enums;
 
@@ -12,6 +12,7 @@ namespace Tokki.Application.Common.Models
         public static readonly Error ServerError = new("App.ServerError", "Lỗi hệ thống, vui lòng thử lại sau.");
         public static readonly Error ValidationFailed = new("App.ValidationFailed", "Dữ liệu đầu vào không hợp lệ.");
         public static readonly Error BadRequest = new("App.BadRequest", "Yêu cầu không hợp lệ.");
+        public static readonly Error SecurityError = new("App.SecurityError", "Thao tác bị từ chối vì lý do bảo mật.");
         public static readonly Error DatabaseError = new("App.DatabaseError", "Không thể lưu dữ liệu vào hệ thống."); 
         // ============================================
         // NHÓM 2: AUTHENTICATION & USER

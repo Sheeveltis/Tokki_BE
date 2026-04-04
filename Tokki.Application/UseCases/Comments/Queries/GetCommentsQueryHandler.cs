@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.Comments.DTOs;
@@ -29,6 +29,9 @@ public class GetCommentsQueryHandler : IRequestHandler<GetCommentsQuery, Operati
             UserId = c.UserId,
             AuthorName = c.User?.FullName ?? "Người dùng ẩn danh",
             AuthorAvatar = c.User?.AvatarUrl ?? "",
+            Name = c.User?.CurrentTitle?.Name,
+            ColorHex = c.User?.CurrentTitle?.ColorHex,
+            IconUrl = c.User?.CurrentTitle?.IconUrl,
             ParentId = c.ParentId,
             Replies = new List<CommentDTO>()
         }).ToList();

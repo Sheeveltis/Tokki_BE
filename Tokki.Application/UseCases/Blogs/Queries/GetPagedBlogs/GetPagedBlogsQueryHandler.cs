@@ -31,6 +31,8 @@ namespace Tokki.Application.UseCases.Blogs.Queries.GetPagedBlogs
                 request.PageNumber,
                 request.PageSize,
                 request.CategoryId,
+                request.Tag,
+                request.Keyword,
                 request.Status,
                 cancellationToken);
 

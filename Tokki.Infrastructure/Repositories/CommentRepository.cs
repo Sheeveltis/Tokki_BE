@@ -1,4 +1,4 @@
-﻿using Tokki.Application.IRepositories;
+using Tokki.Application.IRepositories;
 using Tokki.Domain.Entities;
 using Tokki.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -26,7 +26,8 @@ public class CommentRepository : ICommentRepository
         return await _context.Comments
             .AsNoTracking() 
             .Where(c => c.BlogId == blogId)
-            .Include(c => c.User) 
+            .Include(c => c.User)
+                .ThenInclude(u => u.CurrentTitle)
             .OrderBy(c => c.CreatedAt) 
             .ToListAsync(token);
     }

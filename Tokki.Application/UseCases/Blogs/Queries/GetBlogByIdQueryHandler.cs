@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +8,7 @@ using Tokki.Application.Common.Helpers;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.Blogs.DTOs;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Blogs.Queries
 {
@@ -31,6 +32,17 @@ namespace Tokki.Application.UseCases.Blogs.Queries
             if (blog == null)
             {
                 return OperationResult<BlogDetailDTO>.Failure(AppErrors.BlogNotFound, 404, OperationMessages.NotFound("Bài viết"));
+            }
+
+            // Nếu là chế độ xem của Client (không phải Admin/Staff)
+            if (!request.IsAdminView)
+            {
+                // Chỉ cho phép xem bài viết đã Đăng (Published) hoặc Lưu trữ (Archived)
+                // Các trạng thái khác (Draft, Hidden, Pending, Rejected) yêu cầu quyền Admin
+                if (blog.Status != BlogStatus.Published && blog.Status != BlogStatus.Archived)
+                {
+                    return OperationResult<BlogDetailDTO>.Failure(AppErrors.SecurityError, 403, "Bạn không có quyền xem bài viết này.");
+                }
             }
 
             var authorInfo = await _accountRepository.GetBasicInfoAsync(blog.AuthorId);

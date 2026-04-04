@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,9 +11,9 @@ namespace Tokki.Application.IRepositories
 {
     public interface IBlogRepository
     {
-
-        Task<PagedResult<Blog>> GetPagedAsync(int pageNumber,int pageSize,string? categoryId,
-        BlogStatus? status, CancellationToken cancellationToken);
+        Task<PagedResult<Blog>> GetPagedAsync(int pageNumber, int pageSize, string? categoryId,
+            string? tag, string? keyword, BlogStatus? status, CancellationToken cancellationToken);
+            
         Task<Blog?> GetByIdAsync(string id);
         Task AddAsync(Blog blog);
         Task UpdateAsync(Blog blog); 
@@ -23,7 +23,6 @@ namespace Tokki.Application.IRepositories
         Task<ICollection<Tag>> GetOrCreateTagsAsync(List<string> tagNames);
 
         Task<bool> ExistsAsync(string blogId);
-        // Transaction
         Task SaveChangesAsync(CancellationToken cancellationToken);
         Task<bool> IncreaseViewCountAsync(string blogId);
     }
