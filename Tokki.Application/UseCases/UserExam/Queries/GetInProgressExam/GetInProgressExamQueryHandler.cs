@@ -176,8 +176,8 @@ namespace Tokki.Application.UseCases.UserExam.Queries.GetInProgressExam
             }
 
             string qRange = part.QuestionFrom == part.QuestionTo 
-                ? $"({part.QuestionFrom})" 
-                : $"({part.QuestionFrom}~{part.QuestionTo})";
+                ? $"[{part.QuestionFrom}]" 
+                : $"[{part.QuestionFrom}~{part.QuestionTo}]";
 
             return new ExamPartDto
             {
