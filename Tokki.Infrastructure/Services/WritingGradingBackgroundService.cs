@@ -1,4 +1,4 @@
-﻿// Infrastructure/BackgroundJobs/WritingGradingBackgroundService.cs
+// Infrastructure/BackgroundJobs/WritingGradingBackgroundService.cs
 using Hangfire;
 using Microsoft.Extensions.DependencyInjection;
 using Tokki.Application.IRepositories;
@@ -68,50 +68,31 @@ namespace Tokki.Infrastructure.BackgroundJobs
             var session = await repository.GetByIdWithWritingDetailsAsync(userExamId, CancellationToken.None);
             if (session == null) return;
 
-            var writingParts = session.Exam.ExamTemplate.TemplateParts
-                .Where(p => p.Skill == Domain.Enums.QuestionSkill.Writing)
-                .ToList();
-
             var writingAnswers = session.UserExamWritingAnswers.ToList();
 
-            foreach (var part in writingParts)
+            foreach (var answer in writingAnswers)
             {
-                // Lấy toàn bộ danh sách các câu trả lời khớp với part hiện tại
-                var matchingAnswers = writingAnswers
-                    .Where(a => a.OrderIndex == part.QuestionFrom)
-                    .ToList();
+                var code = answer.Question?.QuestionType?.Code ?? string.Empty;
+                var answerId = answer.UserExamWritingAnswerId;
 
-                // Bỏ qua nếu không có câu trả lời nào
-                if (!matchingAnswers.Any()) continue;
-
-                // Lấy mã câu hỏi (Code này nằm ở part, nên để ngoài vòng lặp con cho tối ưu)
-                var code = part.QuestionType?.Code ?? string.Empty;
-
-                // Lặp qua từng câu trả lời để đưa vào hàng đợi chấm điểm
-                foreach (var matchingAnswer in matchingAnswers)
+                switch (code)
                 {
-                    var answerId = matchingAnswer.UserExamWritingAnswerId;
-
-                    // Phân loại và gọi Background Job tương ứng cho từng answerId
-                    switch (code)
-                    {
-                        case "TOPIK2_W_Q51":
-                            backgroundJobs.Enqueue<IWritingGradingBackgroundService>(
-                                s => s.GradeQuestion51Async(answerId));
-                            break;
-                        case "TOPIK2_W_Q52":
-                            backgroundJobs.Enqueue<IWritingGradingBackgroundService>(
-                                s => s.GradeQuestion52Async(answerId));
-                            break;
-                        case "TOPIK2_W_Q53":
-                            backgroundJobs.Enqueue<IWritingGradingBackgroundService>(
-                                s => s.GradeQuestion53Async(answerId));
-                            break;
-                        case "TOPIK2_W_Q54":
-                            backgroundJobs.Enqueue<IWritingGradingBackgroundService>(
-                                s => s.GradeQuestion54Async(answerId));
-                            break;
-                    }
+                    case "TOPIK2_W_Q51":
+                        backgroundJobs.Enqueue<IWritingGradingBackgroundService>(
+                            s => s.GradeQuestion51Async(answerId));
+                        break;
+                    case "TOPIK2_W_Q52":
+                        backgroundJobs.Enqueue<IWritingGradingBackgroundService>(
+                            s => s.GradeQuestion52Async(answerId));
+                        break;
+                    case "TOPIK2_W_Q53":
+                        backgroundJobs.Enqueue<IWritingGradingBackgroundService>(
+                            s => s.GradeQuestion53Async(answerId));
+                        break;
+                    case "TOPIK2_W_Q54":
+                        backgroundJobs.Enqueue<IWritingGradingBackgroundService>(
+                            s => s.GradeQuestion54Async(answerId));
+                        break;
                 }
             }
         }
