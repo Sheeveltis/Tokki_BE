@@ -4,7 +4,7 @@ using Tokki.Domain.Entities;
 
 namespace Tokki.Domain.Entities
 {
-    [Table("refresh_tokens")] 
+    [Table("RefreshTokens")] 
     public class RefreshToken
     {
         [Column("id")]
