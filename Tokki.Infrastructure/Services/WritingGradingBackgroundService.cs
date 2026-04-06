@@ -1,4 +1,4 @@
-﻿// Infrastructure/BackgroundJobs/WritingGradingBackgroundService.cs
+// Infrastructure/BackgroundJobs/WritingGradingBackgroundService.cs
 using Hangfire;
 using Microsoft.Extensions.DependencyInjection;
 using Tokki.Application.IRepositories;
@@ -68,21 +68,12 @@ namespace Tokki.Infrastructure.BackgroundJobs
             var session = await repository.GetByIdWithWritingDetailsAsync(userExamId, CancellationToken.None);
             if (session == null) return;
 
-            var writingParts = session.Exam.ExamTemplate.TemplateParts
-                .Where(p => p.Skill == Domain.Enums.QuestionSkill.Writing)
-                .ToList();
-
             var writingAnswers = session.UserExamWritingAnswers.ToList();
 
-            foreach (var part in writingParts)
+            foreach (var answer in writingAnswers)
             {
-                var matchingAnswer = writingAnswers
-                    .FirstOrDefault(a => a.OrderIndex == part.QuestionFrom);
-
-                if (matchingAnswer == null) continue;
-
-                var code = part.QuestionType?.Code ?? string.Empty;
-                var answerId = matchingAnswer.UserExamWritingAnswerId;
+                var code = answer.Question?.QuestionType?.Code ?? string.Empty;
+                var answerId = answer.UserExamWritingAnswerId;
 
                 switch (code)
                 {

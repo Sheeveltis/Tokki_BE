@@ -1,4 +1,4 @@
-﻿using DnsClient.Internal;
+using DnsClient.Internal;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -122,7 +122,17 @@ namespace Tokki.Infrastructure.Services
                         ? QUESTIONS_PER_PART_WRITING
                         : QUESTIONS_PER_PART_MCQ;
 
-                    int markPerQuestion = skill == QuestionSkill.Writing ? 10 : 2;
+                    int markPerQuestion = 2;
+                    if (skill == QuestionSkill.Writing)
+                    {
+                        string code = qType?.Code ?? "";
+                        if (code.Contains("53"))
+                            markPerQuestion = 30;
+                        else if (code.Contains("54"))
+                            markPerQuestion = 50;
+                        else
+                            markPerQuestion = 10;
+                    }
 
                     partsDto.Add(new CreateTemplatePartDto
                     {

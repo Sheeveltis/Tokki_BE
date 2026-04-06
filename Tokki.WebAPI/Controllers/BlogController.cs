@@ -11,6 +11,7 @@ using Tokki.Application.UseCases.Blogs.Commands.SubmitBlogForApproval;
 using Tokki.Application.UseCases.Blogs.Commands.UpdateBlog;
 using Tokki.Application.UseCases.Blogs.Queries;
 using Tokki.Application.UseCases.Blogs.Queries.GetPagedBlogs;
+using Tokki.Domain.Enums;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -23,22 +24,39 @@ namespace Tokki.WebAPI.Controllers
         {
             _sender = sender;
         }
-        [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] GetPagedBlogsQuery query)
-        {
-            // If user is not Admin/Staff/Moderator, filter to only Published blogs
-            if (!(User.IsInRole("Admin") || User.IsInRole("Staff") || User.IsInRole("Moderator")))
-            {
-                query.Status = Domain.Enums.BlogStatus.Published;
-            }
 
+        [HttpGet("user")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetForUser([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, 
+            [FromQuery] string? categoryId = null, [FromQuery] string? tag = null, [FromQuery] string? keyword = null)
+        {
+            var query = new GetPagedBlogsQuery 
+            { 
+                PageNumber = pageNumber, 
+                PageSize = pageSize, 
+                CategoryId = categoryId, 
+                Tag = tag, 
+                Keyword = keyword,
+                Status = BlogStatus.Published 
+            };
             var result = await _sender.Send(query);
             return StatusCode(result.StatusCode, result);
         }
+
+        [HttpGet("admin")]
+        [Authorize(Roles = "Admin, Staff, Moderator")]
+        public async Task<IActionResult> GetForAdmin([FromQuery] GetPagedBlogsQuery query)
+        {
+            var result = await _sender.Send(query);
+            return StatusCode(result.StatusCode, result);
+        }
+
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetById(string id)
         {
-            var query = new GetBlogByIdQuery { Id = id };
+            var isAdmin = User.IsInRole("Admin") || User.IsInRole("Staff") || User.IsInRole("Moderator");
+            var query = new GetBlogByIdQuery { Id = id, IsAdminView = isAdmin };
             var result = await _sender.Send(query);
             return StatusCode(result.StatusCode, result);
         }
@@ -53,6 +71,7 @@ namespace Tokki.WebAPI.Controllers
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
         }
+
         [HttpPut("{id}")]
         [Authorize(Roles ="Admin, Staff")]
         public async Task<IActionResult> Update(string id, [FromBody] UpdateBlogCommand command)
@@ -75,10 +94,6 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
-
-        /// <summary>
-        /// Dành cho Author (Staff): Gửi bài viết đi phê duyệt
-        /// </summary>
         [HttpPost("staff/submit-approval/{id}")]
         [Authorize(Roles ="Staff")] 
         public async Task<IActionResult> SubmitForApproval(string id)
@@ -88,9 +103,6 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
-        /// <summary>
-        /// Dành cho Moderator: Phê duyệt bài viết (Publish)
-        /// </summary>
         [HttpPost("moderator/approve/{id}")]
         [Authorize(Roles = "Moderator")] 
         public async Task<IActionResult> Approve(string id)
@@ -100,9 +112,6 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
-        /// <summary>
-        /// Dành cho Moderator: Từ chối bài viết (Reject)
-        /// </summary>
         [HttpPost("moderator/reject")]
         [Authorize(Roles = "Moderator")] 
         public async Task<IActionResult> Reject([FromBody] RejectBlogCommand command)
@@ -110,11 +119,7 @@ namespace Tokki.WebAPI.Controllers
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
         }
-        /// <summary>
-        /// Tăng số lượt xem cho bài viết
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
+
         [HttpPost("increase-view/{id}")]
         [AllowAnonymous] 
         public async Task<IActionResult> IncreaseViewCount(string id)

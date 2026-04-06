@@ -19,6 +19,7 @@ using Tokki.Application.UseCases.UserExam.Queries.GetUserExamResult;
 using Tokki.Application.UseCases.UserExam.Queries.GetUserExamReview;
 using Tokki.Application.UseCases.UserExam.Queries.GetUserExams;
 using Tokki.Application.UseCases.UserExam.Queries.GetWritingDetail;
+using Tokki.Application.UseCases.UserExam.Queries.GetGradingProgress;
 using Tokki.Domain.Enums;
 
 namespace Tokki.WebAPI.Controllers
@@ -149,6 +150,12 @@ namespace Tokki.WebAPI.Controllers
         {
             var result = await _sender.Send(new CheckGradingStatusQuery { UserExamId = userExamId });
             return Ok(result.Data?.IsGraded ?? false);
+        }
+        [HttpGet("{userExamId}/grading-progress")]
+        public async Task<IActionResult> GetGradingProgress(string userExamId)
+        {
+            var result = await _sender.Send(new GetGradingProgressQuery(userExamId));
+            return StatusCode(result.StatusCode, result);
         }
         [HttpGet("{userExamId}/result")]
         public async Task<IActionResult> GetExamResultOverview(string userExamId)

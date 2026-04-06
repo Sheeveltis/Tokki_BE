@@ -61,6 +61,7 @@ namespace Tokki.Infrastructure.Repositories
             return await _context.RoadmapWeeks
                 .Include(w => w.UserRoadmap)
                 .Include(w => w.WeeklyExam)
+                .Include(x => x.DailyTasks)
                 .FirstOrDefaultAsync(w => w.RoadmapWeekId == weekId, cancellationToken);
         }
 

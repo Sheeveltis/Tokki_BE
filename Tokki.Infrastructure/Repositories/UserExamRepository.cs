@@ -325,7 +325,27 @@ namespace Tokki.Infrastructure.Repositories
                         .ThenInclude(et => et.TemplateParts)
                             .ThenInclude(tp => tp.QuestionType)
                 .Include(u => u.UserExamWritingAnswers)
+                    .ThenInclude(wa => wa.Question)
+                        .ThenInclude(q => q.QuestionType)
                 .FirstOrDefaultAsync(u => u.UserExamId == userExamId, token);
+        }
+
+        public async Task<(UserExamStatus Status, int TotalWritingTasks, int GradedWritingTasks)?> GetGradingProgressStatsAsync(string userExamId, CancellationToken token)
+        {
+            var stats = await _context.UserExams
+                .AsNoTracking()
+                .Where(ue => ue.UserExamId == userExamId)
+                .Select(ue => new
+                {
+                    ue.Status,
+                    TotalWritingTasks = ue.UserExamWritingAnswers.Count(),
+                    GradedWritingTasks = ue.UserExamWritingAnswers.Count(wa => wa.GradedAt != null)
+                })
+                .FirstOrDefaultAsync(token);
+
+            if (stats == null) return null;
+
+            return (stats.Status, stats.TotalWritingTasks, stats.GradedWritingTasks);
         }
         public async Task<CurrentTopikLevel?> GetSelfDeclaredLevelAsync(
             string userExamId,

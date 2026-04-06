@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -53,7 +53,8 @@ namespace Tokki.Application.UseCases.Accounts.Queries.GetUserProfile
                 // "CurrentTitle" hiện tại trả CurrentTitleId (nếu muốn trả tên title thì cần join Title table)
                 CurrentTitle = user.CurrentTitleId,
 
-                Level = user.Level,        // int? (nullable)
+                Level = user.Level,
+                AimLevel = user.AimLevel,
                 LastLoginAt = user.LastLoginAt
             };
 

@@ -1,4 +1,4 @@
-﻿namespace Tokki.Application.UseCases.Comments.DTOs
+namespace Tokki.Application.UseCases.Comments.DTOs
 {
     public class CommentDTO
     {
@@ -11,6 +11,10 @@
         public string UserId { get; set; } = string.Empty;
         public string AuthorName { get; set; } = string.Empty;
         public string AuthorAvatar { get; set; } = string.Empty;
+
+        public string? Name { get; set; }
+        public string? ColorHex { get; set; }
+        public string? IconUrl { get; set; }
 
         public string? ParentId { get; set; }
         public List<CommentDTO> Replies { get; set; } = new List<CommentDTO>();
