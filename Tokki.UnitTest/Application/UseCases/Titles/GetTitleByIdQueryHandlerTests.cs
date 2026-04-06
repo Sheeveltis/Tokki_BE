@@ -26,12 +26,11 @@ namespace Tokki.UnitTest.Application.UseCases.Titles
 
         private static Title SampleTitle(string id = "T-001") => new Title
         {
-            TitleId    = id,
-            Name       = "Bậc học giả",
+            TitleId     = id,
+            Name        = "Bậc học giả",
             Description = "Top learner",
-            RequiredXP = 1000,
-            ColorHex   = "#GOLD",
-            IsSystemGiven = true
+            RequirementQuantity = 1000,
+            ColorHex    = "#GOLD"
         };
 
         // TC-TITLE-GBI-01 | A | Title not found → 404 failure
@@ -62,8 +61,7 @@ namespace Tokki.UnitTest.Application.UseCases.Titles
         {
             var result = await CreateHandler(GetRepoMock(SampleTitle())).Handle(new GetTitleByIdQuery("T-001"), CancellationToken.None);
             result.Data!.Name.Should().Be("Bậc học giả");
-            result.Data.RequiredXP.Should().Be(1000);
-            result.Data.IsSystemGiven.Should().BeTrue();
+            result.Data.RequirementQuantity.Should().Be(1000);
             result.Data.ColorHex.Should().Be("#GOLD");
             QACollector.LogTestCase("Title - Get By Id", new TestCaseDetail { FunctionGroup = "GetTitleById", TestCaseID = "TC-TITLE-GBI-03", Description = "All fields (Name, XP, IsSystemGiven, ColorHex) present", ExpectedResult = "All fields correct", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Title entity returned directly" } });
         }

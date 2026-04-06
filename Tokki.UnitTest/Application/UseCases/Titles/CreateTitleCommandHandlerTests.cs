@@ -8,6 +8,7 @@ using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Application.UseCases.Titles.Commands.CreateTitle;
 using Tokki.Domain.Entities;
+using Tokki.Domain.Enums;
 using Tokki.UnitTest.Utilities;
 using Xunit;
 
@@ -18,7 +19,7 @@ namespace Tokki.UnitTest.Application.UseCases.Titles
         private static Mock<ITitleRepository> GetRepoMock(Title? existing = null)
         {
             var m = new Mock<ITitleRepository>();
-            m.Setup(x => x.GetTitleByNameAsync(It.IsAny<string>())).ReturnsAsync(existing);
+            m.Setup(x => x.GetTitleByNameAsync(It.IsAny<string>(), It.IsAny<TitleStatus?>())).ReturnsAsync(existing);
             m.Setup(x => x.AddAsync(It.IsAny<Title>())).Returns(Task.CompletedTask);
             return m;
         }
@@ -38,7 +39,7 @@ namespace Tokki.UnitTest.Application.UseCases.Titles
                 (idGen ?? GetIdGenMock()).Object);
 
         private static CreateTitleCommand MakeCommand(string name = "Bậc học giả", long xp = 1000)
-            => new CreateTitleCommand { Name = name, Description = "Top learner", RequiredXP = xp, ColorHex = "#GOLD", IsSystemGiven = true };
+            => new CreateTitleCommand { Name = name, Description = "Top learner", RequirementQuantity = xp, ColorHex = "#GOLD" };
 
         // TC-TITLE-CREATE-01 | A | Title name already exists → 400 failure
         [Fact]
@@ -85,8 +86,7 @@ namespace Tokki.UnitTest.Application.UseCases.Titles
             await CreateHandler(repo).Handle(MakeCommand("Bậc văn nhân", 2000), CancellationToken.None);
             captured.Should().NotBeNull();
             captured!.Name.Should().Be("Bậc văn nhân");
-            captured.RequiredXP.Should().Be(2000);
-            captured.IsSystemGiven.Should().BeTrue();
+            captured.RequirementQuantity.Should().Be(2000);
             QACollector.LogTestCase("Title - Create", new TestCaseDetail { FunctionGroup = "CreateTitle", TestCaseID = "TC-TITLE-CREATE-04", Description = "Title fields (Name, RequiredXP, IsSystemGiven) match command", ExpectedResult = "All fields correct", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Command fields mapped to entity" } });
         }
 

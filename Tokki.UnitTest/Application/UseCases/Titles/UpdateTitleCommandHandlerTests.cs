@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.Titles.Commands.UpdateTitle;
 using Tokki.Domain.Entities;
+using Tokki.Domain.Enums;
 using Tokki.UnitTest.Utilities;
 using Xunit;
 
@@ -18,7 +19,7 @@ namespace Tokki.UnitTest.Application.UseCases.Titles
         {
             var m = new Mock<ITitleRepository>();
             m.Setup(x => x.GetTitleByIdAsync(It.IsAny<string>())).ReturnsAsync(title);
-            m.Setup(x => x.GetTitleByNameAsync(It.IsAny<string>())).ReturnsAsync(duplicateByName);
+            m.Setup(x => x.GetTitleByNameAsync(It.IsAny<string>(), It.IsAny<TitleStatus?>())).ReturnsAsync(duplicateByName);
             m.Setup(x => x.UpdateAsync(It.IsAny<Title>())).Returns(Task.CompletedTask);
             return m;
         }
@@ -27,10 +28,10 @@ namespace Tokki.UnitTest.Application.UseCases.Titles
             => new UpdateTitleCommandHandler((repo ?? GetRepoMock()).Object);
 
         private static Title SampleTitle(string id = "T-001", string name = "Bậc học giả") =>
-            new Title { TitleId = id, Name = name, RequiredXP = 1000 };
+            new Title { TitleId = id, Name = name, RequirementQuantity = 1000 };
 
         private static UpdateTitleCommand MakeCommand(string id = "T-001", string name = "Bậc tiến sĩ") =>
-            new UpdateTitleCommand { TitleId = id, Name = name, Description = "Updated", RequiredXP = 2000, ColorHex = "#SILVER", IsSystemGiven = false };
+            new UpdateTitleCommand { TitleId = id, Name = name, Description = "Updated", RequirementQuantity = 2000, ColorHex = "#SILVER" };
 
         // TC-TITLE-UPD-01 | A | Title not found → 404 failure
         [Fact]
@@ -76,8 +77,8 @@ namespace Tokki.UnitTest.Application.UseCases.Titles
             var existing = SampleTitle("T-001", "Bậc học giả");
             var repo     = GetRepoMock(existing);
             // Pass same name in command
-            await CreateHandler(repo).Handle(new UpdateTitleCommand { TitleId = "T-001", Name = "Bậc học giả", RequiredXP = 1500, ColorHex = "#FF" }, CancellationToken.None);
-            repo.Verify(x => x.GetTitleByNameAsync(It.IsAny<string>()), Times.Never);
+            await CreateHandler(repo).Handle(new UpdateTitleCommand { TitleId = "T-001", Name = "Bậc học giả", RequirementQuantity = 1500, ColorHex = "#FF" }, CancellationToken.None);
+            repo.Verify(x => x.GetTitleByNameAsync(It.IsAny<string>(), It.IsAny<TitleStatus?>()), Times.Never);
             QACollector.LogTestCase("Title - Update", new TestCaseDetail { FunctionGroup = "UpdateTitle", TestCaseID = "TC-TITLE-UPD-04", Description = "Same name unchanged → no duplicate check called", ExpectedResult = "GetTitleByNameAsync Times.Never", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "title.Name == request.Name → skip duplicate check" } });
         }
 
@@ -89,8 +90,7 @@ namespace Tokki.UnitTest.Application.UseCases.Titles
             var repo     = GetRepoMock(existing);
             await CreateHandler(repo).Handle(MakeCommand("T-001", "New Name"), CancellationToken.None);
             existing.Name.Should().Be("New Name");
-            existing.RequiredXP.Should().Be(2000);
-            existing.IsSystemGiven.Should().BeFalse();
+            existing.RequirementQuantity.Should().Be(2000);
             QACollector.LogTestCase("Title - Update", new TestCaseDetail { FunctionGroup = "UpdateTitle", TestCaseID = "TC-TITLE-UPD-05", Description = "Entity fields (Name, RequiredXP, IsSystemGiven) updated correctly", ExpectedResult = "All fields mutated", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Entity mutated before UpdateAsync" } });
         }
 

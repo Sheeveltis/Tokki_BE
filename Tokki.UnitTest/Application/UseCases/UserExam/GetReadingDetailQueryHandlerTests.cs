@@ -263,5 +263,79 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
                 AppliedConditions = new List<string> { "GetReadingDetailAsync throws Exception" }
             });
         }
+
+        // ═══════════════════════════════════════════════════════════════
+        // TC-GRDD-07 | N | Null ExamTemplate or incorrect answer false/null
+        // ═══════════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_NullExamTemplate_ShouldReturn400()
+        {
+            var session = BuildCompletedSession();
+            session.Exam.ExamTemplate = null; // null template
+            
+            var repo = new Mock<IUserExamRepository>();
+            repo.Setup(x => x.GetReadingDetailAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(session);
+            
+            var handler = CreateHandler(repo);
+            var result = await handler.Handle(MakeQuery(), CancellationToken.None);
+
+            result.IsSuccess.Should().BeFalse();
+            result.StatusCode.Should().Be(400);
+
+            QACollector.LogTestCase("UserExam - Get Reading Detail", new TestCaseDetail
+            {
+                FunctionGroup     = "GetReadingDetail",
+                TestCaseID        = "TC-GRDD-07",
+                Description       = "Null templateParts branch check",
+                ExpectedResult    = "400 error",
+                StatusRound1      = "Passed",
+                TestCaseType      = "N",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "session.Exam?.ExamTemplate?.TemplateParts is null" }
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // TC-GRDD-08 | N | MediaType parsing branches
+        // ═══════════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_MediaParsing_ShouldGroupCorrectly()
+        {
+            var session = BuildCompletedSession();
+            var q1 = new QuestionBank { Content = "Q1", MediaUrl = "test.webp", QuestionOptions = new List<QuestionOption>() };
+            var q2 = new QuestionBank { Content = "Q2", MediaUrl = "video.mp4", QuestionOptions = new List<QuestionOption>() };
+            
+            session.UserExamAnswers = new List<UserExamAnswer>
+            {
+                new UserExamAnswer { OrderIndex = 21, Question = q1, IsCorrect = false },
+                new UserExamAnswer { OrderIndex = 22, Question = q2, IsCorrect = null }
+            };
+            
+            var repo = new Mock<IUserExamRepository>();
+            repo.Setup(x => x.GetReadingDetailAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(session);
+            
+            var handler = CreateHandler(repo);
+            var result = await handler.Handle(MakeQuery(), CancellationToken.None);
+
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Score.Should().Be(0); // none correct
+            
+            var groups = result.Data.QuestionGroups;
+            groups.Should().HaveCount(2);
+            groups[0].SharedMediaType.Should().Be("Image");
+            groups[1].SharedMediaType.Should().Be("Unknown");
+            
+            QACollector.LogTestCase("UserExam - Get Reading Detail", new TestCaseDetail
+            {
+                FunctionGroup     = "GetReadingDetail",
+                TestCaseID        = "TC-GRDD-08",
+                Description       = "Check GetMediaType for Image and Unknown extensions and IsCorrect branches",
+                ExpectedResult    = "2 groups, SharedMediaType='Image' and 'Unknown', Score=0",
+                StatusRound1      = "Passed",
+                TestCaseType      = "N",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "GetMediaType image/unknown", "IsCorrect=false/null" }
+            });
+        }
     }
 }

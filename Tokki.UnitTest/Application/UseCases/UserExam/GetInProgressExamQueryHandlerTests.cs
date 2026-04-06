@@ -251,5 +251,91 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
                 AppliedConditions = new List<string> { "GetByIdAsync throws Exception" }
             });
         }
+
+        // ═══════════════════════════════════════════════════════════════
+        // TC-GIPR-07 | N | Branch: finished skill sets remaining to 0
+        // ═══════════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_FinishedSkillAndNotStartedSkill_ShouldCalculateSkillRemainingCorrectly()
+        {
+            var session = BuildSession();
+            session.FinishedSkills = "[\"Listening\"]"; // Already finished
+            session.CurrentSkill = QuestionSkill.Reading;
+            session.Exam.SkillDurations = "{\"Listening\":30,\"Reading\":30,\"Writing\":40}"; // 30 mins each
+            
+            // Add a writing template part so it gets included
+            session.Exam.ExamTemplate.TemplateParts.Add(new TemplatePart { Skill = QuestionSkill.Reading, QuestionFrom = 6, QuestionTo = 10 });
+            session.Exam.ExamTemplate.TemplateParts.Add(new TemplatePart { Skill = QuestionSkill.Writing, QuestionFrom = 11, QuestionTo = 12 });
+
+            var repo = new Mock<IUserExamRepository>();
+            repo.Setup(x => x.GetByIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(session);
+            var handler = CreateHandler(repo);
+
+            var result = await handler.Handle(MakeQuery(), CancellationToken.None);
+
+            result.IsSuccess.Should().BeTrue();
+            // Listening finished -> 0
+            result.Data!.SkillTimeRemaining["Listening"].Should().Be(0);
+            // Writing not yet started -> 40 * 60 = 2400
+            result.Data!.SkillTimeRemaining["Writing"].Should().Be(2400);
+
+            QACollector.LogTestCase("UserExam - Get In Progress", new TestCaseDetail
+            {
+                FunctionGroup     = "GetInProgressExam",
+                TestCaseID        = "TC-GIPR-07",
+                Description       = "FinishedSkill has remaining 0, Not yet started skill has max remaining",
+                ExpectedResult    = "Listening=0, Writing=2400",
+                StatusRound1      = "Passed",
+                TestCaseType      = "N",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "finishedList.Contains", "s != session.CurrentSkill" }
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // TC-GIPR-08 | N | Branch: MediaType parsing and Writing Answers grouping
+        // ═══════════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_WritingAnswersAndMediaUrl_ShouldCalculateMediaTypeAndGroups()
+        {
+            var session = BuildSession();
+            // Add a writing part
+            session.Exam.ExamTemplate.TemplateParts.Clear();
+            session.Exam.ExamTemplate.TemplateParts.Add(new TemplatePart { Skill = QuestionSkill.Writing, QuestionFrom = 1, QuestionTo = 2, PartTitle = "Writing Part" });
+            
+            // Add UserExamWritingAnswers
+            var writingQ1 = new QuestionBank { Content = "W1", MediaUrl = "audio.mp3", Passage = new Passage { Content = "Shared", AudioUrl = "hello.mp3" } };
+            var writingQ2 = new QuestionBank { Content = "W2", MediaUrl = "image.png", Passage = new Passage { Content = "Shared2", ImageUrl = "hello.png" } };
+            
+            session.UserExamWritingAnswers.Add(new UserExamWritingAnswer { OrderIndex = 1, Question = writingQ1, AnswerContent = "My ans" });
+            session.UserExamWritingAnswers.Add(new UserExamWritingAnswer { OrderIndex = 2, Question = writingQ2, AnswerContent = "My ans 2" });
+
+            var repo = new Mock<IUserExamRepository>();
+            repo.Setup(x => x.GetByIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(session);
+            var handler = CreateHandler(repo);
+
+            var result = await handler.Handle(MakeQuery(), CancellationToken.None);
+
+            result.IsSuccess.Should().BeTrue();
+            var writingParts = result.Data!.Part.Writing;
+            writingParts.Should().HaveCount(1);
+            
+            var groups = writingParts.First().QuestionGroups;
+            groups.Should().HaveCount(2); // Diff media url and passage -> 2 groups
+            groups[0].SharedMediaType.Should().Be("Audio");
+            groups[1].SharedMediaType.Should().Be("Image");
+
+            QACollector.LogTestCase("UserExam - Get In Progress", new TestCaseDetail
+            {
+                FunctionGroup     = "GetInProgressExam",
+                TestCaseID        = "TC-GIPR-08",
+                Description       = "Writing skill answers mapped and GetMediaType parses Audio/Image correctly",
+                ExpectedResult    = "SharedMediaType=Audio and Image, Writing group populated",
+                StatusRound1      = "Passed",
+                TestCaseType      = "N",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "item.IsWriting=true", ".mp3 -> Audio, .png -> Image" }
+            });
+        }
     }
 }

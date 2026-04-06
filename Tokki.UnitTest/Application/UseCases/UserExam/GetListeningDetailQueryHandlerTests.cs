@@ -263,5 +263,80 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
                 AppliedConditions = new List<string> { "GetListeningDetailAsync throws Exception" }
             });
         }
+
+        // ═══════════════════════════════════════════════════════════════
+        // TC-GLSD-07 | N | Null ExamTemplate or incorrect answer
+        // ═══════════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_NullExamTemplate_ShouldReturn400()
+        {
+            var session = BuildCompletedSession();
+            session.Exam.ExamTemplate = null; // null template
+            
+            var repo = new Mock<IUserExamRepository>();
+            repo.Setup(x => x.GetListeningDetailAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(session);
+            
+            var handler = CreateHandler(repo);
+            var result = await handler.Handle(MakeQuery(), CancellationToken.None);
+
+            result.IsSuccess.Should().BeFalse();
+            result.StatusCode.Should().Be(400);
+
+            QACollector.LogTestCase("UserExam - Get Listening Detail", new TestCaseDetail
+            {
+                FunctionGroup     = "GetListeningDetail",
+                TestCaseID        = "TC-GLSD-07",
+                Description       = "Null templateParts branch check",
+                ExpectedResult    = "400 error",
+                StatusRound1      = "Passed",
+                TestCaseType      = "N",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "session.Exam?.ExamTemplate?.TemplateParts is null" }
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // TC-GLSD-08 | N | MediaType parsing branches
+        // ═══════════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_MediaParsing_ShouldGroupCorrectly()
+        {
+            var session = BuildCompletedSession();
+            // 2 questions with diff media to trigger grouping and GetMediaType
+            var q1 = new QuestionBank { Content = "Q1", MediaUrl = "test.webp", QuestionOptions = new List<QuestionOption>() };
+            var q2 = new QuestionBank { Content = "Q2", MediaUrl = "video.mp4", QuestionOptions = new List<QuestionOption>() };
+            
+            session.UserExamAnswers = new List<UserExamAnswer>
+            {
+                new UserExamAnswer { OrderIndex = 1, Question = q1, IsCorrect = false }, // isCorrect = false
+                new UserExamAnswer { OrderIndex = 2, Question = q2, IsCorrect = null }   // isCorrect = null
+            };
+            
+            var repo = new Mock<IUserExamRepository>();
+            repo.Setup(x => x.GetListeningDetailAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(session);
+            
+            var handler = CreateHandler(repo);
+            var result = await handler.Handle(MakeQuery(), CancellationToken.None);
+
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Score.Should().Be(0); // 0 score since none is correct
+            
+            var groups = result.Data.QuestionGroups;
+            groups.Should().HaveCount(2);
+            groups[0].SharedMediaType.Should().Be("Image"); // webp
+            groups[1].SharedMediaType.Should().Be("Unknown"); // mp4
+            
+            QACollector.LogTestCase("UserExam - Get Listening Detail", new TestCaseDetail
+            {
+                FunctionGroup     = "GetListeningDetail",
+                TestCaseID        = "TC-GLSD-08",
+                Description       = "Check GetMediaType for Image and Unknown extensions and IsCorrect branches",
+                ExpectedResult    = "2 groups, SharedMediaType='Image' and 'Unknown', Score=0",
+                StatusRound1      = "Passed",
+                TestCaseType      = "N",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "GetMediaType image/unknown", "IsCorrect=false/null" }
+            });
+        }
     }
 }

@@ -113,5 +113,25 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
             result.StatusCode.Should().Be(500);
             QACollector.LogTestCase("Topic - Update Status", new TestCaseDetail { FunctionGroup = "UpdateTopicStatus", TestCaseID = "TC-TOPIC-STS-06", Description = "Repository throws → 500", ExpectedResult = "IsSuccess=false, 500", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Exception caught" } });
         }
+
+        // TC-TOPIC-STS-07 | N | Status changed to Deleted triggers cascade VocabularyTopic delete
+        [Fact]
+        public async Task Handle_StatusToDeleted_ShouldCascadeDeleteMappings()
+        {
+            var topic = SampleTopic(TopicStatus.Active);
+            var repo = GetRepoMock(topic);
+            
+            var mappings = new List<VocabularyTopic> { new VocabularyTopic { TopicId = "T-001", Status = VocabularyTopicStatus.Active } };
+            var vtRepo = new Mock<IVocabularyTopicRepository>();
+            vtRepo.Setup(x => x.GetByTopicIdAsync(It.IsAny<string>())).ReturnsAsync(mappings);
+            
+            var handler = CreateHandler(repo, vtRepo);
+            var result = await handler.Handle(MakeCmd(status: TopicStatus.Deleted), CancellationToken.None);
+            
+            result.IsSuccess.Should().BeTrue();
+            vtRepo.Verify(x => x.UpdateAsync(It.IsAny<VocabularyTopic>()), Times.Once);
+            
+            QACollector.LogTestCase("Topic - Update Status", new TestCaseDetail { FunctionGroup = "UpdateTopicStatus", TestCaseID = "TC-TOPIC-STS-07", Description = "Status changed to Deleted triggers cascade soft delete", ExpectedResult = "UpdateAsync on mapping called", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "newStatus == TopicStatus.Deleted branch" } });
+        }
     }
 }

@@ -261,5 +261,97 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
                 AppliedConditions = new List<string> { "GetWritingDetailAsync throws Exception" }
             });
         }
+
+        // ═══════════════════════════════════════════════════════════════
+        // TC-GWRD-07 | N | Parse AI Analysis logic JSON successful and JSON parsing failure
+        // ═══════════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_AiAnalysisParsing_ShouldCatchAndAssignProperly()
+        {
+            // Arrange
+            var session = BuildCompletedWritingSession();
+            session.UserExamWritingAnswers.Clear();
+            session.UserExamWritingAnswers.Add(new UserExamWritingAnswer
+            {
+                OrderIndex = 51,
+                AiAnalysisJson = "{\"ok\": true}", // valid json
+                Question = new QuestionBank { Content = "Q51" }
+            });
+            session.UserExamWritingAnswers.Add(new UserExamWritingAnswer
+            {
+                OrderIndex = 52,
+                AiAnalysisJson = "{invalid json", // invalid json
+                Question = new QuestionBank { Content = "Q52" }
+            });
+
+            var repo = new Mock<IUserExamRepository>();
+            repo.Setup(x => x.GetWritingDetailAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(session);
+            var handler = CreateHandler(repo);
+
+            // Act
+            var result = await handler.Handle(MakeQuery(), CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            var questions = result.Data!.QuestionGroups[0].Questions;
+            questions.Should().HaveCount(2);
+
+            // First: valid parse
+            var ai1Str = System.Text.Json.JsonSerializer.Serialize(questions[0].AiAnalysis);
+            ai1Str.Should().Contain("\"ok\":true");
+            
+            // Second: parse exception fallback
+            var ai2Str = System.Text.Json.JsonSerializer.Serialize(questions[1].AiAnalysis);
+            ai2Str.Should().Contain("\"isParseError\":true");
+
+            QACollector.LogTestCase("UserExam - Get Writing Detail", new TestCaseDetail
+            {
+                FunctionGroup     = "GetWritingDetail",
+                TestCaseID        = "TC-GWRD-07",
+                Description       = "AiAnalysisJson deserialization try/catch behavior mapping",
+                ExpectedResult    = "Parsed object for valid schema, parseError object for invalid JSON string",
+                StatusRound1      = "Passed",
+                TestCaseType      = "N",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "catch block in AI Analysis Deserialization" }
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // TC-GWRD-08 | N | Null ExamTemplate and MediaType parsing
+        // ═══════════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_MediaTypeAndNullTemplate_ShouldProcessProperly()
+        {
+            // Null template branches
+            var nullSession = BuildCompletedWritingSession();
+            nullSession.Exam.ExamTemplate = null;
+            var repo1 = new Mock<IUserExamRepository>();
+            repo1.Setup(x => x.GetWritingDetailAsync("NULL_TEMPLATE", It.IsAny<CancellationToken>())).ReturnsAsync(nullSession);
+            var result1 = await CreateHandler(repo1).Handle(new GetWritingDetailQuery { UserExamId = "NULL_TEMPLATE" }, CancellationToken.None);
+            result1.IsSuccess.Should().BeFalse();
+
+            // Media mapping
+            var session = BuildCompletedWritingSession();
+            session.UserExamWritingAnswers.First().Question.MediaUrl = "vid.mp4"; // unknown
+            var repo2 = new Mock<IUserExamRepository>();
+            repo2.Setup(x => x.GetWritingDetailAsync("MEDIA_TEST", It.IsAny<CancellationToken>())).ReturnsAsync(session);
+            var result2 = await CreateHandler(repo2).Handle(new GetWritingDetailQuery { UserExamId = "MEDIA_TEST" }, CancellationToken.None);
+            
+            result2.IsSuccess.Should().BeTrue();
+            result2.Data!.QuestionGroups[0].SharedMediaType.Should().Be("Unknown");
+
+            QACollector.LogTestCase("UserExam - Get Writing Detail", new TestCaseDetail
+            {
+                FunctionGroup     = "GetWritingDetail",
+                TestCaseID        = "TC-GWRD-08",
+                Description       = "Null ExamTemplate fails, GetMediaType maps unknown files properly",
+                ExpectedResult    = "Fail on null template, Unknown SharedMediaType for .mp4",
+                StatusRound1      = "Passed",
+                TestCaseType      = "N",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "null ExamTemplate", "MediaUrl is mp4 -> Unknown branch" }
+            });
+        }
     }
 }

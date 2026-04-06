@@ -133,5 +133,45 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
             result.StatusCode.Should().Be(500);
             QACollector.LogTestCase("Topic - Delete", new TestCaseDetail { FunctionGroup = "DeleteTopic", TestCaseID = "TC-TOPIC-DEL-06", Description = "Repository throws → 500", ExpectedResult = "IsSuccess=false, 500", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Exception caught in try-catch" } });
         }
+
+        // TC-TOPIC-DEL-07 | N | Null OrderIndex should not execute DecrementOrderIndexAfterAsync
+        [Fact]
+        public async Task Handle_NullOrderIndex_ShouldSoftDeleteWithoutDecrementing()
+        {
+            var topic = SampleTopic(TopicStatus.Draft, null); // OrderIndex = null
+            var repo  = GetRepoMock(topic);
+            
+            var result = await CreateHandler(topicRepo: repo)
+                .Handle(new DeleteTopicCommand { TopicId = "T-001" }, CancellationToken.None);
+            
+            result.IsSuccess.Should().BeTrue();
+            repo.Verify(x => x.DecrementOrderIndexAfterAsync(It.IsAny<int>(), It.IsAny<TopicType>(), It.IsAny<string>(), It.IsAny<DateTime>()), Times.Never);
+            
+            QACollector.LogTestCase("Topic - Delete", new TestCaseDetail { FunctionGroup = "DeleteTopic", TestCaseID = "TC-TOPIC-DEL-07", Description = "OrderIndex is null so DecrementOrderIndexAfterAsync is completely avoided", ExpectedResult = "Success without Decrement call", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "OrderIndex = null guard fails safely" } });
+        }
+
+        // TC-TOPIC-DEL-08 | N | Vocabulary mappings exist, iterates and updates them
+        [Fact]
+        public async Task Handle_MappingsExist_ShouldSoftDeleteMappings()
+        {
+            var topic = SampleTopic(TopicStatus.Draft);
+            var repo  = GetRepoMock(topic);
+            
+            var mappings = new List<VocabularyTopic>
+            {
+                new VocabularyTopic { TopicId = "T-001", VocabularyId = "V-1", Status = VocabularyTopicStatus.Active },
+                new VocabularyTopic { TopicId = "T-001", VocabularyId = "V-2", Status = VocabularyTopicStatus.Active }
+            };
+            var vtRepo = GetVtRepoMock(mappings);
+            
+            var result = await CreateHandler(topicRepo: repo, vtRepo: vtRepo)
+                .Handle(new DeleteTopicCommand { TopicId = "T-001" }, CancellationToken.None);
+            
+            result.IsSuccess.Should().BeTrue();
+            // Expect update called 2 times for 2 mappings
+            vtRepo.Verify(x => x.UpdateAsync(It.IsAny<VocabularyTopic>()), Times.Exactly(2));
+            
+            QACollector.LogTestCase("Topic - Delete", new TestCaseDetail { FunctionGroup = "DeleteTopic", TestCaseID = "TC-TOPIC-DEL-08", Description = "Loop over existing topic mappings and update child statuses", ExpectedResult = "Success, UpdateAsync for Mappings called correctly", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "mappings.Count > 0" } });
+        }
     }
 }

@@ -39,6 +39,7 @@ namespace Tokki.UnitTest.Mocks.Repositories
                         It.IsAny<QuestionSkill?>(),
                         It.IsAny<DifficultyLevel?>(),
                         It.IsAny<ExamType?>(),
+                        It.IsAny<bool?>(),
                         It.IsAny<CancellationToken>()))
                 .ReturnsAsync(paged);
 

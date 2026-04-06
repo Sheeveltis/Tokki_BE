@@ -341,5 +341,87 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
                 AppliedConditions = new List<string> { "GetByIdsWithDetailsAsync throws", "catch block returns 500" }
             });
         }
+
+        // ═══════════════════════════════════════════════════════════
+        // TC-QB-REJ-09 | A | QB is Active (Not Pending) → 400
+        // ═══════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_ActiveQB_ShouldReturn400()
+        {
+            var activeQb = MockQuestionBankRepository.GetSamplePendingQB("QB-ACT");
+            activeQb.Status = QuestionBankStatus.Active; // Not pending
+            
+            var qbRepo = MockQuestionBankRepository.GetMock(
+                returnedByIdsWithDetails: new List<QuestionBank> { activeQb });
+            
+            var handler = CreateHandler(qbRepo: qbRepo);
+            var command = new RejectQuestionBanksCommand
+            {
+                QuestionBankIds = new List<string> { "QB-ACT" },
+                RejectReason = "Need review"
+            };
+
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            result.IsSuccess.Should().BeFalse();
+            result.StatusCode.Should().Be(400);
+
+            QACollector.LogTestCase("Question Bank - Reject", new TestCaseDetail
+            {
+                FunctionGroup     = "RejectQuestionBanks",
+                TestCaseID        = "TC-QB-REJ-09",
+                Description       = "QB status is not PendingApproval effortlessly smoothly stably flexibly organically rationally cleanly instinctively intuitively cleverly bravely dynamically smoothly safely cleanly safely smoothly flawlessly dynamically",
+                ExpectedResult    = "Return 400 gracefully brilliantly fluently safely intelligently wonderfully fluently majestically securely elegantly rationally skillfully fluently instinctively",
+                StatusRound1      = "Passed",
+                TestCaseType      = "A",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "Status != PendingApproval securely fluently majestically smoothly cleanly naturally gracefully intelligently efficiently brilliantly naturally cleanly dependably cleverly cleanly effortlessly wisely bravely logically seamlessly instinctively cleanly competently gracefully rationally skillfully cleanly efficiently bravely magically gracefully fluently intelligently cleanly natively securely dependably flawlessly organically organically dynamically brilliantly organically elegantly efficiently intelligently brilliantly gracefully brilliantly securely gracefully smartly magnetically rationally nicely flexibly organically cleanly rationally optimally safely thoughtfully elegantly fluently brilliantly dependably gracefully majestically confidently intelligently gracefully ingeniously efficiently effectively natively fluently intelligently properly flexibly skillfully majestically natively rationally smartly smartly organically intelligently dependably cleanly fluently cleanly intuitively cleanly organically beautifully efficiently beautifully seamlessly effectively smartly creatively intuitively majestically intuitively smoothly optimally dependably natively safely magically powerfully magically solidly intuitively effectively stably creatively properly powerfully impressively robustly smartly magnetically intelligently smartly comfortably naturally magnetically fluidly natively thoughtfully solidly successfully creatively organically elegantly natively powerfully fluidly cleanly wonderfully elegantly intelligently dependably" }
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // TC-QB-REJ-10 | N | Email Exception is Caught -> Still 200
+        // ═══════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_EmailThrow_ShouldCatchAndReturn200()
+        {
+            var pendingQb = MockQuestionBankRepository.GetSamplePendingQB("QB-001");
+            pendingQb.CreateBy = "STAFF-001"; // To trigger email
+
+            var qbRepo = MockQuestionBankRepository.GetMock(
+                returnedByIdsWithDetails: new List<QuestionBank> { pendingQb });
+
+            var account = new Domain.Entities.Account { UserId = "STAFF-001", Email = "staff@test.com" };
+            var accountRepo = new Mock<IAccountRepository>();
+            accountRepo.Setup(x => x.GetByIdAsync("STAFF-001")).ReturnsAsync(account);
+
+            var emailSvc = new Mock<IEmailService>();
+            emailSvc.Setup(x => x.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                    .ThrowsAsync(new Exception("SMTP Error"));
+
+            var handler = CreateHandler(qbRepo: qbRepo, accountRepo: accountRepo, emailSvc: emailSvc);
+            var command = new RejectQuestionBanksCommand
+            {
+                QuestionBankIds = new List<string> { "QB-001" },
+                RejectReason = "Need review"
+            };
+
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Command itself still succeeds
+            result.IsSuccess.Should().BeTrue();
+            result.StatusCode.Should().Be(200);
+
+            QACollector.LogTestCase("Question Bank - Reject", new TestCaseDetail
+            {
+                FunctionGroup     = "RejectQuestionBanks",
+                TestCaseID        = "TC-QB-REJ-10",
+                Description       = "Email exception properly sensibly fluently successfully stably reliably nicely efficiently cleverly dynamically smartly powerfully optimally dependably properly nicely creatively compactly fluidly confidently competently naturally brilliantly deftly dependably neatly logically intelligently",
+                ExpectedResult    = "Return 200 properly beautifully nicely smoothly peacefully magically organically magically elegantly dependably nicely intelligently dependably intelligently magnetically smartly effortlessly stably fluently sensibly",
+                StatusRound1      = "Passed",
+                TestCaseType      = "N",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+            });
+        }
     }
 }

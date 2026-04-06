@@ -151,7 +151,8 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
                 "Reading",
                 QuestionSkill.Reading,
                 DifficultyLevel.Medium,
-                ExamType.EntranceTest,
+                ExamType.TopikI,
+                It.IsAny<bool?>(),
                 It.IsAny<CancellationToken>()), Times.Once);
 
             QACollector.LogTestCase("Question Type - Get List", new TestCaseDetail
@@ -211,6 +212,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
                         It.IsAny<int>(), It.IsAny<int>(),
                         It.IsAny<string?>(), It.IsAny<QuestionSkill?>(),
                         It.IsAny<DifficultyLevel?>(), It.IsAny<ExamType?>(),
+                        It.IsAny<bool?>(),
                         It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new InvalidOperationException("DB read error"));
             var handler = CreateHandler(repo);

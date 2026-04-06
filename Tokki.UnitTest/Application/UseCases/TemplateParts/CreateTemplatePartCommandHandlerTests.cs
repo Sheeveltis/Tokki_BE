@@ -138,5 +138,33 @@ namespace Tokki.UnitTest.Application.UseCases.TemplateParts
             tpRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
             QACollector.LogTestCase("TemplatePart - Create", new TestCaseDetail { FunctionGroup = "CreateTemplatePart", TestCaseID = "TC-TP-CREATE-06", Description = "AddAsync and SaveChangesAsync both called once", ExpectedResult = "Both Times.Once", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Persist calls verified" } });
         }
+        // TC-TP-CREATE-07 | A | Skill mismatch mapped QuestionType → failure
+        [Fact]
+        public async Task Handle_MismatchedSkillQuestionType_ShouldReturnFailure()
+        {
+            var qtRepo = GetQTypeRepoMock(new QuestionType { Skill = QuestionSkill.Reading }); // Expected is Listening
+            var result = await CreateHandler(qtRepo: qtRepo).Handle(MakeCommand(questionTypeId: "QT-1"), CancellationToken.None);
+            
+            result.IsSuccess.Should().BeFalse();
+            result.Errors[0].Description.Should().Contain("Kỹ năng không khớp");
+            
+            QACollector.LogTestCase("TemplatePart - Create", new TestCaseDetail { FunctionGroup = "CreateTemplatePart", TestCaseID = "TC-TP-CREATE-07", Description = "Skill mismatch for QuestionType", ExpectedResult = "IsSuccess=false, Contains skill mismatch message", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "questionType.Skill != request.Skill" } });
+        }
+
+        // TC-TP-CREATE-08 | A | Repository throws exception → 500
+        [Fact]
+        public async Task Handle_RepositoryThrowsException_ShouldReturn500()
+        {
+            var tpRepo = new Mock<ITemplatePartRepository>();
+            tpRepo.Setup(x => x.IsQuestionRangeOverlapAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>())).ReturnsAsync(false);
+            tpRepo.Setup(x => x.AddAsync(It.IsAny<TemplatePart>())).ThrowsAsync(new Exception("DB failed"));
+            
+            var result = await CreateHandler(tpRepo: tpRepo).Handle(MakeCommand(), CancellationToken.None);
+            
+            result.IsSuccess.Should().BeFalse();
+            result.StatusCode.Should().Be(500);
+            
+            QACollector.LogTestCase("TemplatePart - Create", new TestCaseDetail { FunctionGroup = "CreateTemplatePart", TestCaseID = "TC-TP-CREATE-08", Description = "Catch unhandled exception returning 500 ServerError", ExpectedResult = "IsSuccess=false, 500", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "catch (Exception)" } });
+        }
     }
 }

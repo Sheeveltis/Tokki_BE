@@ -262,5 +262,84 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
                 AppliedConditions = new List<string> { "GetRandomQuestionsForPracticeAsync throws" }
             });
         }
+
+        // ═══════════════════════════════════════════════════════════════
+        // TC-GPRQ-07 | N | Question with PassageId fetches passage successfully
+        // ═══════════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_QuestionWithPassage_ShouldMapPassageContent()
+        {
+            var q1 = new QuestionBank
+            {
+                QuestionBankId = "QB-1", Content = "Q1", PassageId = "PASS-1",
+                MediaUrl = null, QuestionOptions = new List<QuestionOption>()
+            };
+
+            var qbRepo = new Mock<IQuestionBankRepository>();
+            qbRepo.Setup(x => x.GetRandomQuestionsForPracticeAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+                  .ReturnsAsync(new List<QuestionBank> { q1 });
+
+            var psgRepo = new Mock<IPassageRepository>();
+            psgRepo.Setup(x => x.GetByIdsAsync(It.IsAny<List<string>>(), It.IsAny<CancellationToken>()))
+                   .ReturnsAsync(new List<Passage> { new Passage { PassageId = "PASS-1", Content = "My Passage", ImageUrl = "pass.jpg" } });
+
+            var handler = CreateHandler(qbRepo, psgRepo);
+            var result = await handler.Handle(new GetPracticeQuestionsQuery { QuestionTypeId = "QT-1", Quantity = 1 }, CancellationToken.None);
+
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().HaveCount(1);
+            result.Data![0].SharedPassageContent.Should().Be("My Passage");
+            result.Data![0].SharedMediaType.Should().Be("Image"); // Maps passage media if question has no media
+
+            QACollector.LogTestCase("UserExam - Get Practice Questions", new TestCaseDetail
+            {
+                FunctionGroup     = "GetPracticeQuestions",
+                TestCaseID        = "TC-GPRQ-07",
+                Description       = "Question has PassageId, populates passageMap via GetByIdsAsync",
+                ExpectedResult    = "Passage content correctly assigned to shared group",
+                StatusRound1      = "Passed",
+                TestCaseType      = "N",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "passageIds.Any() -> passageMap lookup" }
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // TC-GPRQ-08 | N | GetMediaType Unknown branch
+        // ═══════════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_UnknownMediaExtension_ShouldReturnUnknownType()
+        {
+            var q1 = new QuestionBank
+            {
+                QuestionBankId = "QB-1", Content = "Q1", PassageId = null,
+                MediaUrl = "test.txt", // unknown extension
+                QuestionOptions = new List<QuestionOption>()
+            };
+
+            var qbRepo = new Mock<IQuestionBankRepository>();
+            qbRepo.Setup(x => x.GetRandomQuestionsForPracticeAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+                  .ReturnsAsync(new List<QuestionBank> { q1 });
+
+            var psgRepo = new Mock<IPassageRepository>();
+
+            var handler = CreateHandler(qbRepo, psgRepo);
+            var result = await handler.Handle(new GetPracticeQuestionsQuery { QuestionTypeId = "QT-1", Quantity = 1 }, CancellationToken.None);
+
+            result.IsSuccess.Should().BeTrue();
+            result.Data![0].SharedMediaType.Should().Be("Unknown");
+
+            QACollector.LogTestCase("UserExam - Get Practice Questions", new TestCaseDetail
+            {
+                FunctionGroup     = "GetPracticeQuestions",
+                TestCaseID        = "TC-GPRQ-08",
+                Description       = "MediaUrl with unknown extension forces Unknown mapping",
+                ExpectedResult    = "SharedMediaType=Unknown",
+                StatusRound1      = "Passed",
+                TestCaseType      = "N",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "ext not in audio/image map" }
+            });
+        }
     }
 }

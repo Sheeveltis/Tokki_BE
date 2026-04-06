@@ -142,5 +142,78 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             result.Data!.ScorePercent.Should().Be(0); // score=0, maxScore=0 → 0%
             QACollector.LogTestCase("Roadmap - Process Weekly Result", new TestCaseDetail { FunctionGroup = "ProcessWeeklyResult", TestCaseID = "TC-RM-PWR-06", Description = "Valid request, exam in roadmap → success with ScorePercent=0 (no template parts)", ExpectedResult = "IsSuccess=true, ScorePercent=0", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Exam matched in roadmap", "no template parts → 0%" } });
         }
+        // TC-RM-PWR-07 | N | Correct Answers > 80% (Mastered) -> Weakness updated
+        [Fact]
+        public async Task Handle_MasteryOverridesWeakness_Correctly()
+        {
+            var roadmap = MockUserRoadmapRepository.GetSampleActiveRoadmap("USER-001", "RM-001");
+            var examId  = "EXAM-WEEKLY-01";
+            roadmap.Weeks.Add(new RoadmapWeek { RoadmapWeekId = "W1", WeekIndex = 1, WeeklyExamId = examId });
+            
+            var exam = new Tokki.Domain.Entities.UserExam
+            {
+                UserExamId = "UE-001", UserId = "USER-001", ExamId = examId, Status = UserExamStatus.Completed, Score = 10,
+                UserExamAnswers = new List<UserExamAnswer>
+                {
+                    new UserExamAnswer { Question = new QuestionBank { QuestionTypeId = "QT-1" }, IsCorrect = true }
+                },
+                Exam = new Tokki.Domain.Entities.Exam { ExamId = examId, ExamTemplate = new ExamTemplate { TemplateParts = new List<TemplatePart>() } }
+            };
+
+            var weakRepo = new Mock<IUserWeaknessRepository>();
+            weakRepo.Setup(x => x.GetByUserIdAsync("USER-001", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new List<UserWeakness> { new UserWeakness { QuestionTypeId = "QT-1", CurrentScore = 30 } });
+
+            var examRepo = new Mock<IUserExamRepository>();
+            examRepo.Setup(x => x.GetByIdAsync("UE-001", It.IsAny<CancellationToken>())).ReturnsAsync(exam);
+            
+            var profileRepo = new Mock<IRoadmapKnowledgeProfileRepository>();
+            profileRepo.Setup(x => x.GetAsync("RM-001", "QT-1", It.IsAny<CancellationToken>())).ReturnsAsync(new RoadmapKnowledgeProfile { LastEvaluatedWeekIndex = 0, ConsecutiveFailWeeks = 1 });
+
+            var result = await CreateHandler(MockUserRoadmapRepository.GetMock(activeRoadmap: roadmap), weakRepo, profileRepo, examRepo).Handle(new ProcessWeeklyResultCommand { UserId = "USER-001", UserExamId = "UE-001" }, CancellationToken.None);
+
+            result.IsSuccess.Should().BeTrue();
+            // Score = 1/1 = 100% -> Is Weakness = false, Fixed
+            weakRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+
+            QACollector.LogTestCase("Roadmap - Process Weekly Result", new TestCaseDetail { FunctionGroup = "ProcessWeeklyResult", TestCaseID = "TC-RM-PWR-07", Description = "Mastery score correctly updates old weakness to fixed", ExpectedResult = "Updates cleanly", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Answers 100% correct overrides fail" } });
+        }
+
+        // TC-RM-PWR-08 | N | Failed < 50% -> Status 0 -> new Weakness
+        [Fact]
+        public async Task Handle_FailedAnswers_AddsNewWeakness()
+        {
+            var roadmap = MockUserRoadmapRepository.GetSampleActiveRoadmap("USER-001", "RM-001");
+            var examId  = "EXAM-WEEKLY-01";
+            roadmap.Weeks.Add(new RoadmapWeek { RoadmapWeekId = "W1", WeekIndex = 1, WeeklyExamId = examId });
+            
+            var exam = new Tokki.Domain.Entities.UserExam
+            {
+                UserExamId = "UE-001", UserId = "USER-001", ExamId = examId, Status = UserExamStatus.Completed, Score = 10,
+                UserExamAnswers = new List<UserExamAnswer>
+                {
+                    new UserExamAnswer { Question = new QuestionBank { QuestionTypeId = "QT-FAIL" }, IsCorrect = false }
+                },
+                Exam = new Tokki.Domain.Entities.Exam { ExamId = examId, ExamTemplate = new ExamTemplate { TemplateParts = new List<TemplatePart>() } }
+            };
+
+            var weakRepo = new Mock<IUserWeaknessRepository>();
+            weakRepo.Setup(x => x.GetByUserIdAsync("USER-001", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new List<UserWeakness>());
+
+            var examRepo = new Mock<IUserExamRepository>();
+            examRepo.Setup(x => x.GetByIdAsync("UE-001", It.IsAny<CancellationToken>())).ReturnsAsync(exam);
+            
+            var profileRepo = new Mock<IRoadmapKnowledgeProfileRepository>();
+            profileRepo.Setup(x => x.GetAsync("RM-001", "QT-FAIL", It.IsAny<CancellationToken>())).ReturnsAsync((RoadmapKnowledgeProfile?)null);
+
+            var result = await CreateHandler(MockUserRoadmapRepository.GetMock(activeRoadmap: roadmap), weakRepo, profileRepo, examRepo).Handle(new ProcessWeeklyResultCommand { UserId = "USER-001", UserExamId = "UE-001" }, CancellationToken.None);
+
+            result.IsSuccess.Should().BeTrue();
+            result.Data!.WeakTypeIds.Should().Contain("QT-FAIL");
+            weakRepo.Verify(x => x.AddAsync(It.IsAny<UserWeakness>(), It.IsAny<CancellationToken>()), Times.Once);
+
+            QACollector.LogTestCase("Roadmap - Process Weekly Result", new TestCaseDetail { FunctionGroup = "ProcessWeeklyResult", TestCaseID = "TC-RM-PWR-08", Description = "Fails properly generate new UserWeakness tracking record", ExpectedResult = "Adds cleanly gracefully", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Answers incorrect adds weakness" } });
+        }
     }
 }

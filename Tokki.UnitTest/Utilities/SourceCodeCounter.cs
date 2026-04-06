@@ -31,6 +31,9 @@ namespace Tokki.UnitTest.Utilities
             {
                 // ── Account ───────────────────────────────────────────────
                 { "Account - Admin Soft Delete",        @"Accounts\Commands\AdminSoftDeleteAccount" },
+                { "Account - Delete",                    @"Accounts\Commands\DeleteAccount" },
+                { "Account - Delete Account",            @"Accounts\Commands\DeleteAccount" },
+                { "Account - FB Complete Registration",  @"Accounts\Commands\FacebookLogin\FacebookCompleteRegistrationCommandHandler.cs" },
                 { "Account - Admin Update User",         @"Accounts\Commands\AdminUpdateUser" },
                 { "Account - Change Password",           @"Accounts\Commands\ChangePassword" },
                 { "Account - Create By Admin",           @"Accounts\Commands\CreateAccountByAdmin" },
@@ -43,6 +46,19 @@ namespace Tokki.UnitTest.Utilities
                 { "Account - Register",                  @"Accounts\Commands\Register" },
                 { "Account - Reset Password",            @"Accounts\Commands\ResetPasswordWhenForgotPass" },
                 { "Account - Update Profile",            @"Accounts\Commands\UpdateProfile" },
+                { "Account - Refresh Token",             @"Accounts\Commands\RefreshToken" },
+                { "Account - Update Aim",                @"Accounts\Commands\UpdateAimLevel" },
+                { "Account - Update My Level",           @"Accounts\Commands\UpdateMyLevel" },
+                { "Account - Update My Level Valid",     @"Accounts\Commands\UpdateMyLevel" },
+                { "Account - Get Aim Level",             @"Accounts\Queries\GetAimLevel" },
+
+                // ── Common ───────────────────────────────────────────────
+                { "Common - Behaviors",                  @"Common\Behaviors" },
+                { "Common - Helpers",                    @"Common\Helpers" },
+                { "Helper - Hangul",                     @"Common\Helpers\HangulHelper.cs" },
+                { "Helper - Hangul Decompose",           @"Common\Helpers\HangulHelper.cs" },
+                { "Helper - Hangul SubJamos",            @"Common\Helpers\HangulHelper.cs" },
+                { "Helper - Wordle",                     @"Common\Helpers\WordleHelper.cs" },
 
                 // ── Topics ────────────────────────────────────────────────
                 { "Topic - Add Vocabularies",            @"Topics\Commands\AddVocabulariesToTopic" },
@@ -95,12 +111,21 @@ namespace Tokki.UnitTest.Utilities
                 // ── Payments ──────────────────────────────────────────────
                 { "Payment - Create",                    @"Payments\Commands\CreatePayment" },
                 { "Payment - Get QR",                    @"Payments\Queries\GetPaymentQr" },
+                { "Payments - Create Payment",           @"Payments\Commands\CreatePayment" },
+                { "Payments - Get History",              @"Payments\Queries\GetPaymentHistoryQueryHandler.cs" },
+                { "Payments - Get Payment By ID",        @"Payments\Queries\GetPaymentByIdQueryHandler.cs" },
+                { "Payments - Get QR",                   @"Payments\Queries\GetPaymentQr" },
+                { "Payments - Process Webhook",          @"Payments\Commands\ProcessWebhook" },
 
                 // ── VipPackages ───────────────────────────────────────────
                 { "VIP Package - Create",                @"VipPackages\Commands\CreateVipPackage" },
                 { "VIP Package - Delete",                @"VipPackages\Commands\DeleteVipPackage" },
                 { "VIP Package - Get All",               @"VipPackages\Queries\GetAllVipPackages" },
                 { "VIP Package - Update",                @"VipPackages\Commands\UpdateVipPackage" },
+                { "VipPackage - Create",                 @"VipPackages\Commands\CreateVipPackage" },
+                { "VipPackage - Delete",                 @"VipPackages\Commands\DeleteVipPackage" },
+                { "VipPackage - Get All",                @"VipPackages\Queries\GetAllVipPackages" },
+                { "VipPackage - Update",                 @"VipPackages\Commands\UpdateVipPackage" },
 
                 // ── LiveChat ──────────────────────────────────────────────
                 { "LiveChat - Create Support",           @"LiveChat\Commands\CreateSupportChat" },
@@ -140,6 +165,8 @@ namespace Tokki.UnitTest.Utilities
                 { "Email Template - Get By Id",          @"EmailTemplates\Queries\GetEmailAutoTemplateById" },
                 { "Email - Get Campaign By Id",          @"EmailTemplates\Queries\GetEmailCampaignById" },
                 { "Email - Get Campaigns List",          @"EmailTemplates\Queries\GetEmailCampaigns" },
+                { "EmailTemplate - Campaign",            @"EmailTemplates\Commands\CreateEmailCampaign" },
+                { "EmailTemplate - AutoTemplate",        @"EmailTemplates\Commands\CreateEmailAutoTemplate" },
 
                 // ── ExamTemplates ─────────────────────────────────────────
                 { "Exam Template - Create",              @"ExamTemplates\Commands\CreateExamTemplate" },
@@ -156,6 +183,7 @@ namespace Tokki.UnitTest.Utilities
                 // ── Exam ──────────────────────────────────────────────────
                 { "Exam - Add Question",                 @"Exam\Commands\AddQuestionToExam" },
                 { "Exam - Create",                       @"Exam\Commands\CreateExam" },
+                { "Exam - Create Exam",                  @"Exam\Commands\CreateExam" },
                 { "Exam - Delete Exam",                  @"Exam\Commands\DeleteExam" },
                 { "Exam - Export PDF",                   @"Exam\Commands\ExportExamToPdf" },
                 { "Exam - Regenerate Part",              @"Exam\Commands\RegenerateExamPart" },
@@ -206,6 +234,7 @@ namespace Tokki.UnitTest.Utilities
                 { "Excel - Get QuestionType Template",   @"Excel\Queries\TemplateQuestionType" },
 
                 // ── TopikWriting ──────────────────────────────────────────
+                { "TopikWriting",                        @"TopikWriting" },
                 { "TopikWriting - Solve Q51",            @"TopikWriting\Commands\SolveQuestion51" },
                 { "TopikWriting - Solve Q52",            @"TopikWriting\Commands\SolveQuestion52" },
                 { "TopikWriting - Solve Q53",            @"TopikWriting\Commands\SolveQuestion53" },
@@ -280,6 +309,7 @@ namespace Tokki.UnitTest.Utilities
                 { "Category - Delete",                   @"Categories\Commands\DeleteCategory" },
                 { "Category - Update",                   @"Categories\Commands\UpdateCategory" },
                 { "Category - Get All",                  @"Categories\Queries\GetAllCategoriesQueryHandler.cs" },
+                { "Category - Get By Id",                @"Categories\Queries\GetCategoryById" },
 
                 // ── Comments ─────────────────────────────────────────────
                 { "Comment - Create",                    @"Comments\Commands\CreateComment" },
@@ -303,6 +333,7 @@ namespace Tokki.UnitTest.Utilities
                 { "Blog - Update",                       @"Blogs\Commands\UpdateBlog" },
                 { "Blog - Get By Id",                    @"Blogs\Queries\GetBlogByIdQueryHandler.cs" },
                 { "Blog - Get Paged Blogs",              @"Blogs\Queries\GetPagedBlogs" },
+                { "Blog - Get Paged",                    @"Blogs\Queries\GetPagedBlogs" },
 
                 // ── FavoriteVocabulary ────────────────────────────────────
                 { "Favorite Vocabulary - Add",           @"FavoriteVocabulary\Commands\AddFavoriteVocabulary" },
@@ -360,7 +391,50 @@ namespace Tokki.UnitTest.Utilities
 
                 // ── VocabSpacedRepetition ─────────────────────────────────
                 { "VocabSR - Submit Review",             @"VocabSpacedRepetition\Commands\SubmitReview" },
-                { "VocabSR - Get Due Reviews",           @"VocabSpacedRepetition\Queries\GetDueReviews" }
+                { "VocabSR - Get Due Reviews",           @"VocabSpacedRepetition\Queries\GetDueReviews" },
+
+                // ── Phase 2 & 3 Additions ─────────────────────────────────
+                { "Gamification - Add Game XP",          @"Gamification\Commands\AddGameXp" },
+                { "Mini Game - Get Matching Cards",      @"MiniGame\Queries\MatchingCard" },
+                { "Mini Game - Get Solitaire Topics",    @"MiniGame\Queries\Solitaire" },
+                { "Wordle - Get Top Sentences",          @"MiniGame\Queries\Wordle" },
+                { "Excel - Import Rules",                @"Excel\Commands\ImportPronunciationRules" },
+                { "Pronunciation Example - Create",      @"PronunciationExample\Commands\CreatePronunciationExample" },
+                { "Pronunciation Example - Delete",      @"PronunciationExample\Commands\DeletePronunciationExample" },
+                { "Pronunciation Example - Update",      @"PronunciationExample\Commands\UpdatePronunciationExample" },
+                { "Pronunciation Example - Get Paged",   @"PronunciationExample\Queries\GetPagedPronunciationExamples" },
+                { "Passages - Update",                   @"Passages\Commands\UpdatePassage" },
+                { "Payments - Webhook",                  @"Payments\Commands\ProcessWebhook" },
+                { "QuestionBank - Approve",              @"QuestionBanks\Commands\ApproveQuestionBank" },
+                { "QuestionBank - Create",               @"QuestionBanks\Commands\CreateQuestionBank" },
+                { "QuestionBank - Create By Staff",      @"QuestionBanks\Commands\CreateQuestionBankByStaff" },
+
+                // ── Missing Features (Auto-Added) ─────────────────────────
+                { "Domain - User Wordle Progress",       @"Common\Models" },
+                { "Exam - Get Exams",                    @"Exam\Queries\GetExams" },
+                { "Exam - Get Stats",                    @"Exam\Queries\GetExamsStats" },
+                { "ExamTemplate - Duplicate",            @"ExamTemplates\Commands\DuplicateExamTemplate" },
+                { "Helper - Email Notification",         @"Common\Helpers" },
+                { "PronunciationRule - Get",             @"PronunciationRule\Queries\GetPronunciationRules" },
+                { "QuestionBank - Reject",               @"QuestionBanks\Commands\RejectQuestionBank" },
+                { "QuestionBank - Update Question Option", @"QuestionBanks\Commands\QuestionOptions\Update" },
+                { "QuestionBank - Validate",             @"QuestionBanks\Commands\ApproveQuestionBank" },
+                { "Roadmap - Generate",                  @"Roadmap\Commands\GenerateRoadmap" },
+                { "Roadmap Validator",                   @"Roadmap\Commands" },
+                { "Title - Check Daily",                 @"Titles\Commands\CheckDailyTitles" },
+                { "Title - Check Level",                 @"Titles\Commands\CheckLevelTitles" },
+                { "Title - Equip",                       @"Titles\Commands\EquipTitle" },
+                { "Title - Import",                      @"Titles\Commands\ImportTitles" },
+                { "UserExam - DTO",                      @"UserExam\DTOs" },
+                { "UserExam - Sync MCQ Progress",                @"UserExam\Commands\SyncMCQProgress" },
+                { "UserExam - Sync MCQ Progress Validator",      @"UserExam\Commands\SyncMCQProgress" },
+                { "Roadmap - Generate Roadmap Validator",        @"Roadmap\Commands\GenerateRoadmap" },
+                { "Validator",                                   @"Common\Behaviors" },
+                { "Vocabulary - Bulk Create Validator",  @"Vocabulary\Commands\BulkCreateVocabularies" },
+                { "Vocabulary - Create Validator",       @"Vocabulary\Commands\CreateVocabulary" },
+                { "Vocabulary Admin - Bulk Create By Staff Validator", @"Vocabulary\Commands\BulkCreateVocabulariesByStaff" },
+                { "Vocabulary Admin - Create By Staff Validator", @"Vocabulary\Commands\CreateVocabularyByStaff" },
+                { "Vocabulary Example - Update Validator", @"VocabularyExample\Commands\UpdateVocabularyExample" }
             };
 
         /// <summary>
@@ -382,6 +456,14 @@ namespace Tokki.UnitTest.Utilities
                 return 0;
 
             return CountLinesInFolder(targetPath);
+        }
+
+        /// <summary>
+        /// Exposes the feature-to-folder mapping for lookup by FailureTrackingTestFramework.
+        /// </summary>
+        public static Dictionary<string, string> GetFeatureToFolderMap()
+        {
+            return FeatureToFolderMap;
         }
 
         private static int CountLinesInFolder(string folder)

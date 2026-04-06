@@ -27,9 +27,9 @@ namespace Tokki.UnitTest.Application.UseCases.Titles
 
         private static List<Title> SampleTitles() => new List<Title>
         {
-            new Title { TitleId = "T-001", Name = "Bậc học giả",  RequiredXP = 1000 },
-            new Title { TitleId = "T-002", Name = "Bậc chuyên gia", RequiredXP = 5000 },
-            new Title { TitleId = "T-003", Name = "Bậc tiến sĩ",  RequiredXP = 10000 }
+            new Title { TitleId = "T-001", Name = "Bậc học giả",  RequirementQuantity = 1000 },
+            new Title { TitleId = "T-002", Name = "Bậc chuyên gia", RequirementQuantity = 5000 },
+            new Title { TitleId = "T-003", Name = "Bậc tiến sĩ",  RequirementQuantity = 10000 }
         };
 
         // TC-TITLE-GALL-01 | N | Happy path: 3 titles returned → 200 with Count=3
@@ -72,7 +72,7 @@ namespace Tokki.UnitTest.Application.UseCases.Titles
             var result = await CreateHandler(repo).Handle(new GetAllTitlesQuery(), CancellationToken.None);
             result.Data![0].TitleId.Should().Be("T-001");
             result.Data[0].Name.Should().Be("Bậc học giả");
-            result.Data[0].RequiredXP.Should().Be(1000);
+            result.Data[0].RequirementQuantity.Should().Be(1000);
             QACollector.LogTestCase("Title - Get All", new TestCaseDetail { FunctionGroup = "GetAllTitles", TestCaseID = "TC-TITLE-GALL-04", Description = "First title: TitleId='T-001', Name='Bậc học giả', XP=1000", ExpectedResult = "All fields correct", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Title entity returned directly" } });
         }
 

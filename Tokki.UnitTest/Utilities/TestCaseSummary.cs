@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Tokki.UnitTest.Utilities
@@ -7,7 +7,17 @@ namespace Tokki.UnitTest.Utilities
     {
         public string ProjectName { get; set; } = "Tokki Project";
         public string ProjectCode { get; set; } = "TK-001";
-        public string Environment { get; set; } = "1. Server\n2. Database\n3. Web Browser";
+        public string Environment { get; set; } = 
+            "1. Framework: .NET 9.0 (net9.0)\n" +
+            "2. Testing Framework: xUnit 2.9.2\n" +
+            "3. Mocking Library: Moq 4.20.72\n" +
+            "4. Assertion Library: FluentAssertions 8.8.0\n" +
+            "5. Architecture: CQRS with MediatR (Commands & Queries)\n" +
+            "6. Test Runner: Microsoft.NET.Test.Sdk 17.12.0\n" +
+            "7. Code Coverage: Coverlet 8.0.1 (XPlat Code Coverage)\n" +
+            "8. Report Generator: EPPlus 8.5.0\n" +
+            "9. IDE: Visual Studio 2022 / Rider\n" +
+            "10. OS: Windows 11";
         public List<FunctionSummary> Functions { get; set; } = new();
 
         public int TotalSystemFunctions { get; set; } = 10;
@@ -51,6 +61,7 @@ namespace Tokki.UnitTest.Utilities
         public string StatusRound1 { get; set; } = "Pending"; 
         public string TestDate { get; set; } = string.Empty;
         public string TestCaseType { get; set; } = "N";
+        public string ErrorMessage { get; set; } = string.Empty;
         public List<string> AppliedConditions { get; set; } = new();
     }
 }

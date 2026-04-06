@@ -30,7 +30,7 @@ namespace Tokki.UnitTest.Application.UseCases.Titles
         {
             TitleId    = id,
             Name       = "Bậc học giả",
-            RequiredXP = 1000,
+            RequirementQuantity = 1000,
             Status     = TitleStatus.Active
         };
 

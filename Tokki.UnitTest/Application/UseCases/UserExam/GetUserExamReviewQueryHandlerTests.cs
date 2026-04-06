@@ -275,5 +275,82 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
                 AppliedConditions = new List<string> { "GetReviewByIdAsync throws Exception" }
             });
         }
+
+        // ═══════════════════════════════════════════════════════════════
+        // TC-GURV-07 | N | Missing template part mapping returns Unknown skill
+        // ═══════════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_UnknownPartIndex_ShouldReturnUnknownSkillAndZeroScore()
+        {
+            var session = BuildSession();
+            session.UserExamAnswers.Clear();
+            session.UserExamAnswers.Add(new UserExamAnswer
+            {
+                OrderIndex = 99, // out of range of 1-5 template part
+                Question = new QuestionBank { Content = "Q99", QuestionOptions = new List<QuestionOption>() }
+            });
+            var repo = new Mock<IUserExamRepository>();
+            repo.Setup(x => x.GetReviewByIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(session);
+            var handler = CreateHandler(repo);
+
+            var result = await handler.Handle(new GetUserExamReviewQuery("UE-001"), CancellationToken.None);
+
+            result.IsSuccess.Should().BeTrue();
+            result.Data!.Questions[0].Skill.Should().Be("Unknown");
+            result.Data.Questions[0].QuestionMaxScore.Should().Be(0);
+
+            QACollector.LogTestCase("UserExam - Get Review", new TestCaseDetail
+            {
+                FunctionGroup     = "GetUserExamReview",
+                TestCaseID        = "TC-GURV-07",
+                Description       = "OrderIndex does not map to any template part",
+                ExpectedResult    = "Skill=Unknown and QuestionMaxScore=0",
+                StatusRound1      = "Passed",
+                TestCaseType      = "N",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "part == null branch hit" }
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // TC-GURV-08 | N | Writing part mapping to review questions
+        // ═══════════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_WritingAnswers_ShouldMapToReviewQuestions()
+        {
+            var session = BuildSession();
+            session.UserExamAnswers.Clear();
+            session.UserExamWritingAnswers.Add(new UserExamWritingAnswer
+            {
+                OrderIndex = 2,
+                Score = 8,
+                AnswerContent = "Writing ans",
+                AiAnalysisJson = "{\"score\": 8}",
+                Question = new QuestionBank { Content = "W1" }
+            });
+            var repo = new Mock<IUserExamRepository>();
+            repo.Setup(x => x.GetReviewByIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(session);
+            var handler = CreateHandler(repo);
+
+            var result = await handler.Handle(new GetUserExamReviewQuery("UE-001"), CancellationToken.None);
+
+            result.IsSuccess.Should().BeTrue();
+            result.Data!.Questions.Should().HaveCount(1);
+            result.Data.Questions[0].Skill.Should().Be("Writing");
+            result.Data.Questions[0].WritingScore.Should().Be(8);
+            result.Data.Questions[0].AiAnalysisJson.Should().Be("{\"score\": 8}");
+
+            QACollector.LogTestCase("UserExam - Get Review", new TestCaseDetail
+            {
+                FunctionGroup     = "GetUserExamReview",
+                TestCaseID        = "TC-GURV-08",
+                Description       = "Writing answers mapped correctly",
+                ExpectedResult    = "Skill=Writing, Properties correctly set",
+                StatusRound1      = "Passed",
+                TestCaseType      = "N",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "UserExamWritingAnswers iteration" }
+            });
+        }
     }
 }

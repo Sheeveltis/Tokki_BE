@@ -112,5 +112,30 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
             result.StatusCode.Should().Be(500);
             QACollector.LogTestCase("Topic - Update", new TestCaseDetail { FunctionGroup = "UpdateTopic", TestCaseID = "TC-TOPIC-UPD-06", Description = "Repository throws → 500", ExpectedResult = "IsSuccess=false, 500", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Exception caught" } });
         }
+
+        // TC-TOPIC-UPD-07 | N | Update status to Deleted triggers VocabularyTopic cascade
+        [Fact]
+        public async Task Handle_StatusChangedToDeleted_ShouldCascadeSoftDeleteToMappings()
+        {
+            var topic = SampleTopic(TopicStatus.Draft);
+            var repo = GetRepoMock(topic);
+            
+            var mappings = new List<VocabularyTopic> { new VocabularyTopic { TopicId = "T-001", Status = VocabularyTopicStatus.Active } };
+            var vtRepo = new Mock<IVocabularyTopicRepository>();
+            vtRepo.Setup(x => x.GetByTopicIdAsync(It.IsAny<string>())).ReturnsAsync(mappings);
+            
+            var handler = CreateHandler(repo, vtRepo);
+            var cmd = MakeCommand();
+            cmd.Status = TopicStatus.Deleted; // Update status to deleted
+            
+            var result = await handler.Handle(cmd, CancellationToken.None);
+            
+            result.IsSuccess.Should().BeTrue();
+            // Verify cascade update on mapping was called once
+            vtRepo.Verify(x => x.UpdateAsync(It.IsAny<VocabularyTopic>()), Times.Once);
+            vtRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+
+            QACollector.LogTestCase("Topic - Update", new TestCaseDetail { FunctionGroup = "UpdateTopic", TestCaseID = "TC-TOPIC-UPD-07", Description = "Status changed to Deleted triggers cascade soft delete", ExpectedResult = "IsSuccess=true, UpdateAsync called on vtRepo", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "newStatus == TopicStatus.Deleted cascade branch" } });
+        }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
@@ -28,7 +28,7 @@ namespace Tokki.Application.UseCases.Accounts.Commands.FacebookLogin
         private readonly IEmailService _emailService;
         private readonly FacebookAuthSettings _facebookSettings;
         private readonly ILogger<FacebookLoginCommandHandler> _logger;
-        private static readonly HttpClient _httpClient = new HttpClient();
+        public static HttpClient _httpClient = new HttpClient();
 
         public FacebookLoginCommandHandler(
             IAccountRepository accountRepo,

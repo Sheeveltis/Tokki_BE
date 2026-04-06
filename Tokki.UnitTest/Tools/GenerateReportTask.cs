@@ -48,12 +48,19 @@ namespace Tokki.UnitTest.Tools
                 var (summary, features) = QACollector.BuildReportData();
 
                 var totalTCs = features.Sum(f => f.TestCases.Count);
+                var failedTCs = features.Sum(f => f.TestCases.Count(tc => tc.StatusRound1 == "Failed"));
+                var passedTCs = features.Sum(f => f.TestCases.Count(tc => tc.StatusRound1 == "Passed"));
                 Log($"Functions: {summary.Functions.Count}, Features with tests: {features.Count}, Total TCs: {totalTCs}");
+                Log($"  Passed: {passedTCs}, Failed: {failedTCs}");
 
                 if (features.Count > 0)
                 {
                     foreach (var f in features)
-                        Log($"  Feature: '{f.FeatureName}' → {f.TestCases.Count} TCs");
+                    {
+                        var fFailed = f.TestCases.Count(tc => tc.StatusRound1 == "Failed");
+                        var status = fFailed > 0 ? $" [!!! {fFailed} FAILED]" : "";
+                        Log($"  Feature: '{f.FeatureName}' -> {f.TestCases.Count} TCs{status}");
+                    }
                 }
 
                 if (summary.Functions.Count == 0)
@@ -62,6 +69,22 @@ namespace Tokki.UnitTest.Tools
                     Log("This means LogTestCase() was never called before this test ran.");
                     Log("Make sure you click 'Run All' in Test Explorer, NOT run individual files.");
                     return;
+                }
+
+                // Log failed test cases details
+                var failedList = QACollector.GetFailedTestCases();
+                if (failedList.Count > 0)
+                {
+                    Log($"");
+                    Log($"========== FAILED TEST CASES ({failedList.Count}) ==========");
+                    foreach (var (featureName, tc) in failedList)
+                    {
+                        Log($"  FAIL: [{featureName}] {tc.TestCaseID} - {tc.Description}");
+                        if (!string.IsNullOrEmpty(tc.ErrorMessage))
+                            Log($"        Error: {tc.ErrorMessage}");
+                    }
+                    Log($"=================================================");
+                    Log($"");
                 }
 
                 // Determine output directory
@@ -76,15 +99,15 @@ namespace Tokki.UnitTest.Tools
                 ExcelReportGenerator.ExportReport(filePath, summary, features);
 
                 if (File.Exists(filePath))
-                    Log($"✅ QA Report created: {filePath}");
+                    Log($"QA Report created: {filePath} (includes {failedTCs} failed TCs)");
                 else
-                    Log($"❌ QA Report NOT found after write: {filePath}");
+                    Log($"QA Report NOT found after write: {filePath}");
 
                 Assert.True(File.Exists(filePath), $"Excel file was NOT created at: {filePath}");
             }
             catch (Exception ex)
             {
-                Log($"❌ EXCEPTION in Export_QA_Report: {ex.GetType().Name}: {ex.Message}");
+                Log($"EXCEPTION in Export_QA_Report: {ex.GetType().Name}: {ex.Message}");
                 Log(ex.StackTrace ?? "");
                 throw; // re-throw so test fails visibly
             }
@@ -100,7 +123,10 @@ namespace Tokki.UnitTest.Tools
                 var (summary, features) = QACollector.BuildReportData();
 
                 var totalTCs = features.Sum(f => f.TestCases.Count);
+                var failedTCs = features.Sum(f => f.TestCases.Count(tc => tc.StatusRound1 == "Failed"));
+                var passedTCs = features.Sum(f => f.TestCases.Count(tc => tc.StatusRound1 == "Passed"));
                 Log($"Functions: {summary.Functions.Count}, Features with tests: {features.Count}, Total TCs: {totalTCs}");
+                Log($"  Passed: {passedTCs}, Failed: {failedTCs}");
 
                 if (summary.Functions.Count == 0)
                 {
@@ -108,11 +134,28 @@ namespace Tokki.UnitTest.Tools
                     return;
                 }
 
+                // Log failed test cases summary
+                var failedList = QACollector.GetFailedTestCases();
+                if (failedList.Count > 0)
+                {
+                    Log($"");
+                    Log($"========== FAILED TEST CASES ({failedList.Count}) ==========");
+                    foreach (var (featureName, tc) in failedList)
+                    {
+                        Log($"  FAIL: [{featureName}] {tc.TestCaseID} - {tc.Description}");
+                        if (!string.IsNullOrEmpty(tc.ErrorMessage))
+                            Log($"        Error: {tc.ErrorMessage}");
+                    }
+                    Log($"=================================================");
+                    Log($"");
+                }
+
                 var header = new ProjectReportHeader
                 {
                     ProjectName = "TOKKI LEARNING MANAGEMENT SYSTEM",
                     ProjectCode = "TK_CAPSTONE_2026",
-                    Creator     = "Project Team G1"
+                    Creator     = "Project Team G1",
+                    Executor    = "KietNASE185061"
                 };
 
                 string userProfilePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
@@ -127,15 +170,15 @@ namespace Tokki.UnitTest.Tools
                 ExcelReportGenerator.ExportStandardReport(filePath, header, summary, features);
 
                 if (File.Exists(filePath))
-                    Log($"✅ Standard Report created: {filePath}");
+                    Log($"Standard Report created: {filePath} (includes {failedTCs} failed TCs)");
                 else
-                    Log($"❌ Standard Report NOT found after write: {filePath}");
+                    Log($"Standard Report NOT found after write: {filePath}");
 
                 Assert.True(File.Exists(filePath), $"Excel file was NOT created at: {filePath}");
             }
             catch (Exception ex)
             {
-                Log($"❌ EXCEPTION in Export_Full_Standard_Report: {ex.GetType().Name}: {ex.Message}");
+                Log($"EXCEPTION in Export_Full_Standard_Report: {ex.GetType().Name}: {ex.Message}");
                 Log(ex.StackTrace ?? "");
                 throw;
             }

@@ -265,5 +265,47 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
                 AppliedConditions = new List<string> { "GetResultWithDetailsAsync throws Exception" }
             });
         }
+
+        // ═══════════════════════════════════════════════════════════════
+        // TC-GURS-07 | N | Writing branch and SkillDurationsDict parsing
+        // ═══════════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_WritingSkillAndDurations_ShouldCalculateCorrectly()
+        {
+            var session = BuildCompletedSession();
+            session.Exam.SkillDurations = "{\"Writing\":40}"; // Set skill duration
+
+            // Add writing parts
+            session.Exam.ExamTemplate.TemplateParts.Add(new TemplatePart { Skill = QuestionSkill.Writing, QuestionFrom = 51, QuestionTo = 54, Mark = 10 });
+            
+            // Add a writing answer
+            session.UserExamWritingAnswers = new List<UserExamWritingAnswer>
+            {
+                new UserExamWritingAnswer { OrderIndex = 51, Score = 5 } // 1 answer out of 4, so isGraded = false
+            };
+
+            var repo = new Mock<IUserExamRepository>();
+            repo.Setup(x => x.GetResultWithDetailsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(session);
+
+            var handler = CreateHandler(repo);
+            var result = await handler.Handle(new GetUserExamResultQuery { UserExamId = "UE-001" }, CancellationToken.None);
+
+            result.IsSuccess.Should().BeTrue();
+            result.Data!.Writing.TotalQuestions.Should().Be(4);
+            result.Data.Writing.IsGraded.Should().BeFalse(); // Only 1 answer provided
+            result.Data.Writing.Duration.Should().Be(40); // Read from dictionary
+
+            QACollector.LogTestCase("UserExam - Get Result", new TestCaseDetail
+            {
+                FunctionGroup     = "GetUserExamResult",
+                TestCaseID        = "TC-GURS-07",
+                Description       = "Check Writing calculation logic and SkillDurations dict mapping",
+                ExpectedResult    = "Writing has IsGraded=false, Duration=40, TotalQuestions=4",
+                StatusRound1      = "Passed",
+                TestCaseType      = "N",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "targetSkill == Writing", "writingAnswers.Count < questionCount", "SkillDurationsDict parsed" }
+            });
+        }
     }
 }
