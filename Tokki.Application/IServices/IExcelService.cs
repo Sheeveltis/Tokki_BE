@@ -23,5 +23,7 @@ namespace Tokki.Application.IServices
         Task<byte[]> ExportCategoriesToExcelAsync(List<CategoryExcelDTO> data, string sheetName);
         Task<List<BlogExcelDTO>> ExtractBlogDataAsync(IFormFile file);
         Task<byte[]> ExportBlogsToExcelAsync(List<BlogExcelDTO> data, string sheetName);
+        Task<List<SystemConfigExcelDTO>> ExtractSystemConfigDataAsync(IFormFile file);
+        Task<byte[]> ExportSystemConfigsToExcelAsync(List<SystemConfigExcelDTO> data, string sheetName);
     }
 }

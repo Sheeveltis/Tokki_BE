@@ -13,6 +13,7 @@ namespace Tokki.Application.IRepositories
         Task<SystemConfig?> GetByKeyAsync(string key);
         Task<List<SystemConfig>> GetAllAsync();
         Task AddAsync(SystemConfig config);
+        Task AddRangeAsync(IEnumerable<SystemConfig> configs);
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
         Task<(List<SystemConfig> Items, int TotalCount)> GetPagedAsync(int pageNumber, int pageSize, Tokki.Domain.Enums.SystemConfigType? configType = null);
         Task<string?> GetValueByKeyAsync(string key);

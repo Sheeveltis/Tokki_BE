@@ -29,6 +29,11 @@ namespace Tokki.Infrastructure.Repositories
         {
             await _context.SystemConfig.AddAsync(config);
         }
+ 
+        public async Task AddRangeAsync(IEnumerable<SystemConfig> configs)
+        {
+            await _context.SystemConfig.AddRangeAsync(configs);
+        }
 
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {

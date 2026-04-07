@@ -592,5 +592,69 @@ namespace Application.Services
                 return package.GetAsByteArray();
             }
         }
+ 
+        public async Task<List<SystemConfigExcelDTO>> ExtractSystemConfigDataAsync(IFormFile file)
+        {
+            var result = new List<SystemConfigExcelDTO>();
+            using (var stream = new MemoryStream())
+            {
+                await file.CopyToAsync(stream);
+                using (var package = new ExcelPackage(stream))
+                {
+                    var worksheet = package.Workbook.Worksheets[0];
+                    var rowCount = worksheet.Dimension?.Rows ?? 0;
+ 
+                    for (int row = 2; row <= rowCount; row++)
+                    {
+                        var key = worksheet.Cells[row, 1].Value?.ToString();
+                        if (string.IsNullOrWhiteSpace(key)) continue;
+ 
+                        result.Add(new SystemConfigExcelDTO
+                        {
+                            Key = key.Trim(),
+                            Value = worksheet.Cells[row, 2].Value?.ToString()?.Trim(),
+                            Description = worksheet.Cells[row, 3].Value?.ToString()?.Trim(),
+                            DataType = worksheet.Cells[row, 4].Value?.ToString()?.Trim(),
+                            ConfigType = worksheet.Cells[row, 5].Value?.ToString()?.Trim()
+                        });
+                    }
+                }
+            }
+            return result;
+        }
+ 
+        public async Task<byte[]> ExportSystemConfigsToExcelAsync(List<SystemConfigExcelDTO> data, string sheetName)
+        {
+            using (var package = new ExcelPackage())
+            {
+                var worksheet = package.Workbook.Worksheets.Add(sheetName);
+                worksheet.Cells[1, 1].Value = "Key";
+                worksheet.Cells[1, 2].Value = "Value";
+                worksheet.Cells[1, 3].Value = "Description";
+                worksheet.Cells[1, 4].Value = "DataType";
+                worksheet.Cells[1, 5].Value = "ConfigType";
+ 
+                using (var range = worksheet.Cells[1, 1, 1, 5])
+                {
+                    range.Style.Font.Bold = true;
+                    range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                    range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                }
+ 
+                for (int i = 0; i < data.Count; i++)
+                {
+                    var item = data[i];
+                    int rowIndex = i + 2;
+                    worksheet.Cells[rowIndex, 1].Value = item.Key;
+                    worksheet.Cells[rowIndex, 2].Value = item.Value;
+                    worksheet.Cells[rowIndex, 3].Value = item.Description;
+                    worksheet.Cells[rowIndex, 4].Value = item.DataType;
+                    worksheet.Cells[rowIndex, 5].Value = item.ConfigType;
+                }
+ 
+                worksheet.Cells.AutoFitColumns();
+                return package.GetAsByteArray();
+            }
+        }
     }
 }
