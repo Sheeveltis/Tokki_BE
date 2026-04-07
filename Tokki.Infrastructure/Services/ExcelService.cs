@@ -282,7 +282,48 @@ namespace Application.Services
 
             return Task.FromResult(result);
         }
-
+ 
+        public Task<byte[]> ExportExamplesToExcelAsync(List<PronunciationExampleExcelDTO> data, string sheetName)
+        {
+            ExcelPackage.License.SetNonCommercialPersonal("TokkiProject");
+ 
+            using (var package = new ExcelPackage())
+            {
+                var worksheet = package.Workbook.Worksheets.Add(sheetName);
+ 
+                worksheet.Cells[1, 1].Value = "PronunciationRuleId";
+                worksheet.Cells[1, 2].Value = "TargetScript";
+                worksheet.Cells[1, 3].Value = "RawScript";
+                worksheet.Cells[1, 4].Value = "PhoneticScript";
+                worksheet.Cells[1, 5].Value = "Meaning";
+                worksheet.Cells[1, 6].Value = "SortOrder";
+ 
+                using (var range = worksheet.Cells[1, 1, 1, 6])
+                {
+                    range.Style.Font.Bold = true;
+                    range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                    range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                }
+ 
+                for (int i = 0; i < data.Count; i++)
+                {
+                    var item = data[i];
+                    int rowIndex = i + 2;
+ 
+                    worksheet.Cells[rowIndex, 1].Value = item.PronunciationRuleId;
+                    worksheet.Cells[rowIndex, 2].Value = item.TargetScript;
+                    worksheet.Cells[rowIndex, 3].Value = item.RawScript;
+                    worksheet.Cells[rowIndex, 4].Value = item.PhoneticScript;
+                    worksheet.Cells[rowIndex, 5].Value = item.Meaning;
+                    worksheet.Cells[rowIndex, 6].Value = item.SortOrder;
+                }
+ 
+                worksheet.Cells.AutoFitColumns();
+ 
+                return Task.FromResult(package.GetAsByteArray());
+            }
+        }
+ 
         public Task<List<PronunciationRuleExcelDTO>> ExtractRuleDataAsync(IFormFile file)
         {
             var result = new List<PronunciationRuleExcelDTO>();

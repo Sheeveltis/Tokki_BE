@@ -36,6 +36,16 @@ namespace Tokki.Infrastructure.Repositories
         {
             await _context.SaveChangesAsync(cancellationToken);
         }
+ 
+        public async Task<List<PronunciationExample>> GetAllAsync(CancellationToken cancellationToken = default)
+        {
+            return await _context.PronunciationExamples
+                .AsNoTracking()
+                .Where(x => !x.IsDeleted)
+                .OrderBy(x => x.PronunciationRuleId)
+                .ThenBy(x => x.SortOrder)
+                .ToListAsync(cancellationToken);
+        }
 
         public async Task<PronunciationExample?> GetByIdAsync(string id)
         {

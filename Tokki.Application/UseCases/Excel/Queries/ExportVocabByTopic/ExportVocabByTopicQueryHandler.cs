@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -45,7 +45,7 @@ namespace Tokki.Application.UseCases.Excel.Queries.ExportVocabByTopic
             // 4. Trả về kết quả
             return OperationResult<ExportFileDTO>.Success(new ExportFileDTO
             {
-                FileName = $"{topicName}.xlsx", 
+                FileName = $"Tokki_Vocab_{topicName}_{DateTime.Now:ddMMyyyy}.xlsx", 
                 ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 FileContent = fileContent
             });

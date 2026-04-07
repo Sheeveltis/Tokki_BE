@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,7 +39,7 @@ namespace Tokki.Application.UseCases.Excel.Queries.ExportQuestionTypes
                 }).ToList();
 
                 byte[] fileBytes = await _excelBaseService.ExportAsync(exportData, "QuestionTypes");
-                string fileName = $"QuestionTypes_{DateTime.Now:yyyyMMdd_HHmm}.xlsx";
+                string fileName = $"Tokki_QuestionType_{DateTime.Now:ddMMyyyy}.xlsx";
 
                 return OperationResult<(byte[], string)>.Success((fileBytes, fileName), 200, "Xuất file thành công.");
             }

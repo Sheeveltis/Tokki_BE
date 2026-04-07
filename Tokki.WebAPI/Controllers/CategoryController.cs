@@ -79,7 +79,7 @@ namespace Tokki.WebAPI.Controllers
             var result = await _sender.Send(new ExportCategoriesQuery());
             if (!result.IsSuccess) return StatusCode(result.StatusCode, result);
 
-            string fileName = $"Tokki_Categories_{DateTime.Now:ddMMyyyy}.xlsx";
+            string fileName = $"Tokki_Category_{DateTime.Now:ddMMyyyy}.xlsx";
             return File(result.Data!, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
         }
 

@@ -150,7 +150,7 @@ namespace Tokki.WebAPI.Controllers
             var result = await _sender.Send(new ExportBlogsQuery());
             if (!result.IsSuccess) return StatusCode(result.StatusCode, result);
 
-            string fileName = $"Tokki_Blogs_{DateTime.Now:ddMMyyyy}.xlsx";
+            string fileName = $"Tokki_Blog_{DateTime.Now:ddMMyyyy}.xlsx";
             return File(result.Data!, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
         }
 
