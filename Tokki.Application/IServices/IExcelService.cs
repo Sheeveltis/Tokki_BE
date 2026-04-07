@@ -18,5 +18,9 @@ namespace Tokki.Application.IServices
         Task<byte[]> ExportRulesToExcelAsync(List<PronunciationRuleExcelDTO> data, string sheetName);
         Task<List<TitleExcelDTO>> ExtractTitleDataAsync(IFormFile file);
         Task<byte[]> ExportTitlesToExcelAsync(List<TitleExcelDTO> data, string sheetName);
+        Task<List<CategoryExcelDTO>> ExtractCategoryDataAsync(IFormFile file);
+        Task<byte[]> ExportCategoriesToExcelAsync(List<CategoryExcelDTO> data, string sheetName);
+        Task<List<BlogExcelDTO>> ExtractBlogDataAsync(IFormFile file);
+        Task<byte[]> ExportBlogsToExcelAsync(List<BlogExcelDTO> data, string sheetName);
     }
 }
