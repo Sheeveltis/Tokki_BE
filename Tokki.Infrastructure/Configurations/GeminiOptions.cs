@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,6 +12,7 @@ namespace Tokki.Infrastructure.Configurations
         public GeminiConfig Wordle { get; set; } = new();
         public GeminiConfig Writing { get; set; } = new();
         public GeminiConfig Roadmap { get; set; } = new();
+        public GeminiConfig Blog { get; set; } = new();
         public string ApiKey { get; set; } = string.Empty;
         public bool UseVertex { get; set; } = false;
         public string VertexProjectId { get; set; } = string.Empty;

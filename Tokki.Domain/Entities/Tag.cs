@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -14,6 +14,7 @@ namespace Tokki.Domain.Entities
         public string Id { get; set; } = string.Empty;
 
         public string Name { get; set; } = string.Empty;
+        public bool IsVerified { get; set; } = false;
 
         public virtual ICollection<Blog> Blogs { get; set; } = new List<Blog>();
     }

@@ -34,6 +34,7 @@ namespace Tokki.Application.UseCases.Blogs.Queries.GetPagedBlogs
                 request.Tag,
                 request.Keyword,
                 request.Status,
+                request.IsOfficial,
                 cancellationToken);
 
             var distinctAuthorIds = pagedEntities.Items
@@ -57,6 +58,7 @@ namespace Tokki.Application.UseCases.Blogs.Queries.GetPagedBlogs
                     ShortDescription = blog.ShortDescription,
                     ViewCount = blog.ViewCount,
                     Status = blog.Status,
+                    IsOfficial = blog.IsOfficial,
                     CreatedAt = blog.CreatedAt,
 
                     CategoryId = blog.CategoryId,

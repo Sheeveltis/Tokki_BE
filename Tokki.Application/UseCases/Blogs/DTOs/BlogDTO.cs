@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,6 +16,7 @@ namespace Tokki.Application.UseCases.Blogs.DTOs
         public string ShortDescription { get; set; } = string.Empty;
         public int ViewCount { get; set; }
         public BlogStatus Status { get; set; }
+        public bool IsOfficial { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
 
         public BlogAuthorDTO Author { get; set; } = new();

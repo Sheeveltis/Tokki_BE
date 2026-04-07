@@ -38,7 +38,7 @@ namespace Tokki.Application.UseCases.Blogs.Commands.CreateBlog
 
             try
             {
-                var tags = await _blogRepository.GetOrCreateTagsAsync(request.Tags);
+                var tags = await _blogRepository.GetOrCreateTagsAsync(request.Tags, true);
                 string newId = _idGeneratorService.GenerateCustom(10);
                 string slug = SlugHelper.GenerateSlug(request.Title, newId);
 
@@ -50,6 +50,7 @@ namespace Tokki.Application.UseCases.Blogs.Commands.CreateBlog
                     ThumbnailUrl = request.ThumbnailUrl,
                     Content = request.Content,
                     ShortDescription = request.ShortDescription,
+                    IsOfficial = true,
                     Status = request.Status,
                     ViewCount = 0,
                     CategoryId = request.CategoryId,

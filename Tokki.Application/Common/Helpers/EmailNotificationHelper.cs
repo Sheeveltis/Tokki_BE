@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -69,10 +69,52 @@ namespace Tokki.Application.Common.Helpers
             var fullHtml = BuildHtmlTemplate(fullName, bodyContent);
             await _emailService.SendEmailAsync(toEmail, subject, fullHtml);
         }
+ 
+        /// <summary>
+        /// Mẫu gửi mail từ chối tự động bởi A.I
+        /// </summary>
+        public async Task SendBlogAIRejectedAsync(string toEmail, string fullName, string contentTitle, string reason, string adminEmail)
+        {
+            var subject = $"[Tokki AI] Thông báo về nội dung bài viết: {contentTitle}";
+ 
+            var bodyContent = $@"
+                <p>Hệ thống kiểm duyệt tự động của Tokki nhận thấy bài viết <strong>""{contentTitle}""</strong> của bạn có chứa nội dung chưa phù hợp.</p>
+                
+                <div style='background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 15px; border-radius: 5px; margin: 20px 0;'>
+                    <p><strong>Kết quả từ A.I:</strong> Nội dung không vượt qua bộ lọc tự động.</p>
+                    <p><strong>Chi tiết:</strong> {reason}</p>
+                </div>
+ 
+                <p style='color: #721c24; font-weight: bold;'>Lưu ý: Đây là quyết định tự động từ hệ thống trí tuệ nhân tạo (A.I).</p>
+                
+                <p>Nếu bạn cho rằng có sự nhầm lẫn hoặc cần hỗ trợ thêm, vui lòng liên hệ trực tiếp với chúng tôi qua email: 
+                   <a href='mailto:{adminEmail}' style='color: #007bff; text-decoration: none; font-weight: bold;'>{adminEmail}</a>
+                </p>
+                
+                <p>Trân trọng,<br/>Đội ngũ Tokki</p>";
+ 
+            var fullHtml = BuildHtmlTemplate(fullName, bodyContent);
+            await _emailService.SendEmailAsync(toEmail, subject, fullHtml);
+        }
 
         /// <summary>
-        /// Kho - Xây dựng mẫu HTML chung cho email
+        /// Gửi thông báo cho Admin khi hệ thống AI bị lỗi
         /// </summary>
+        public async Task SendAIServiceFailureToAdminAsync(string adminEmail, string blogTitle, string errorCode)
+        {
+            var subject = $"[SYSTEM ALERT] AI Moderation Service Failed - {blogTitle}";
+ 
+            var bodyContent = $@"
+                <p>Hệ thống AI vừa gặp lỗi khi đang kiểm duyệt bài viết: <strong>""{blogTitle}""</strong>.</p>
+                <div style='background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px; margin: 20px 0;'>
+                    <p><strong>Mã lỗi hệ thống:</strong> {errorCode}</p>
+                    <p><strong>Trạng thái:</strong> Bài viết đã được chuyển sang hàng đợi duyệt thủ công.</p>
+                </div>
+                <p>Vui lòng kiểm tra lại cấu hình API hoặc hạn mức (quota) của Gemini.</p>";
+ 
+            var fullHtml = BuildHtmlTemplate("Administrator", bodyContent);
+            await _emailService.SendEmailAsync(adminEmail, subject, fullHtml);
+        }
         /// <param name="fullName"></param>
         /// <param name="bodyContent"></param>
         /// <returns></returns>

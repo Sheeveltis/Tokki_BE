@@ -4,11 +4,14 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Tokki.Application.UseCases.Blogs.Commands.ApproveBlog;
 using Tokki.Application.UseCases.Blogs.Commands.CreateBlog;
+using Tokki.Application.UseCases.Blogs.Commands.CreateUserBlog;
 using Tokki.Application.UseCases.Blogs.Commands.DeleteBlog;
 using Tokki.Application.UseCases.Blogs.Commands.IncreaseViewCount;
 using Tokki.Application.UseCases.Blogs.Commands.RejectBlog;
 using Tokki.Application.UseCases.Blogs.Commands.SubmitBlogForApproval;
 using Tokki.Application.UseCases.Blogs.Commands.UpdateBlog;
+using Tokki.Application.UseCases.Blogs.Queries.ExportBlogs;
+using Tokki.Application.UseCases.Blogs.Commands.ImportBlogs;
 using Tokki.Application.UseCases.Blogs.Queries;
 using Tokki.Application.UseCases.Blogs.Queries.GetPagedBlogs;
 using Tokki.Domain.Enums;
@@ -72,6 +75,17 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
+        [HttpPost("user")]
+        [Authorize]
+        public async Task<IActionResult> CreateUserBlog([FromBody] CreateUserBlogCommand command)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? User.FindFirst("sub")?.Value;
+            command.CreatedBy = userId!;
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
         [HttpPut("{id}")]
         [Authorize(Roles ="Admin, Staff")]
         public async Task<IActionResult> Update(string id, [FromBody] UpdateBlogCommand command)
@@ -125,6 +139,26 @@ namespace Tokki.WebAPI.Controllers
         public async Task<IActionResult> IncreaseViewCount(string id)
         {
             var command = new IncreaseViewCountCommand { BlogId = id };
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpGet("export")]
+        [Authorize(Roles = "Admin, Staff")]
+        public async Task<IActionResult> Export()
+        {
+            var result = await _sender.Send(new ExportBlogsQuery());
+            if (!result.IsSuccess) return StatusCode(result.StatusCode, result);
+
+            string fileName = $"Tokki_Blogs_{DateTime.Now:ddMMyyyy}.xlsx";
+            return File(result.Data!, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+        }
+
+        [HttpPost("import")]
+        [Authorize(Roles = "Admin, Staff")]
+        public async Task<IActionResult> Import(IFormFile file)
+        {
+            var command = new ImportBlogsCommand { File = file };
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
         }
