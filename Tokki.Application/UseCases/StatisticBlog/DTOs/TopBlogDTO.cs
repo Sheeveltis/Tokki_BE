@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+using System;
+ 
 namespace Tokki.Application.UseCases.StatisticBlog.DTOs
 {
     public class TopBlogDTO
@@ -13,7 +9,8 @@ namespace Tokki.Application.UseCases.StatisticBlog.DTOs
         public string Slug { get; set; } = string.Empty;
         public int ViewCount { get; set; }
         public string AuthorId { get; set; } = string.Empty;
+        public string AuthorName { get; set; } = string.Empty;
+        public string? AuthorAvatarUrl { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
     }
-
 }

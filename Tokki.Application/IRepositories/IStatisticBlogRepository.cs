@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,6 +11,6 @@ namespace Tokki.Application.IRepositories
     {
         Task<DashboardStatDTO> GetDashboardStatsAsync(CancellationToken cancellationToken);
         Task<List<TopBlogDTO>> GetTopViewedBlogsAsync(int count, CancellationToken cancellationToken);
-        Task<List<TopAuthorDTO>> GetTopAuthorsAsync(int count, CancellationToken cancellationToken);
+        Task<List<TopAuthorDTO>> GetTopAuthorsAsync(int count, Tokki.Domain.Enums.AuthorSource source, CancellationToken cancellationToken);
     }
 }
