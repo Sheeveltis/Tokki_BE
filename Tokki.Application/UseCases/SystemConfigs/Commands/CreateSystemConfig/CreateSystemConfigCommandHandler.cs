@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
@@ -32,6 +32,7 @@ namespace Tokki.Application.UseCases.SystemConfigs.Commands.Create
                 Value = request.Value,
                 Description = request.Description,
                 DataType = request.DataType,
+                ConfigType = request.ConfigType,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow.AddHours(7)
             };

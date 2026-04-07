@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,5 +13,7 @@ namespace Tokki.Application.UseCases.SystemConfigs.DTOs
         public string? Description { get; set; }
         public string? DataType { get; set; }
         public bool IsActive { get; set; }
+        public int ConfigType { get; set; }
+        public string ConfigTypeName { get; set; } = string.Empty;
     }
 }
