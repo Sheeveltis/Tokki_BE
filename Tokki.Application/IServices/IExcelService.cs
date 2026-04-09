@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Tokki.Application.UseCases.Excel.DTOs;
+using Tokki.Application.UseCases.Vocabulary.DTOs;
 
 namespace Tokki.Application.IServices
 {
@@ -18,5 +19,6 @@ namespace Tokki.Application.IServices
         Task<byte[]> ExportRulesToExcelAsync(List<PronunciationRuleExcelDTO> data, string sheetName);
         Task<List<TitleExcelDTO>> ExtractTitleDataAsync(IFormFile file);
         Task<byte[]> ExportTitlesToExcelAsync(List<TitleExcelDTO> data, string sheetName);
+        Task<byte[]> ExportVocabularyImageResultsToExcelAsync(List<VocabularyImageResultDto> results);
     }
 }

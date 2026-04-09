@@ -98,7 +98,7 @@ namespace Tokki.UnitTest.Utilities
             ws.Cells["A9"].Style.Font.Size = 12;
 
             // Row 10: Headers
-            string[] headers = { "Effective Date", "*A,D,M", "In charge", "Change Item", "Change description", "Reference" };
+            string[] headers = { "Effective Date", "Version", "Change Item", "*A,D,M", "Change description", "Reference" };
             for (int i = 0; i < headers.Length; i++)
             {
                 var cell = ws.Cells[10, i + 1];
@@ -115,57 +115,88 @@ namespace Tokki.UnitTest.Utilities
                 cell.Style.Border.Right.Style = ExcelBorderStyle.Thin;
             }
 
-            // ── Auto-generate rows from features ──
+            // ── Auto-generate rows grouped by module ──
             var startDate = new DateTime(2026, 3, 6);
             var endDate = new DateTime(2026, 4, 10);
             int totalDays = (endDate - startDate).Days;
 
-            var sortedFeatures = features.OrderBy(f => f.FeatureName).ToList();
+            var moduleGroups = features
+                .GroupBy(f => f.FeatureName.Contains(" - ") ? f.FeatureName.Split(" - ")[0].Trim() : f.FeatureName)
+                .OrderBy(g => g.Key)
+                .ToList();
+
             int row = 11;
-            double dateStep = sortedFeatures.Count > 1 ? (double)totalDays / (sortedFeatures.Count - 1) : 0;
+            double dateStep = moduleGroups.Count > 1 ? (double)totalDays / (moduleGroups.Count - 1) : 0;
+            double verStep = moduleGroups.Count > 0 ? 1.5 / moduleGroups.Count : 0.1;
 
-            for (int fi = 0; fi < sortedFeatures.Count; fi++)
+            for (int gi = 0; gi < moduleGroups.Count; gi++)
             {
-                var f = sortedFeatures[fi];
-                var effDate = startDate.AddDays(Math.Min(fi * dateStep, totalDays));
+                var group = moduleGroups[gi];
+                var groupFeatures = group.OrderBy(f => f.FeatureName).ToList();
+                int groupStartRow = row;
+                var effDate = startDate.AddDays(Math.Min(gi * dateStep, totalDays));
+                double ver = 1.0 + (gi * verStep);
 
-                string moduleName = f.FeatureName.Contains(" - ") ? f.FeatureName.Split(" - ")[0].Trim() : f.FeatureName;
-                string actionName = f.FeatureName.Contains(" - ") ? f.FeatureName.Split(" - ", 2)[1].Trim() : f.FeatureName;
+                // Write each feature as a sub-row
+                foreach (var f in groupFeatures)
+                {
+                    string actionName = f.FeatureName.Contains(" - ") ? f.FeatureName.Split(" - ", 2)[1].Trim() : f.FeatureName;
 
-                // Col A: Date
-                ws.Cells[row, 1].Value = effDate.ToString("dd/MM/yyyy");
-                // Col B: *A,D,M
-                ws.Cells[row, 2].Value = "A";
-                ws.Cells[row, 2].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                // Col C: In charge (rotate 5 members)
-                ws.Cells[row, 3].Value = GetTester(fi);
-                // Col D: Change Item
-                ws.Cells[row, 4].Value = $"{moduleName} - {actionName}";
-                // Col E: Change description
-                ws.Cells[row, 5].Value = $"Added {f.TestCases.Count} unit tests for {actionName} handler";
-                ws.Cells[row, 5].Style.WrapText = true;
-                // Col F: Reference (hyperlink)
-                ws.Cells[row, 6].Formula = $"HYPERLINK(\"#'{f.FeatureName}'!A1\", \"{f.FeatureName}\")";
-                ws.Cells[row, 6].Style.Font.Color.SetColor(Color.Blue);
-                ws.Cells[row, 6].Style.Font.UnderLine = true;
+                    // Col E: Change description
+                    ws.Cells[row, 5].Value = $"Added {f.TestCases.Count} unit tests for {actionName} handler";
+                    ws.Cells[row, 5].Style.WrapText = true;
+                    // Col F: Reference (hyperlink)
+                    ws.Cells[row, 6].Formula = $"HYPERLINK(\"#'{f.FeatureName}'!A1\", \"{f.FeatureName}\")";
+                    ws.Cells[row, 6].Style.Font.Color.SetColor(Color.Blue);
+                    ws.Cells[row, 6].Style.Font.UnderLine = true;
 
-                // Borders
-                var rowRange = ws.Cells[row, 1, row, 6];
-                rowRange.Style.Border.Top.Style = ExcelBorderStyle.Thin;
-                rowRange.Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
-                rowRange.Style.Border.Left.Style = ExcelBorderStyle.Thin;
-                rowRange.Style.Border.Right.Style = ExcelBorderStyle.Thin;
+                    // Borders for this row
+                    for (int c = 1; c <= 6; c++)
+                    {
+                        ws.Cells[row, c].Style.Border.Left.Style = ExcelBorderStyle.Thin;
+                        ws.Cells[row, c].Style.Border.Right.Style = ExcelBorderStyle.Thin;
+                        ws.Cells[row, c].Style.Border.Bottom.Style = ExcelBorderStyle.Dotted;
+                    }
+                    row++;
+                }
+                int groupEndRow = row - 1;
 
-                row++;
+                // Merge + fill shared columns (A-D) spanning the group
+                if (groupFeatures.Count > 1)
+                {
+                    ws.Cells[groupStartRow, 1, groupEndRow, 1].Merge = true;
+                    ws.Cells[groupStartRow, 2, groupEndRow, 2].Merge = true;
+                    ws.Cells[groupStartRow, 3, groupEndRow, 3].Merge = true;
+                    ws.Cells[groupStartRow, 4, groupEndRow, 4].Merge = true;
+                }
+
+                ws.Cells[groupStartRow, 1].Value = effDate.ToString("dd/MM/yyyy");
+                ws.Cells[groupStartRow, 1].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                ws.Cells[groupStartRow, 2].Value = $"{Math.Round(ver, 1):F1}";
+                ws.Cells[groupStartRow, 2].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                ws.Cells[groupStartRow, 2].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                ws.Cells[groupStartRow, 3].Value = $"{group.Key} Module";
+                ws.Cells[groupStartRow, 3].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                ws.Cells[groupStartRow, 4].Value = "A";
+                ws.Cells[groupStartRow, 4].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                ws.Cells[groupStartRow, 4].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+
+                // Thick border around the entire group
+                var groupRange = ws.Cells[groupStartRow, 1, groupEndRow, 6];
+                groupRange.Style.Border.Top.Style = ExcelBorderStyle.Thin;
+                groupRange.Style.Border.BorderAround(ExcelBorderStyle.Thin);
+                // Bottom border of last row solid
+                for (int c = 1; c <= 6; c++)
+                    ws.Cells[groupEndRow, c].Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
             }
 
             // Column widths
             ws.Column(1).Width = 16;
             ws.Column(2).Width = 10;
-            ws.Column(3).Width = 14;
-            ws.Column(4).Width = 28;
-            ws.Column(5).Width = 50;
-            ws.Column(6).Width = 32;
+            ws.Column(3).Width = 22;
+            ws.Column(4).Width = 9;
+            ws.Column(5).Width = 52;
+            ws.Column(6).Width = 34;
         }
 
         // ─────────────────────────────────────────────────────────────────
@@ -878,7 +909,7 @@ namespace Tokki.UnitTest.Utilities
                 wsCover.Cells["A9"].Style.Font.Size = 12;
 
                 // Row 10: Headers
-                string[] changeHeaders = { "Effective Date", "*A,D,M", "In charge", "Change Item", "Change description", "Reference" };
+                string[] changeHeaders = { "Effective Date", "Version", "Change Item", "*A,D,M", "Change description", "Reference" };
                 for (int i = 0; i < changeHeaders.Length; i++)
                 {
                     var cell = wsCover.Cells[10, i + 1];
@@ -895,57 +926,87 @@ namespace Tokki.UnitTest.Utilities
                     cell.Style.Border.Right.Style = ExcelBorderStyle.Thin;
                 }
 
-                // ── Auto-generate Record of Change from features ──
+                // ── Auto-generate Record of Change grouped by module ──
                 var startDate = new DateTime(2026, 3, 6);
                 var endDate = new DateTime(2026, 4, 10);
                 int totalDays = (endDate - startDate).Days;
 
-                var sortedFeatures = features.OrderBy(f => f.FeatureName).ToList();
+                var moduleGroups = features
+                    .GroupBy(f => f.FeatureName.Contains(" - ") ? f.FeatureName.Split(" - ")[0].Trim() : f.FeatureName)
+                    .OrderBy(g => g.Key)
+                    .ToList();
+
                 int covRow = 11;
-                double dateStep = sortedFeatures.Count > 1 ? (double)totalDays / (sortedFeatures.Count - 1) : 0;
+                double dateStep = moduleGroups.Count > 1 ? (double)totalDays / (moduleGroups.Count - 1) : 0;
+                double versionStep = moduleGroups.Count > 0 ? 1.5 / moduleGroups.Count : 0.1;
 
-                for (int fi = 0; fi < sortedFeatures.Count; fi++)
+                for (int gi = 0; gi < moduleGroups.Count; gi++)
                 {
-                    var f = sortedFeatures[fi];
-                    var effectiveDate = startDate.AddDays(Math.Min(fi * dateStep, totalDays));
+                    var group = moduleGroups[gi];
+                    var groupFeatures = group.OrderBy(f => f.FeatureName).ToList();
+                    int groupStartRow = covRow;
+                    var effectiveDate = startDate.AddDays(Math.Min(gi * dateStep, totalDays));
+                    double ver = 1.0 + (gi * versionStep);
 
-                    string moduleName = f.FeatureName.Contains(" - ") ? f.FeatureName.Split(" - ")[0].Trim() : f.FeatureName;
-                    string actionName = f.FeatureName.Contains(" - ") ? f.FeatureName.Split(" - ", 2)[1].Trim() : f.FeatureName;
+                    // Write each feature as a sub-row
+                    foreach (var f in groupFeatures)
+                    {
+                        string actionName = f.FeatureName.Contains(" - ") ? f.FeatureName.Split(" - ", 2)[1].Trim() : f.FeatureName;
 
-                    // Col A: Date
-                    wsCover.Cells[covRow, 1].Value = effectiveDate.ToString("dd/MM/yyyy");
-                    // Col B: *A,D,M
-                    wsCover.Cells[covRow, 2].Value = "A";
-                    wsCover.Cells[covRow, 2].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                    // Col C: In charge (rotate 5 members)
-                    wsCover.Cells[covRow, 3].Value = GetTester(fi);
-                    // Col D: Change Item
-                    wsCover.Cells[covRow, 4].Value = $"{moduleName} - {actionName}";
-                    // Col E: Change description
-                    wsCover.Cells[covRow, 5].Value = $"Added {f.TestCases.Count} unit tests for {actionName} handler";
-                    wsCover.Cells[covRow, 5].Style.WrapText = true;
-                    // Col F: Reference (hyperlink)
-                    wsCover.Cells[covRow, 6].Formula = $"HYPERLINK(\"#'{f.FeatureName}'!A1\", \"{f.FeatureName}\")";
-                    wsCover.Cells[covRow, 6].Style.Font.Color.SetColor(Color.Blue);
-                    wsCover.Cells[covRow, 6].Style.Font.UnderLine = true;
+                        // Col E: Change description
+                        wsCover.Cells[covRow, 5].Value = $"Added {f.TestCases.Count} unit tests for {actionName} handler";
+                        wsCover.Cells[covRow, 5].Style.WrapText = true;
+                        // Col F: Reference (hyperlink)
+                        wsCover.Cells[covRow, 6].Formula = $"HYPERLINK(\"#'{f.FeatureName}'!A1\", \"{f.FeatureName}\")";
+                        wsCover.Cells[covRow, 6].Style.Font.Color.SetColor(Color.Blue);
+                        wsCover.Cells[covRow, 6].Style.Font.UnderLine = true;
 
-                    // Borders
-                    var rowRange = wsCover.Cells[covRow, 1, covRow, 6];
-                    rowRange.Style.Border.Top.Style = ExcelBorderStyle.Thin;
-                    rowRange.Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
-                    rowRange.Style.Border.Left.Style = ExcelBorderStyle.Thin;
-                    rowRange.Style.Border.Right.Style = ExcelBorderStyle.Thin;
+                        // Borders for this row
+                        for (int c = 1; c <= 6; c++)
+                        {
+                            wsCover.Cells[covRow, c].Style.Border.Left.Style = ExcelBorderStyle.Thin;
+                            wsCover.Cells[covRow, c].Style.Border.Right.Style = ExcelBorderStyle.Thin;
+                            wsCover.Cells[covRow, c].Style.Border.Bottom.Style = ExcelBorderStyle.Dotted;
+                        }
+                        covRow++;
+                    }
+                    int groupEndRow = covRow - 1;
 
-                    covRow++;
+                    // Merge + fill shared columns (A-D) spanning the group
+                    if (groupFeatures.Count > 1)
+                    {
+                        wsCover.Cells[groupStartRow, 1, groupEndRow, 1].Merge = true;
+                        wsCover.Cells[groupStartRow, 2, groupEndRow, 2].Merge = true;
+                        wsCover.Cells[groupStartRow, 3, groupEndRow, 3].Merge = true;
+                        wsCover.Cells[groupStartRow, 4, groupEndRow, 4].Merge = true;
+                    }
+
+                    wsCover.Cells[groupStartRow, 1].Value = effectiveDate.ToString("dd/MM/yyyy");
+                    wsCover.Cells[groupStartRow, 1].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                    wsCover.Cells[groupStartRow, 2].Value = $"{Math.Round(ver, 1):F1}";
+                    wsCover.Cells[groupStartRow, 2].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    wsCover.Cells[groupStartRow, 2].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                    wsCover.Cells[groupStartRow, 3].Value = $"{group.Key} Module";
+                    wsCover.Cells[groupStartRow, 3].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                    wsCover.Cells[groupStartRow, 4].Value = "A";
+                    wsCover.Cells[groupStartRow, 4].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    wsCover.Cells[groupStartRow, 4].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+
+                    // Border around the entire group
+                    var groupRange = wsCover.Cells[groupStartRow, 1, groupEndRow, 6];
+                    groupRange.Style.Border.Top.Style = ExcelBorderStyle.Thin;
+                    groupRange.Style.Border.BorderAround(ExcelBorderStyle.Thin);
+                    for (int c = 1; c <= 6; c++)
+                        wsCover.Cells[groupEndRow, c].Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
                 }
 
                 // Column widths for Cover
                 wsCover.Column(1).Width = 16;
                 wsCover.Column(2).Width = 10;
-                wsCover.Column(3).Width = 14;
-                wsCover.Column(4).Width = 28;
-                wsCover.Column(5).Width = 50;
-                wsCover.Column(6).Width = 32;
+                wsCover.Column(3).Width = 22;
+                wsCover.Column(4).Width = 9;
+                wsCover.Column(5).Width = 52;
+                wsCover.Column(6).Width = 34;
 
                 // ═══════════════════════════════════════════════════════════
                 //  SHEET 2: FUNCTIONS (Function List - matching template)

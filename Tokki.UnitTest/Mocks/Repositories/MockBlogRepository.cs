@@ -18,8 +18,8 @@ namespace Tokki.UnitTest.Mocks.Repositories
             var mockRepo = new Mock<IBlogRepository>();
             var blogs = predefinedBlogs ?? new List<Blog>();
 
-            mockRepo.Setup(x => x.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<BlogStatus?>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((int pageNumber, int pageSize, string? categoryId, BlogStatus? status, CancellationToken token) =>
+            mockRepo.Setup(x => x.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<BlogStatus?>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((int pageNumber, int pageSize, string? categoryId, string? tag, string? keyword, BlogStatus? status, CancellationToken token) =>
                 {
                     var query = blogs.AsQueryable();
 

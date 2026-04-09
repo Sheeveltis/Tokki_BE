@@ -1,17 +1,27 @@
 using Microsoft.AspNetCore.Http;
 using OfficeOpenXml;
+using OfficeOpenXml.Drawing;
+using System;
+using System.Drawing;
+using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 using Tokki.Application.IServices;
 using Tokki.Application.UseCases.Excel.DTOs;
+using Tokki.Application.UseCases.Vocabulary.DTOs;
 
 namespace Application.Services
 {
     public class ExcelService : IExcelService
     {
-        public ExcelService()
+        private readonly IHttpClientFactory _httpClientFactory;
+
+        public ExcelService(IHttpClientFactory httpClientFactory)
         {
             ExcelPackage.License.SetNonCommercialPersonal("TokkiProject");
+            _httpClientFactory = httpClientFactory;
         }
         public Task<List<VocabularyExcelDTO>> ExtractVocabularyDataAsync(IFormFile file)
         {
@@ -424,6 +434,146 @@ namespace Application.Services
 
                 worksheet.Cells.AutoFitColumns();
                 return package.GetAsByteArray();
+            }
+        }
+
+        public async Task<byte[]> ExportVocabularyImageResultsToExcelAsync(List<VocabularyImageResultDto> results)
+        {
+            ExcelPackage.License.SetNonCommercialPersonal("TokkiProject");
+
+            using var package = new ExcelPackage();
+            var ws = package.Workbook.Worksheets.Add("Kết quả tìm ảnh");
+
+            // Đặt chiều cao mặc định của row (pixel)
+            const int imgHeight = 80; // pixel
+            const int imgWidth  = 80;
+            const double rowHeightPt = 62; // Points (≈ 83 pixel ở 96dpi)
+
+            // Header: Ảnh AI (Gemini) + Ảnh Pixabay
+            var headers = new[] { "STT", "Text (Tiếng Hàn)", "Definition (Nghĩa)",
+                                   "🎨 Ảnh AI (Gemini)", "🔍 Ảnh Pixabay", "Trạng thái", "Ghi chú" };
+            for (int col = 0; col < headers.Length; col++)
+                ws.Cells[1, col + 1].Value = headers[col];
+
+            // Style header
+            using (var range = ws.Cells[1, 1, 1, headers.Length])
+            {
+                range.Style.Font.Bold = true;
+                range.Style.Font.Color.SetColor(Color.White);
+                range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                range.Style.Fill.BackgroundColor.SetColor(Color.FromArgb(68, 114, 196));
+                range.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                range.Style.VerticalAlignment   = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+            }
+
+            // Đặt chiều rộng cột ảnh (col 4, 5)
+            ws.Column(4).Width = 14;  // ≈ 100px
+            ws.Column(5).Width = 14;
+
+            var httpClient = _httpClientFactory.CreateClient();
+
+            for (int i = 0; i < results.Count; i++)
+            {
+                var item = results[i];
+                int row = i + 2;
+
+                // Đặt chiều cao row đủ hiện ảnh
+                ws.Row(row).Height = rowHeightPt;
+
+                ws.Cells[row, 1].Value = i + 1;
+                ws.Cells[row, 2].Value = item.Text;
+                ws.Cells[row, 3].Value = item.Definition;
+                // Col 4, 5: ảnh nhúng vào (xử lý bên dưới)
+                ws.Cells[row, 6].Value = item.Status;
+                ws.Cells[row, 7].Value = item.ErrorMessage ?? "";
+
+                // Color coding
+                Color rowColor = item.Status switch
+                {
+                    "Success" => Color.FromArgb(198, 239, 206),
+                    "Failed"  => Color.FromArgb(255, 199, 206),
+                    "Skipped" => Color.FromArgb(255, 235, 156),
+                    _         => Color.White
+                };
+                using (var rowRange = ws.Cells[row, 1, row, headers.Length])
+                {
+                    rowRange.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                    rowRange.Style.Fill.BackgroundColor.SetColor(rowColor);
+                    rowRange.Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                }
+
+                // Nhúng ảnh EN vào col 4
+                await TryEmbedImageAsync(ws, httpClient, item.ViImgURL, row, 4, imgWidth, imgHeight);
+                // Nhúng ảnh KO vào col 5
+                await TryEmbedImageAsync(ws, httpClient, item.KoImgURL, row, 5, imgWidth, imgHeight);
+            }
+
+            // AutoFit các cột văn bản (không AutoFit cột ảnh sẽ bị thu nhỏ)
+            ws.Column(1).AutoFit();
+            ws.Column(2).AutoFit();
+            ws.Column(3).AutoFit();
+            ws.Column(6).AutoFit();
+            ws.Column(7).AutoFit();
+
+            // Summary sheet
+            var summaryWs = package.Workbook.Worksheets.Add("Tổng kết");
+            summaryWs.Cells[1, 1].Value = "Thống kê";
+            summaryWs.Cells[1, 1].Style.Font.Bold = true;
+            summaryWs.Cells[1, 1].Style.Font.Size = 14;
+            summaryWs.Cells[3, 1].Value = "Tổng số từ vựng:";
+            summaryWs.Cells[3, 2].Value = results.Count;
+            summaryWs.Cells[4, 1].Value = "Thành công:";
+            summaryWs.Cells[4, 2].Value = results.Count(r => r.Status == "Success");
+            summaryWs.Cells[4, 2].Style.Font.Color.SetColor(Color.Green);
+            summaryWs.Cells[5, 1].Value = "Thất bại:";
+            summaryWs.Cells[5, 2].Value = results.Count(r => r.Status == "Failed");
+            summaryWs.Cells[5, 2].Style.Font.Color.SetColor(Color.Red);
+            summaryWs.Cells[6, 1].Value = "Bỏ qua:";
+            summaryWs.Cells[6, 2].Value = results.Count(r => r.Status == "Skipped");
+            summaryWs.Cells[6, 2].Style.Font.Color.SetColor(Color.Orange);
+            summaryWs.Cells[7, 1].Value = "Có ảnh EN:";
+            summaryWs.Cells[7, 2].Value = results.Count(r => !string.IsNullOrEmpty(r.ViImgURL));
+            summaryWs.Cells[8, 1].Value = "Có ảnh KO:";
+            summaryWs.Cells[8, 2].Value = results.Count(r => !string.IsNullOrEmpty(r.KoImgURL));
+            summaryWs.Cells[9, 1].Value = "Thời gian:";
+            summaryWs.Cells[9, 2].Value = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
+            summaryWs.Cells[3, 1, 9, 1].Style.Font.Bold = true;
+            summaryWs.Cells.AutoFitColumns();
+
+            return package.GetAsByteArray();
+        }
+
+        /// <summary>
+        /// Download ảnh từ URL và nhúng vào ô Excel chỉ định.
+        /// Nếu download lỗi thì bỏ qua, không cần để lỗi.
+        /// </summary>
+        private async Task TryEmbedImageAsync(
+            ExcelWorksheet ws, HttpClient client,
+            string? imageUrl, int row, int col,
+            int imgWidthPx, int imgHeightPx)
+        {
+            if (string.IsNullOrEmpty(imageUrl)) return;
+
+            try
+            {
+                var bytes = await client.GetByteArrayAsync(imageUrl);
+
+                // Lưu ra temp file (EPPlus cần FileInfo)
+                var tempFile = Path.Combine(Path.GetTempPath(), $"tokki_img_{row}_{col}_{Guid.NewGuid():N}.jpg");
+                await File.WriteAllBytesAsync(tempFile, bytes);
+
+                var picName = $"img_r{row}_c{col}";
+                var picture = ws.Drawings.AddPicture(picName, new FileInfo(tempFile));
+
+                picture.SetPosition(row - 1, 2, col - 1, 2);
+                picture.SetSize(imgWidthPx, imgHeightPx);
+
+                // Xoá temp file sau khi EPPlus đã đọc xong
+                try { File.Delete(tempFile); } catch { }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"    [Excel] Không nhúng được ảnh row={row} col={col}: {ex.Message}");
             }
         }
     }

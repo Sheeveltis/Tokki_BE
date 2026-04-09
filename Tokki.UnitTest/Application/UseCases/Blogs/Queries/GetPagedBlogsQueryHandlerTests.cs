@@ -31,7 +31,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs.Queries
         public async Task Handle_EmptyResult_ShouldReturnEmptyDtoList()
         {
             var pagedData = new PagedResult<Blog>(new List<Blog>(), 0, 1, 10);
-            _blogRepoMock.Setup(x => x.GetPagedAsync(1, 10, null, null, It.IsAny<CancellationToken>()))
+            _blogRepoMock.Setup(x => x.GetPagedAsync(1, 10, null, null, null, null, It.IsAny<CancellationToken>()))
                          .ReturnsAsync(pagedData);
             
             _accountRepoMock.Setup(x => x.GetBasicInfosAsync(It.IsAny<List<string>>()))
@@ -64,7 +64,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs.Queries
             var blogs = new List<Blog> { new Blog { Id = "b1", AuthorId = "unknown-id", Tags = new List<Tag>() } };
             var pagedData = new PagedResult<Blog>(blogs, 1, 1, 10);
             
-            _blogRepoMock.Setup(x => x.GetPagedAsync(1, 10, null, null, It.IsAny<CancellationToken>()))
+            _blogRepoMock.Setup(x => x.GetPagedAsync(1, 10, null, null, null, null, It.IsAny<CancellationToken>()))
                          .ReturnsAsync(pagedData);
             _accountRepoMock.Setup(x => x.GetBasicInfosAsync(It.IsAny<List<string>>()))
                             .ReturnsAsync(new Dictionary<string, AccountBasicInfoDTO>()); // Missing in dictionary
@@ -94,7 +94,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs.Queries
             var blogs = new List<Blog> { new Blog { Id = "b1", AuthorId = "valid-id", Tags = new List<Tag>() } };
             var pagedData = new PagedResult<Blog>(blogs, 1, 1, 10);
             
-            _blogRepoMock.Setup(x => x.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<BlogStatus?>(), It.IsAny<CancellationToken>()))
+            _blogRepoMock.Setup(x => x.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<BlogStatus?>(), It.IsAny<CancellationToken>()))
                          .ReturnsAsync(pagedData);
                          
             var dic = new Dictionary<string, AccountBasicInfoDTO>
@@ -132,7 +132,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs.Queries
             var blogs = new List<Blog> { new Blog { Id = "b1", Category = null, Tags = new List<Tag>() } };
             var pagedData = new PagedResult<Blog>(blogs, 1, 1, 10);
             
-            _blogRepoMock.Setup(x => x.GetPagedAsync(1, 10, null, null, It.IsAny<CancellationToken>()))
+            _blogRepoMock.Setup(x => x.GetPagedAsync(1, 10, null, null, null, null, It.IsAny<CancellationToken>()))
                          .ReturnsAsync(pagedData);
             _accountRepoMock.Setup(x => x.GetBasicInfosAsync(It.IsAny<List<string>>()))
                             .ReturnsAsync(new Dictionary<string, AccountBasicInfoDTO>());
@@ -163,7 +163,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs.Queries
             var blogs = new List<Blog> { new Blog { Id = "b1", Category = new Category { Name = "Tech" }, Tags = tags } };
             var pagedData = new PagedResult<Blog>(blogs, 1, 1, 10);
             
-            _blogRepoMock.Setup(x => x.GetPagedAsync(1, 10, null, null, It.IsAny<CancellationToken>()))
+            _blogRepoMock.Setup(x => x.GetPagedAsync(1, 10, null, null, null, null, It.IsAny<CancellationToken>()))
                          .ReturnsAsync(pagedData);
             _accountRepoMock.Setup(x => x.GetBasicInfosAsync(It.IsAny<List<string>>()))
                             .ReturnsAsync(new Dictionary<string, AccountBasicInfoDTO>());
@@ -192,7 +192,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs.Queries
         public async Task Handle_PaginationProps_ShouldMapAccuratelyToResult()
         {
             var pagedData = new PagedResult<Blog>(new List<Blog>(), 99, 5, 20); // Extracted properties
-            _blogRepoMock.Setup(x => x.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<BlogStatus?>(), It.IsAny<CancellationToken>()))
+            _blogRepoMock.Setup(x => x.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<BlogStatus?>(), It.IsAny<CancellationToken>()))
                          .ReturnsAsync(pagedData);
             _accountRepoMock.Setup(x => x.GetBasicInfosAsync(It.IsAny<List<string>>()))
                             .ReturnsAsync(new Dictionary<string, AccountBasicInfoDTO>());

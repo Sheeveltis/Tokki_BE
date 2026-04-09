@@ -94,6 +94,8 @@ namespace Tokki.Infrastructure
             services.AddScoped<ISpeechService, SpeechService>();
             //Cloudinary 
             services.AddScoped<ICloudinaryService, CloudinaryService>();
+            //Image Search (tìm ảnh tự động)
+            services.AddScoped<IImageSearchService, ImageSearchService>();
             //Comment
             services.AddScoped<ICommentRepository, CommentRepository>();
             //Live Chat
