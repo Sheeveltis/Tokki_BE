@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.UseCases.ExamTemplates.DTOs;
 using Tokki.Domain.Enums;
@@ -12,5 +12,6 @@ namespace Tokki.Application.UseCases.ExamTemplates.Queries.GetAdminExamTemplates
         public string? SearchTerm { get; set; }
         public ExamTemplateStatus? Status { get; set; }
         public ExamType? Type { get; set; }
+        public ExamCreatorFilter? CreatorFilter { get; set; } = ExamCreatorFilter.All;
     }
 }

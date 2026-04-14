@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Tokki.Application.IRepositories;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
@@ -35,7 +35,8 @@ namespace Tokki.Infrastructure.Repositories
             string? searchTerm = null,
             ExamTemplateStatus? status = null,
             CancellationToken cancellationToken = default,
-            ExamType? type = null)
+            ExamType? type = null,
+            ExamCreatorFilter? creatorFilter = ExamCreatorFilter.All)
         {
             var query = _context.ExamTemplates
                 .Include(et => et.TemplateParts)
@@ -60,6 +61,15 @@ namespace Tokki.Infrastructure.Repositories
             if (type.HasValue)
             {
                 query = query.Where(et => et.Type == type.Value);
+            }
+
+            if (creatorFilter == ExamCreatorFilter.AI)
+            {
+                query = query.Where(et => et.CreatedBy == "AI_EXAM_SYSTEM");
+            }
+            else if (creatorFilter == ExamCreatorFilter.Human)
+            {
+                query = query.Where(et => et.CreatedBy != "AI_EXAM_SYSTEM");
             }
 
             var totalCount = await query.CountAsync(cancellationToken);
