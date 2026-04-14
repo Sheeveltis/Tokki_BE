@@ -12,9 +12,9 @@ namespace Tokki.Domain.Enums
         [Description("Matching card game")]
          MatchingCard= 1,
 
-        [Description(" Solitaire")]
+        [Description("Typing practice")] 
         Solitaire = 2,
-        [Description("Typing practice")]
+        [Description("Solitaire")]
         TypingPractice= 3,
     }
 }

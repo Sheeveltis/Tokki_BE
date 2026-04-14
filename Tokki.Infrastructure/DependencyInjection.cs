@@ -78,9 +78,8 @@ namespace Tokki.Infrastructure
             services.AddScoped<ISocialLoginRepository, SocialLoginRepository>();
             services.AddScoped<IVocabularyExampleRepository, VocabularyExampleRepository>();
             services.AddScoped<IUserFavoriteVocabularyRepository, UserFavoriteVocabularyRepository>();
-            services.AddScoped<IGameRepository, GameRepository>();
             services.AddScoped<IGameMatchSessionRepository, GameMatchSessionRepository>();
-            services.AddScoped<ISolitaireSessionRepository, SolitaireSessionRepository>();
+
             services.AddScoped<IEmailHistoryRepository, EmailHistoryRepository>();
             services.AddScoped<IUserExamWritingAnswerRepository, UserExamWritingAnswerRepository>();
             services.AddScoped<IQuestion51Pipeline,
