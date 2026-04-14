@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,8 +13,8 @@ namespace Tokki.Application.UseCases.Games.Queries.CheckUserPlayedLevel
 
     public class CheckUserPlayedLevelQuery : IRequest<OperationResult<bool>>
     {
-        public string GameId { get; set; } = string.Empty;
-        public string TopicId { get; set; } = string.Empty;
+        public GameType GameType { get; set; }
+        public string? TopicId { get; set; }
         public GameDifficulty GameDifficulty { get; set; }
 
         // Lấy từ token, không nhận từ client

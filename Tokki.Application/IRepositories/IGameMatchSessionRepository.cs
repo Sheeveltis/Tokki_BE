@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Tokki.Domain.Entities;
@@ -10,14 +10,29 @@ namespace Tokki.Application.IRepositories
     {
         Task<GameMatchSession?> GetByUserGameTopicAsync(
             string userId,
-            string gameId,
-            string topicId,
+            GameType gameType,
+            string? topicId,
             GameDifficulty difficulty);
 
+        Task<(IReadOnlyList<GameMatchSession> Items, int TotalCount)> GetAllByUserAsync(
+            string userId,
+            GameType? gameType,
+            string? topicId,
+            GameDifficulty? difficulty,
+            int pageNumber,
+            int pageSize);
+
         Task<(IReadOnlyList<GameMatchSession> Items, int TotalCount)> GetPagedByGameTopicAsync(
-            string gameId,
-            string topicId,
-            GameDifficulty difficulty,
+            GameType? gameType,
+            string? topicId,
+            GameDifficulty? difficulty,
+            int pageNumber,
+            int pageSize);
+
+        Task<(IReadOnlyList<(string UserId, GameType GameType, GameDifficulty GameDifficulty, string? TopicId, int BestScore)> Items, int TotalCount)> GetLeaderboardAsync(
+            GameType? gameType,
+            GameDifficulty? difficulty,
+            string? topicId,
             int pageNumber,
             int pageSize);
 

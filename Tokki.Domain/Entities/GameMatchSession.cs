@@ -12,7 +12,7 @@ namespace Tokki.Domain.Entities
         public string UserId { get; set; } = null!;
 
         // Game nào (Matching card, Solitaire, ...)
-        public string GameId { get; set; } = null!;
+        public GameType GameType { get; set; }
 
         // Topic nào (null nếu là game không cần topic, ví dụ Solitaire)
         public string? TopicId { get; set; }
@@ -29,7 +29,6 @@ namespace Tokki.Domain.Entities
         public GameDifficulty GameDifficulty { get; set; }
 
         // Navigation
-        public Game Game { get; set; } = null!;
         public Topic? Topic { get; set; }
         public Account User { get; set; } = null!;
     }

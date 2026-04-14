@@ -29,7 +29,7 @@ namespace Tokki.Application.UseCases.Games.Queries.GetGameResultsForAllUsers
         {
             // Gọi repo: gameId, topicId, difficulty, pageNumber, pageSize
             var result = await _sessionRepository.GetPagedByGameTopicAsync(
-                request.GameId,
+                request.GameType,
                 request.TopicId,
                 request.gameDifficulty,
                 request.PageNumber,
@@ -61,7 +61,7 @@ namespace Tokki.Application.UseCases.Games.Queries.GetGameResultsForAllUsers
                     TitleName = info?.CurrentTitleName,
                     TitleColorHex = info?.CurrentColorHexTitle,
                     TitleIconUrl = info?.TitleIconUrl,
-                    GameId = s.GameId,
+                    GameType = s.GameType,
                     TopicId = s.TopicId,
                     BestScore = s.BestScore,
                     LatestScore = s.LatestScore,

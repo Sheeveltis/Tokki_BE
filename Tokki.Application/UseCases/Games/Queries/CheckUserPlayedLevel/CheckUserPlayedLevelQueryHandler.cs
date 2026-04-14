@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -55,7 +55,7 @@ namespace Tokki.Application.UseCases.Games.Queries.CheckUserPlayedLevel
                 // 2. Kiểm tra trong GameMatchSessions
                 var session = await _sessionRepository.GetByUserGameTopicAsync(
                     request.UserId,
-                    request.GameId,
+                    request.GameType,
                     request.TopicId,
                     request.GameDifficulty
                 );
@@ -71,8 +71,8 @@ namespace Tokki.Application.UseCases.Games.Queries.CheckUserPlayedLevel
             catch (Exception ex)
             {
                 _logger.LogError(ex,
-                    "Lỗi khi kiểm tra level. UserId={UserId}, GameId={GameId}, TopicId={TopicId}, Difficulty={Difficulty}",
-                    request.UserId, request.GameId, request.TopicId, request.GameDifficulty);
+                "Lỗi khi kiểm tra level. UserId={UserId}, GameType={GameType}, TopicId={TopicId}, Difficulty={Difficulty}",
+                request.UserId, request.GameType, request.TopicId, request.GameDifficulty);
 
                 return OperationResult<bool>.Failure(
                     new List<Error> { AppErrors.ServerError },
