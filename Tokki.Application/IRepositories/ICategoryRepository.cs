@@ -20,5 +20,7 @@ namespace Tokki.Application.IRepositories
             int pageSize,
             string? searchTerm,
             CancellationToken cancellationToken = default);
+        Task AddRangeAsync(IEnumerable<Category> categories, CancellationToken cancellationToken = default);
+        Task<Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
     }
 }

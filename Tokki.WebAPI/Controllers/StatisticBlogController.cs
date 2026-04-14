@@ -1,5 +1,6 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Tokki.Domain.Enums;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -29,9 +30,9 @@ namespace Tokki.WebAPI.Controllers
         }
 
         [HttpGet("top-authors")]
-        public async Task<IActionResult> GetTopAuthors([FromQuery] int count = 5)
+        public async Task<IActionResult> GetTopAuthors([FromQuery] int count = 5, [FromQuery] AuthorSource source = AuthorSource.All)
         {
-            var result = await _sender.Send(new GetTopAuthorsQuery { Count = count });
+            var result = await _sender.Send(new GetTopAuthorsQuery { Count = count, Source = source });
             return StatusCode(result.StatusCode, result);
         }
     }

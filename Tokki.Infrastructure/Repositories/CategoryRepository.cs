@@ -79,5 +79,16 @@ namespace Tokki.Infrastructure.Repositories
 
             return (items, totalCount);
         }
+
+        public async Task AddRangeAsync(IEnumerable<Category> categories, CancellationToken cancellationToken = default)
+        {
+            await _context.Categories.AddRangeAsync(categories, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
+        {
+            return await _context.Database.BeginTransactionAsync(cancellationToken);
+        }
     }
 }

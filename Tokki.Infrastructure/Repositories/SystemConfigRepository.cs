@@ -29,15 +29,25 @@ namespace Tokki.Infrastructure.Repositories
         {
             await _context.SystemConfig.AddAsync(config);
         }
+ 
+        public async Task AddRangeAsync(IEnumerable<SystemConfig> configs)
+        {
+            await _context.SystemConfig.AddRangeAsync(configs);
+        }
 
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             return await _context.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task<(List<SystemConfig> Items, int TotalCount)> GetPagedAsync(int pageNumber, int pageSize)
+        public async Task<(List<SystemConfig> Items, int TotalCount)> GetPagedAsync(int pageNumber, int pageSize, Tokki.Domain.Enums.SystemConfigType? configType = null)
         {
             var query = _context.SystemConfig.AsNoTracking();
+            if (configType.HasValue)
+            {
+                query = query.Where(x => x.ConfigType == configType.Value);
+            }
+
             var totalCount = await query.CountAsync();
             var items = await query
                 .Skip((pageNumber - 1) * pageSize)

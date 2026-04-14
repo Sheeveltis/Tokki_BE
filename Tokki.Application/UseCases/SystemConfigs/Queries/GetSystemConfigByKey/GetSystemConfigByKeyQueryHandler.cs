@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,7 +36,9 @@ namespace Tokki.Application.UseCases.SystemConfigs.Queries.GetSystemConfigByKey
                     Value = config.Value,
                     Description = config.Description,
                     DataType = config.DataType,
-                    IsActive = config.IsActive
+                    IsActive = config.IsActive,
+                    ConfigType = (int)config.ConfigType,
+                    ConfigTypeName = config.ConfigType.ToString()
                 };
 
                 return OperationResult<SystemConfigDto>.Success(dto, 200, "Lấy chi tiết cấu hình thành công.");

@@ -9,6 +9,8 @@ using Tokki.Application.UseCases.PronunciationExample.Commands.UpdatePronunciati
 using Tokki.Application.UseCases.PronunciationExample.Queries.GetExampleDetail;
 using Tokki.Application.UseCases.PronunciationExample.Queries.GetExamplesByRuleId;
 using Tokki.Application.UseCases.PronunciationExample.Queries.GetPagedPronunciationExamples;
+using Tokki.Application.UseCases.Excel.Commands.ImportPronunciationExample;
+using Tokki.Application.UseCases.Excel.Queries.ExportPronunciationExamples;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -69,6 +71,45 @@ namespace Tokki.WebAPI.Controllers
         {
             var result = await _sender.Send(new DeletePronunciationExampleCommand { ExampleId = id });
             return StatusCode(result.StatusCode, result);
+        }
+ 
+        [HttpPost("import-excel")]
+        [Authorize(Roles = "Admin, Staff")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> ImportByExcel(IFormFile file)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                {
+                    return BadRequest("Vui lòng chọn file Excel.");
+                }
+ 
+                var userId = User.FindFirstValue("UserId") ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
+ 
+                var command = new ImportPronunciationExampleCommand
+                {
+                    File = file,
+                    UserId = userId!,
+                };
+ 
+                var result = await _sender.Send(command);
+                return StatusCode(result.StatusCode, result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.ToString());
+            }
+        }
+ 
+        [HttpGet("export-excel")]
+        [Authorize(Roles = "Admin, Staff")]
+        public async Task<IActionResult> Export()
+        {
+            var result = await _sender.Send(new ExportPronunciationExamplesQuery());
+            if (!result.IsSuccess) return BadRequest(result);
+ 
+            return File(result.Data.FileContent, result.Data.ContentType, result.Data.FileName);
         }
     }
 }

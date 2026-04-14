@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.SystemConfigs.DTOs;
@@ -17,7 +17,7 @@ namespace Tokki.Application.UseCases.SystemConfigs.Queries.GetAll
         public async Task<OperationResult<PagedResult<SystemConfigDto>>> Handle(GetAllSystemConfigsQuery request, CancellationToken cancellationToken)
         {
             // 1. Gọi Repository lấy dữ liệu phân trang
-            var (items, totalCount) = await _repository.GetPagedAsync(request.PageNumber, request.PageSize);
+            var (items, totalCount) = await _repository.GetPagedAsync(request.PageNumber, request.PageSize, request.ConfigType);
 
             // 2. Map Entity sang DTO
             var dtos = items.Select(c => new SystemConfigDto
@@ -26,7 +26,9 @@ namespace Tokki.Application.UseCases.SystemConfigs.Queries.GetAll
                 Value = c.Value,
                 Description = c.Description,
                 DataType = c.DataType,
-                IsActive = c.IsActive
+                IsActive = c.IsActive,
+                ConfigType = (int)c.ConfigType,
+                ConfigTypeName = c.ConfigType.ToString()
             }).ToList();
 
             // 3. Tạo đối tượng PagedResult từ class có sẵn của bạn

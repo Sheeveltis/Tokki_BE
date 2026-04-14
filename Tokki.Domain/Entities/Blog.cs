@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -31,6 +31,7 @@ namespace Tokki.Domain.Entities
         [MaxLength(500)]
         public string ShortDescription { get; set; } = string.Empty;
 
+        public bool IsOfficial { get; set; } = false;
         public BlogStatus Status { get; set; } = BlogStatus.Draft;
 
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;

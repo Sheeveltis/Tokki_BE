@@ -1,4 +1,4 @@
-﻿
+
 using System.ComponentModel;
 
 namespace Tokki.Domain.Enums
@@ -17,10 +17,16 @@ namespace Tokki.Domain.Enums
         //Ví dụ Lịch đăng ký thi TOPIK 2022 thì ko cần hiển thị lên cho mn, nhưng cũng ko nhất thiết phải xóa
         [Description("Lưu trữ")]
         Archived = 3,
-        [Description("Chờ phê duyệt")]
+        [Description("Chờ Admin duyệt")]
         PendingApproval = 4,
         [Description("Đã từ chối")]
-        Rejected = 5
+        Rejected = 5,
+        [Description("AI đang kiểm duyệt")]
+        UnderAIReview = 6,
+        [Description("AI đã từ chối")]
+        AIRejected = 7,
 
+        [Description("AI gặp lỗi khi kiểm duyệt")]
+        AIReviewFailed = 8
     }
 }

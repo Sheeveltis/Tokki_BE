@@ -292,7 +292,48 @@ namespace Application.Services
 
             return Task.FromResult(result);
         }
-
+ 
+        public Task<byte[]> ExportExamplesToExcelAsync(List<PronunciationExampleExcelDTO> data, string sheetName)
+        {
+            ExcelPackage.License.SetNonCommercialPersonal("TokkiProject");
+ 
+            using (var package = new ExcelPackage())
+            {
+                var worksheet = package.Workbook.Worksheets.Add(sheetName);
+ 
+                worksheet.Cells[1, 1].Value = "PronunciationRuleId";
+                worksheet.Cells[1, 2].Value = "TargetScript";
+                worksheet.Cells[1, 3].Value = "RawScript";
+                worksheet.Cells[1, 4].Value = "PhoneticScript";
+                worksheet.Cells[1, 5].Value = "Meaning";
+                worksheet.Cells[1, 6].Value = "SortOrder";
+ 
+                using (var range = worksheet.Cells[1, 1, 1, 6])
+                {
+                    range.Style.Font.Bold = true;
+                    range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                    range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                }
+ 
+                for (int i = 0; i < data.Count; i++)
+                {
+                    var item = data[i];
+                    int rowIndex = i + 2;
+ 
+                    worksheet.Cells[rowIndex, 1].Value = item.PronunciationRuleId;
+                    worksheet.Cells[rowIndex, 2].Value = item.TargetScript;
+                    worksheet.Cells[rowIndex, 3].Value = item.RawScript;
+                    worksheet.Cells[rowIndex, 4].Value = item.PhoneticScript;
+                    worksheet.Cells[rowIndex, 5].Value = item.Meaning;
+                    worksheet.Cells[rowIndex, 6].Value = item.SortOrder;
+                }
+ 
+                worksheet.Cells.AutoFitColumns();
+ 
+                return Task.FromResult(package.GetAsByteArray());
+            }
+        }
+ 
         public Task<List<PronunciationRuleExcelDTO>> ExtractRuleDataAsync(IFormFile file)
         {
             var result = new List<PronunciationRuleExcelDTO>();
@@ -437,6 +478,7 @@ namespace Application.Services
             }
         }
 
+<<<<<<< HEAD
         public async Task<byte[]> ExportVocabularyImageResultsToExcelAsync(List<VocabularyImageResultDto> results)
         {
             ExcelPackage.License.SetNonCommercialPersonal("TokkiProject");
@@ -574,6 +616,194 @@ namespace Application.Services
             catch (Exception ex)
             {
                 Console.WriteLine($"    [Excel] Không nhúng được ảnh row={row} col={col}: {ex.Message}");
+=======
+        public async Task<List<CategoryExcelDTO>> ExtractCategoryDataAsync(IFormFile file)
+        {
+            var result = new List<CategoryExcelDTO>();
+            using (var stream = new MemoryStream())
+            {
+                await file.CopyToAsync(stream);
+                using (var package = new ExcelPackage(stream))
+                {
+                    var worksheet = package.Workbook.Worksheets[0];
+                    var rowCount = worksheet.Dimension?.Rows ?? 0;
+
+                    for (int row = 2; row <= rowCount; row++)
+                    {
+                        var name = worksheet.Cells[row, 1].Value?.ToString();
+                        if (string.IsNullOrWhiteSpace(name)) continue;
+
+                        result.Add(new CategoryExcelDTO
+                        {
+                            Name = name.Trim(),
+                            Slug = worksheet.Cells[row, 2].Value?.ToString()?.Trim()
+                        });
+                    }
+                }
+            }
+            return result;
+        }
+
+        public async Task<byte[]> ExportCategoriesToExcelAsync(List<CategoryExcelDTO> data, string sheetName)
+        {
+            using (var package = new ExcelPackage())
+            {
+                var worksheet = package.Workbook.Worksheets.Add(sheetName);
+                worksheet.Cells[1, 1].Value = "Tên danh mục";
+                worksheet.Cells[1, 2].Value = "Slug (Tùy chọn)";
+
+                using (var range = worksheet.Cells[1, 1, 1, 2])
+                {
+                    range.Style.Font.Bold = true;
+                    range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                    range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                }
+
+                for (int i = 0; i < data.Count; i++)
+                {
+                    var item = data[i];
+                    int rowIndex = i + 2;
+                    worksheet.Cells[rowIndex, 1].Value = item.Name;
+                    worksheet.Cells[rowIndex, 2].Value = item.Slug;
+                }
+
+                worksheet.Cells.AutoFitColumns();
+                return package.GetAsByteArray();
+            }
+        }
+
+        public async Task<List<BlogExcelDTO>> ExtractBlogDataAsync(IFormFile file)
+        {
+            var result = new List<BlogExcelDTO>();
+            using (var stream = new MemoryStream())
+            {
+                await file.CopyToAsync(stream);
+                using (var package = new ExcelPackage(stream))
+                {
+                    var worksheet = package.Workbook.Worksheets[0];
+                    var rowCount = worksheet.Dimension?.Rows ?? 0;
+
+                    for (int row = 2; row <= rowCount; row++)
+                    {
+                        var title = worksheet.Cells[row, 1].Value?.ToString();
+                        if (string.IsNullOrWhiteSpace(title)) continue;
+
+                        result.Add(new BlogExcelDTO
+                        {
+                            Title = title.Trim(),
+                            ThumbnailUrl = worksheet.Cells[row, 2].Value?.ToString()?.Trim(),
+                            ShortDescription = worksheet.Cells[row, 3].Value?.ToString()?.Trim() ?? string.Empty,
+                            Content = worksheet.Cells[row, 4].Value?.ToString()?.Trim() ?? string.Empty,
+                            CategoryName = worksheet.Cells[row, 5].Value?.ToString()?.Trim() ?? string.Empty,
+                            Tags = worksheet.Cells[row, 6].Value?.ToString()?.Trim() ?? string.Empty,
+                            Slug = worksheet.Cells[row, 7].Value?.ToString()?.Trim()
+                        });
+                    }
+                }
+            }
+            return result;
+        }
+
+        public async Task<byte[]> ExportBlogsToExcelAsync(List<BlogExcelDTO> data, string sheetName)
+        {
+            using (var package = new ExcelPackage())
+            {
+                var worksheet = package.Workbook.Worksheets.Add(sheetName);
+                worksheet.Cells[1, 1].Value = "Tiêu đề";
+                worksheet.Cells[1, 2].Value = "URL Thumbnail";
+                worksheet.Cells[1, 3].Value = "Mô tả ngắn";
+                worksheet.Cells[1, 4].Value = "Nội dung";
+                worksheet.Cells[1, 5].Value = "Tên danh mục";
+                worksheet.Cells[1, 6].Value = "Tags (phân cách bằng dấu phẩy)";
+                worksheet.Cells[1, 7].Value = "Slug";
+
+                using (var range = worksheet.Cells[1, 1, 1, 7])
+                {
+                    range.Style.Font.Bold = true;
+                    range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                    range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                }
+
+                for (int i = 0; i < data.Count; i++)
+                {
+                    var item = data[i];
+                    int rowIndex = i + 2;
+                    worksheet.Cells[rowIndex, 1].Value = item.Title;
+                    worksheet.Cells[rowIndex, 2].Value = item.ThumbnailUrl;
+                    worksheet.Cells[rowIndex, 3].Value = item.ShortDescription;
+                    worksheet.Cells[rowIndex, 4].Value = item.Content;
+                    worksheet.Cells[rowIndex, 5].Value = item.CategoryName;
+                    worksheet.Cells[rowIndex, 6].Value = item.Tags;
+                    worksheet.Cells[rowIndex, 7].Value = item.Slug;
+                }
+
+                worksheet.Cells.AutoFitColumns();
+                return package.GetAsByteArray();
+            }
+        }
+ 
+        public async Task<List<SystemConfigExcelDTO>> ExtractSystemConfigDataAsync(IFormFile file)
+        {
+            var result = new List<SystemConfigExcelDTO>();
+            using (var stream = new MemoryStream())
+            {
+                await file.CopyToAsync(stream);
+                using (var package = new ExcelPackage(stream))
+                {
+                    var worksheet = package.Workbook.Worksheets[0];
+                    var rowCount = worksheet.Dimension?.Rows ?? 0;
+ 
+                    for (int row = 2; row <= rowCount; row++)
+                    {
+                        var key = worksheet.Cells[row, 1].Value?.ToString();
+                        if (string.IsNullOrWhiteSpace(key)) continue;
+ 
+                        result.Add(new SystemConfigExcelDTO
+                        {
+                            Key = key.Trim(),
+                            Value = worksheet.Cells[row, 2].Value?.ToString()?.Trim(),
+                            Description = worksheet.Cells[row, 3].Value?.ToString()?.Trim(),
+                            DataType = worksheet.Cells[row, 4].Value?.ToString()?.Trim(),
+                            ConfigType = worksheet.Cells[row, 5].Value?.ToString()?.Trim()
+                        });
+                    }
+                }
+            }
+            return result;
+        }
+ 
+        public async Task<byte[]> ExportSystemConfigsToExcelAsync(List<SystemConfigExcelDTO> data, string sheetName)
+        {
+            using (var package = new ExcelPackage())
+            {
+                var worksheet = package.Workbook.Worksheets.Add(sheetName);
+                worksheet.Cells[1, 1].Value = "Key";
+                worksheet.Cells[1, 2].Value = "Value";
+                worksheet.Cells[1, 3].Value = "Description";
+                worksheet.Cells[1, 4].Value = "DataType";
+                worksheet.Cells[1, 5].Value = "ConfigType";
+ 
+                using (var range = worksheet.Cells[1, 1, 1, 5])
+                {
+                    range.Style.Font.Bold = true;
+                    range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                    range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                }
+ 
+                for (int i = 0; i < data.Count; i++)
+                {
+                    var item = data[i];
+                    int rowIndex = i + 2;
+                    worksheet.Cells[rowIndex, 1].Value = item.Key;
+                    worksheet.Cells[rowIndex, 2].Value = item.Value;
+                    worksheet.Cells[rowIndex, 3].Value = item.Description;
+                    worksheet.Cells[rowIndex, 4].Value = item.DataType;
+                    worksheet.Cells[rowIndex, 5].Value = item.ConfigType;
+                }
+ 
+                worksheet.Cells.AutoFitColumns();
+                return package.GetAsByteArray();
+>>>>>>> 7073aade6fab71e0909e22ecfdf8d819e3351d33
             }
         }
     }

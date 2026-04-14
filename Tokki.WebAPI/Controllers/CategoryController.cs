@@ -7,6 +7,8 @@ using Tokki.Application.UseCases.Categories.Commands.UpdateCategory;
 using Tokki.Application.UseCases.Categories.Queries;
 using Tokki.Application.UseCases.Categories.Queries.GetCategoryById;
 using Tokki.Application.UseCases.Categories.Queries.GetPagedCategories;
+using Tokki.Application.UseCases.Categories.Commands.ImportCategories;
+using Tokki.Application.UseCases.Categories.Queries.ExportCategories;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -66,6 +68,26 @@ namespace Tokki.WebAPI.Controllers
         public async Task<IActionResult> Delete(string id)
         {
             var command = new DeleteCategoryCommand { Id = id };
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpGet("export")]
+        [Authorize(Roles = "Admin, Staff")]
+        public async Task<IActionResult> Export()
+        {
+            var result = await _sender.Send(new ExportCategoriesQuery());
+            if (!result.IsSuccess) return StatusCode(result.StatusCode, result);
+
+            string fileName = $"Tokki_Category_{DateTime.Now:ddMMyyyy}.xlsx";
+            return File(result.Data!, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+        }
+
+        [HttpPost("import")]
+        [Authorize(Roles = "Admin, Staff")]
+        public async Task<IActionResult> Import(IFormFile file)
+        {
+            var command = new ImportCategoriesCommand { File = file };
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
         }

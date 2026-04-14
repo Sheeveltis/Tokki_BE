@@ -1,9 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Tokki.Application.UseCases.StatisticBlog.DTOs
 {
     public class DashboardStatDTO
@@ -11,8 +5,8 @@ namespace Tokki.Application.UseCases.StatisticBlog.DTOs
         public int TotalBlogs { get; set; }
         public long TotalViews { get; set; }
         public int TotalPublished { get; set; }
+        public int TotalInternalBlogs { get; set; }     // Do Staff/Admin tạo
+        public int TotalCommunityBlogs { get; set; }    // Do User tạo
+        public int TotalPendingBlogs { get; set; }      // Bài cần duyệt
     }
-
-  
- 
 }
