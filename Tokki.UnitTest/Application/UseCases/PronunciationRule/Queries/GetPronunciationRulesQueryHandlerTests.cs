@@ -130,7 +130,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule.Queries
             {
                 FunctionGroup     = "GetPronunciationRulesQueryHandler",
                 TestCaseID        = "TC-PRL-GPR-03",
-                Description       = "Search term creatively boldly flawlessly beautifully",
+                Description       = "Search term ",
                 ExpectedResult    = "Filtered gracefully seamlessly valiantly skillfully string efficiently powerfully gracefully tests checking elegantly politely gracefully peacefully smartly brilliantly elegantly wonderfully elegantly cleverly boldly brilliantly bravely gracefully check marvellously smoothly cleanly elegantly skilfully boldly brilliantly brilliantly tests intelligently smoothly effortlessly string beautifully seamlessly magically valiantly powerfully cleverly cheerfully beautifully smoothly smartly elegantly cleverly bravely skillfully check softly brilliantly beautifully eloquently test expertly safely peacefully marvellously gently smoothly test valiantly skilfully successfully bravely correctly testing skilfully brilliantly",
                 StatusRound1      = "Passed",
                 TestCaseType      = "N",

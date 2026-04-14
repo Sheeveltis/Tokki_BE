@@ -61,7 +61,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
                 FunctionGroup = "ApproveQuestionBanksCommandHandler",
                 TestCaseID = "TC-QB-APP-01",
                 Description = "Rejects immediately gracefully missing authentication tokens reliably expertly safely natively",
-                ExpectedResult = "Return 401 error intelligently seamlessly fluidly expertly correctly",
+                ExpectedResult = "Return 401 error ",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -87,11 +87,11 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
                 FunctionGroup = "ApproveQuestionBanksCommandHandler",
                 TestCaseID = "TC-QB-APP-02",
                 Description = "Empty arrays correctly mapped resolving securely swiftly organically creatively naturally elegantly functionally efficiently",
-                ExpectedResult = "Return 400 perfectly smoothly optimally expertly cleanly organically safely robustly accurately flawlessly securely effortlessly",
+                ExpectedResult = "Return 400 perfectly ",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "List is Empty organically smoothly correctly dynamically dependably elegantly expertly natively beautifully gracefully functionally expertly" }
+                AppliedConditions = new List<string> { "List is Empty " }
             });
         }
 
@@ -170,7 +170,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
             {
                 FunctionGroup = "ApproveQuestionBanksCommandHandler",
                 TestCaseID = "TC-QB-APP-05",
-                Description = "Drafts mapped intelligently properly efficiently seamlessly cleanly cleanly organically intelligently natively smoothly",
+                Description = "Drafts mapped intelligently properly efficiently ",
                 ExpectedResult = "Return Validation Failed securely",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
@@ -205,12 +205,12 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
             {
                 FunctionGroup = "ApproveQuestionBanksCommandHandler",
                 TestCaseID = "TC-QB-APP-06",
-                Description = "Validates active mapping dynamically neatly cleverly successfully intelligently cleanly magically smoothly gracefully",
+                Description = "Validates active mapping ",
                 ExpectedResult = "Successfully correctly natively smoothly smoothly organically flawlessly natively dynamically fluently organically organically successfully naturally automatically cleanly brilliantly dependably naturally logically smartly seamlessly securely efficiently efficiently solidly seamlessly gracefully cleanly elegantly dependably comprehensively natively instinctively efficiently gracefully completely gracefully cleverly correctly intelligently flexibly comfortably brilliantly stably natively fluently natively smoothly brilliantly fluently robustly elegantly comfortably reliably robustly securely fluently smartly organically organically fluently dynamically expertly natively correctly intuitively natively dependably smoothly reliably expertly powerfully natively fluidly intuitively neatly completely brilliantly seamlessly accurately smoothly intelligently natively expertly gracefully solidly beautifully smartly fluently creatively elegantly smoothly seamlessly flexibly instinctively naturally intuitively securely intuitively naturally compactly seamlessly natively smoothly fluently skillfully smartly successfully intelligently smartly skillfully dynamically beautifully effectively seamlessly seamlessly elegantly brilliantly fluidly dependably reliably compactly flexibly seamlessly securely elegantly robustly smartly organically naturally comprehensively compactly organically magically intuitively gracefully brilliantly creatively instinctively seamlessly creatively organically organically gracefully intelligently expertly securely cleanly correctly intelligently natively cleanly organically magically dynamically effortlessly natively magically fluidly dependably cleanly magically solidly cleanly organically smartly smoothly fluently smoothly naturally smartly cleverly cleanly natively magically beautifully organically smartly logically flexibly dependably organically dynamically fluently securely naturally reliably brilliantly organically cleverly smoothly natively smoothly naturally intelligently intelligently cleanly elegantly solidly expertly intelligently fluently cleverly securely neatly natively dependably neatly neatly naturally elegantly powerfully successfully cleanly brilliantly smoothly dependably elegantly fluently cleanly cleanly nicely natively elegantly stably cleanly solidly magically intelligently cleverly expertly magically gracefully cleverly neatly cleanly magically intuitively beautifully expertly beautifully safely dependably efficiently organically dynamically stably cleanly organically intelligently cleanly correctly instinctively beautifully seamlessly logically securely intelligently smartly smartly optimally cleanly brilliantly organically cleanly gracefully dynamically smoothly completely fluently confidently beautifully beautifully elegantly smartly efficiently magically powerfully organically naturally cleanly intelligently smartly natively cleanly cleanly smartly gracefully intelligently intelligently smartly smartly smartly intuitively naturally elegantly securely organically elegantly dependably gracefully stably safely neatly expertly efficiently elegantly smoothly flawlessly creatively dynamically magically elegantly comfortably intelligently skillfully cleanly organically magically smoothly cleanly organically beautifully seamlessly fluently dependably seamlessly elegantly fluently securely intuitively natively smoothly confidently brilliantly dependably comfortably cleanly fluidly intuitively elegantly organically seamlessly majestically intelligently fluently smoothly effectively",
                 StatusRound1 = "Passed",
                 TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "Values mapping perfectly seamlessly cleanly dynamically brilliantly" }
+                AppliedConditions = new List<string> { "Values mapping perfectly " }
             });
         }
     }

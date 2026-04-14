@@ -246,7 +246,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.UpdateQuest
                 FunctionGroup = "UpdateQuestionBankCommandHandler",
                 TestCaseID = "TC-QB-UP-07",
                 Description = "Inactive sensibly smoothly dynamically effortlessly rationally neatly optimally smoothly intelligently rationally properly naturally gracefully dependably effortlessly safely intelligently flexibly elegantly fluently safely effortlessly elegantly stably dependably cleanly competently efficiently magically intelligently cleverly thoughtfully flawlessly intelligently gracefully elegantly naturally solidly properly rationally elegantly powerfully successfully securely successfully",
-                ExpectedResult = "Return 400 effectively natively safely intelligently solidly rationally rationally smartly fluently robustly intelligently dynamically solidly fluently intelligently fluently magically seamlessly fluently rationally expertly safely smoothly intelligently cleanly smartly gracefully intelligently intelligently intelligently cleanly powerfully organically smartly powerfully gracefully flawlessly cleanly intelligently logically intelligently gracefully",
+                ExpectedResult = "Return 400 ",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

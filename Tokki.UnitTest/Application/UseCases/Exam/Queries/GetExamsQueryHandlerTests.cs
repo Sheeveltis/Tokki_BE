@@ -170,7 +170,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
                 FunctionGroup     = "GetExamsQueryHandler",
                 TestCaseID        = "TC-EXM-GEX-05",
                 Description       = "Creator filter gracefully maps",
-                ExpectedResult    = "Returns system created correctly securely successfully majestically",
+                ExpectedResult    = "Returns system created ",
                 StatusRound1      = "Passed",
                 TestCaseType      = "N",
                 TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),

@@ -51,7 +51,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "Empty cleverly efficiently securely wonderfully completely natively properly creatively effectively brilliantly creatively cleanly natively naturally creatively" }
+                AppliedConditions = new List<string> { "Empty cleverly efficiently securely wonderfully completely " }
             });
         }
 
@@ -99,7 +99,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
                 FunctionGroup = "CreateQuestionBankByStaffCommandHandler",
                 TestCaseID = "TC-QB-STA-03",
                 Description = "Rejects impeccably confidently fluently dynamically neatly naturally naturally properly accurately perfectly naturally brilliantly securely compactly gracefully effortlessly flexibly properly dynamically natively effortlessly cleanly cleanly organically smoothly securely intelligently confidently cleverly intelligently instinctively wonderfully smartly beautifully smoothly cleanly intelligently dependably dynamically powerfully cleanly intuitively expertly fluidly smoothly neatly seamlessly naturally securely seamlessly wonderfully dynamically fluidly cleanly expertly dependably solidly elegantly smoothly natively flawlessly creatively flawlessly securely accurately dynamically intelligently seamlessly dependably neatly dependably expertly wonderfully gracefully efficiently solidly elegantly cleanly creatively cleanly elegantly",
-                ExpectedResult = "Returns organically majestically magically compactly intelligently gracefully magically successfully powerfully flexibly functionally smoothly skillfully gracefully smartly properly elegantly wonderfully smoothly securely naturally natively easily beautifully seamlessly powerfully flawlessly gracefully fluently dynamically fluently properly",
+                ExpectedResult = "Returns ",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -129,7 +129,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "Reading beautifully nicely robustly reliably naturally effortlessly comfortably smartly smoothly reliably intelligently neatly majestically dependably safely dependably elegantly elegantly seamlessly gracefully solidly comfortably dependably securely organically dynamically comprehensively natively cleanly fluently securely optimally dynamically smoothly brilliantly fluently correctly reliably fluidly gracefully intelligently expertly organically properly cleanly intelligently compactly intuitively safely cleanly naturally smoothly magnificently intuitively gracefully dependably creatively dependably elegantly smartly cleanly logically compactly brilliantly organically magically dependably properly creatively brilliantly effortlessly gracefully securely smartly seamlessly smartly securely cleanly creatively cleverly effortlessly intuitively dependably creatively natively smartly instinctively creatively creatively brilliantly organically correctly accurately smoothly organically majestically flawlessly elegantly cleverly seamlessly naturally beautifully flawlessly cleanly fluidly nicely expertly cleanly smartly solidly organically solidly natively correctly fluidly impressively magically cleanly organically seamlessly smoothly fluently smoothly natively beautifully dependably comfortably elegantly organically nicely cleanly natively cleanly dependably stably comfortably comfortably securely fluently creatively dependably solidly elegantly smartly impressively accurately magically smoothly safely natively fluidly elegantly flawlessly confidently cleanly organically majestically cleanly properly intelligently intuitively neatly magically natively elegantly beautifully naturally smartly securely dependably safely effortlessly flexibly dependably accurately effortlessly smoothly majestically elegantly creatively safely elegantly" }
+                AppliedConditions = new List<string> { "Reading " }
             });
         }
 
@@ -216,7 +216,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
                 StatusRound1 = "Passed",
                 TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "Writing intelligently perfectly magically wonderfully competently intuitively fluidly brilliantly naturally seamlessly cleanly naturally dependably comfortably naturally optimally naturally intuitively organically magnetically magically securely smartly flawlessly properly brilliantly naturally securely dynamically" }
+                AppliedConditions = new List<string> { "Writing intelligently perfectly " }
             });
         }
 
@@ -243,7 +243,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
                 FunctionGroup = "CreateQuestionBankByStaffCommandHandler",
                 TestCaseID = "TC-QB-STA-08",
                 Description = "Captures dependably solidly functionally properly intuitively fluently organically logically smartly cleanly dependably safely dynamically dependably dependably efficiently efficiently gracefully effortlessly fluently elegantly dependably robustly elegantly automatically securely beautifully magically intuitively cleanly competently optimally safely sensibly competently solidly intelligently seamlessly functionally cleanly cleanly fluidly correctly",
-                ExpectedResult = "Returns gracefully effortlessly dependably magically creatively effectively natively naturally smartly",
+                ExpectedResult = "Returns ",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

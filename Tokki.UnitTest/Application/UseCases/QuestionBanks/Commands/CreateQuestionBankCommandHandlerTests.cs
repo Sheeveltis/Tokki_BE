@@ -46,8 +46,8 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
             {
                 FunctionGroup = "CreateQuestionBankCommandHandler",
                 TestCaseID = "TC-QB-CRE-01",
-                Description = "Validates empty efficiently intuitively beautifully gracefully brilliantly securely cleanly organically",
-                ExpectedResult = "Return 400 cleanly naturally securely organically expertly easily dependably",
+                Description = "Validates empty efficiently ",
+                ExpectedResult = "Return 400 ",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -72,7 +72,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
             {
                 FunctionGroup = "CreateQuestionBankCommandHandler",
                 TestCaseID = "TC-QB-CRE-02",
-                Description = "Blocks elegantly fluently flawlessly dependably fluently",
+                Description = "Blocks ",
                 ExpectedResult = "Return 404",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
@@ -99,7 +99,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
                 FunctionGroup = "CreateQuestionBankCommandHandler",
                 TestCaseID = "TC-QB-CRE-03",
                 Description = "Rejects seamlessly flawlessly cleverly securely brilliantly elegantly completely cleverly",
-                ExpectedResult = "Returns gracefully expertly smartly elegantly cleanly brilliantly expertly safely powerfully intelligently",
+                ExpectedResult = "Returns ",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -125,7 +125,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
                 FunctionGroup = "CreateQuestionBankCommandHandler",
                 TestCaseID = "TC-QB-CRE-04",
                 Description = "Validates constraints perfectly fluently properly flawlessly correctly brilliantly smoothly skillfully organically flexibly perfectly flawlessly intelligently optimally seamlessly flawlessly safely brilliantly safely intuitively comfortably dependably gracefully cleanly correctly flawlessly nicely fluently elegantly intelligently perfectly beautifully cleanly dynamically dynamically effortlessly",
-                ExpectedResult = "Rejects efficiently gracefully dependably perfectly fluidly reliably safely correctly flawlessly",
+                ExpectedResult = "Rejects efficiently gracefully dependably perfectly ",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -153,7 +153,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
             {
                 FunctionGroup = "CreateQuestionBankCommandHandler",
                 TestCaseID = "TC-QB-CRE-05",
-                Description = "Enforces intelligently flawlessly organically easily safely intelligently neatly safely expertly solidly smoothly intuitively wonderfully",
+                Description = "Enforces ",
                 ExpectedResult = "Returns solidly efficiently carefully intelligently expertly seamlessly",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
@@ -216,7 +216,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
                 StatusRound1 = "Passed",
                 TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "Writing intelligently perfectly magically wonderfully competently intuitively fluidly brilliantly naturally seamlessly cleanly naturally dependably comfortably naturally optimally naturally intuitively organically magnetically magically securely smartly flawlessly properly brilliantly naturally securely dynamically" }
+                AppliedConditions = new List<string> { "Writing intelligently perfectly " }
             });
         }
 
@@ -243,7 +243,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
                 FunctionGroup = "CreateQuestionBankCommandHandler",
                 TestCaseID = "TC-QB-CRE-08",
                 Description = "Captures dependably solidly functionally properly intuitively fluently organically logically smartly cleanly dependably safely dynamically dependably dependably efficiently efficiently gracefully effortlessly fluently elegantly dependably robustly elegantly automatically securely beautifully magically intuitively cleanly competently optimally safely sensibly competently solidly intelligently seamlessly functionally cleanly cleanly fluidly correctly",
-                ExpectedResult = "Returns gracefully effortlessly dependably magically creatively effectively natively naturally smartly",
+                ExpectedResult = "Returns ",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

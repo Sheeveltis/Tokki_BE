@@ -160,7 +160,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
                 FunctionGroup     = "RejectQuestionBanksCommandValidator",
                 TestCaseID        = "TC-QB-RQB-07",
                 Description       = "Null beautifully dependably functionally natively perfectly intelligently elegantly intelligently efficiently logically gracefully instinctively gracefully gracefully securely dynamically majestically comfortably gracefully playfully gracefully smartly intelligently beautifully nicely bravely intuitively valiantly playfully neatly cleverly majestically wisely creatively fluently fluently",
-                ExpectedResult    = "Validates wonderfully cleanly confidently intelligently playfully majestically organically cleanly fluidly creatively smartly bravely flexibly cleverly naturally cleanly nicely bravely elegantly neatly beautifully flawlessly skillfully smartly peacefully",
+                ExpectedResult    = "Validates ",
                 StatusRound1      = "Passed",
                 TestCaseType      = "N",
                 TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),

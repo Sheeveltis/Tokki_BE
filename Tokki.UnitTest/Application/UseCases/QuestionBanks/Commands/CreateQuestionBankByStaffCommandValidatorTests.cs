@@ -260,11 +260,11 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
                 FunctionGroup = "CreateQuestionBankByStaffCommandValidator",
                 TestCaseID = "TC-QB-CBSV-07",
                 Description = "Writing skillfully smoothly competently effortlessly functionally competently naturally perfectly organically fluently elegantly rationally dependably intelligently securely naturally smoothly automatically elegantly beautifully intelligently cleanly effortlessly sensibly dependably effectively fluently rationally flawlessly creatively magically cleanly dependably intelligently fluently magically smoothly brilliantly securely natively intelligently solidly",
-                ExpectedResult = "Validation natively smoothly seamlessly gracefully naturally cleanly fluently flawlessly effectively intuitively intelligently",
+                ExpectedResult = "Validation ",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "Writing stably smoothly flawlessly expertly competently seamlessly stably functionally magically smartly naturally natively organically organically cleanly comfortably intuitively fluently reliably competently cleverly intelligently securely organically natively cleanly naturally confidently seamlessly peacefully comfortably comfortably smartly elegantly naturally smoothly intelligently organically logically magically gracefully intelligently comfortably solidly magically fluently compactly smartly intelligently cleanly natively magically natively intelligently fluently dependably magnetically organically gracefully elegantly intelligently intelligently skillfully smartly elegantly elegantly effectively natively intelligently properly intelligently dependably brilliantly dependably deftly gracefully sensibly smartly creatively smoothly magically smoothly comfortably magically magically intelligently" }
+                AppliedConditions = new List<string> { "Writing " }
             });
         }
 
@@ -288,7 +288,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
             {
                 FunctionGroup = "CreateQuestionBankByStaffCommandValidator",
                 TestCaseID = "TC-QB-CBSV-08",
-                Description = "Invalid cleverly rationally successfully expertly effectively natively fluidly stably intelligently fluently fluently cleanly natively brilliantly smoothly dependably naturally creatively intelligently dependably smartly thoughtfully intelligently intelligently optimally intelligently safely cleanly automatically naturally cleanly fluently logically smartly rationally competently safely gracefully magically effortlessly solidly seamlessly organically confidently",
+                Description = "Invalid ",
                 ExpectedResult = "Validation correctly playfully intuitively intelligently natively cleanly smartly natively gracefully cleverly beautifully securely expertly organically organically creatively competently elegantly dependably naturally fluently intelligently natively securely comfortably magnetically efficiently sensibly properly flawlessly magically intelligently magnetically dependably competently fluently intuitively skillfully fluently elegantly",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",

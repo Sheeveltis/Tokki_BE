@@ -234,7 +234,7 @@ namespace Tokki.UnitTest.Application.UseCases.Gamification.Commands
             {
                 FunctionGroup = "AddGameXpCommandHandler",
                 TestCaseID = "TC-GAM-A-07",
-                Description = "Null config safely falls back natively dependably elegantly smoothly rationally flawlessly",
+                Description = "Null config safely falls back ",
                 ExpectedResult = "Default limit 150 applies flawlessly",
                 StatusRound1 = "Passed",
                 TestCaseType = "N",
@@ -265,12 +265,12 @@ namespace Tokki.UnitTest.Application.UseCases.Gamification.Commands
             {
                 FunctionGroup = "AddGameXpCommandHandler",
                 TestCaseID = "TC-GAM-A-08",
-                Description = "Normal source bypassed limits effortlessly creatively smoothly logically securely instinctively seamlessly nicely nicely",
-                ExpectedResult = "Current title remains seamlessly fluidly natively comfortably dependably optimally smartly cleanly cleverly naturally brilliantly peacefully majestically",
+                Description = "Normal source bypassed limits ",
+                ExpectedResult = "Current title remains ",
                 StatusRound1 = "Passed",
                 TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "DailyStreak impressively automatically creatively fluidly smartly natively dependably flexibly smartly brilliantly safely effectively properly organically cleanly naturally correctly flawlessly creatively dependably functionally naturally comfortably" }
+                AppliedConditions = new List<string> { "DailyStreak " }
             });
         }
     }
