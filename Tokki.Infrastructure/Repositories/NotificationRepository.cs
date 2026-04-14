@@ -36,12 +36,13 @@ namespace Tokki.Infrastructure.Repositories
             return await _context.Notifications.FindAsync(id);
         }
  
-        public async Task<List<Notification>> GetByUserIdAsync(string userId, int count = 20)
+        public async Task<IEnumerable<Notification>> GetPagedByUserIdAsync(string userId, int pageNumber, int pageSize)
         {
             return await _context.Notifications
                 .Where(n => n.UserId == userId)
                 .OrderByDescending(n => n.CreatedAt)
-                .Take(count)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
         }
  
@@ -50,6 +51,11 @@ namespace Tokki.Infrastructure.Repositories
             // Vẫn giữ count thật từ DB nếu cần, nhưng giờ đã có cache ở bảng Account
             return await _context.Notifications
                 .CountAsync(n => n.UserId == userId && !n.IsRead);
+        }
+
+        public async Task<int> CountTotalByUserIdAsync(string userId)
+        {
+            return await _context.Notifications.CountAsync(n => n.UserId == userId);
         }
  
         public async Task MarkAsReadAsync(string id)

@@ -9,8 +9,9 @@ namespace Tokki.Application.IRepositories
     {
         Task AddAsync(Notification notification);
         Task<Notification?> GetByIdAsync(string id);
-        Task<List<Notification>> GetByUserIdAsync(string userId, int count = 20);
+        Task<IEnumerable<Notification>> GetPagedByUserIdAsync(string userId, int pageNumber, int pageSize);
         Task<int> CountUnreadAsync(string userId);
+        Task<int> CountTotalByUserIdAsync(string userId);
         Task MarkAsReadAsync(string id);
         Task MarkAllAsReadAsync(string userId);
         Task SaveChangesAsync(CancellationToken cancellationToken = default);
