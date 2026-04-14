@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +22,8 @@ namespace Tokki.Application.UseCases.VocabSpacedRepetition.Queries.GetDueReviews
 
         public async Task<OperationResult<List<ReviewItemDTO>>> Handle(GetDueReviewsQuery request, CancellationToken cancellationToken)
         {
-            var now = DateTime.UtcNow.AddHours(7);
+            // Sử dụng DateTime.Now để lấy đúng thời gian local của máy chạy code (giúp dễ demo khi chỉnh giờ hệ thống)
+            var now = DateTime.Now;
 
             var result = await _userVocabProgressRepository.GetDueReviewsAsync(request.UserId, now, request.Limit, cancellationToken);
 
