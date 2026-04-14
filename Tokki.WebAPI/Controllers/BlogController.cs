@@ -66,6 +66,23 @@ namespace Tokki.WebAPI.Controllers
             var result = await _sender.Send(query);
             return StatusCode(result.StatusCode, result);
         }
+
+        [HttpGet("user/{blogId}")]
+        [Authorize]
+        public async Task<IActionResult> GetByUser(string blogId)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? User.FindFirst("sub")?.Value;
+
+            var query = new GetBlogByIdQuery 
+            { 
+                Id = blogId, 
+                IsAdminView = false,
+                RequesterUserId = userId
+            };
+            var result = await _sender.Send(query);
+            return StatusCode(result.StatusCode, result);
+        }
         [HttpPost("user")]
         [Authorize]
         public async Task<IActionResult> CreateUserBlog([FromBody] CreateUserBlogCommand command)

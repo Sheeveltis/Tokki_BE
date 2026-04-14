@@ -37,11 +37,15 @@ namespace Tokki.Application.UseCases.Blogs.Queries
             // Nếu là chế độ xem của Client (không phải Admin/Staff)
             if (!request.IsAdminView)
             {
-                // Chỉ cho phép xem bài viết đã Đăng (Published) hoặc Lưu trữ (Archived)
-                // Các trạng thái khác (Draft, Hidden, Pending, Rejected) yêu cầu quyền Admin
-                if (blog.Status != BlogStatus.Published && blog.Status != BlogStatus.Archived)
+                // Nếu không phải là tác giả của chính bài viết đó
+                if (blog.AuthorId != request.RequesterUserId)
                 {
-                    return OperationResult<BlogDetailDTO>.Failure(AppErrors.SecurityError, 403, "Bạn không có quyền xem bài viết này.");
+                    // Chỉ cho phép xem bài viết đã Đăng (Published) hoặc Lưu trữ (Archived)
+                    // Các trạng thái khác (Draft, Hidden, Pending, Rejected) yêu cầu quyền Admin hoặc quyền Tác giả
+                    if (blog.Status != BlogStatus.Published && blog.Status != BlogStatus.Archived)
+                    {
+                        return OperationResult<BlogDetailDTO>.Failure(AppErrors.SecurityError, 403, "Bạn không có quyền xem bài viết này.");
+                    }
                 }
             }
 
