@@ -1,4 +1,4 @@
-﻿// 1. THÊM CÁC NAMESPACE NÀY
+// 1. THÊM CÁC NAMESPACE NÀY
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
@@ -41,6 +41,7 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 //Phần cho mấy mớ services thuộc webAPI 
 builder.Services.AddSingleton<IChatNotificationService, ChatNotificationService>();
+builder.Services.AddSingleton<INotificationHubService, NotificationHubService>();
 
 // 2. SỬA CẤU HÌNH SWAGGER (Để hiện nút ổ khóa)
 builder.Services.AddSwaggerGen(option =>
@@ -105,7 +106,7 @@ builder.Services.AddAuthentication(options =>
             var accessToken = context.Request.Query["access_token"];
             var path = context.HttpContext.Request.Path;
             if (!string.IsNullOrEmpty(accessToken) &&
-                (path.StartsWithSegments("/chatHub")))
+                (path.StartsWithSegments("/chatHub") || path.StartsWithSegments("/notificationHub")))
             {
                 context.Token = accessToken;
             }
@@ -222,6 +223,7 @@ app.UseHangfireDashboard("/hangfire", new DashboardOptions
 //ChatHub
 app.MapHub<ChatHub>("/chatHub");
 app.MapHub<VocabularyHub>("/vocabularyHub");
+app.MapHub<NotificationHub>("/notificationHub");
 app.UseMiddleware<GlobalExceptionMiddleware>();
 //mobile
 //app.Urls.Add("http://0.0.0.0:5031");
