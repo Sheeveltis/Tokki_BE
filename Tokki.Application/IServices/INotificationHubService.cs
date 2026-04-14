@@ -5,6 +5,6 @@ namespace Tokki.Application.IServices
  {
     public interface INotificationHubService
     {
-        Task SendNotificationToUserAsync(string userId, Notification notification, int unreadCount);
+        Task SendNotificationToUserAsync(string userId, object notification, int unreadCount);
     }
  }

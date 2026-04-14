@@ -48,8 +48,19 @@ namespace Tokki.Infrastructure.Services
             var account = await _accountRepository.GetByIdAsync(userId);
             int unreadCount = account?.UnreadNotificationCount ?? 0;
  
-            // Push qua SignalR realtime
-            await _notificationHubService.SendNotificationToUserAsync(userId, notification, unreadCount);
+            // Push qua SignalR realtime (Dùng DTO để tránh leak data Account)
+            var notificationDto = new Tokki.Application.UseCases.Notifications.DTOs.NotificationDto
+            {
+                Id = notification.Id,
+                Title = notification.Title,
+                Content = notification.Content,
+                Type = notification.Type,
+                IsRead = notification.IsRead,
+                CreatedAt = notification.CreatedAt,
+                ReferenceId = notification.ReferenceId
+            };
+
+            await _notificationHubService.SendNotificationToUserAsync(userId, notificationDto, unreadCount);
         }
     }
 }

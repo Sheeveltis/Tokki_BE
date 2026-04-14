@@ -37,7 +37,7 @@ namespace Tokki.Infrastructure.Services
                 bool hasTitle = await _accountRepository.HasTitleAsync(userId, title.TitleId);
                 if (!hasTitle)
                 {
-                    await _accountRepository.AddAccountTitleAsync(new AccountTitle { UserId = userId, TitleId = title.TitleId, EarnedAt = DateTime.UtcNow.AddHours(7) });
+                    await _accountRepository.AddAccountTitleAsync(new AccountTitle { UserId = userId, TitleId = title.TitleId, EarnedAt = DateTime.Now });
                     newlyUnlocked.Add(title);
                 }
             }
@@ -68,7 +68,7 @@ namespace Tokki.Infrastructure.Services
             var user = await _accountRepository.GetByIdAsync(userId);
             if (user == null) return new List<Title>();
 
-            var now = DateTime.UtcNow.AddHours(7);
+            var now = DateTime.Now;
             var allNewlyUnlocked = new List<Title>();
 
             // 1. Kiểm tra Streak (Chuỗi ngày học liên tiếp tối đa)

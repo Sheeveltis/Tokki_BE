@@ -28,6 +28,7 @@ using Tokki.Domain.Enums;
 using System.Collections.Generic;
 using Tokki.WebAPI.Utilities;
 using Tokki.Application.UseCases.Accounts.Commands.Register;
+using Tokki.Application.UseCases.Accounts.Commands.SetVipRole;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -268,6 +269,14 @@ namespace Tokki.WebAPI.Controllers
 
             command.AdminId = adminId;
 
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpPut("admin/set-vip")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> SetVipRole([FromBody] SetVipRoleCommand command)
+        {
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
         }

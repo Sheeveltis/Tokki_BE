@@ -176,6 +176,12 @@ namespace Tokki.Infrastructure.Data
                       .HasColumnType("date");
             });
 
+            // Index cho UserExam để check in-progress session nhanh
+            modelBuilder.Entity<UserExam>(entity =>
+            {
+                entity.HasIndex(ue => new { ue.UserId, ue.ExamId, ue.Status });
+            });
+
             // =========================================================
             // 3. CONFIG SOCIAL LOGIN
             // =========================================================

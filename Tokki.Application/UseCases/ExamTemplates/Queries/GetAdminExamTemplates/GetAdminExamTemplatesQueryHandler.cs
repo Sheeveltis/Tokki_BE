@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.ExamTemplates.DTOs;
@@ -22,7 +22,8 @@ namespace Tokki.Application.UseCases.ExamTemplates.Queries.GetAdminExamTemplates
                 request.SearchTerm,
                 request.Status,
                 cancellationToken,
-                request.Type
+                request.Type,
+                request.CreatorFilter
             );
 
             var dtos = items.Select(et => new AdminExamTemplateDto

@@ -12,7 +12,7 @@ namespace Tokki.Application.IRepositories
     public interface IBlogRepository
     {
         Task<PagedResult<Blog>> GetPagedAsync(int pageNumber, int pageSize, string? categoryId,
-            string? tag, string? keyword, BlogStatus? status, bool? isOfficial, CancellationToken cancellationToken);
+            string? tag, string? keyword, BlogStatus? status, bool? isOfficial, string? authorId = null, CancellationToken cancellationToken = default);
             
         Task<Blog?> GetByIdAsync(string id);
         Task AddAsync(Blog blog);
