@@ -10,10 +10,12 @@ using Tokki.Application.UseCases.Blogs.Commands.IncreaseViewCount;
 using Tokki.Application.UseCases.Blogs.Commands.RejectBlog;
 using Tokki.Application.UseCases.Blogs.Commands.SubmitBlogForApproval;
 using Tokki.Application.UseCases.Blogs.Commands.UpdateBlog;
-using Tokki.Application.UseCases.Blogs.Queries.ExportBlogs;
 using Tokki.Application.UseCases.Blogs.Commands.ImportBlogs;
 using Tokki.Application.UseCases.Blogs.Queries;
+using Tokki.Application.UseCases.Blogs.Queries.ExportBlogs;
 using Tokki.Application.UseCases.Blogs.Queries.GetPagedBlogs;
+using Tokki.Application.UseCases.Blogs.Commands.SaveDraftBlog;
+using Tokki.Application.UseCases.Blogs.Queries.GetMyBlogs;
 using Tokki.Domain.Enums;
 
 namespace Tokki.WebAPI.Controllers
@@ -45,6 +47,48 @@ namespace Tokki.WebAPI.Controllers
             var result = await _sender.Send(query);
             return StatusCode(result.StatusCode, result);
         }
+        [HttpGet("user/my-blog")]
+        [Authorize]
+        public async Task<IActionResult> GetMyBlogs([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10,
+           [FromQuery] BlogStatus? status = null, [FromQuery] string? keyword = null)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? User.FindFirst("sub")?.Value;
+
+            var query = new GetMyBlogsQuery
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                Status = status,
+                Keyword = keyword,
+                UserId = userId!
+            };
+            var result = await _sender.Send(query);
+            return StatusCode(result.StatusCode, result);
+        }
+        [HttpPost("user")]
+        [Authorize]
+        public async Task<IActionResult> CreateUserBlog([FromBody] CreateUserBlogCommand command)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? User.FindFirst("sub")?.Value;
+            command.CreatedBy = userId!;
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpPost("user/save")]
+        [Authorize]
+        public async Task<IActionResult> SaveDraft([FromBody] SaveDraftBlogCommand command)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? User.FindFirst("sub")?.Value;
+            command.UserId = userId!;
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
+       
 
         [HttpGet("admin")]
         [Authorize(Roles = "Admin, Staff, Moderator")]
@@ -75,16 +119,7 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
-        [HttpPost("user")]
-        [Authorize]
-        public async Task<IActionResult> CreateUserBlog([FromBody] CreateUserBlogCommand command)
-        {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-            ?? User.FindFirst("sub")?.Value;
-            command.CreatedBy = userId!;
-            var result = await _sender.Send(command);
-            return StatusCode(result.StatusCode, result);
-        }
+     
 
         [HttpPut("{id}")]
         [Authorize(Roles ="Admin, Staff")]
@@ -162,5 +197,6 @@ namespace Tokki.WebAPI.Controllers
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
         }
+
     }
 }

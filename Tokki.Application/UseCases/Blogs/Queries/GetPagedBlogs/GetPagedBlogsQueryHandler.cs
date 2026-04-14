@@ -35,6 +35,7 @@ namespace Tokki.Application.UseCases.Blogs.Queries.GetPagedBlogs
                 request.Keyword,
                 request.Status,
                 request.IsOfficial,
+                null, // authorId
                 cancellationToken);
 
             var distinctAuthorIds = pagedEntities.Items

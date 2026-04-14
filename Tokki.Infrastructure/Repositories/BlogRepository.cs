@@ -39,7 +39,7 @@ namespace Tokki.Infrastructure.Repositories
         }
 
         public async Task<PagedResult<Blog>> GetPagedAsync(int pageNumber, int pageSize, string? categoryId,
-            string? tag, string? keyword, BlogStatus? status, bool? isOfficial, CancellationToken cancellationToken)
+            string? tag, string? keyword, BlogStatus? status, bool? isOfficial, string? authorId, CancellationToken cancellationToken)
         {
             var query = _context.Blogs
                 .AsNoTracking()
@@ -47,6 +47,11 @@ namespace Tokki.Infrastructure.Repositories
                 .Include(b => b.Tags)
                 .OrderByDescending(b => b.CreatedAt)
                 .AsQueryable();
+
+            if (!string.IsNullOrEmpty(authorId))
+            {
+                query = query.Where(b => b.AuthorId == authorId);
+            }
 
             if (isOfficial.HasValue)
             {
