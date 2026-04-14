@@ -478,7 +478,6 @@ namespace Application.Services
             }
         }
 
-<<<<<<< HEAD
         public async Task<byte[]> ExportVocabularyImageResultsToExcelAsync(List<VocabularyImageResultDto> results)
         {
             ExcelPackage.License.SetNonCommercialPersonal("TokkiProject");
@@ -616,7 +615,8 @@ namespace Application.Services
             catch (Exception ex)
             {
                 Console.WriteLine($"    [Excel] Không nhúng được ảnh row={row} col={col}: {ex.Message}");
-=======
+            }
+        }
         public async Task<List<CategoryExcelDTO>> ExtractCategoryDataAsync(IFormFile file)
         {
             var result = new List<CategoryExcelDTO>();
@@ -803,7 +803,6 @@ namespace Application.Services
  
                 worksheet.Cells.AutoFitColumns();
                 return package.GetAsByteArray();
->>>>>>> 7073aade6fab71e0909e22ecfdf8d819e3351d33
             }
         }
     }
