@@ -22,7 +22,11 @@ namespace Tokki.Domain.Enums
         [Description("Đã từ chối")]
         Rejected = 5,
         [Description("AI đang kiểm duyệt")]
-        UnderAIReview = 6
+        UnderAIReview = 6,
+        [Description("AI đã từ chối")]
+        AIRejected = 7,
 
+        [Description("AI gặp lỗi khi kiểm duyệt")]
+        AIReviewFailed = 8
     }
 }

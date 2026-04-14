@@ -49,7 +49,7 @@ namespace Tokki.Infrastructure.BackgroundJobs
             if (contentResult.IsError)
             {
                 _logger.LogError("AI Moderation FAILED for Blog {BlogId}: {Error}. Falling back to manual review.", blogId, contentResult.ErrorMessage);
-                blog.Status = BlogStatus.PendingApproval; // Cho phép đi tiếp vòng Admin
+                blog.Status = BlogStatus.AIReviewFailed; // Chuyển trạng thái lỗi AI
                 
                 var sysConfigRepo = scope.ServiceProvider.GetRequiredService<ISystemConfigRepository>();
                 var adminConfig = await sysConfigRepo.GetByKeyAsync("ADMIN_EMAIL");
@@ -106,10 +106,10 @@ namespace Tokki.Infrastructure.BackgroundJobs
  
                     _logger.LogWarning("Blog {BlogId} failed AI moderation.", blogId);
  
-                    // Nếu nội dung chính bẩn -> Từ chối thẳng
+                    // Nếu nội dung chính bẩn -> Từ chối thẳng bở AI
                     if (!contentResult.IsClean)
                     {
-                        blog.Status = BlogStatus.Rejected;
+                        blog.Status = BlogStatus.AIRejected;
                         
                         await notificationHelper.SendBlogModerationResultAsync(blog.AuthorId, blog.Title, false, reason, blogId);
                         
@@ -147,7 +147,9 @@ namespace Tokki.Infrastructure.BackgroundJobs
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error during moderation for blog {BlogId}", blogId);
-                // Nếu AI lỗi, giữ nguyên PendingApproval để Admin duyệt tay
+                // Nếu AI lỗi, set trạng thái lỗi AI để Admin biết
+                blog.Status = BlogStatus.AIReviewFailed;
+                await blogRepo.SaveChangesAsync(CancellationToken.None);
             }
         }
     }
