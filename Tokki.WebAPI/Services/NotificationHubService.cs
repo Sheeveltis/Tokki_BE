@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.SignalR;
 using Tokki.Application.IServices;
-using Tokki.Domain.Entities;
 using Tokki.WebAPI.Hubs;
 using System.Threading.Tasks;
  
@@ -15,9 +14,8 @@ namespace Tokki.WebAPI.Services
             _hubContext = hubContext;
         }
  
-        public async Task SendNotificationToUserAsync(string userId, Notification notification, int unreadCount)
+        public async Task SendNotificationToUserAsync(string userId, object notification, int unreadCount)
         {
-            // Gửi cả object notification và số lượng unread mới lên client
             await _hubContext.Clients.User(userId).SendAsync("ReceiveNotification", notification, unreadCount);
         }
     }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Tokki.Application.UseCases.Notifications.Commands.MarkAllAsRead;
 using Tokki.Application.UseCases.Notifications.Commands.MarkAsRead;
 using Tokki.Application.UseCases.Notifications.Queries.GetMyNotifications;
+using Tokki.Domain.Enums;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -28,7 +29,7 @@ namespace Tokki.WebAPI.Controllers
         }
 
         [HttpGet("my-notifications")]
-        public async Task<IActionResult> GetMyNotifications([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
+        public async Task<IActionResult> GetMyNotifications([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20, [FromQuery] NotificationReadFilter filter = NotificationReadFilter.All)
         {
             var userId = GetUserId();
             if (string.IsNullOrEmpty(userId)) return Unauthorized();
@@ -37,7 +38,8 @@ namespace Tokki.WebAPI.Controllers
             {
                 PageNumber = pageNumber,
                 PageSize = pageSize,
-                UserId = userId
+                UserId = userId,
+                Filter = filter
             };
 
             var result = await _sender.Send(query);

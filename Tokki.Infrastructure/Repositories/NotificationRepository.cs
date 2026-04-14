@@ -23,7 +23,6 @@ namespace Tokki.Infrastructure.Repositories
         {
             await _context.Notifications.AddAsync(notification);
             
-            // Increment unread count in Account
             var account = await _context.Accounts.FindAsync(notification.UserId);
             if (account != null)
             {
@@ -36,10 +35,16 @@ namespace Tokki.Infrastructure.Repositories
             return await _context.Notifications.FindAsync(id);
         }
  
-        public async Task<IEnumerable<Notification>> GetPagedByUserIdAsync(string userId, int pageNumber, int pageSize)
+        public async Task<IEnumerable<Notification>> GetPagedByUserIdAsync(string userId, int pageNumber, int pageSize, bool? isRead)
         {
-            return await _context.Notifications
-                .Where(n => n.UserId == userId)
+            var query = _context.Notifications.Where(n => n.UserId == userId);
+            
+            if (isRead.HasValue)
+            {
+                query = query.Where(n => n.IsRead == isRead.Value);
+            }
+
+            return await query
                 .OrderByDescending(n => n.CreatedAt)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
@@ -48,14 +53,20 @@ namespace Tokki.Infrastructure.Repositories
  
         public async Task<int> CountUnreadAsync(string userId)
         {
-            // Vẫn giữ count thật từ DB nếu cần, nhưng giờ đã có cache ở bảng Account
             return await _context.Notifications
                 .CountAsync(n => n.UserId == userId && !n.IsRead);
         }
 
-        public async Task<int> CountTotalByUserIdAsync(string userId)
+        public async Task<int> CountTotalByUserIdAsync(string userId, bool? isRead)
         {
-            return await _context.Notifications.CountAsync(n => n.UserId == userId);
+            var query = _context.Notifications.Where(n => n.UserId == userId);
+            
+            if (isRead.HasValue)
+            {
+                query = query.Where(n => n.IsRead == isRead.Value);
+            }
+
+            return await query.CountAsync();
         }
  
         public async Task MarkAsReadAsync(string id)
@@ -65,14 +76,10 @@ namespace Tokki.Infrastructure.Repositories
             {
                 notification.IsRead = true;
                 
-                // Decrement unread count in Account
                 var account = await _context.Accounts.FindAsync(notification.UserId);
-                if (account != null)
+                if (account != null && account.UnreadNotificationCount > 0)
                 {
-                    if (account.UnreadNotificationCount > 0)
-                    {
-                        account.UnreadNotificationCount--;
-                    }
+                    account.UnreadNotificationCount--;
                 }
             }
         }
@@ -88,7 +95,6 @@ namespace Tokki.Infrastructure.Repositories
                 n.IsRead = true;
             }
  
-            // Reset unread count in Account
             var account = await _context.Accounts.FindAsync(userId);
             if (account != null)
             {
@@ -96,7 +102,7 @@ namespace Tokki.Infrastructure.Repositories
             }
         }
  
-        public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
+        public async Task SaveChangesAsync(CancellationToken cancellationToken)
         {
             await _context.SaveChangesAsync(cancellationToken);
         }

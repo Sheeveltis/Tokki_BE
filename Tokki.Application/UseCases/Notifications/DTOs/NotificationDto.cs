@@ -1,7 +1,7 @@
 using System;
 using Tokki.Domain.Enums;
 
-namespace Tokki.Application.UseCases.Notifications.Queries.GetMyNotifications
+namespace Tokki.Application.UseCases.Notifications.DTOs
 {
     public class NotificationDto
     {

@@ -4,11 +4,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
+using Tokki.Application.UseCases.Notifications.DTOs;
 using Tokki.Domain.Entities;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Notifications.Queries.GetMyNotifications
 {
-    public class GetMyNotificationsQueryHandler : IRequestHandler<GetMyNotificationsQuery, OperationResult<PagedResult<NotificationDto>>>
+    public class GetMyNotificationsQueryHandler : IRequestHandler<GetMyNotificationsQuery, OperationResult<MyNotificationsResponse>>
     {
         private readonly INotificationRepository _notificationRepository;
         private readonly IAccountRepository _accountRepository;
@@ -19,16 +21,24 @@ namespace Tokki.Application.UseCases.Notifications.Queries.GetMyNotifications
             _accountRepository = accountRepository;
         }
 
-        public async Task<OperationResult<PagedResult<NotificationDto>>> Handle(GetMyNotificationsQuery request, CancellationToken cancellationToken)
+        public async Task<OperationResult<MyNotificationsResponse>> Handle(GetMyNotificationsQuery request, CancellationToken cancellationToken)
         {
             var user = await _accountRepository.GetByIdAsync(request.UserId);
             if (user == null)
             {
-                return OperationResult<PagedResult<NotificationDto>>.Failure("Không tìm thấy người dùng.", 404);
+                return OperationResult<MyNotificationsResponse>.Failure("Không tìm thấy người dùng.", 404);
             }
 
-            var totalCount = await _notificationRepository.CountTotalByUserIdAsync(request.UserId);
-            var notifications = await _notificationRepository.GetPagedByUserIdAsync(request.UserId, request.PageNumber, request.PageSize);
+            bool? isReadFilter = request.Filter switch
+            {
+                NotificationReadFilter.Read => true,
+                NotificationReadFilter.Unread => false,
+                _ => null
+            };
+
+            var totalCount = await _notificationRepository.CountTotalByUserIdAsync(request.UserId, isReadFilter);
+            var notifications = await _notificationRepository.GetPagedByUserIdAsync(request.UserId, request.PageNumber, request.PageSize, isReadFilter);
+            var totalUnreadCount = await _notificationRepository.CountUnreadAsync(request.UserId);
             
             var dtos = notifications.Select(n => new NotificationDto
             {
@@ -41,10 +51,13 @@ namespace Tokki.Application.UseCases.Notifications.Queries.GetMyNotifications
                 ReferenceId = n.ReferenceId
             }).ToList();
 
-            return OperationResult<PagedResult<NotificationDto>>.Success(
-                PagedResult<NotificationDto>.Create(dtos, totalCount, request.PageNumber, request.PageSize),
-                200
-            );
+            var result = new MyNotificationsResponse
+            {
+                Notifications = PagedResult<NotificationDto>.Create(dtos, totalCount, request.PageNumber, request.PageSize),
+                TotalUnreadCount = totalUnreadCount
+            };
+
+            return OperationResult<MyNotificationsResponse>.Success(result, 200);
         }
     }
 }
