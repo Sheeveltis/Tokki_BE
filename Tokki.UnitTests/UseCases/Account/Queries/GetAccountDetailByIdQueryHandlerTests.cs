@@ -96,7 +96,7 @@ namespace Tokki.UnitTests.Features.Accounts.Queries
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
-            result.Message.Should().Be("Lấy thông tin chi tiết tài khoản thành công");
+            result.Message.Should().Be("Retrieve account details successfully");
 
             result.Data.Should().NotBeNull();
             var dto = result.Data!;

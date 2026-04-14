@@ -89,7 +89,7 @@ namespace Tokki.UnitTests.Features.Passages.Commands
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(201);
             result.Data.Should().Be("pass-99");
-            result.Message.Should().Be("Tạo đoạn văn thành công.");
+            result.Message.Should().Be("Create a successful paragraph.");
 
             captured.Should().NotBeNull();
             captured!.PassageId.Should().Be("pass-99");

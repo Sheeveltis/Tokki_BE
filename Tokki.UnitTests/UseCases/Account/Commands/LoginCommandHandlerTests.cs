@@ -48,7 +48,7 @@ namespace Tokki.UnitTests.UseCases.Accounts
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
-            result.Message.Should().Be("Đăng nhập thành công!");
+            result.Message.Should().Be("Log in successfully!");
             result.Data.Should().NotBeNull();
             result.Data!.Token.Should().Be("fake-jwt-token");
 
@@ -91,7 +91,7 @@ namespace Tokki.UnitTests.UseCases.Accounts
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(404);
-            result.Message.Should().Be("Tài khoản không tồn tại.");
+            result.Message.Should().Be("Account does not exist.");
 
             result.Errors.Should().NotBeNull();
             result.Errors.Should().HaveCount(1);
@@ -164,7 +164,7 @@ namespace Tokki.UnitTests.UseCases.Accounts
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(403);
-            result.Message.Should().Be("Tài khoản của bạn đã bị khóa vĩnh viễn.");
+            result.Message.Should().Be("Your account has been permanently locked.");
 
             result.Errors.Should().NotBeNull();
             result.Errors.Should().HaveCount(1);
@@ -201,7 +201,7 @@ namespace Tokki.UnitTests.UseCases.Accounts
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(403);
-            result.Message.Should().Contain("Tài khoản đang bị tạm khóa. Thử lại sau");
+            result.Message.Should().Contain("Account is temporarily locked. Try again later");
 
             result.Errors.Should().NotBeNull();
             result.Errors.Should().HaveCount(1);
@@ -273,7 +273,7 @@ namespace Tokki.UnitTests.UseCases.Accounts
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(403);
-            result.Message.Should().Be("Tài khoản của bạn không hoạt động.");
+            result.Message.Should().Be("Your account is inactive.");
 
             result.Errors.Should().NotBeNull();
             result.Errors.Should().HaveCount(1);

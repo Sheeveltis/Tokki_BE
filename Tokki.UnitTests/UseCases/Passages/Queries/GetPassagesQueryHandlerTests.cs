@@ -66,7 +66,7 @@ namespace Tokki.UnitTests.Features.Passages.Queries
             result.Data.Items[1].PassageId.Should().Be("p2");
             result.Data.Items[1].MediaType.Should().Be(PassageMediaType.Image);
 
-            result.Message.Should().Be($"Tìm thấy {totalCount} đoạn văn.");
+            result.Message.Should().Be($"Found {totalCount} paragraphs.");
 
             _mockPassageRepo.Verify(x => x.GetPagedAsync(
                 query.PageNumber,

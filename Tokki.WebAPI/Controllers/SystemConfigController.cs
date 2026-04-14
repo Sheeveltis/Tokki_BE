@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tokki.Application.UseCases.SystemConfigs.Commands.Create;
@@ -6,6 +6,8 @@ using Tokki.Application.UseCases.SystemConfigs.Commands.Update;
 using Tokki.Application.UseCases.SystemConfigs.Queries.GetAll;
 using Tokki.Application.UseCases.SystemConfigs.Queries.GetSystemConfigByKey;
 using Tokki.Domain.Enums;
+using Tokki.Application.UseCases.Excel.Commands.ImportSystemConfigs;
+using Tokki.Application.UseCases.Excel.Queries.ExportSystemConfigs;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -59,6 +61,25 @@ namespace Tokki.WebAPI.Controllers
         {
             var query = new GetSystemConfigByKeyQuery(key);
             var result = await _sender.Send(query);
+            return StatusCode(result.StatusCode, result);
+        }
+ 
+        [HttpGet("export")]
+        [Authorize(Roles = nameof(AccountRole.Admin))]
+        public async Task<IActionResult> Export()
+        {
+            var result = await _sender.Send(new ExportSystemConfigsQuery());
+            if (!result.IsSuccess) return StatusCode(result.StatusCode, result);
+ 
+            return File(result.Data!.FileContent, result.Data.ContentType, result.Data.FileName);
+        }
+ 
+        [HttpPost("import")]
+        [Authorize(Roles = nameof(AccountRole.Admin))]
+        public async Task<IActionResult> Import(IFormFile file)
+        {
+            var command = new ImportSystemConfigsCommand { File = file };
+            var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
         }
     }

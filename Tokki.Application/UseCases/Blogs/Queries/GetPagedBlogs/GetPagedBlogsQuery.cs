@@ -18,5 +18,6 @@ namespace Tokki.Application.UseCases.Blogs.Queries.GetPagedBlogs
         public string? Tag { get; set; }
         public string? Keyword { get; set; }
         public BlogStatus? Status { get; set; }
+        public bool? IsOfficial { get; set; }
     }
 }

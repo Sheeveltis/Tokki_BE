@@ -56,7 +56,7 @@ namespace Tokki.UnitTests.Features.ExamTemplates.Commands
             var result = await _handler.Handle(command, CancellationToken.None);
 
             result.IsSuccess.Should().BeFalse();
-            result.Message.Should().Be("Tên đề thi mẫu đã tồn tại."); 
+            result.Message.Should().Be("The name of the sample test already exists."); 
             _mockExamTemplateRepo.Verify(x => x.AddAsync(It.IsAny<ExamTemplate>()), Times.Never);
         }
     }

@@ -251,7 +251,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            result.Message.Should().Contain("không đủ");
+            result.Message.Should().Contain("insufficient");
 
             QACollector.LogTestCase("Exam - Create Exam", new TestCaseDetail
             {
@@ -336,7 +336,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            result.Message.Should().Contain("vui lòng nhập thời gian làm bài hợp lệ");
+            result.Message.Should().Contain("Please enter a valid test time");
         }
     }
 }

@@ -41,7 +41,7 @@ namespace Tokki.UnitTest.Mocks.Repositories
                 PackageType = "Monthly",
                 Price = 99000,
                 DurationDays = 30,
-                Description = "Gói cơ bản 1 tháng",
+                Description = "Basic package 1 month",
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };

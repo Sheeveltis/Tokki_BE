@@ -61,7 +61,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.Commands
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
             result.Errors.Should().Contain(e => e.Code == AppErrors.ValidationFailed.Code);
-            result.Message.Should().Contain("Danh sách QuestionBankIds rỗng hoặc không hợp lệ");
+            result.Message.Should().Contain("The QuestionBankIds list is empty or invalid");
         }
 
         [Fact]
@@ -109,7 +109,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.Commands
             result.StatusCode.Should().Be(400);
             result.Errors.Should().Contain(e => e.Code == AppErrors.ValidationFailed.Code);
             result.Message.Should().Contain("qb-01");
-            result.Message.Should().Contain("Draft hoặc Rejected");
+            result.Message.Should().Contain("Draft or Rejected");
 
             _mockQuestionBankRepo.Verify(x => x.UpdateAsync(It.IsAny<QuestionBank>()), Times.Never);
             _mockQuestionBankRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
@@ -147,7 +147,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.Commands
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
-            result.Message.Should().Be("Gửi duyệt thành công.");
+            result.Message.Should().Be("Submitted successfully for approval.");
 
             // Distinct theo id sau Trim => chỉ còn qb-01, qb-02
             result.Data.Should().NotBeNull();
@@ -193,7 +193,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.Commands
             var result = _validator.Validate(cmd);
 
             result.IsValid.Should().BeFalse();
-            result.Errors.Should().Contain(e => e.ErrorMessage == "Danh sách QuestionBankIds không hợp lệ.");
+            result.Errors.Should().Contain(e => e.ErrorMessage == "The QuestionBankIds list is invalid.");
         }
         [Fact]
         public void Validator_Should_Fail_When_QuestionBankIds_AllWhitespace()
@@ -206,7 +206,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.Commands
             var result = _validator.Validate(cmd);
 
             result.IsValid.Should().BeFalse();
-            result.Errors.Should().Contain(e => e.ErrorMessage == "Danh sách QuestionBankIds không hợp lệ.");
+            result.Errors.Should().Contain(e => e.ErrorMessage == "The QuestionBankIds list is invalid.");
         }
 
         [Fact]
@@ -220,7 +220,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.Commands
             var result = _validator.Validate(cmd);
 
             result.IsValid.Should().BeFalse();
-            result.Errors.Should().Contain(e => e.ErrorMessage.Contains("Danh sách QuestionBankIds không hợp lệ"));
+            result.Errors.Should().Contain(e => e.ErrorMessage.Contains("The QuestionBankIds list is invalid"));
         }
 
         [Fact]
@@ -234,7 +234,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.Commands
             var result = _validator.Validate(cmd);
 
             result.IsValid.Should().BeFalse();
-            result.Errors.Should().Contain(e => e.ErrorMessage.Contains("Danh sách QuestionBankIds bị trùng"));
+            result.Errors.Should().Contain(e => e.ErrorMessage.Contains("List of duplicate QuestionBankIds"));
         }
 
         [Fact]

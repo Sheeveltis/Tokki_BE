@@ -26,15 +26,9 @@ namespace Tokki.Infrastructure.Repositories
 
         public async Task<UserExam?> GetInProgressSessionAsync(string userId, string examId, CancellationToken token)
         {
+            // Tối ưu: Bỏ các Include không cần thiết và dùng AsNoTracking để tăng tốc độ lookup
             return await _context.UserExams
-                .Include(ue => ue.Exam)
-                    .ThenInclude(e => e.ExamTemplate)
-                        .ThenInclude(t => t.TemplateParts)
-                .Include(ue => ue.UserExamAnswers)
-                    .ThenInclude(ua => ua.Question)
-                        .ThenInclude(q => q.QuestionOptions)
-                .Include(ue => ue.UserExamWritingAnswers) 
-                    .ThenInclude(wa => wa.Question)
+                .AsNoTracking()
                 .FirstOrDefaultAsync(ue => ue.UserId == userId
                                         && ue.ExamId == examId
                                         && ue.Status == UserExamStatus.InProgress, token);
@@ -42,14 +36,12 @@ namespace Tokki.Infrastructure.Repositories
 
         public async Task<Exam?> GetExamWithFullStructureAsync(string examId, CancellationToken token)
         {
+            // Tối ưu: Bỏ Include QuestionBank và QuestionOptions vì chỉ cần lấy ID để tạo session mới
             return await _context.Exams
+                .AsNoTracking()
                 .Include(e => e.ExamTemplate)
                     .ThenInclude(t => t.TemplateParts)
-
                 .Include(e => e.ExamQuestions)
-                    .ThenInclude(eq => eq.QuestionBank)
-                        .ThenInclude(qb => qb.QuestionOptions)
-
                 .FirstOrDefaultAsync(e => e.ExamId == examId, token);
         }
 

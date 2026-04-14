@@ -85,7 +85,7 @@ namespace Tokki.UnitTests.Features.Topics.Commands
 
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            result.Message.Should().Contain("Giao dịch đã bị hủy");
+            result.Message.Should().Contain("The transaction has been cancelled");
         }
 
         [Fact]
@@ -110,7 +110,7 @@ namespace Tokki.UnitTests.Features.Topics.Commands
 
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
-            result.Message.Should().Contain("Không có thay đổi");
+            result.Message.Should().Contain("No changes");
         }
 
         [Fact]
@@ -136,7 +136,7 @@ namespace Tokki.UnitTests.Features.Topics.Commands
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
             result.Data.Should().Be(2);
-            result.Message.Should().Contain("Đã gỡ thành công 2");
+            result.Message.Should().Contain("Successfully removed 2");
         }
     }
 }

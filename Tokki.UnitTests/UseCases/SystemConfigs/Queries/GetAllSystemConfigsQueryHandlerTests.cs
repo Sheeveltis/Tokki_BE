@@ -38,7 +38,7 @@ namespace Tokki.UnitTests.Features.SystemConfigs.Queries
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
-            result.Message.Should().Be("Lấy danh sách thành công");
+            result.Message.Should().Be("Get the list successfully");
 
             result.Data.Should().NotBeNull();
             result.Data.Items.Should().HaveCount(3);

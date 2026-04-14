@@ -182,7 +182,7 @@ namespace Tokki.UnitTests.UseCases.Accounts.Commands
             result.StatusCode.Should().Be(200);
 
             // Chuỗi success của handler đang nằm ở Data, không phải Message
-            result.Data.Should().Be("Vô hiệu hóa tài khoản của người dùng thành công.");
+            result.Data.Should().Be("Successfully deactivated the user's account.");
 
             _mockAccountRepo.Verify(x => x.GetByIdAsync(command.TargetUserId), Times.Once);
             _mockAccountRepo.Verify(x => x.UpdateUserAsync(It.IsAny<AccountEntity>()), Times.Once);

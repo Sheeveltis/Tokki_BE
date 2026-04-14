@@ -81,7 +81,7 @@ namespace Tokki.UnitTests.UseCases.Accounts.Commands
             Assert.Equal(200, result.StatusCode);
 
             // Với OperationResult.Success("...", 200) => chuỗi thường nằm ở Data
-            Assert.Equal("Cập nhật thông tin thành công!", result.Data);
+            Assert.Equal("Updated information successfully!", result.Data);
 
             _mockAccountRepo.Verify(r => r.GetByIdAsync(userId), Times.Once);
             _mockAccountRepo.Verify(r => r.IsPhoneNumberUsedByOtherUserAsync(command.PhoneNumber!, userId), Times.Once);
@@ -291,7 +291,7 @@ namespace Tokki.UnitTests.UseCases.Accounts.Commands
             var result = await validator.ValidateAsync(command);
 
             Assert.False(result.IsValid);
-            Assert.Contains(result.Errors, e => e.ErrorMessage.Contains("Số điện thoại chỉ được chứa các ký tự số."));
+            Assert.Contains(result.Errors, e => e.ErrorMessage.Contains("Phone numbers must contain only numeric characters."));
         }
 
         [Fact]
@@ -323,7 +323,7 @@ namespace Tokki.UnitTests.UseCases.Accounts.Commands
             var result = await validator.ValidateAsync(command);
 
             Assert.False(result.IsValid);
-            Assert.Contains(result.Errors, e => e.ErrorMessage.Contains("Ngày sinh không hợp lệ"));
+            Assert.Contains(result.Errors, e => e.ErrorMessage.Contains("Invalid date of birth"));
         }
 
         // ==========================================

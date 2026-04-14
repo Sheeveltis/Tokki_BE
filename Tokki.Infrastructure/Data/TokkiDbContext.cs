@@ -72,6 +72,7 @@ namespace Tokki.Infrastructure.Data
         public DbSet<ExamTemplateStructure> ExamTemplateStructures { get; set; }
         public DbSet<UserWeakness> UserWeaknesses { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -175,6 +176,12 @@ namespace Tokki.Infrastructure.Data
                       .HasColumnType("date");
             });
 
+            // Index cho UserExam để check in-progress session nhanh
+            modelBuilder.Entity<UserExam>(entity =>
+            {
+                entity.HasIndex(ue => new { ue.UserId, ue.ExamId, ue.Status });
+            });
+
             // =========================================================
             // 3. CONFIG SOCIAL LOGIN
             // =========================================================
@@ -218,6 +225,9 @@ namespace Tokki.Infrastructure.Data
 
                 entity.Property(e => e.DataType)
                       .HasMaxLength(50);
+
+                entity.Property(e => e.ConfigType)
+                      .HasConversion<int>();
 
                 entity.Property(e => e.IsActive)
                       .HasDefaultValue(true);
@@ -724,6 +734,23 @@ namespace Tokki.Infrastructure.Data
             modelBuilder.Entity<RoadmapDailyTask>()
                     .Property(e => e.TaskType)
                     .HasConversion<int>();
+
+            // =========================================================
+            // 11. CONFIG NOTIFICATION
+            // =========================================================
+            modelBuilder.Entity<Notification>(entity =>
+            {
+                entity.ToTable("Notifications");
+                entity.HasKey(n => n.Id);
+                
+                entity.Property(n => n.Type)
+                      .HasConversion<int>();
+
+                entity.HasOne(n => n.Account)
+                      .WithMany()
+                      .HasForeignKey(n => n.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
         }
     }
 }

@@ -42,15 +42,15 @@ namespace Tokki.UnitTest.Application.UseCases.TopikWriting
             {
                 FunctionGroup = "Writing Grading",
                 TestCaseID = "TC-WRT53-01",
-                Description = "Submit câu 53 hợp lệ → enqueue job thành công",
-                ExpectedResult = "Trả về 202, Score = -1, status = grading",
+                Description = "Submit question 53 validly → enqueue job successfully",
+                ExpectedResult = "Returns 202, Score = -1, status = grading",
                 StatusRound1 = "Passed",
                 TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string>
                 {
-                    "UserExamWritingAnswerId hợp lệ",
-                    "Hangfire enqueue thành công"
+                    "UserExamWritingAnswerId is valid",
+                    "Hangfire enqueue successful"
                 }
             });
         }
@@ -75,21 +75,21 @@ namespace Tokki.UnitTest.Application.UseCases.TopikWriting
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(500);
-            result.Message.Should().Contain("Lỗi xử lý câu 53");
+            result.Message.Should().Contain("Error processing sentence 53");
 
             QACollector.LogTestCase("TopikWriting", new TestCaseDetail
             {
                 FunctionGroup = "Writing Grading",
                 TestCaseID = "TC-WRT53-02",
-                Description = "Hangfire throw exception → trả về 500",
-                ExpectedResult = "IsSuccess = false, StatusCode = 500, Message chứa 'Lỗi xử lý câu 53'",
+                Description = "Hangfire throws exception → returns 500",
+                ExpectedResult = "IsSuccess = false, StatusCode = 500, Message contains 'Error processing sentence 53'",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string>
                 {
-                    "Hangfire.Create() ném exception",
-                    "Handler bắt exception trong try/catch"
+                    "Hangfire.Create() throws exception",
+                    "Handler catches exception in try/catch"
                 }
             });
         }
@@ -120,15 +120,15 @@ namespace Tokki.UnitTest.Application.UseCases.TopikWriting
             {
                 FunctionGroup = "Writing Grading",
                 TestCaseID = "TC-WRT53-03",
-                Description = "UserExamWritingAnswerId rỗng → handler không validate, vẫn enqueue",
-                ExpectedResult = "Trả về 202 vì handler không có validation logic",
+                Description = "UserExamWritingAnswerId is empty → handler does not validate, still enqueues",
+                ExpectedResult = "Returns 202 because the handler has no validation logic",
                 StatusRound1 = "Passed",
                 TestCaseType = "B",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string>
                 {
                     "UserExamWritingAnswerId = empty string",
-                    "Handler không có validation logic"
+                    "Handler does not have validation logic"
                 }
             });
         }

@@ -57,6 +57,12 @@ namespace Tokki.Infrastructure
             services.AddScoped<IStatisticBlogRepository, StatisticBlogRepository>();
             services.AddScoped<ITitleRepository, TitleRepository>();
             services.AddScoped<IUserTitleService, UserTitleService>();
+            services.AddScoped<IContentModerationService, ContentModerationService>();
+            services.AddScoped<INotificationRepository, NotificationRepository>();
+            services.AddScoped<INotificationService, NotificationService>();
+            services.AddScoped<AppNotificationHelper>();
+            services.AddScoped<EmailNotificationHelper>();
+            services.AddScoped<IBlogModerationBackgroundService, BlogModerationBackgroundService>();
             services.AddScoped<IGamificationService, GamificationService>();
             services.AddScoped<ITopicRepository, TopicRepository>();
             services.AddScoped<IQuestionTypeRepository, QuestionTypeRepository>();
@@ -94,6 +100,8 @@ namespace Tokki.Infrastructure
             services.AddScoped<ISpeechService, SpeechService>();
             //Cloudinary 
             services.AddScoped<ICloudinaryService, CloudinaryService>();
+            //Image Search (tìm ảnh tự động)
+            services.AddScoped<IImageSearchService, ImageSearchService>();
             //Comment
             services.AddScoped<ICommentRepository, CommentRepository>();
             //Live Chat

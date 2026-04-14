@@ -97,7 +97,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.Commands
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
             result.Errors.Should().Contain(e => e.Code == AppErrors.ValidationFailed.Code);
-            result.Message.Should().Contain("QuestionTypeId không hợp lệ");
+            result.Message.Should().Contain("QuestionTypeId is not valid");
         }
 
         [Fact]
@@ -135,7 +135,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.Commands
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            result.Message.Should().Be("Loại câu hỏi đang bị vô hiệu hóa.");
+            result.Message.Should().Be("Question types are disabled.");
         }
 
         [Fact]
@@ -154,7 +154,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.Commands
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            result.Message.Should().Contain("Listening bắt buộc phải có MediaUrl");
+            result.Message.Should().Contain("Listening requires MediaUrl");
         }
 
         [Fact]
@@ -173,7 +173,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.Commands
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            result.Message.Should().Contain("Reading bắt buộc phải có Content");
+            result.Message.Should().Contain("Reading is required to have Content");
         }
 
         [Fact]
@@ -220,7 +220,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.Commands
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            result.Message.Should().Be("Thất bại.");
+            result.Message.Should().Be("Failure.");
         }
         [Fact]
         public async Task Handle_Should_CreateDraftReading_And_AddOptions_When_Valid()
@@ -431,7 +431,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.Commands
 
             // Assert
             result.IsValid.Should().BeFalse();
-            result.Errors.Should().Contain(e => e.ErrorMessage == "Loại câu hỏi đang bị vô hiệu hóa.");
+            result.Errors.Should().Contain(e => e.ErrorMessage == "Question types are disabled.");
         }
 
         [Fact]
@@ -450,7 +450,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.Commands
 
             // Assert
             result.IsValid.Should().BeFalse();
-            result.Errors.Should().Contain(e => e.ErrorMessage.Contains("Listening bắt buộc phải có MediaUrl"));
+            result.Errors.Should().Contain(e => e.ErrorMessage.Contains("Listening requires MediaUrl"));
         }
 
         [Fact]
@@ -469,7 +469,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.Commands
 
             // Assert
             result.IsValid.Should().BeFalse();
-            result.Errors.Should().Contain(e => e.ErrorMessage.Contains("Reading bắt buộc phải có Content"));
+            result.Errors.Should().Contain(e => e.ErrorMessage.Contains("Reading is required to have Content"));
         }
 
         [Fact]

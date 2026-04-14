@@ -99,7 +99,7 @@ namespace Tokki.UnitTests.Features.FavoriteVocabulary.Commands
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().BeTrue();
             result.StatusCode.Should().Be(200);
-            result.Message.Should().Be("Từ vựng không tồn tại trong danh sách yêu thích.");
+            result.Message.Should().Be("Vocabulary does not exist in the favorites list.");
 
             _mockFavoriteRepo.Verify(x => x.HardDeleteAsync(DefaultUserId, command.VocabularyId, It.IsAny<CancellationToken>()), Times.Once);
         }
@@ -123,7 +123,7 @@ namespace Tokki.UnitTests.Features.FavoriteVocabulary.Commands
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().BeTrue();
             result.StatusCode.Should().Be(200);
-            result.Message.Should().Be("Gỡ khỏi danh sách yêu thích thành công.");
+            result.Message.Should().Be("Successfully removed from favorites list.");
 
             _mockFavoriteRepo.Verify(x => x.HardDeleteAsync(DefaultUserId, command.VocabularyId, It.IsAny<CancellationToken>()), Times.Once);
         }

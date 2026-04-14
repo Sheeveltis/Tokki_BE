@@ -3,13 +3,11 @@ using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
-using Tokki.Application.UseCases.Accounts.Commands.Login;
 using Tokki.Application.UseCases.Accounts.DTOs;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 
-namespace Tokki.Application.UseCases.Accounts.Queries.Login
-{
+namespace Tokki.Application.UseCases.Accounts.Commands.Login { 
     public class LoginCommandHandler : IRequestHandler<LoginCommand, OperationResult<LoginResponse>>
     {
         private readonly IAccountRepository _accountRepository;

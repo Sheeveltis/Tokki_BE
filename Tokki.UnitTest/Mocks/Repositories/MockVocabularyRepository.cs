@@ -60,7 +60,7 @@ namespace Tokki.UnitTest.Mocks.Repositories
                 VocabularyId = vocabId,
                 Text = "안녕하세요",
                 Pronunciation = "an-nyeong-ha-se-yo",
-                Definition = "Xin chào",
+                Definition = "Hello",
                 CreateBy = "USER-001",
                 Status = status,
                 VocabularyTopics = new List<VocabularyTopic>(),
@@ -74,7 +74,7 @@ namespace Tokki.UnitTest.Mocks.Repositories
             {
                 VocabularyId = vocabId,
                 Text = "감사합니다",
-                Definition = "Cảm ơn",
+                Definition = "Thank",
                 CreateBy = "STAFF-001",
                 Status = VocabularyStatus.PendingApproval,
                 VocabularyTopics = new List<VocabularyTopic>(),
@@ -88,7 +88,7 @@ namespace Tokki.UnitTest.Mocks.Repositories
             {
                 VocabularyId = vocabId,
                 Text = "미안합니다",
-                Definition = "Xin lỗi",
+                Definition = "Sorry",
                 CreateBy = "STAFF-001",
                 Status = VocabularyStatus.Draft,
                 VocabularyTopics = new List<VocabularyTopic>(),
@@ -102,7 +102,7 @@ namespace Tokki.UnitTest.Mocks.Repositories
             {
                 VocabularyId = vocabId,
                 Text = "반갑습니다",
-                Definition = "Rất vui được gặp bạn",
+                Definition = "Nice to meet you",
                 CreateBy = "USER-001",
                 Status = VocabularyStatus.Deleted,
                 VocabularyTopics = new List<VocabularyTopic>(),
@@ -118,7 +118,7 @@ namespace Tokki.UnitTest.Mocks.Repositories
             {
                 VocabularyId = vocabId,
                 Text = "안녕하세요",
-                Definition = "Xin chào",
+                Definition = "Hello",
                 CreateBy = "USER-001",
                 Status = status,
                 VocabularyTopics = new List<VocabularyTopic>

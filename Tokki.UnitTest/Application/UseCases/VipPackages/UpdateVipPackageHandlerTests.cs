@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -42,7 +42,7 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
             {
                 FunctionGroup = "Update Vip Package",
                 TestCaseID = "TC-VIP-UPD-01",
-                Description = "Update gói VIP với ID không tồn tại",
+                Description = "Update VIP package with ID that does not exist",
                 ExpectedResult = "Return Failure VipPackageNotFound",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
@@ -78,7 +78,7 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
             {
                 FunctionGroup = "Update Vip Package",
                 TestCaseID = "TC-VIP-UPD-02",
-                Description = "Update Price thành giá âm",
+                Description = "Update Price to negative price",
                 ExpectedResult = "Return Failure VipPackageInvalidPrice",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
@@ -125,15 +125,15 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
             {
                 FunctionGroup = "Update Vip Package",
                 TestCaseID = "TC-VIP-UPD-03",
-                Description = "Update gói VIP hợp lệ → các fields được cập nhật đúng",
-                ExpectedResult = "Return Success, Name/Price/DurationDays/IsActive được cập nhật",
+                Description = "Update valid VIP package → fields are updated correctly",
+                ExpectedResult = "Return Success, Name/Price/DurationDays/IsActive are updated",
                 StatusRound1 = "Passed",
                 TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string>
                 {
                     "Valid Package Id",
-                    "Valid Price và DurationDays",
+                    "Valid Price and DurationDays",
                     "IsActive = true",
                     "UpdateAsync called once",
                     "Return Success"
@@ -169,16 +169,102 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
             {
                 FunctionGroup = "Update Vip Package",
                 TestCaseID = "TC-VIP-UPD-04",
-                Description = "Update DurationDays = 0 (boundary) → bỏ qua, giữ nguyên giá trị cũ",
-                ExpectedResult = "Return Success, DurationDays không thay đổi",
+                Description = "Update DurationDays = 0 (boundary) → ignore, keep the old value",
+                ExpectedResult = "Return Success, DurationDays are unchanged",
                 StatusRound1 = "Passed",
                 TestCaseType = "B",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string>
                 {
-                    "DurationDays = 0 (boundary: <= 0 bị bỏ qua)",
-                    "DurationDays giữ nguyên",
+                    "DurationDays = 0 (boundary: <= 0 is ignored)",
+                    "DurationDays stays the same",
                     "Return Success"
+                }
+            });
+        }
+
+        // ── TC-05: Name = "string" (placeholder) → field bị bỏ qua ──────
+        [Fact]
+        public async Task Handle_PlaceholderName_ShouldNotUpdateName()
+        {
+            // Arrange
+            var existingPackage = MockVipPackageRepository.GetSamplePackage();
+            var originalName = existingPackage.Name;
+
+            var command = new UpdateVipPackageCommand
+            {
+                Id = "PKG-001",
+                Name = "string",     // swagger placeholder → ignored
+                Price = 99000,
+                DurationDays = 30
+            };
+
+            var handler = CreateHandler(
+                repo: MockVipPackageRepository.GetMock(returnedPackage: existingPackage));
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            existingPackage.Name.Should().Be(originalName); // không bị thay đổi
+
+            QACollector.LogTestCase("VipPackage - Update", new TestCaseDetail
+            {
+                FunctionGroup = "Update Vip Package",
+                TestCaseID = "TC-VIP-UPD-05",
+                Description = "Name = \"string\" (Swagger placeholder) → field is skipped, keep old value",
+                ExpectedResult = "IsSuccess=true, Name unchanged",
+                StatusRound1 = "Passed",
+                TestCaseType = "B",
+                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string>
+                {
+                    "Name = \"string\" (boundary: placeholder is ignored)",
+                    "Original name is preserved"
+                }
+            });
+        }
+
+        // ── TC-06: AddAsync không bao giờ được gọi khi update ────────────
+        [Fact]
+        public async Task Handle_ValidUpdate_ShouldNeverCallAddAsync()
+        {
+            // Arrange
+            var existingPackage = MockVipPackageRepository.GetSamplePackage();
+            var mockRepo = MockVipPackageRepository.GetMock(returnedPackage: existingPackage);
+
+            var command = new UpdateVipPackageCommand
+            {
+                Id = "PKG-001",
+                Name = "Updated Name",
+                Price = 99000,
+                DurationDays = 30
+            };
+
+            var handler = CreateHandler(repo: mockRepo);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            mockRepo.Verify(x => x.AddAsync(It.IsAny<Tokki.Domain.Entities.VipPackage>()), Times.Never);
+            mockRepo.Verify(x => x.UpdateAsync(It.IsAny<Tokki.Domain.Entities.VipPackage>()), Times.Once);
+
+            QACollector.LogTestCase("VipPackage - Update", new TestCaseDetail
+            {
+                FunctionGroup = "Update Vip Package",
+                TestCaseID = "TC-VIP-UPD-06",
+                Description = "Update flow must call UpdateAsync once and never AddAsync",
+                ExpectedResult = "UpdateAsync Times.Once, AddAsync Times.Never",
+                StatusRound1 = "Passed",
+                TestCaseType = "B",
+                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string>
+                {
+                    "Valid update command",
+                    "UpdateAsync = 1, AddAsync = 0"
                 }
             });
         }

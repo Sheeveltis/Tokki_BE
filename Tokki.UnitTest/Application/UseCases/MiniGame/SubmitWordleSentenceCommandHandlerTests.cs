@@ -33,7 +33,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             {
                 ContainsTargetWord = true,
                 TotalScore = score,
-                GeneralFeedback = "Câu tốt!",
+                GeneralFeedback = "Good sentence!",
                 Meaning = new CriterionDto { Score = 30, MaxScore = 40, Feedback = "OK" },
                 Grammar = new CriterionDto { Score = 25, MaxScore = 30, Feedback = "OK" },
                 Naturalness = new CriterionDto { Score = 25, MaxScore = 30, Feedback = "OK" }
@@ -54,7 +54,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             {
                 VocabularyId = "VOCAB-001",
                 Text = "학생",
-                Definition = "Học sinh"
+                Definition = "Pupil"
             };
 
             var dailyWordle = new DailyWordle
@@ -88,12 +88,12 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
 
             result.IsSuccess.Should().BeTrue();
             result.Data.TargetWord.Should().Be("학생");
-            result.Data.Meaning.Should().Be("Học sinh");
+            result.Data.Meaning.Should().Be("Pupil");
             result.Data.AiFeedback.Should().BeEquivalentTo(aiFeedback);
             result.Data.SubmissionId.Should().NotBeNullOrEmpty();
 
             mockAI.Verify(x => x.EvaluateSentenceAsync(
-                "저는 학생입니다.", "학생", "Học sinh"), Times.Once);
+                "저는 학생입니다.", "학생", "Pupil"), Times.Once);
             mockRepo.Verify(x => x.AddSubmissionAsync(
                 It.IsAny<WordleSentenceSubmission>(),
                 It.IsAny<CancellationToken>()), Times.Once);
@@ -102,7 +102,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             {
                 FunctionGroup = "Submit Wordle Sentence",
                 TestCaseID = "TC-WDL-SEN-01",
-                Description = "Submit sentence hợp lệ → AI evaluate, lưu submission, trả về response",
+                Description = "Submit valid sentence → AI evaluates, saves submission, returns response",
                 ExpectedResult = "Return Success, TargetWord = '학생', AI called once",
                 StatusRound1 = "Passed",
                 TestCaseType = "N",
@@ -110,7 +110,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
                 AppliedConditions = new List<string>
                 {
                     "Valid DailyWordleId",
-                    "Vocabulary tồn tại",
+                    "Vocabulary exists",
                     "AI EvaluateSentence called once",
                     "Submission saved",
                     "Return Success"
@@ -134,7 +134,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
                 Vocabulary = new Tokki.Domain.Entities.Vocabulary
                 {
                     Text = "안녕",
-                    Definition = "Xin chào"
+                    Definition = "Hello"
                 }
             };
 
@@ -172,14 +172,14 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             {
                 FunctionGroup = "Submit Wordle Sentence",
                 TestCaseID = "TC-WDL-SEN-02",
-                Description = "TotalScore = 85.6 → AiScore được làm tròn thành 86",
+                Description = "TotalScore = 85.6 → AiScore is rounded to 86",
                 ExpectedResult = "AiScore = 86 (Math.Round)",
                 StatusRound1 = "Passed",
                 TestCaseType = "B",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string>
                 {
-                    "TotalScore = 85.6 (boundary: làm tròn)",
+                    "TotalScore = 85.6 (boundary: rounded)",
                     "AiScore = Math.Round(85.6) = 86"
                 }
             });
@@ -211,7 +211,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             {
                 FunctionGroup = "Submit Wordle Sentence",
                 TestCaseID = "TC-WDL-SEN-03",
-                Description = "DailyWordleId không tồn tại → return 404",
+                Description = "DailyWordleId does not exist → return 404",
                 ExpectedResult = "Return 404 Failure",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
@@ -255,14 +255,14 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             {
                 FunctionGroup = "Submit Wordle Sentence",
                 TestCaseID = "TC-WDL-SEN-04",
-                Description = "DailyWordle tồn tại nhưng Vocabulary = null → return 404",
+                Description = "DailyWordle exists but Vocabulary = null → return 404",
                 ExpectedResult = "Return 404 Failure",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string>
                 {
-                    "DailyWordle tồn tại",
+                    "DailyWordle exists",
                     "DailyWordle.Vocabulary = null",
                     "Return 404"
                 }
@@ -312,8 +312,8 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             {
                 FunctionGroup = "Submit Wordle Sentence",
                 TestCaseID = "TC-WDL-SEN-05",
-                Description = "⚠️ AI service throw exception → exception propagate (handler không có try/catch)",
-                ExpectedResult = "Exception propagates — CÓ THỂ FAIL nếu handler có try/catch",
+                Description = "⚠️ AI service throws exception → exception propagates (handler has no try/catch)",
+                ExpectedResult = "Exception propagates — MAY FAIL if handler has try/catch",
                 StatusRound1 = "Failed",
                 TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -372,14 +372,14 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
 
             // ⚠️ Expect 85 nhưng thực tế = 84 → WILL FAIL để expose Banker's Rounding
             capturedSubmission!.AiScore.Should().Be(85,
-                because: "⚠️ WILL FAIL: Math.Round(84.5) = 84 do Banker's Rounding, không phải 85");
+                because: "⚠️ WILL FAIL: Math.Round(84.5) = 84 due to Banker's Rounding, not 85");
 
             QACollector.LogTestCase("Wordle - Submit Sentence", new TestCaseDetail
             {
                 FunctionGroup = "Submit Wordle Sentence",
                 TestCaseID = "TC-WDL-SEN-06",
-                Description = "⚠️ TotalScore=84.5 → expect 85 nhưng Banker's Rounding = 84",
-                ExpectedResult = "SẼ FAIL: Math.Round(84.5) = 84 không phải 85",
+                Description = "⚠️ TotalScore=84.5 → expect 85 but Banker's Rounding = 84",
+                ExpectedResult = "WILL FAIL: Math.Round(84.5) = 84 not 85",
                 StatusRound1 = "Failed",
                 TestCaseType = "B",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

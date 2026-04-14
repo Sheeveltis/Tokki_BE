@@ -53,7 +53,7 @@ namespace Tokki.UnitTests.Features.ExamTemplates.Commands
             var result = await _handler.Handle(command, CancellationToken.None);
 
             result.IsSuccess.Should().BeFalse();
-            result.Message.Should().Contain("trạng thái Nháp");
+            result.Message.Should().Contain("Draft status");
         }
     }
 }

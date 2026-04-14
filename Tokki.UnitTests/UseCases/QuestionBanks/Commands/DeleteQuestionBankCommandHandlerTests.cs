@@ -95,7 +95,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.Commands
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
-            result.Message.Should().Be("Xóa QuestionBank thành công"); // ✅ đúng message handler
+            result.Message.Should().Be("Successfully deleted QuestionBank"); // ✅ đúng message handler
 
             qb.Status.Should().Be(QuestionBankStatus.Deleted);
 

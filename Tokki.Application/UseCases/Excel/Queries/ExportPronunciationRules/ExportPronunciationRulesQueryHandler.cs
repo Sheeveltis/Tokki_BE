@@ -35,7 +35,7 @@ namespace Tokki.Application.UseCases.Excel.Queries.ExportPronunciationRules
             var response = new ExportFileDTO
             {
                 FileContent = excelBytes,
-                FileName = $"PronunciationRules_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
+                FileName = $"Tokki_PronunciationRule_{DateTime.Now:ddMMyyyy}.xlsx",
                 ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             };
 

@@ -122,7 +122,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.Commands
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
             result.Errors.Should().Contain(e => e.Code == AppErrors.ValidationFailed.Code);
-            result.Message.Should().Contain("rỗng hoặc không hợp lệ");
+            result.Message.Should().Contain("empty or invalid");
 
             _mockQuestionBankRepo.Verify(
                 x => x.GetByIdsWithDetailsAsync(It.IsAny<List<string>>(), It.IsAny<CancellationToken>()),
@@ -178,7 +178,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.Commands
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
             result.Errors.Should().Contain(e => e.Code == AppErrors.ValidationFailed.Code);
-            result.Message.Should().Contain("đã bị xóa");
+            result.Message.Should().Contain("has been deleted");
 
             _mockQuestionBankRepo.Verify(x => x.UpdateRangeAsync(It.IsAny<List<QuestionBank>>()), Times.Never);
             _mockQuestionBankRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
@@ -204,7 +204,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.Commands
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
             result.Errors.Should().Contain(e => e.Code == AppErrors.ValidationFailed.Code);
-            result.Message.Should().Contain("không ở trạng thái PendingApproval");
+            result.Message.Should().Contain("not in PendingApproval state");
 
             _mockQuestionBankRepo.Verify(x => x.UpdateRangeAsync(It.IsAny<List<QuestionBank>>()), Times.Never);
             _mockQuestionBankRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
@@ -321,7 +321,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.Commands
             _mockEmailService.Verify(
                 x => x.SendEmailAsync(
                     "u1@mail.com",
-                    It.Is<string>(s => s.Contains("Tokki") && s.Contains("phê duyệt")),
+                    It.Is<string>(s => s.Contains("Tokki") && s.Contains("approve")),
                     It.Is<string>(body => body.Contains("qb-01") && body.Contains("qb-02"))),
                 Times.Once);
 
@@ -345,7 +345,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.Commands
             var result = _validator.Validate(cmd);
 
             result.IsValid.Should().BeFalse();
-            result.Errors.Should().Contain(e => e.ErrorMessage == "Danh sách mã câu hỏi không được rỗng.");
+            result.Errors.Should().Contain(e => e.ErrorMessage == "The question code list cannot be empty.");
         }
 
         [Fact]
@@ -359,7 +359,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.Commands
             var result = _validator.Validate(cmd);
 
             result.IsValid.Should().BeFalse();
-            result.Errors.Should().Contain(e => e.ErrorMessage == "Danh sách mã câu hỏi không được rỗng.");
+            result.Errors.Should().Contain(e => e.ErrorMessage == "The question code list cannot be empty.");
         }
 
         [Fact]
@@ -373,7 +373,7 @@ namespace Tokki.UnitTests.Features.QuestionBanks.Commands
             var result = _validator.Validate(cmd);
 
             result.IsValid.Should().BeFalse();
-            result.Errors.Should().Contain(e => e.ErrorMessage == "Danh sách mã câu hỏi bị trùng.");
+            result.Errors.Should().Contain(e => e.ErrorMessage == "List of duplicate question codes.");
         }
 
         [Fact]

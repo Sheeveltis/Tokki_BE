@@ -129,8 +129,8 @@ namespace Tokki.UnitTests.Features.FavoriteVocabulary.Queries
 
             var items = new List<UserFavoriteVocabulary>
             {
-                BuildFavorite(DefaultUserId, "vocab-01", "hello", "xin chào"),
-                BuildFavorite(DefaultUserId, "vocab-02", "help", "giúp đỡ")
+                BuildFavorite(DefaultUserId, "vocab-01", "hello", "Hello"),
+                BuildFavorite(DefaultUserId, "vocab-02", "help", "help")
             };
 
             const int totalCount = 12;
@@ -151,7 +151,7 @@ namespace Tokki.UnitTests.Features.FavoriteVocabulary.Queries
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
-            result.Message.Should().Be("Lấy danh sách từ vựng yêu thích thành công");
+            result.Message.Should().Be("Get your favorite vocabulary list successfully");
 
             result.Data.Should().NotBeNull();
             result.Data.Items.Should().NotBeNull();
@@ -163,7 +163,7 @@ namespace Tokki.UnitTests.Features.FavoriteVocabulary.Queries
 
             result.Data.Items.First().VocabularyId.Should().Be("vocab-01");
             result.Data.Items.First().Text.Should().Be("hello");
-            result.Data.Items.First().Definition.Should().Be("xin chào");
+            result.Data.Items.First().Definition.Should().Be("Hello");
 
             _mockTopicRepo.Verify(x => x.GetByIdAsync(It.IsAny<string>()), Times.Never);
 

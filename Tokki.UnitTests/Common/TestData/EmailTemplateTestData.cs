@@ -14,9 +14,9 @@ namespace Tokki.UnitTests.Common.TestData
                 Type = EmailTemplateType.VipExpiringReminder,
                 Value = 7,
                 TargetGroup = UserTargetGroup.VipUsers,
-                Subject = "[Tokki] VIP sắp hết hạn",
-                Body = "<p>VIP của bạn sẽ hết hạn sau 7 ngày.</p>",
-                Description = "Nhắc VIP sắp hết hạn"
+                Subject = "[Tokki] VIP is about to expire",
+                Body = "<p>Your VIP will expire in 7 days.</p>",
+                Description = "Remind VIP is about to expire"
             };
         }
 

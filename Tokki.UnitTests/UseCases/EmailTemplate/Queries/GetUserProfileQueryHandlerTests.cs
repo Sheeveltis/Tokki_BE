@@ -41,7 +41,7 @@ namespace Tokki.UnitTests.Features.Accounts.Queries
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(404);
-            result.Message.Should().Be("Không tìm thấy người dùng.");
+            result.Message.Should().Be("User not found.");
 
             result.Errors.Should().NotBeNull();
             result.Errors.Should().Contain(e => e.Code == "User.NotFound");

@@ -87,8 +87,8 @@ namespace Tokki.UnitTests.UseCases.Accounts.Commands
             Assert.True(result.IsSuccess);
             Assert.Equal(200, result.StatusCode);
 
-            // DÒNG ĐÚNG: handler đang trả success với DATA là "Đổi mật khẩu thành công!"
-            Assert.Equal("Đổi mật khẩu thành công!", result.Data);
+            // DÒNG ĐÚNG: handler đang trả success với DATA là "Password changed successfully!"
+            Assert.Equal("Password changed successfully!", result.Data);
 
             // Message có thể null/empty tuỳ implementation OperationResult
             // Nếu bạn muốn kiểm tra thì chỉ nên check không bắt buộc:

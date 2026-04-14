@@ -10,6 +10,7 @@
     using Tokki.Application.UseCases.Vocabulary.Commands.RejectVocabulary;
     using Tokki.Application.UseCases.Vocabulary.Commands.SubmitVocabulariesForApproval;
     using Tokki.Application.UseCases.Vocabulary.Commands.UpdateVocabulary;
+    using Tokki.Application.UseCases.Vocabulary.Commands.AutoFindImages;
     using Tokki.Application.UseCases.Vocabulary.DTOs;
     using Tokki.Application.UseCases.Vocabulary.Queries; // Namespace chứa GetVocabularyByTextQuery (nếu có)
     using Tokki.Application.UseCases.Vocabulary.Queries.FlashCard;
@@ -392,6 +393,38 @@
                     return StatusCode(result.StatusCode, result);
                 }
 
+            /// <summary>
+            /// Tự động tìm ảnh cho từ vựng theo danh sách ID, upload lên Cloudinary và xuất kết quả ra file Excel
+            /// </summary>
+            /// <remarks>
+            /// Sample request:
+            /// 
+            ///     POST /api/vocabulary/auto-find-images
+            ///     {
+            ///         "vocabularyIds": ["vocab_001", "vocab_002", "vocab_003"],
+            ///         "overwriteExisting": false
+            ///     }
+            /// 
+            /// </remarks>
+            [HttpPost("auto-find-images")]
+            [Authorize(Roles = "Admin,Moderator,Staff")]
+            [ProducesResponseType(StatusCodes.Status200OK)]
+            [ProducesResponseType(StatusCodes.Status400BadRequest)]
+            public async Task<IActionResult> AutoFindVocabularyImages(
+                [FromBody] AutoFindVocabularyImagesCommand command)
+            {
+                var result = await _mediator.Send(command);
+
+                if (!result.IsSuccess)
+                {
+                    return StatusCode(result.StatusCode, result);
+                }
+
+                return File(
+                    result.Data.FileContent,
+                    result.Data.ContentType,
+                    result.Data.FileName);
+            }
 
     }
 

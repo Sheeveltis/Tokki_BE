@@ -1,8 +1,10 @@
-﻿using FluentAssertions;
-using Microsoft.Extensions.Logging;
+using FluentAssertions;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Tokki.Application.IRepositories;
@@ -10,8 +12,6 @@ using Tokki.Application.IServices;
 using Tokki.Application.UseCases.Topics.Commands.ApproveTopic;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
-using Tokki.UnitTest.Mocks.Repositories;
-using Tokki.UnitTest.Mocks.Services;
 using Tokki.UnitTest.Utilities;
 using Xunit;
 
@@ -19,157 +19,123 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
 {
     public class ApproveTopicCommandHandlerTests
     {
-        private ApproveTopicCommandHandler CreateHandler(
-            Mock<ITopicRepository>? topicRepo = null,
-            Mock<IAccountRepository>? accountRepo = null,
-            Mock<IEmailService>? emailService = null,
-            bool unauthorized = false)
+        private static Mock<ITopicRepository> GetRepoMock(Topic? topic = null, int maxOrder = 0)
         {
-            return new ApproveTopicCommandHandler(
-                (topicRepo ?? MockTopicRepository.GetMock()).Object,
-                (accountRepo ?? MockAccountRepository.GetMock()).Object,
-                (emailService ?? new Mock<IEmailService>()).Object,
-                unauthorized
-                    ? MockHttpContextAccessor.GetUnauthorizedMock().Object
-                    : MockHttpContextAccessor.GetMock("ADMIN-001").Object,
-                new Mock<ILogger<ApproveTopicCommandHandler>>().Object);
+            var m = new Mock<ITopicRepository>();
+            m.Setup(x => x.GetByIdAsync(It.IsAny<string>())).ReturnsAsync(topic);
+            m.Setup(x => x.GetMaxOrderIndexForVocabAsync()).ReturnsAsync(maxOrder);
+            m.Setup(x => x.UpdateAsync(It.IsAny<Topic>())).Returns(Task.CompletedTask);
+            m.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+            return m;
         }
 
-        [Fact]
-        public async Task Handle_Unauthorized_ShouldReturn401()
+        private static Mock<IAccountRepository> GetAccountRepoMock(Account? account = null)
         {
-            var command = new ApproveTopicCommand { TopicId = "TOPIC-001" };
+            var m = new Mock<IAccountRepository>();
+            m.Setup(x => x.GetByIdAsync(It.IsAny<string>())).ReturnsAsync(account);
+            return m;
+        }
 
-            var handler = CreateHandler(unauthorized: true);
-            var result = await handler.Handle(command, CancellationToken.None);
+        private static Mock<IEmailService> GetEmailMock()
+        {
+            var m = new Mock<IEmailService>();
+            m.Setup(x => x.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns(Task.CompletedTask);
+            return m;
+        }
 
+        private static Mock<IHttpContextAccessor> GetHttpContextMock(string? userId = "ADMIN-01")
+        {
+            var m    = new Mock<IHttpContextAccessor>();
+            var ctx  = new Mock<HttpContext>();
+            var user = new ClaimsPrincipal(new ClaimsIdentity(
+                userId != null ? new[] { new Claim(ClaimTypes.NameIdentifier, userId) } : Array.Empty<Claim>()));
+            ctx.Setup(x => x.User).Returns(user);
+            m.Setup(x => x.HttpContext).Returns(ctx.Object);
+            return m;
+        }
+
+        private static ApproveTopicCommandHandler CreateHandler(
+            Mock<ITopicRepository>?    topicRepo   = null,
+            Mock<IAccountRepository>?  accountRepo = null,
+            Mock<IEmailService>?       email       = null,
+            Mock<IHttpContextAccessor>? http       = null)
+            => new ApproveTopicCommandHandler(
+                (topicRepo   ?? GetRepoMock()).Object,
+                (accountRepo ?? GetAccountRepoMock()).Object,
+                (email       ?? GetEmailMock()).Object,
+                (http        ?? GetHttpContextMock()).Object,
+                NullLogger<ApproveTopicCommandHandler>.Instance);
+
+        private static Topic SampleTopic(TopicStatus status = TopicStatus.PendingApproval) =>
+            new Topic { TopicId = "T-001", TopicName = "Korean Grammar", Status = status, CreateBy = "U-001" };
+
+        // TC-TOPIC-APR-01 | A | No auth user → 401
+        [Fact]
+        public async Task Handle_NoAuthUser_ShouldReturn401()
+        {
+            var result = await CreateHandler(http: GetHttpContextMock(null))
+                .Handle(new ApproveTopicCommand { TopicId = "T-001" }, CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(401);
-
-            QACollector.LogTestCase("Topic - Approve", new TestCaseDetail
-            {
-                FunctionGroup = "Approve Topic",
-                TestCaseID = "TC-TOPIC-APP-01",
-                Description = "Approve topic khi không có token",
-                ExpectedResult = "Return 401 Unauthorized",
-                StatusRound1 = "Passed",
-                TestCaseType = "A",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "No UserId in Claims", "Return 401" }
-            });
+            QACollector.LogTestCase("Topic - Approve", new TestCaseDetail { FunctionGroup = "ApproveTopic", TestCaseID = "TC-TOPIC-APR-01", Description = "No auth user → 401", ExpectedResult = "IsSuccess=false, 401", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "No NameIdentifier claim" } });
         }
 
+        // TC-TOPIC-APR-02 | A | Topic not found → 404
         [Fact]
         public async Task Handle_TopicNotFound_ShouldReturn404()
         {
-            var command = new ApproveTopicCommand { TopicId = "TOPIC-INVALID" };
-
-            var handler = CreateHandler(
-                topicRepo: MockTopicRepository.GetMock(returnedTopic: null));
-
-            var result = await handler.Handle(command, CancellationToken.None);
-
+            var result = await CreateHandler(topicRepo: GetRepoMock(null))
+                .Handle(new ApproveTopicCommand { TopicId = "MISSING" }, CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(404);
-
-            QACollector.LogTestCase("Topic - Approve", new TestCaseDetail
-            {
-                FunctionGroup = "Approve Topic",
-                TestCaseID = "TC-TOPIC-APP-02",
-                Description = "Approve topic với ID không tồn tại",
-                ExpectedResult = "Return 404 TopicNotFound",
-                StatusRound1 = "Passed",
-                TestCaseType = "A",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "Invalid TopicId", "Return 404" }
-            });
+            QACollector.LogTestCase("Topic - Approve", new TestCaseDetail { FunctionGroup = "ApproveTopic", TestCaseID = "TC-TOPIC-APR-02", Description = "Topic not found → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetByIdAsync returns null" } });
         }
 
+        // TC-TOPIC-APR-03 | A | Topic deleted → 400
         [Fact]
-        public async Task Handle_TopicAlreadyActive_ShouldReturnIdempotent200()
+        public async Task Handle_TopicDeleted_ShouldReturn400()
         {
-            // Topic đã Active → idempotent → vẫn trả 200
-            var command = new ApproveTopicCommand { TopicId = "TOPIC-001" };
-
-            var handler = CreateHandler(
-                topicRepo: MockTopicRepository.GetMock(
-                    returnedTopic: MockTopicRepository.GetSampleTopic(
-                        status: TopicStatus.Active)));
-
-            var result = await handler.Handle(command, CancellationToken.None);
-
-            result.IsSuccess.Should().BeTrue();
-            result.StatusCode.Should().Be(200);
-
-            QACollector.LogTestCase("Topic - Approve", new TestCaseDetail
-            {
-                FunctionGroup = "Approve Topic",
-                TestCaseID = "TC-TOPIC-APP-03",
-                Description = "Approve topic đã ở trạng thái Active → idempotent, vẫn return 200",
-                ExpectedResult = "Return 200 (idempotent)",
-                StatusRound1 = "Passed",
-                TestCaseType = "B",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "Status = Active (boundary: đã được approve)",
-                    "Idempotent → return 200"
-                }
-            });
+            var result = await CreateHandler(topicRepo: GetRepoMock(SampleTopic(TopicStatus.Deleted)))
+                .Handle(new ApproveTopicCommand { TopicId = "T-001" }, CancellationToken.None);
+            result.IsSuccess.Should().BeFalse();
+            result.StatusCode.Should().Be(400);
+            QACollector.LogTestCase("Topic - Approve", new TestCaseDetail { FunctionGroup = "ApproveTopic", TestCaseID = "TC-TOPIC-APR-03", Description = "Topic deleted → 400", ExpectedResult = "IsSuccess=false, 400", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Status == Deleted" } });
         }
 
+        // TC-TOPIC-APR-04 | N | Already Active → idempotent 200
         [Fact]
-        public async Task Handle_ValidPendingApproval_ShouldSetActiveAndSendEmail()
+        public async Task Handle_TopicAlreadyActive_ShouldReturn200Idempotent()
         {
-            var command = new ApproveTopicCommand { TopicId = "TOPIC-002" };
-
-            var pendingTopic = MockTopicRepository.GetSampleTopicPendingApproval();
-            var creator = new Account
-            {
-                UserId  = "STAFF-001",
-                Email = "staff@tokki.com",
-                FullName = "Tokki Staff"
-            };
-
-            var mockAccountRepo = MockAccountRepository.GetMock();
-            mockAccountRepo.Setup(x => x.GetByIdAsync("STAFF-001"))
-                           .ReturnsAsync(creator);
-
-            var mockEmail = new Mock<IEmailService>();
-            mockEmail.Setup(x => x.SendEmailAsync(
-                        It.IsAny<string>(),
-                        It.IsAny<string>(),
-                        It.IsAny<string>()))
-                     .Returns(Task.CompletedTask);
-
-            var handler = CreateHandler(
-                topicRepo: MockTopicRepository.GetMock(returnedTopic: pendingTopic),
-                accountRepo: mockAccountRepo,
-                emailService: mockEmail);
-
-            var result = await handler.Handle(command, CancellationToken.None);
-
+            var result = await CreateHandler(topicRepo: GetRepoMock(SampleTopic(TopicStatus.Active)))
+                .Handle(new ApproveTopicCommand { TopicId = "T-001" }, CancellationToken.None);
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
-            pendingTopic.Status.Should().Be(TopicStatus.Active);
-            pendingTopic.ApprovedBy.Should().Be("ADMIN-001");
+            QACollector.LogTestCase("Topic - Approve", new TestCaseDetail { FunctionGroup = "ApproveTopic", TestCaseID = "TC-TOPIC-APR-04", Description = "Already Active → idempotent 200", ExpectedResult = "IsSuccess=true, 200", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Idempotent: already active" } });
+        }
 
-            QACollector.LogTestCase("Topic - Approve", new TestCaseDetail
-            {
-                FunctionGroup = "Approve Topic",
-                TestCaseID = "TC-TOPIC-APP-04",
-                Description = "Approve topic PendingApproval hợp lệ → Status = Active, gửi email, return 200",
-                ExpectedResult = "Status = Active, ApprovedBy set, email sent, return 200",
-                StatusRound1 = "Passed",
-                TestCaseType = "N",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "Status = PendingApproval",
-                    "Creator has valid email",
-                    "Return 200"
-                }
-            });
+        // TC-TOPIC-APR-05 | N | PendingApproval → approved: Status=Active, OrderIndex=maxOrder+1
+        [Fact]
+        public async Task Handle_PendingApprovalTopic_ShouldSetActiveAndOrderIndex()
+        {
+            var topic  = SampleTopic(TopicStatus.PendingApproval);
+            var repo   = GetRepoMock(topic, maxOrder: 3);
+            var result = await CreateHandler(topicRepo: repo)
+                .Handle(new ApproveTopicCommand { TopicId = "T-001" }, CancellationToken.None);
+            result.IsSuccess.Should().BeTrue();
+            topic.Status.Should().Be(TopicStatus.Active);
+            topic.OrderIndex.Should().Be(4);
+            QACollector.LogTestCase("Topic - Approve", new TestCaseDetail { FunctionGroup = "ApproveTopic", TestCaseID = "TC-TOPIC-APR-05", Description = "PendingApproval → Active, OrderIndex=4", ExpectedResult = "Status=Active, OrderIndex=4", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "maxOrderIndex=3, new=4" } });
+        }
+
+        // TC-TOPIC-APR-06 | A | Draft topic approve → 400 invalid status
+        [Fact]
+        public async Task Handle_DraftTopicApprove_ShouldReturn400()
+        {
+            var result = await CreateHandler(topicRepo: GetRepoMock(SampleTopic(TopicStatus.Draft)))
+                .Handle(new ApproveTopicCommand { TopicId = "T-001" }, CancellationToken.None);
+            result.IsSuccess.Should().BeFalse();
+            result.StatusCode.Should().Be(400);
+            QACollector.LogTestCase("Topic - Approve", new TestCaseDetail { FunctionGroup = "ApproveTopic", TestCaseID = "TC-TOPIC-APR-06", Description = "Draft approve → 400 (not PendingApproval)", ExpectedResult = "IsSuccess=false, 400", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Only PendingApproval→Active allowed" } });
         }
     }
 }

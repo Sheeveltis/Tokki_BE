@@ -41,7 +41,7 @@ namespace Tokki.UnitTests.Features.EmailCampaigns.Commands
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(404);
-            result.Message.Should().Be("Không tìm thấy campaign!");
+            result.Message.Should().Be("Campaign not found!");
 
             _mockRepo.Verify(x => x.SoftDeleteAsync(It.IsAny<EmailJob>()), Times.Never);
             _mockRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
@@ -74,7 +74,7 @@ namespace Tokki.UnitTests.Features.EmailCampaigns.Commands
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            result.Message.Should().Be("Chỉ được xóa campaign khi trạng thái là Pending (chưa gửi).");
+            result.Message.Should().Be("Campaigns can only be deleted when the status is Pending (not sent).");
 
             _mockRepo.Verify(x => x.SoftDeleteAsync(It.IsAny<EmailJob>()), Times.Never);
             _mockRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
@@ -118,7 +118,7 @@ namespace Tokki.UnitTests.Features.EmailCampaigns.Commands
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
             result.Data.Should().Be(command.JobId);
-            result.Message.Should().Be("Xóa campaign (soft delete) thành công!");
+            result.Message.Should().Be("Delete campaign (soft delete) successfully!");
 
             _mockRepo.Verify(x => x.GetByIdAsync(command.JobId), Times.Once);
             _mockRepo.Verify(x => x.SoftDeleteAsync(It.IsAny<EmailJob>()), Times.Once);

@@ -32,7 +32,7 @@ namespace Tokki.UnitTests.Features.Statistics.Queries
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().HaveCount(2); 
 
-            result.Data[0].Month.Should().Be("Tháng 1");
+            result.Data[0].Month.Should().Be("January");
             result.Data[0].Revenue.Should().Be(500000);
             result.Data[0].TotalOrders.Should().Be(50);
 

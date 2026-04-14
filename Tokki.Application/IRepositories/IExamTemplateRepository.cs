@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,7 +18,8 @@ namespace Tokki.Application.IRepositories
             string? searchTerm = null,
             ExamTemplateStatus? status = null,
             CancellationToken cancellationToken = default,
-            ExamType? type = null);
+            ExamType? type = null,
+            ExamCreatorFilter? creatorFilter = ExamCreatorFilter.All);
         Task<bool> IsNameExistsAsync(string name, string? excludeId = null);
         Task<bool> HasExamsAsync(string examTemplateId, CancellationToken cancellationToken = default);
         Task AddAsync(ExamTemplate examTemplate);

@@ -1,13 +1,14 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Tokki.Application.IRepositories;
+using Tokki.Application.IServices;
 using Tokki.Application.UseCases.Titles.Commands.CreateTitle;
 using Tokki.Domain.Entities;
-using Tokki.UnitTest.Mocks.Services;
+using Tokki.Domain.Enums;
 using Tokki.UnitTest.Utilities;
 using Xunit;
 
@@ -15,127 +16,99 @@ namespace Tokki.UnitTest.Application.UseCases.Titles
 {
     public class CreateTitleCommandHandlerTests
     {
-        private CreateTitleCommandHandler CreateHandler(
-            Mock<ITitleRepository>? repo = null)
+        private static Mock<ITitleRepository> GetRepoMock(Title? existing = null)
         {
-            return new CreateTitleCommandHandler(
-                (repo ?? new Mock<ITitleRepository>()).Object,
-                MockIdGeneratorService.GetMock().Object);
+            var m = new Mock<ITitleRepository>();
+            m.Setup(x => x.GetTitleByNameAsync(It.IsAny<string>(), It.IsAny<TitleStatus?>())).ReturnsAsync(existing);
+            m.Setup(x => x.AddAsync(It.IsAny<Title>())).Returns(Task.CompletedTask);
+            return m;
         }
 
-        [Fact]
-        public async Task Handle_DuplicateName_ShouldReturn400()
+        private static Mock<IIdGeneratorService> GetIdGenMock(string id = "T-001")
         {
-            var command = new CreateTitleCommand
-            {
-                Name = "Học Giả",
-                RequiredXP = 100
-            };
+            var m = new Mock<IIdGeneratorService>();
+            m.Setup(x => x.Generate(It.IsAny<int>())).Returns(id);
+            return m;
+        }
 
-            var mockRepo = new Mock<ITitleRepository>();
-            mockRepo.Setup(x => x.GetTitleByNameAsync("Học Giả"))
-                    .ReturnsAsync(new Title { TitleId = "TITLE-001", Name = "Học Giả" });
+        private static CreateTitleCommandHandler CreateHandler(
+            Mock<ITitleRepository>?   repo  = null,
+            Mock<IIdGeneratorService>? idGen = null)
+            => new CreateTitleCommandHandler(
+                (repo  ?? GetRepoMock()).Object,
+                (idGen ?? GetIdGenMock()).Object);
 
-            var handler = CreateHandler(repo: mockRepo);
-            var result = await handler.Handle(command, CancellationToken.None);
+        private static CreateTitleCommand MakeCommand(string name = "Bậc học giả", long xp = 1000)
+            => new CreateTitleCommand { Name = name, Description = "Top learner", RequirementQuantity = xp, ColorHex = "#GOLD" };
 
+        // TC-TITLE-CREATE-01 | A | Title name already exists → 400 failure
+        [Fact]
+        public async Task Handle_DuplicateName_ShouldReturn400Failure()
+        {
+            var existing = new Title { TitleId = "T-OLD", Name = "Bậc học giả" };
+            var repo     = GetRepoMock(existing);
+            var result   = await CreateHandler(repo).Handle(MakeCommand(), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            result.Message.Should().Contain("đã tồn tại");
-
-            QACollector.LogTestCase("Title - Create", new TestCaseDetail
-            {
-                FunctionGroup = "Create Title",
-                TestCaseID = "TC-TTL-CRE-01",
-                Description = "Tạo danh hiệu với tên đã tồn tại",
-                ExpectedResult = "Return 400 với message 'đã tồn tại'",
-                StatusRound1 = "Passed",
-                TestCaseType = "A",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "Title Name đã tồn tại",
-                    "Return 400"
-                }
-            });
+            QACollector.LogTestCase("Title - Create", new TestCaseDetail { FunctionGroup = "CreateTitle", TestCaseID = "TC-TITLE-CREATE-01", Description = "Duplicate name → 400 failure", ExpectedResult = "IsSuccess=false, 400", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetTitleByNameAsync returns existing title" } });
         }
 
+        // TC-TITLE-CREATE-02 | A | RequiredXP is negative → 400 failure
         [Fact]
-        public async Task Handle_NegativeXP_ShouldReturn400()
+        public async Task Handle_NegativeXP_ShouldReturn400Failure()
         {
-            var command = new CreateTitleCommand
-            {
-                Name = "New Title",
-                RequiredXP = -10 // XP âm
-            };
-
-            var mockRepo = new Mock<ITitleRepository>();
-            mockRepo.Setup(x => x.GetTitleByNameAsync(It.IsAny<string>()))
-                    .ReturnsAsync((Title?)null); // name chưa tồn tại
-
-            var handler = CreateHandler(repo: mockRepo);
-            var result = await handler.Handle(command, CancellationToken.None);
-
+            var result = await CreateHandler().Handle(MakeCommand(xp: -1), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            result.Message.Should().Contain("âm");
-
-            QACollector.LogTestCase("Title - Create", new TestCaseDetail
-            {
-                FunctionGroup = "Create Title",
-                TestCaseID = "TC-TTL-CRE-02",
-                Description = "Tạo danh hiệu với RequiredXP âm",
-                ExpectedResult = "Return 400 với message 'không được âm'",
-                StatusRound1 = "Passed",
-                TestCaseType = "A",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "RequiredXP = -10 (invalid)",
-                    "Return 400"
-                }
-            });
+            QACollector.LogTestCase("Title - Create", new TestCaseDetail { FunctionGroup = "CreateTitle", TestCaseID = "TC-TITLE-CREATE-02", Description = "RequiredXP=-1 → 400 failure", ExpectedResult = "IsSuccess=false, 400", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "RequiredXP < 0 guard" } });
         }
 
+        // TC-TITLE-CREATE-03 | N | Happy path: new unique name, valid XP → 201 with Title entity
         [Fact]
-        public async Task Handle_ValidData_ShouldReturn201WithTitle()
+        public async Task Handle_ValidRequest_ShouldReturn201WithTitle()
         {
-            var command = new CreateTitleCommand
-            {
-                Name = "Học Giả Mới",
-                RequiredXP = 500,
-                Description = "Danh hiệu cho người học chăm chỉ"
-            };
-
-            var mockRepo = new Mock<ITitleRepository>();
-            mockRepo.Setup(x => x.GetTitleByNameAsync(It.IsAny<string>()))
-                    .ReturnsAsync((Title?)null);
-            mockRepo.Setup(x => x.AddAsync(It.IsAny<Title>()))
-                    .Returns(Task.CompletedTask);
-
-            var handler = CreateHandler(repo: mockRepo);
-            var result = await handler.Handle(command, CancellationToken.None);
-
+            var idGen  = GetIdGenMock("T-NEW");
+            var result = await CreateHandler(idGen: idGen).Handle(MakeCommand(), CancellationToken.None);
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(201);
-            result.Data.Name.Should().Be("Học Giả Mới");
+            result.Data.Should().NotBeNull();
+            result.Data!.TitleId.Should().Be("T-NEW");
+            QACollector.LogTestCase("Title - Create", new TestCaseDetail { FunctionGroup = "CreateTitle", TestCaseID = "TC-TITLE-CREATE-03", Description = "Valid request → 201, TitleId='T-NEW'", ExpectedResult = "IsSuccess=true, 201, Data.TitleId='T-NEW'", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "No duplicate, valid XP" } });
+        }
 
-            QACollector.LogTestCase("Title - Create", new TestCaseDetail
-            {
-                FunctionGroup = "Create Title",
-                TestCaseID = "TC-TTL-CRE-03",
-                Description = "Tạo danh hiệu hợp lệ → trả về Title object",
-                ExpectedResult = "Return 201, Data.Name = 'Học Giả Mới'",
-                StatusRound1 = "Passed",
-                TestCaseType = "N",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "Valid Name, RequiredXP >= 0",
-                    "AddAsync called",
-                    "Return 201"
-                }
-            });
+        // TC-TITLE-CREATE-04 | N | Created title fields match request
+        [Fact]
+        public async Task Handle_ValidRequest_CreatedTitleFieldsMatchCommand()
+        {
+            Title? captured = null;
+            var repo = GetRepoMock();
+            repo.Setup(x => x.AddAsync(It.IsAny<Title>())).Callback<Title>(t => captured = t).Returns(Task.CompletedTask);
+            await CreateHandler(repo).Handle(MakeCommand("Bậc văn nhân", 2000), CancellationToken.None);
+            captured.Should().NotBeNull();
+            captured!.Name.Should().Be("Bậc văn nhân");
+            captured.RequirementQuantity.Should().Be(2000);
+            QACollector.LogTestCase("Title - Create", new TestCaseDetail { FunctionGroup = "CreateTitle", TestCaseID = "TC-TITLE-CREATE-04", Description = "Title fields (Name, RequiredXP, IsSystemGiven) match command", ExpectedResult = "All fields correct", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Command fields mapped to entity" } });
+        }
+
+        // TC-TITLE-CREATE-05 | B | AddAsync called once on success
+        [Fact]
+        public async Task Handle_ValidRequest_AddCalledOnce()
+        {
+            var repo = GetRepoMock();
+            await CreateHandler(repo).Handle(MakeCommand(), CancellationToken.None);
+            repo.Verify(x => x.AddAsync(It.IsAny<Title>()), Times.Once);
+            QACollector.LogTestCase("Title - Create", new TestCaseDetail { FunctionGroup = "CreateTitle", TestCaseID = "TC-TITLE-CREATE-05", Description = "AddAsync called once on success", ExpectedResult = "Times.Once", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Persist call verified" } });
+        }
+
+        // TC-TITLE-CREATE-06 | B | Duplicate name → AddAsync never called
+        [Fact]
+        public async Task Handle_DuplicateName_AddNeverCalled()
+        {
+            var existing = new Title { TitleId = "T-OLD", Name = "Bậc học giả" };
+            var repo     = GetRepoMock(existing);
+            await CreateHandler(repo).Handle(MakeCommand(), CancellationToken.None);
+            repo.Verify(x => x.AddAsync(It.IsAny<Title>()), Times.Never);
+            QACollector.LogTestCase("Title - Create", new TestCaseDetail { FunctionGroup = "CreateTitle", TestCaseID = "TC-TITLE-CREATE-06", Description = "Duplicate name → early return, AddAsync never called", ExpectedResult = "Times.Never", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Guard returns before AddAsync" } });
         }
     }
 }

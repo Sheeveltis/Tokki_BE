@@ -1,16 +1,16 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Application.UseCases.Otps.Commands.ForgotPassword;
+using Tokki.Application.Common.Models;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
-using Tokki.UnitTest.Mocks.Repositories;
-using Tokki.UnitTest.Mocks.Services;
 using Tokki.UnitTest.Utilities;
 using Xunit;
 
@@ -18,136 +18,184 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 {
     public class SendForgotPasswordOtpCommandHandlerTests
     {
-        private SendForgotPasswordOtpCommandHandler CreateHandler(
-            Mock<IAccountRepository>? accountRepo = null,
-            Mock<IOtpRepository>? otpRepo = null,
-            Mock<IEmailService>? emailService = null,
-            Mock<ISystemConfigRepository>? configRepo = null)
+        private static SendForgotPasswordOtpCommandHandler CreateHandler(
+            Mock<IAccountRepository>? account = null,
+            Mock<IRedisService>? redis = null,
+            Mock<IEmailService>? email = null,
+            Mock<ISystemConfigRepository>? sysConfig = null)
         {
+            var mockConfig = sysConfig ?? BuildDefaultConfig("300");
             return new SendForgotPasswordOtpCommandHandler(
-                (accountRepo ?? MockAccountRepository.GetMock()).Object,
-                (otpRepo ?? MockOtpRepository.GetMock()).Object,
-                (emailService ?? new Mock<IEmailService>()).Object,
-                (configRepo ?? MockSystemConfigRepository.GetMock()).Object,
-                MockIdGeneratorService.GetMock().Object);
+                (account ?? new Mock<IAccountRepository>()).Object,
+                (redis   ?? new Mock<IRedisService>()).Object,
+                (email   ?? new Mock<IEmailService>()).Object,
+                mockConfig.Object);
         }
 
-        [Fact]
-        public async Task Handle_UserNotFound_ShouldReturnFailure()
+        private static Mock<ISystemConfigRepository> BuildDefaultConfig(string value)
         {
-            var command = new SendForgotPasswordOtpCommand { Email = "notfound@tokki.com" };
+            var m = new Mock<ISystemConfigRepository>();
+            m.Setup(x => x.GetValueByKeyAsync("OTP_EXPIRATION_SECONDS")).ReturnsAsync(value);
+            return m;
+        }
 
-            var mockAccountRepo = MockAccountRepository.GetMock();
-            mockAccountRepo.Setup(x => x.GetByEmailAsync(It.IsAny<string>()))
-                           .ReturnsAsync((Account?)null);
+        private static Account ActiveUser(string email) => new()
+        {
+            UserId = "USER-001",
+            Email  = email,
+            Status = AccountStatus.Active
+        };
 
-            var handler = CreateHandler(accountRepo: mockAccountRepo);
-            var result = await handler.Handle(command, CancellationToken.None);
+        // TC-01: User not found → UserNotFound failure
+        [Fact]
+        public async Task Handle_UserNotFound_ShouldReturnUserNotFound()
+        {
+            var account = new Mock<IAccountRepository>();
+            account.Setup(x => x.GetByEmailAsync("notfound@test.com")).ReturnsAsync((Account?)null);
+
+            var result = await CreateHandler(account: account)
+                .Handle(new SendForgotPasswordOtpCommand { Email = "notfound@test.com" }, CancellationToken.None);
 
             result.IsSuccess.Should().BeFalse();
 
-            QACollector.LogTestCase("OTP - Forgot Password", new TestCaseDetail
+            QACollector.LogTestCase("OTP - Send Forgot Password", new TestCaseDetail
             {
-                FunctionGroup = "Send Forgot Password OTP",
-                TestCaseID = "TC-OTP-FPW-01",
-                Description = "Gửi OTP quên mật khẩu với email không tồn tại",
-                ExpectedResult = "Return Failure UserNotFound",
-                StatusRound1 = "Passed",
-                TestCaseType = "A",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "Email không tồn tại trong DB",
-                    "Return Failure"
-                }
+                FunctionGroup = "SendForgotPasswordOtp", TestCaseID = "TC-OTP-FPW-01",
+                Description = "Email not registered → UserNotFound failure",
+                ExpectedResult = "Return Failure UserNotFound", StatusRound1 = "Passed",
+                TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "user == null => UserNotFound" }
             });
         }
 
+        // TC-02: User is Banned → AccountBanned failure
         [Fact]
-        public async Task Handle_UserBanned_ShouldReturnFailure()
+        public async Task Handle_UserBanned_ShouldReturnAccountBanned()
         {
-            var command = new SendForgotPasswordOtpCommand { Email = "banned@tokki.com" };
+            var account = new Mock<IAccountRepository>();
+            account.Setup(x => x.GetByEmailAsync("banned@test.com"))
+                   .ReturnsAsync(new Account { Email = "banned@test.com", Status = AccountStatus.Banned });
 
-            var mockAccountRepo = MockAccountRepository.GetMock();
-            mockAccountRepo.Setup(x => x.GetByEmailAsync(It.IsAny<string>()))
-                           .ReturnsAsync(new Account
-                           {
-                               Email = "banned@tokki.com",
-                               Status = AccountStatus.Banned
-                           });
-
-            var handler = CreateHandler(accountRepo: mockAccountRepo);
-            var result = await handler.Handle(command, CancellationToken.None);
+            var result = await CreateHandler(account: account)
+                .Handle(new SendForgotPasswordOtpCommand { Email = "banned@test.com" }, CancellationToken.None);
 
             result.IsSuccess.Should().BeFalse();
 
-            QACollector.LogTestCase("OTP - Forgot Password", new TestCaseDetail
+            QACollector.LogTestCase("OTP - Send Forgot Password", new TestCaseDetail
             {
-                FunctionGroup = "Send Forgot Password OTP",
-                TestCaseID = "TC-OTP-FPW-02",
-                Description = "Gửi OTP cho tài khoản bị banned",
-                ExpectedResult = "Return Failure AccountBanned",
-                StatusRound1 = "Passed",
-                TestCaseType = "A",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "Account.Status = Banned",
-                    "Return Failure"
-                }
+                FunctionGroup = "SendForgotPasswordOtp", TestCaseID = "TC-OTP-FPW-02",
+                Description = "User is Banned → AccountBanned failure",
+                ExpectedResult = "Return Failure AccountBanned", StatusRound1 = "Passed",
+                TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "user.Status == Banned => AccountBanned" }
             });
         }
 
+        // TC-03: Valid user → OTP saved to Redis with correct key
         [Fact]
-        public async Task Handle_ValidUser_ShouldSendOtpEmailAndReturnSuccess()
+        public async Task Handle_ValidUser_ShouldSaveOtpToRedis()
         {
-            var command = new SendForgotPasswordOtpCommand { Email = "user@tokki.com" };
+            var account = new Mock<IAccountRepository>();
+            account.Setup(x => x.GetByEmailAsync("user@test.com")).ReturnsAsync(ActiveUser("user@test.com"));
 
-            var mockAccountRepo = MockAccountRepository.GetMock();
-            mockAccountRepo.Setup(x => x.GetByEmailAsync(It.IsAny<string>()))
-                           .ReturnsAsync(new Account
-                           {
-                               Email = "user@tokki.com",
-                               Status = AccountStatus.Active
-                           });
+            var redis = new Mock<IRedisService>();
 
-            var mockEmail = new Mock<IEmailService>();
-            mockEmail.Setup(x => x.SendEmailAsync(
-                        It.IsAny<string>(),
-                        It.IsAny<string>(),
-                        It.IsAny<string>()))
-                     .Returns(Task.CompletedTask);
+            await CreateHandler(account: account, redis: redis)
+                .Handle(new SendForgotPasswordOtpCommand { Email = "user@test.com" }, CancellationToken.None);
 
-            var handler = CreateHandler(
-                accountRepo: mockAccountRepo,
-                emailService: mockEmail);
+            redis.Verify(x => x.SetAsync(
+                "OTP:ResetPassword:user@test.com",
+                It.Is<string>(v => v.Contains("OtpCode")),
+                It.IsAny<TimeSpan>()), Times.Once);
 
-            var result = await handler.Handle(command, CancellationToken.None);
+            QACollector.LogTestCase("OTP - Send Forgot Password", new TestCaseDetail
+            {
+                FunctionGroup = "SendForgotPasswordOtp", TestCaseID = "TC-OTP-FPW-03",
+                Description = "Valid user → OTP saved to Redis key 'OTP:ResetPassword:{email}'",
+                ExpectedResult = "SetAsync called with correct key", StatusRound1 = "Passed",
+                TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "valid user => SetAsync('OTP:ResetPassword:{email}')" }
+            });
+        }
+
+        // TC-04: Valid user → email sent, return 200
+        [Fact]
+        public async Task Handle_ValidUser_ShouldSendEmailAndReturn200()
+        {
+            var account = new Mock<IAccountRepository>();
+            account.Setup(x => x.GetByEmailAsync("user@test.com")).ReturnsAsync(ActiveUser("user@test.com"));
+
+            var email = new Mock<IEmailService>();
+
+            var result = await CreateHandler(account: account, email: email)
+                .Handle(new SendForgotPasswordOtpCommand { Email = "user@test.com" }, CancellationToken.None);
 
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
+            email.Verify(x => x.SendEmailAsync("user@test.com", It.IsAny<string>(), It.IsAny<string>()), Times.Once);
 
-            mockEmail.Verify(x => x.SendEmailAsync(
-                "user@tokki.com",
-                It.IsAny<string>(),
-                It.IsAny<string>()), Times.Once);
-
-            QACollector.LogTestCase("OTP - Forgot Password", new TestCaseDetail
+            QACollector.LogTestCase("OTP - Send Forgot Password", new TestCaseDetail
             {
-                FunctionGroup = "Send Forgot Password OTP",
-                TestCaseID = "TC-OTP-FPW-03",
-                Description = "Gửi OTP quên mật khẩu hợp lệ → tạo OTP và gửi email",
-                ExpectedResult = "Return 200, email sent once",
-                StatusRound1 = "Passed",
-                TestCaseType = "N",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "Valid email, account Active",
-                    "OTP created",
-                    "Email sent once",
-                    "Return 200"
-                }
+                FunctionGroup = "SendForgotPasswordOtp", TestCaseID = "TC-OTP-FPW-04",
+                Description = "Valid user → SendEmailAsync called, Return 200",
+                ExpectedResult = "Return 200, SendEmailAsync once", StatusRound1 = "Passed",
+                TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "valid user => SendEmailAsync => 200" }
+            });
+        }
+
+        // TC-05: Custom TTL from config used
+        [Fact]
+        public async Task Handle_CustomLifetime_ShouldUseTtlFromConfig()
+        {
+            var account = new Mock<IAccountRepository>();
+            account.Setup(x => x.GetByEmailAsync("user@test.com")).ReturnsAsync(ActiveUser("user@test.com"));
+
+            var redis = new Mock<IRedisService>();
+            var sysConfig = BuildDefaultConfig("600");
+
+            await CreateHandler(account: account, redis: redis, sysConfig: sysConfig)
+                .Handle(new SendForgotPasswordOtpCommand { Email = "user@test.com" }, CancellationToken.None);
+
+            redis.Verify(x => x.SetAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                TimeSpan.FromSeconds(600)), Times.Once);
+
+            QACollector.LogTestCase("OTP - Send Forgot Password", new TestCaseDetail
+            {
+                FunctionGroup = "SendForgotPasswordOtp", TestCaseID = "TC-OTP-FPW-05",
+                Description = "OTP_EXPIRATION_SECONDS=600 → SetAsync with TTL=600s",
+                ExpectedResult = "SetAsync(TTL=600s)", StatusRound1 = "Passed",
+                TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "configValue='600' => TimeSpan.FromSeconds(600)" }
+            });
+        }
+
+        // TC-06: Banned user → Redis never called
+        [Fact]
+        public async Task Handle_BannedUser_ShouldNotCallRedisOrEmail()
+        {
+            var account = new Mock<IAccountRepository>();
+            account.Setup(x => x.GetByEmailAsync("banned@test.com"))
+                   .ReturnsAsync(new Account { Email = "banned@test.com", Status = AccountStatus.Banned });
+
+            var redis = new Mock<IRedisService>();
+            var email = new Mock<IEmailService>();
+
+            await CreateHandler(account: account, redis: redis, email: email)
+                .Handle(new SendForgotPasswordOtpCommand { Email = "banned@test.com" }, CancellationToken.None);
+
+            redis.Verify(x => x.SetAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<TimeSpan>()), Times.Never);
+            email.Verify(x => x.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+
+            QACollector.LogTestCase("OTP - Send Forgot Password", new TestCaseDetail
+            {
+                FunctionGroup = "SendForgotPasswordOtp", TestCaseID = "TC-OTP-FPW-06",
+                Description = "Banned user → early return, Redis and Email never called",
+                ExpectedResult = "Redis.SetAsync Times.Never, SendEmailAsync Times.Never", StatusRound1 = "Passed",
+                TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "Banned => early return => no side effects" }
             });
         }
     }

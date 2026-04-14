@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Application.UseCases.Vocabulary.Commands.CreateVocabularyByStaff;
+using Tokki.Application.UseCases.Vocabulary.DTOs;
 using Tokki.Domain.Entities;
 using Tokki.UnitTest.Mocks.Repositories;
 using Tokki.UnitTest.Mocks.Services;
@@ -36,15 +37,81 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
                 new Mock<ILogger<CreateVocabularyByStaffCommandHandler>>().Object);
         }
 
+        // ═══════════════════════════════════════════════════════════
+        // TC-VOCAB-STA-01 | A | No token → 401
+        // ═══════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_Unauthorized_ShouldReturn401()
+        {
+            // Arrange
+            var command = new CreateVocabularyByStaffCommand { Text = "직원 단어", Definition = "Staff word" };
+            var handler = CreateHandler(unauthorized: true);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.StatusCode.Should().Be(401);
+
+            // Excel Log
+            QACollector.LogTestCase("Vocabulary - Create By Staff", new TestCaseDetail
+            {
+                FunctionGroup     = "Create Vocabulary By Staff",
+                TestCaseID        = "TC-VOCAB-STA-01",
+                Description       = "Staff creates vocabulary without authentication token",
+                ExpectedResult    = "Return 401 Unauthorized",
+                StatusRound1      = "Passed",
+                TestCaseType      = "A",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "No UserId in Claims", "Return 401" }
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // TC-VOCAB-STA-02 | A | Duplicate vocab → 400
+        // ═══════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_DuplicateVocab_ShouldReturn400()
+        {
+            // Arrange
+            var command = new CreateVocabularyByStaffCommand { Text = "안녕하세요", Definition = "Hello" };
+            var mockVocabRepo = MockVocabularyRepository.GetMock(
+                returnedByText: new List<Tokki.Domain.Entities.Vocabulary>
+                {
+                    MockVocabularyRepository.GetSampleVocabulary()
+                });
+            var handler = CreateHandler(vocabRepo: mockVocabRepo);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.StatusCode.Should().Be(400);
+
+            // Excel Log
+            QACollector.LogTestCase("Vocabulary - Create By Staff", new TestCaseDetail
+            {
+                FunctionGroup     = "Create Vocabulary By Staff",
+                TestCaseID        = "TC-VOCAB-STA-02",
+                Description       = "Staff creates vocabulary with Text + Definition that already exists",
+                ExpectedResult    = "Return 400 Vocabulary.Duplicated",
+                StatusRound1      = "Passed",
+                TestCaseType      = "A",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "Text + Definition duplicate", "Return 400" }
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // TC-VOCAB-STA-03 | N | Valid data → Draft status → 201
+        // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidData_ShouldReturnDraftStatus201()
         {
-            var command = new CreateVocabularyByStaffCommand
-            {
-                Text = "직원 단어",
-                Definition = "Từ của nhân viên"
-            };
-
+            // Arrange
+            var command = new CreateVocabularyByStaffCommand { Text = "직원 단어", Definition = "From the staff" };
             var mockVocabRepo = MockVocabularyRepository.GetMock(
                 returnedByText: new List<Tokki.Domain.Entities.Vocabulary>());
 
@@ -53,10 +120,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
                    .ReturnsAsync(new byte[] { 0x01 });
 
             var mockCloudinary = new Mock<ICloudinaryService>();
-            mockCloudinary.Setup(x => x.UploadAudioAsync(
-                        It.IsAny<byte[]>(),
-                        It.IsAny<string>(),
-                        It.IsAny<string>()))
+            mockCloudinary.Setup(x => x.UploadAudioAsync(It.IsAny<byte[]>(), It.IsAny<string>(), It.IsAny<string>()))
                           .ReturnsAsync("https://cloudinary.com/audio/staff.mp3");
 
             var handler = CreateHandler(
@@ -64,66 +128,141 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
                 ttsService: mockTts,
                 cloudinaryService: mockCloudinary);
 
+            // Act
             var result = await handler.Handle(command, CancellationToken.None);
 
+            // Assert
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(201);
-            result.Message.Should().Contain("chờ phê duyệt");
+            result.Message.Should().Contain("awaiting approval");
 
+            // Excel Log
             QACollector.LogTestCase("Vocabulary - Create By Staff", new TestCaseDetail
             {
-                FunctionGroup = "Create Vocabulary By Staff",
-                TestCaseID = "TC-VOCAB-STA-01",
-                Description = "Staff tạo vocabulary hợp lệ → Status = Draft, message chờ phê duyệt",
-                ExpectedResult = "Return 201, message chứa 'chờ phê duyệt'",
-                StatusRound1 = "Passed",
-                TestCaseType = "N",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "Staff role",
-                    "No duplicate",
-                    "Status = Draft",
-                    "Return 201"
-                }
+                FunctionGroup     = "Create Vocabulary By Staff",
+                TestCaseID        = "TC-VOCAB-STA-03",
+                Description       = "Staff creates valid vocabulary → Status = Draft, message awaiting approval",
+                ExpectedResult    = "Return 201, message contains 'awaiting approval'",
+                StatusRound1      = "Passed",
+                TestCaseType      = "N",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "Staff role", "No duplicate", "Status = Draft", "Return 201" }
             });
         }
 
+        // ═══════════════════════════════════════════════════════════
+        // TC-VOCAB-STA-04 | A | TTS fails → 201 with null AudioURL
+        // ═══════════════════════════════════════════════════════════
         [Fact]
-        public async Task Handle_DuplicateVocab_ShouldReturn400()
+        public async Task Handle_TtsFails_ShouldStillReturn201WithNullAudio()
         {
-            var command = new CreateVocabularyByStaffCommand
-            {
-                Text = "안녕하세요",
-                Definition = "Xin chào"
-            };
-
+            // Arrange
+            var command = new CreateVocabularyByStaffCommand { Text = "직원 단어", Definition = "Staff word" };
             var mockVocabRepo = MockVocabularyRepository.GetMock(
-                returnedByText: new List<Tokki.Domain.Entities.Vocabulary>
-                {
-                    MockVocabularyRepository.GetSampleVocabulary()
-                });
+                returnedByText: new List<Tokki.Domain.Entities.Vocabulary>());
 
-            var handler = CreateHandler(vocabRepo: mockVocabRepo);
+            var mockTts = new Mock<ISpeechService>();
+            mockTts.Setup(x => x.SynthesizeKoreanAudioAsync(It.IsAny<string>()))
+                   .ThrowsAsync(new Exception("TTS unavailable"));
+
+            var handler = CreateHandler(vocabRepo: mockVocabRepo, ttsService: mockTts);
+
+            // Act
             var result = await handler.Handle(command, CancellationToken.None);
 
-            result.IsSuccess.Should().BeFalse();
-            result.StatusCode.Should().Be(400);
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.StatusCode.Should().Be(201);
+            result.Data.AudioURL.Should().BeNull();
 
+            // Excel Log
             QACollector.LogTestCase("Vocabulary - Create By Staff", new TestCaseDetail
             {
-                FunctionGroup = "Create Vocabulary By Staff",
-                TestCaseID = "TC-VOCAB-STA-02",
-                Description = "Staff tạo vocabulary trùng Text + Definition đã tồn tại",
-                ExpectedResult = "Return 400 Vocabulary.Duplicated",
-                StatusRound1 = "Passed",
-                TestCaseType = "A",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
+                FunctionGroup     = "Create Vocabulary By Staff",
+                TestCaseID        = "TC-VOCAB-STA-04",
+                Description       = "TTS service error → vocab still created with AudioURL = null",
+                ExpectedResult    = "Return 201, AudioURL = null",
+                StatusRound1      = "Passed",
+                TestCaseType      = "A",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "TTS throws exception", "Vocab created without audio", "Return 201" }
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // TC-VOCAB-STA-05 | N | Valid data with examples → 201 with examples
+        // ═══════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_ValidDataWithExamples_ShouldReturn201WithExamples()
+        {
+            // Arrange
+            var command = new CreateVocabularyByStaffCommand
+            {
+                Text       = "직원 단어",
+                Definition = "Staff word",
+                Examples   = new List<VocabularyExampleDto>
                 {
-                    "Text + Definition duplicate",
-                    "Return 400"
+                    new VocabularyExampleDto { Sentence = "직원이 열심히 일해요.", Translation = "The employee works hard." }
                 }
+            };
+            var mockVocabRepo = MockVocabularyRepository.GetMock(
+                returnedByText: new List<Tokki.Domain.Entities.Vocabulary>());
+            var handler = CreateHandler(vocabRepo: mockVocabRepo);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.StatusCode.Should().Be(201);
+
+            // Excel Log
+            QACollector.LogTestCase("Vocabulary - Create By Staff", new TestCaseDetail
+            {
+                FunctionGroup     = "Create Vocabulary By Staff",
+                TestCaseID        = "TC-VOCAB-STA-05",
+                Description       = "Staff creates valid vocabulary with 1 example sentence → successful",
+                ExpectedResult    = "Return 201, vocab and example created",
+                StatusRound1      = "Passed",
+                TestCaseType      = "N",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "Staff role", "1 valid example", "Return 201" }
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // TC-VOCAB-STA-06 | A | Repository throws → 500
+        // ═══════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_RepositoryThrows_ShouldReturn500()
+        {
+            // Arrange
+            var command = new CreateVocabularyByStaffCommand { Text = "단어", Definition = "Word" };
+            var mockVocabRepo = MockVocabularyRepository.GetMock(
+                returnedByText: new List<Tokki.Domain.Entities.Vocabulary>());
+            mockVocabRepo.Setup(x => x.AddAsync(It.IsAny<Tokki.Domain.Entities.Vocabulary>()))
+                         .ThrowsAsync(new Exception("DB insert failed"));
+
+            var handler = CreateHandler(vocabRepo: mockVocabRepo);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.StatusCode.Should().Be(500);
+
+            // Excel Log
+            QACollector.LogTestCase("Vocabulary - Create By Staff", new TestCaseDetail
+            {
+                FunctionGroup     = "Create Vocabulary By Staff",
+                TestCaseID        = "TC-VOCAB-STA-06",
+                Description       = "Repository.AddAsync throws exception → rollback → 500",
+                ExpectedResult    = "Transaction rollback, return 500",
+                StatusRound1      = "Passed",
+                TestCaseType      = "A",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "AddAsync throws DB exception", "Transaction rollback", "Return 500" }
             });
         }
     }

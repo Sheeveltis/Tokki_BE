@@ -1,15 +1,15 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Application.UseCases.Otps.Commands.VerifyForgotPasswordOtp;
+using Tokki.Application.Common.Models;
 using Tokki.Domain.Entities;
-using Tokki.Domain.Enums;
-using Tokki.UnitTest.Mocks.Repositories;
 using Tokki.UnitTest.Utilities;
 using Xunit;
 
@@ -17,155 +17,161 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 {
     public class VerifyForgotPasswordOtpCommandHandlerTests
     {
-        private VerifyForgotPasswordOtpCommandHandler CreateHandler(
-            Mock<IOtpRepository>? otpRepo = null,
-            Mock<IAccountRepository>? accountRepo = null,
+        private static VerifyForgotPasswordOtpCommandHandler CreateHandler(
+            Mock<IRedisService>? redis = null,
+            Mock<IAccountRepository>? account = null,
             Mock<IJwtTokenGenerator>? jwtGen = null)
         {
             var mockJwt = jwtGen ?? new Mock<IJwtTokenGenerator>();
-            mockJwt.Setup(x => x.GenerateForgotPasswordToken(It.IsAny<string>()))
-                   .Returns("fake-reset-token");
+            mockJwt.Setup(x => x.GenerateForgotPasswordToken(It.IsAny<string>())).Returns("RESET-TOKEN-XYZ");
 
             return new VerifyForgotPasswordOtpCommandHandler(
-                (otpRepo ?? MockOtpRepository.GetMock()).Object,
-                (accountRepo ?? MockAccountRepository.GetMock()).Object,
+                (redis   ?? new Mock<IRedisService>()).Object,
+                (account ?? new Mock<IAccountRepository>()).Object,
                 mockJwt.Object);
         }
 
+        private static string BuildOtpJson(string code, int attempts = 0)
+            => JsonSerializer.Serialize(new { OtpCode = code, AttemptCount = attempts });
+
+        // TC-01: OTP key not in Redis → OtpInvalid
         [Fact]
-        public async Task Handle_NoValidOtp_ShouldReturnFailure()
+        public async Task Handle_OtpKeyMissing_ShouldReturnOtpInvalid()
         {
-            // Arrange — không có OTP hợp lệ
-            var command = new VerifyForgotPasswordOtpCommand
-            {
-                Email = "user@tokki.com",
-                OtpCode = "123456"
-            };
+            var redis = new Mock<IRedisService>();
+            redis.Setup(x => x.GetAsync("OTP:ResetPassword:test@test.com")).ReturnsAsync((string?)null);
 
-            var mockOtpRepo = MockOtpRepository.GetMock(latestOtp: null);
+            var result = await CreateHandler(redis: redis)
+                .Handle(new VerifyForgotPasswordOtpCommand { Email = "test@test.com", OtpCode = "123456" }, CancellationToken.None);
 
-            var handler = CreateHandler(otpRepo: mockOtpRepo);
-            var result = await handler.Handle(command, CancellationToken.None);
-
-            // Assert
             result.IsSuccess.Should().BeFalse();
 
             QACollector.LogTestCase("OTP - Verify Forgot Password", new TestCaseDetail
             {
-                FunctionGroup = "Verify Forgot Password OTP",
-                TestCaseID = "TC-OTP-VFP-01",
-                Description = "Không có OTP hợp lệ (null) → return Failure OtpInvalid",
-                ExpectedResult = "Return Failure OtpInvalid",
-                StatusRound1 = "Passed",
-                TestCaseType = "A",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "GetLatestValidOtpAsync returns null",
-                    "Return Failure"
-                }
+                FunctionGroup = "VerifyForgotPasswordOtp", TestCaseID = "TC-OTP-VFP-01",
+                Description = "OTP key not in Redis → OtpInvalid failure",
+                ExpectedResult = "Return Failure OtpInvalid", StatusRound1 = "Passed",
+                TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "rawValue == null => OtpInvalid" }
             });
         }
 
+        // TC-02: Deserialized entry is null → OtpInvalid
         [Fact]
-        public async Task Handle_WrongOtpCode_ShouldReturnFailure()
+        public async Task Handle_MalformedRedisValue_ShouldReturnOtpInvalid()
         {
-            // Arrange — OTP tồn tại nhưng code sai
-            var command = new VerifyForgotPasswordOtpCommand
-            {
-                Email = "user@tokki.com",
-                OtpCode = "999999" // sai
-            };
+            var redis = new Mock<IRedisService>();
+            redis.Setup(x => x.GetAsync("OTP:ResetPassword:test@test.com")).ReturnsAsync("null");
 
-            var validOtp = new Otp
-            {
-                OtpId = "OTP-001",
-                Email = "user@tokki.com",
-                OtpCode = "123456", // đúng phải là 123456
-                Type = OtpType.ResetPassword,
-                Status = OtpStatus.Active,
-                ExpiredAt = DateTime.UtcNow.AddHours(7).AddMinutes(5)
-            };
+            var result = await CreateHandler(redis: redis)
+                .Handle(new VerifyForgotPasswordOtpCommand { Email = "test@test.com", OtpCode = "123456" }, CancellationToken.None);
 
-            var mockOtpRepo = MockOtpRepository.GetMock(latestOtp: validOtp);
-
-            var handler = CreateHandler(otpRepo: mockOtpRepo);
-            var result = await handler.Handle(command, CancellationToken.None);
-
-            // Assert
             result.IsSuccess.Should().BeFalse();
 
             QACollector.LogTestCase("OTP - Verify Forgot Password", new TestCaseDetail
             {
-                FunctionGroup = "Verify Forgot Password OTP",
-                TestCaseID = "TC-OTP-VFP-02",
-                Description = "OTP code sai → return Failure OtpCodeWrong",
-                ExpectedResult = "Return Failure OtpCodeWrong",
-                StatusRound1 = "Passed",
-                TestCaseType = "A",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "OTP tồn tại nhưng OtpCode sai",
-                    "Return Failure"
-                }
+                FunctionGroup = "VerifyForgotPasswordOtp", TestCaseID = "TC-OTP-VFP-02",
+                Description = "Redis returns 'null' string → deserialized entry is null → OtpInvalid",
+                ExpectedResult = "Return Failure OtpInvalid", StatusRound1 = "Passed",
+                TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "JsonDeserialize returns null => OtpInvalid" }
             });
         }
 
+        // TC-03: Wrong OTP code → OtpCodeWrong
         [Fact]
-        public async Task Handle_ValidOtp_ShouldMarkUsedAndReturnResetToken()
+        public async Task Handle_WrongOtpCode_ShouldReturnOtpCodeWrong()
         {
-            // Arrange — OTP hợp lệ và code đúng
-            var command = new VerifyForgotPasswordOtpCommand
+            var redis = new Mock<IRedisService>();
+            redis.Setup(x => x.GetAsync("OTP:ResetPassword:test@test.com"))
+                 .ReturnsAsync(BuildOtpJson("111111"));
+
+            var result = await CreateHandler(redis: redis)
+                .Handle(new VerifyForgotPasswordOtpCommand { Email = "test@test.com", OtpCode = "999999" }, CancellationToken.None);
+
+            result.IsSuccess.Should().BeFalse();
+
+            QACollector.LogTestCase("OTP - Verify Forgot Password", new TestCaseDetail
             {
-                Email = "user@tokki.com",
-                OtpCode = "123456"
-            };
+                FunctionGroup = "VerifyForgotPasswordOtp", TestCaseID = "TC-OTP-VFP-03",
+                Description = "Wrong OTP code → OtpCodeWrong failure",
+                ExpectedResult = "Return Failure OtpCodeWrong", StatusRound1 = "Passed",
+                TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "entry.OtpCode != request.OtpCode => OtpCodeWrong" }
+            });
+        }
 
-            var validOtp = new Otp
+        // TC-04: Correct OTP → Redis key deleted (one-time use)
+        [Fact]
+        public async Task Handle_CorrectOtp_ShouldDeleteRedisKey()
+        {
+            var redis = new Mock<IRedisService>();
+            redis.Setup(x => x.GetAsync("OTP:ResetPassword:test@test.com"))
+                 .ReturnsAsync(BuildOtpJson("123456"));
+
+            await CreateHandler(redis: redis)
+                .Handle(new VerifyForgotPasswordOtpCommand { Email = "test@test.com", OtpCode = "123456" }, CancellationToken.None);
+
+            redis.Verify(x => x.DeleteAsync("OTP:ResetPassword:test@test.com"), Times.Once);
+
+            QACollector.LogTestCase("OTP - Verify Forgot Password", new TestCaseDetail
             {
-                OtpId = "OTP-001",
-                Email = "user@tokki.com",
-                OtpCode = "123456",
-                Type = OtpType.ResetPassword,
-                Status = OtpStatus.Active,
-                ExpiredAt = DateTime.UtcNow.AddHours(7).AddMinutes(5)
-            };
+                FunctionGroup = "VerifyForgotPasswordOtp", TestCaseID = "TC-OTP-VFP-04",
+                Description = "Correct OTP → Redis key deleted (one-time use)",
+                ExpectedResult = "DeleteAsync called once", StatusRound1 = "Passed",
+                TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "OtpCode matches => DeleteAsync" }
+            });
+        }
 
-            var mockOtpRepo = MockOtpRepository.GetMock(latestOtp: validOtp);
-            mockOtpRepo.Setup(x => x.UpdateAsync(It.IsAny<Otp>()))
-                       .Returns(Task.CompletedTask);
+        // TC-05: Correct OTP → JWT reset token returned, 200
+        [Fact]
+        public async Task Handle_CorrectOtp_ShouldReturnResetToken()
+        {
+            var redis = new Mock<IRedisService>();
+            redis.Setup(x => x.GetAsync("OTP:ResetPassword:test@test.com"))
+                 .ReturnsAsync(BuildOtpJson("123456"));
 
-            var handler = CreateHandler(otpRepo: mockOtpRepo);
-            var result = await handler.Handle(command, CancellationToken.None);
+            var jwtGen = new Mock<IJwtTokenGenerator>();
+            jwtGen.Setup(x => x.GenerateForgotPasswordToken("test@test.com")).Returns("RESET-TOKEN-ABC");
 
-            // Assert
+            var result = await CreateHandler(redis: redis, jwtGen: jwtGen)
+                .Handle(new VerifyForgotPasswordOtpCommand { Email = "test@test.com", OtpCode = "123456" }, CancellationToken.None);
+
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
-            result.Data.Should().Be("fake-reset-token");
-
-            // OTP phải được đánh dấu Used
-            validOtp.Status.Should().Be(OtpStatus.Used);
-            validOtp.UsedAt.Should().NotBeNull();
-
-            mockOtpRepo.Verify(x => x.UpdateAsync(It.IsAny<Otp>()), Times.Once);
+            result.Data.Should().Be("RESET-TOKEN-ABC");
 
             QACollector.LogTestCase("OTP - Verify Forgot Password", new TestCaseDetail
             {
-                FunctionGroup = "Verify Forgot Password OTP",
-                TestCaseID = "TC-OTP-VFP-03",
-                Description = "OTP hợp lệ, code đúng → mark Used, trả về reset token",
-                ExpectedResult = "Return 200, OTP.Status = Used, Data = reset token",
-                StatusRound1 = "Passed",
-                TestCaseType = "N",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "Valid OTP",
-                    "OtpCode khớp",
-                    "OTP.Status = Used",
-                    "Return 200 với reset token"
-                }
+                FunctionGroup = "VerifyForgotPasswordOtp", TestCaseID = "TC-OTP-VFP-05",
+                Description = "Correct OTP → JWT reset token issued, Return 200 with token",
+                ExpectedResult = "Return 200, Data='RESET-TOKEN-ABC'", StatusRound1 = "Passed",
+                TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "OtpCode matches => GenerateForgotPasswordToken => 200" }
+            });
+        }
+
+        // TC-06: Wrong code → DeleteAsync never called
+        [Fact]
+        public async Task Handle_WrongCode_ShouldNotDeleteKey()
+        {
+            var redis = new Mock<IRedisService>();
+            redis.Setup(x => x.GetAsync("OTP:ResetPassword:test@test.com"))
+                 .ReturnsAsync(BuildOtpJson("111111"));
+
+            await CreateHandler(redis: redis)
+                .Handle(new VerifyForgotPasswordOtpCommand { Email = "test@test.com", OtpCode = "999999" }, CancellationToken.None);
+
+            redis.Verify(x => x.DeleteAsync(It.IsAny<string>()), Times.Never);
+
+            QACollector.LogTestCase("OTP - Verify Forgot Password", new TestCaseDetail
+            {
+                FunctionGroup = "VerifyForgotPasswordOtp", TestCaseID = "TC-OTP-VFP-06",
+                Description = "Wrong OTP → DeleteAsync never called",
+                ExpectedResult = "DeleteAsync Times.Never", StatusRound1 = "Passed",
+                TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "wrong code => no key deletion" }
             });
         }
     }

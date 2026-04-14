@@ -12,6 +12,7 @@ namespace Tokki.Application.IRepositories
         Task AddAsync(PronunciationExample entity);
         Task UpdateAsync(PronunciationExample entity);
         Task DeleteAsync(PronunciationExample entity);
+        Task<List<PronunciationExample>> GetAllAsync(CancellationToken cancellationToken = default);
         Task SaveChangesAsync(CancellationToken cancellationToken = default);
         Task AddRangeAsync(IEnumerable<PronunciationExample> entities);
         Task<PronunciationExample?> GetByIdAsync(string id);

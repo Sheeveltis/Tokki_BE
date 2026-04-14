@@ -39,7 +39,7 @@ namespace Tokki.Infrastructure.Repositories
         }
 
         public async Task<PagedResult<Blog>> GetPagedAsync(int pageNumber, int pageSize, string? categoryId,
-            string? tag, string? keyword, BlogStatus? status, CancellationToken cancellationToken)
+            string? tag, string? keyword, BlogStatus? status, bool? isOfficial, string? authorId, CancellationToken cancellationToken)
         {
             var query = _context.Blogs
                 .AsNoTracking()
@@ -47,6 +47,16 @@ namespace Tokki.Infrastructure.Repositories
                 .Include(b => b.Tags)
                 .OrderByDescending(b => b.CreatedAt)
                 .AsQueryable();
+
+            if (!string.IsNullOrEmpty(authorId))
+            {
+                query = query.Where(b => b.AuthorId == authorId);
+            }
+
+            if (isOfficial.HasValue)
+            {
+                query = query.Where(b => b.IsOfficial == isOfficial.Value);
+            }
 
             if (!string.IsNullOrWhiteSpace(categoryId))
             {
@@ -96,7 +106,7 @@ namespace Tokki.Infrastructure.Repositories
             return await _context.Categories.AnyAsync(c => c.Id == categoryId);
         }
 
-        public async Task<ICollection<Tag>> GetOrCreateTagsAsync(List<string> tagNames)
+        public async Task<ICollection<Tag>> GetOrCreateTagsAsync(List<string> tagNames, bool isVerified = false)
         {
             if (tagNames == null || !tagNames.Any())
             {
@@ -125,7 +135,8 @@ namespace Tokki.Infrastructure.Repositories
                     var newTag = new Tag
                     {
                         Id = _idGeneratorService.GenerateCustom(10), 
-                        Name = name
+                        Name = name,
+                        IsVerified = isVerified
                     };
                     newTagsToCreate.Add(newTag);
                 }
@@ -141,6 +152,12 @@ namespace Tokki.Infrastructure.Repositories
             finalTags.AddRange(newTagsToCreate);
 
             return finalTags;
+        }
+
+        public Task DeleteTagAsync(Tag tag)
+        {
+            _context.Tags.Remove(tag);
+            return Task.CompletedTask;
         }
 
         public async Task SaveChangesAsync(CancellationToken cancellationToken)
@@ -161,6 +178,28 @@ namespace Tokki.Infrastructure.Repositories
                 $"UPDATE Blogs SET ViewCount = ViewCount + 1 WHERE Id = {blogId}"
             );
             return rowsAffected > 0;
+        }
+
+        public async Task AddRangeAsync(IEnumerable<Blog> blogs, CancellationToken cancellationToken = default)
+        {
+            await _context.Blogs.AddRangeAsync(blogs, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
+        {
+            return await _context.Database.BeginTransactionAsync(cancellationToken);
+        }
+
+        public async Task<IEnumerable<Blog>> GetAllWithDetailsAsync(CancellationToken cancellationToken = default)
+        {
+            return await _context.Blogs
+                .AsNoTracking()
+                .Include(b => b.Category)
+                .Include(b => b.Tags)
+                .Where(b => b.Status != BlogStatus.Hidden)
+                .OrderByDescending(b => b.CreatedAt)
+                .ToListAsync(cancellationToken);
         }
     }
 }

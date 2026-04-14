@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -51,7 +51,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabSpacedRepetition
             {
                 FunctionGroup = "Get Due Reviews",
                 TestCaseID = "TC-GDR-01",
-                Description = "Query due reviews cho user hợp lệ với limit → trả về danh sách vocab đến hạn",
+                Description = "Query due reviews for users valid with limit → returns a list of due vocabs",
                 ExpectedResult = "Return 200, Data.Count = 2",
                 StatusRound1 = "Passed",
                 TestCaseType = "N",
@@ -60,7 +60,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabSpacedRepetition
                 {
                     "Valid UserId",
                     "Limit = 10",
-                    "2 vocab đến hạn review",
+                    "2 vocabs due for review",
                     "Return 200"
                 }
             });
@@ -93,7 +93,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabSpacedRepetition
             {
                 FunctionGroup = "Get Due Reviews",
                 TestCaseID = "TC-GDR-02",
-                Description = "User không có vocab nào đến hạn review hôm nay → trả về empty list",
+                Description = "User has no vocabs due for review today → returns an empty list",
                 ExpectedResult = "Return 200, Data = empty list",
                 StatusRound1 = "Passed",
                 TestCaseType = "N",
@@ -134,14 +134,14 @@ namespace Tokki.UnitTest.Application.UseCases.VocabSpacedRepetition
             {
                 FunctionGroup = "Get Due Reviews",
                 TestCaseID = "TC-GDR-03",
-                Description = "Limit = 0 (boundary) → không lấy item nào, trả về empty list",
+                Description = "Limit = 0 (boundary) → does not take any items, returns an empty list",
                 ExpectedResult = "Return 200, Data = empty list",
                 StatusRound1 = "Passed",
                 TestCaseType = "B",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string>
                 {
-                    "Limit = 0 (boundary: giá trị tối thiểu)",
+                    "Limit = 0 (boundary: minimum value)",
                     "Return 200 empty list"
                 }
             });
@@ -188,15 +188,15 @@ namespace Tokki.UnitTest.Application.UseCases.VocabSpacedRepetition
             {
                 FunctionGroup = "Get Due Reviews",
                 TestCaseID = "TC-GDR-04",
-                Description = "Limit = 100 (default value) → trả về đúng 100 items",
-                ExpectedResult = "Return 200, Data.Count = 100, Limit được truyền đúng vào repository",
+                Description = "Limit = 100 (default value) → returns exactly 100 items",
+                ExpectedResult = "Return 200, Data.Count = 100, Limit is passed correctly to the repository",
                 StatusRound1 = "Passed",
                 TestCaseType = "B",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string>
                 {
                     "Limit = 100 (default boundary)",
-                    "Repository trả về 100 items",
+                    "Repository returns 100 items",
                     "GetDueReviewsAsync called with Limit = 100",
                     "Return 200"
                 }
@@ -234,16 +234,66 @@ namespace Tokki.UnitTest.Application.UseCases.VocabSpacedRepetition
             {
                 FunctionGroup = "Get Due Reviews",
                 TestCaseID = "TC-GDR-05",
-                Description = "Repository throw exception khi query due reviews → exception propagate lên caller",
-                ExpectedResult = "Exception được throw với message 'Database connection lost'",
+                Description = "Repository throws exception when query due reviews → exception propagates to caller",
+                ExpectedResult = "Exception is thrown with message 'Database connection lost'",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string>
                 {
                     "Repository throws Exception",
-                    "Handler không có try/catch",
+                    "Handler does not have try/catch",
                     "Exception propagates to caller"
+                }
+            });
+        }
+
+        [Fact]
+        public async Task Handle_ValidRequest_ShouldCallRepositoryWithUtcNowPlus7()
+        {
+            // Arrange
+            var query = new GetDueReviewsQuery
+            {
+                UserId = "USER-001",
+                Limit = 10
+            };
+
+            DateTime? capturedTime = null;
+            var mockProgressRepo = MockUserVocabProgressRepository.GetMock();
+            mockProgressRepo.Setup(x => x.GetDueReviewsAsync(
+                        "USER-001",
+                        It.IsAny<DateTime>(),
+                        10,
+                        It.IsAny<CancellationToken>()))
+                    .Callback<string, DateTime, int, CancellationToken>((u, t, l, c) => capturedTime = t)
+                    .ReturnsAsync(new List<ReviewItemDTO>());
+
+            var handler = CreateHandler(progressRepo: mockProgressRepo);
+
+            // Act
+            var before = DateTime.UtcNow.AddHours(7).AddSeconds(-1);
+            var result = await handler.Handle(query, CancellationToken.None);
+            var after = DateTime.UtcNow.AddHours(7).AddSeconds(1);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            capturedTime.Should().NotBeNull();
+            capturedTime.Should().BeOnOrAfter(before).And.BeOnOrBefore(after);
+
+            QACollector.LogTestCase("VocabSR - Get Due Reviews", new TestCaseDetail
+            {
+                FunctionGroup = "Get Due Reviews",
+                TestCaseID = "TC-GDR-06",
+                Description = "Validates the handler shifts UtcNow timestamp by +7 hours when querying DB",
+                ExpectedResult = "Repository receives time between (UtcNow+7 - 1s) and (UtcNow+7 + 1s)",
+                StatusRound1 = "Passed",
+                TestCaseType = "B",
+                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string>
+                {
+                    "Time captured via Callback",
+                    "Time roughly equals UtcNow + 7",
+                    "Success result"
                 }
             });
         }

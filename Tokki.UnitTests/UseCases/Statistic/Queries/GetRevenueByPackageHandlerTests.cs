@@ -33,7 +33,7 @@ namespace Tokki.UnitTests.Features.Statistics.Queries
 
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().HaveCount(2);
-            result.Data[0].PackageName.Should().Be("VIP 1 Tháng");
+            result.Data[0].PackageName.Should().Be("VIP 1 Month");
 
             _mockStatsRepo.Verify(x => x.GetRevenueByPackageAsync(startDate, endDate), Times.Once);
         }

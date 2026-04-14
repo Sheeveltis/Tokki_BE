@@ -85,7 +85,7 @@ namespace Tokki.UnitTests.Features.Payments.Commands
             var result = await _webhookHandler.Handle(command, CancellationToken.None);
 
             result.IsSuccess.Should().BeTrue();
-            result.Data.Should().Contain("thấp hơn giá trị gói");
+            result.Data.Should().Contain("lower than package value");
 
             payment.Status.Should().Be(PaymentStatus.Pending);
             _mockPaymentRepo.Verify(x => x.UpdateAsync(It.IsAny<Payment>()), Times.Never);

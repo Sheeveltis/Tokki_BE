@@ -121,8 +121,8 @@ namespace Tokki.UnitTests.Features.Topics.Commands
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
             result.Data.Should().Be(2);
-            result.Message.Should().Contain("Kết quả thêm từ vựng vào chủ đề 'T1':");
-            result.Message.Should().Contain("Không tồn tại trong hệ thống: 1");
+            result.Message.Should().Contain("Results of adding vocabulary to topic 'T1':");
+            result.Message.Should().Contain("Does not exist in the system: 1");
 
             _mockVocabTopicRepo.Verify(x => x.AddOrReactivateVocabulariesToTopicAsync(
                 cmd.TopicId, It.IsAny<List<Vocabulary>>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once);

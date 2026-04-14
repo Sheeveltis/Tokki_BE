@@ -44,7 +44,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             {
                 Vocabularies = new List<VocabularyCreateDto>
                 {
-                    new VocabularyCreateDto { Text = "안녕", Definition = "Xin chào" }
+                    new VocabularyCreateDto { Text = "안녕", Definition = "Hello" }
                 }
             };
 
@@ -58,7 +58,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             {
                 FunctionGroup = "Bulk Create Vocabulary",
                 TestCaseID = "TC-VOCAB-BLK-01",
-                Description = "Bulk create vocabulary khi không có token xác thực",
+                Description = "Bulk create vocabulary without an authentication token",
                 ExpectedResult = "Return 401 Unauthorized",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
@@ -78,7 +78,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             {
                 Vocabularies = new List<VocabularyCreateDto>
                 {
-                    new VocabularyCreateDto { Text = "안녕", Definition = "Xin chào" }
+                    new VocabularyCreateDto { Text = "안녕", Definition = "Hello" }
                 }
             };
 
@@ -92,12 +92,12 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
             result.Message.Should().Match(x =>
-                x.Contains("VOCABULARY_DUPLICATE") || x.Contains("trùng"));
+                x.Contains("VOCABULARY_DUPLICATE") || x.Contains("coincide"));
             QACollector.LogTestCase("Vocabulary - Bulk Create", new TestCaseDetail
             {
                 FunctionGroup = "Bulk Create Vocabulary",
                 TestCaseID = "TC-VOCAB-BLK-02",
-                Description = "Bulk create có 1 vocab trùng Text + Definition → reject toàn bộ request",
+                Description = "Bulk create has a duplicate vocab Text + Definition → reject the entire request",
                 ExpectedResult = "Return 400 VOCABULARY_DUPLICATE",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
@@ -118,8 +118,8 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             {
                 Vocabularies = new List<VocabularyCreateDto>
                 {
-                    new VocabularyCreateDto { Text = "단어1", Definition = "Từ 1" },
-                    new VocabularyCreateDto { Text = "단어2", Definition = "Từ 2" }
+                    new VocabularyCreateDto { Text = "단어1", Definition = "From 1" },
+                    new VocabularyCreateDto { Text = "단어2", Definition = "From 2" }
                 }
             };
 
@@ -153,7 +153,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             {
                 FunctionGroup = "Bulk Create Vocabulary",
                 TestCaseID = "TC-VOCAB-BLK-03",
-                Description = "Bulk create 2 vocab hợp lệ, không trùng → tất cả tạo thành công",
+                Description = "Bulk created 2 valid vocabs, no duplicates → all created successfully",
                 ExpectedResult = "Return 201, SuccessCount = 2, TotalVocabularies = 2",
                 StatusRound1 = "Passed",
                 TestCaseType = "N",
@@ -175,7 +175,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             {
                 Vocabularies = new List<VocabularyCreateDto>
                 {
-                    new VocabularyCreateDto { Text = "단어1", Definition = "Từ 1" }
+                    new VocabularyCreateDto { Text = "단어1", Definition = "From 1" }
                 }
             };
 
@@ -202,7 +202,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             {
                 FunctionGroup = "Bulk Create Vocabulary",
                 TestCaseID = "TC-VOCAB-BLK-04",
-                Description = "TTS lỗi trong bulk create → vocab vẫn được tạo với AudioURL = null",
+                Description = "TTS error in bulk create → vocab is still created with AudioURL = null",
                 ExpectedResult = "Return 201, SuccessCount = 1, AudioURL = null",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",
@@ -226,18 +226,18 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
                     new VocabularyCreateDto
                     {
                         Text = "단어1",
-                        Definition = "Từ 1",
+                        Definition = "From 1",
                         Examples = new List<VocabularyExampleDto>
                         {
                             new VocabularyExampleDto
                             {
                                 Sentence = "같은 문장이에요.",
-                                Translation = "Câu giống nhau."
+                                Translation = "Same sentences."
                             },
                             new VocabularyExampleDto
                             {
                                 Sentence = "같은 문장이에요.", // duplicate
-                                Translation = "Câu bị trùng."
+                                Translation = "The sentence is duplicated."
                             }
                         }
                     }
@@ -252,22 +252,22 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
 
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(201);
-            result.Data.Results[0].Message.Should().Contain("bỏ qua");
+            result.Data.Results[0].Message.Should().Contain("skip");
 
             QACollector.LogTestCase("Vocabulary - Bulk Create", new TestCaseDetail
             {
                 FunctionGroup = "Bulk Create Vocabulary",
                 TestCaseID = "TC-VOCAB-BLK-05",
-                Description = "Bulk create có example trùng Sentence trong cùng request → bỏ qua câu trùng, vẫn tạo vocab",
-                ExpectedResult = "Return 201, message chứa 'bỏ qua', SuccessCount = 1",
+                Description = "Bulk create has an example with the same Sentence in the same request → ignore the duplicate sentence, still create vocab",
+                ExpectedResult = "Return 201, message contains 'skip', SuccessCount = 1",
                 StatusRound1 = "Passed",
                 TestCaseType = "B",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string>
                 {
-                    "2 examples cùng Sentence (boundary: duplicate trong request)",
-                    "1 example bị skip",
-                    "Vocab vẫn được tạo",
+                    "2 examples with Sentence (boundary: duplicate in request)",
+                    "1 example was skipped",
+                    "Vocabs are still created",
                     "Return 201"
                 }
             });
@@ -280,7 +280,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             {
                 Vocabularies = new List<VocabularyCreateDto>
                 {
-                    new VocabularyCreateDto { Text = "단어1", Definition = "Từ 1" }
+                    new VocabularyCreateDto { Text = "단어1", Definition = "From 1" }
                 }
             };
 
@@ -301,7 +301,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             {
                 FunctionGroup = "Bulk Create Vocabulary",
                 TestCaseID = "TC-VOCAB-BLK-06",
-                Description = "Repository throw exception trong transaction → rollback và return 500",
+                Description = "Repository throws exception during transaction → rollback and return 500",
                 ExpectedResult = "Transaction rollback, return 500 Server Error",
                 StatusRound1 = "Passed",
                 TestCaseType = "A",

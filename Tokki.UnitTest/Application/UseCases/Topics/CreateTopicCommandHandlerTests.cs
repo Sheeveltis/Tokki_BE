@@ -1,6 +1,6 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -8,11 +8,10 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Tokki.Application.IRepositories;
+using Tokki.Application.IServices;
 using Tokki.Application.UseCases.Topics.Commands.CreateTopic;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
-using Tokki.UnitTest.Mocks.Repositories;
-using Tokki.UnitTest.Mocks.Services;
 using Tokki.UnitTest.Utilities;
 using Xunit;
 
@@ -20,146 +19,115 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
 {
     public class CreateTopicCommandHandlerTests
     {
-        private CreateTopicCommandHandler CreateHandler(
-            Mock<ITopicRepository>? topicRepo = null,
-            bool unauthorized = false)
+        private static Mock<ITopicRepository> GetRepoMock(bool nameExists = false)
         {
-            return new CreateTopicCommandHandler(
-                (topicRepo ?? MockTopicRepository.GetMock()).Object,
-                MockIdGeneratorService.GetMock().Object,
-                new Mock<ILogger<CreateTopicCommandHandler>>().Object,
-                unauthorized
-                    ? MockHttpContextAccessor.GetUnauthorizedMock().Object
-                    : MockHttpContextAccessor.GetMock("ADMIN-001").Object);
+            var m = new Mock<ITopicRepository>();
+            m.Setup(x => x.IsTopicNameExistsAsync(It.IsAny<string>(), It.IsAny<string?>()))
+             .ReturnsAsync(nameExists);
+            m.Setup(x => x.AddAsync(It.IsAny<Topic>())).Returns(Task.CompletedTask);
+            m.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+            return m;
         }
 
-        [Fact]
-        public async Task Handle_Unauthorized_ShouldReturn401()
+        private static Mock<IIdGeneratorService> GetIdGenMock(string id = "TP-001")
         {
-            var command = new CreateTopicCommand
-            {
-                TopicName = "Chào hỏi",
-                Level = TopicLevel.Level1
-            };
+            var m = new Mock<IIdGeneratorService>();
+            m.Setup(x => x.GenerateCustom(It.IsAny<int>())).Returns(id);
+            return m;
+        }
 
-            var handler = CreateHandler(unauthorized: true);
-            var result = await handler.Handle(command, CancellationToken.None);
+        private static Mock<IHttpContextAccessor> GetHttpContextMock(string? userId = "U-001")
+        {
+            var m       = new Mock<IHttpContextAccessor>();
+            var ctx     = new Mock<HttpContext>();
+            var user    = new ClaimsPrincipal(new ClaimsIdentity(
+                userId != null ? new[] { new Claim(ClaimTypes.NameIdentifier, userId) } : Array.Empty<Claim>()));
+            ctx.Setup(x => x.User).Returns(user);
+            m.Setup(x => x.HttpContext).Returns(ctx.Object);
+            return m;
+        }
 
+        private static CreateTopicCommandHandler CreateHandler(
+            Mock<ITopicRepository>?    repo    = null,
+            Mock<IIdGeneratorService>? idGen   = null,
+            Mock<IHttpContextAccessor>? http   = null)
+            => new CreateTopicCommandHandler(
+                (repo  ?? GetRepoMock()).Object,
+                (idGen ?? GetIdGenMock()).Object,
+                NullLogger<CreateTopicCommandHandler>.Instance,
+                (http  ?? GetHttpContextMock()).Object);
+
+        private static CreateTopicCommand MakeCommand(string name = "Korean Basics")
+            => new CreateTopicCommand { TopicName = name, Level = TopicLevel.Level1, Description = "Test topic" };
+
+        // TC-TOPIC-CREATE-01 | A | No authenticated user → 401 failure
+        [Fact]
+        public async Task Handle_NoAuthUser_ShouldReturn401()
+        {
+            var result = await CreateHandler(http: GetHttpContextMock(null)).Handle(MakeCommand(), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(401);
-
-            QACollector.LogTestCase("Topic - Create", new TestCaseDetail
-            {
-                FunctionGroup = "Create Topic",
-                TestCaseID = "TC-TOPIC-CRE-01",
-                Description = "Tạo topic khi không có token xác thực",
-                ExpectedResult = "Return 401 Unauthorized",
-                StatusRound1 = "Passed",
-                TestCaseType = "A",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "No UserId in Claims", "Return 401" }
-            });
+            QACollector.LogTestCase("Topic - Create", new TestCaseDetail { FunctionGroup = "CreateTopic", TestCaseID = "TC-TOPIC-CREATE-01", Description = "No auth user → 401", ExpectedResult = "IsSuccess=false, 401", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "HttpContext User has no NameIdentifier claim" } });
         }
 
+        // TC-TOPIC-CREATE-02 | A | Duplicate topic name → 409 conflict
         [Fact]
         public async Task Handle_DuplicateTopicName_ShouldReturn409()
         {
-            var command = new CreateTopicCommand
-            {
-                TopicName = "Chào hỏi cơ bản",
-                Level = TopicLevel.Level1
-            };
-
-            var handler = CreateHandler(
-                topicRepo: MockTopicRepository.GetMock(isTopicNameExists: true));
-
-            var result = await handler.Handle(command, CancellationToken.None);
-
+            var repo   = GetRepoMock(nameExists: true);
+            var result = await CreateHandler(repo: repo).Handle(MakeCommand(), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(409);
-
-            QACollector.LogTestCase("Topic - Create", new TestCaseDetail
-            {
-                FunctionGroup = "Create Topic",
-                TestCaseID = "TC-TOPIC-CRE-02",
-                Description = "Tạo topic với tên đã tồn tại trong hệ thống",
-                ExpectedResult = "Return 409 TopicNameDuplicated",
-                StatusRound1 = "Passed",
-                TestCaseType = "A",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "TopicName đã tồn tại",
-                    "Return 409"
-                }
-            });
+            QACollector.LogTestCase("Topic - Create", new TestCaseDetail { FunctionGroup = "CreateTopic", TestCaseID = "TC-TOPIC-CREATE-02", Description = "Duplicate topic name → 409", ExpectedResult = "IsSuccess=false, 409", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "IsTopicNameExistsAsync returns true" } });
         }
 
+        // TC-TOPIC-CREATE-03 | N | Happy path → 201 with generated TopicId
         [Fact]
-        public async Task Handle_ValidData_ShouldReturn201WithDraftStatus()
+        public async Task Handle_ValidRequest_ShouldReturn201WithTopicId()
         {
-            var command = new CreateTopicCommand
-            {
-                TopicName = "Topic Mới",
-                Level = TopicLevel.Level1,
-                Description = "Mô tả topic mới"
-            };
-
-            var mockTopicRepo = MockTopicRepository.GetMock(isTopicNameExists: false);
-            var mockIdGen = MockIdGeneratorService.GetMock();
-            var mockLogger = new Mock<ILogger<CreateTopicCommandHandler>>();
-
-            mockIdGen.Setup(x => x.GenerateCustom(15)).Returns("TOPIC-NEW-001");
-
-            var claims = new List<Claim>
-    {
-        new Claim(ClaimTypes.NameIdentifier, "USER-001")
-    };
-
-            var identity = new ClaimsIdentity(claims, "TestAuth");
-            var principal = new ClaimsPrincipal(identity);
-
-            var httpContext = new DefaultHttpContext
-            {
-                User = principal
-            };
-
-            var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
-            mockHttpContextAccessor.Setup(x => x.HttpContext).Returns(httpContext);
-
-            var handler = new CreateTopicCommandHandler(
-                mockTopicRepo.Object,
-                mockIdGen.Object,
-                mockLogger.Object,
-                mockHttpContextAccessor.Object);
-
-            var result = await handler.Handle(command, CancellationToken.None);
-
+            var idGen  = GetIdGenMock("TP-NEW");
+            var result = await CreateHandler(idGen: idGen).Handle(MakeCommand(), CancellationToken.None);
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(201);
-            result.Data.Should().Be("TOPIC-NEW-001");
-
-            mockTopicRepo.Verify(x => x.AddAsync(It.IsAny<Topic>()), Times.Once);
-            mockTopicRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
-
-            QACollector.LogTestCase("Topic - Create", new TestCaseDetail
-            {
-                FunctionGroup = "Create Topic",
-                TestCaseID = "TC-TOPIC-CRE-03",
-                Description = "Tạo topic hợp lệ → Status = Draft, trả về TopicId",
-                ExpectedResult = "Return 201, Data = TopicId",
-                StatusRound1 = "Passed",
-                TestCaseType = "N",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-        {
-            "Valid TopicName",
-            "Authenticated User",
-            "No duplicate",
-            "Status = Draft",
-            "Return 201"
+            result.Data.Should().Be("TP-NEW");
+            QACollector.LogTestCase("Topic - Create", new TestCaseDetail { FunctionGroup = "CreateTopic", TestCaseID = "TC-TOPIC-CREATE-03", Description = "Valid request → 201, Data='TP-NEW'", ExpectedResult = "IsSuccess=true, 201", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Auth OK, no duplicate" } });
         }
-            });
+
+        // TC-TOPIC-CREATE-04 | N | Topic created with Status=Draft and TopicType=VocabStudy
+        [Fact]
+        public async Task Handle_ValidRequest_TopicCreatedWithDraftStatusAndVocabStudyType()
+        {
+            Topic? captured = null;
+            var repo = GetRepoMock();
+            repo.Setup(x => x.AddAsync(It.IsAny<Topic>())).Callback<Topic>(t => captured = t).Returns(Task.CompletedTask);
+            await CreateHandler(repo: repo).Handle(MakeCommand(), CancellationToken.None);
+            captured.Should().NotBeNull();
+            captured!.Status.Should().Be(TopicStatus.Draft);
+            captured.TopicType.Should().Be(TopicType.VocabStudy);
+            QACollector.LogTestCase("Topic - Create", new TestCaseDetail { FunctionGroup = "CreateTopic", TestCaseID = "TC-TOPIC-CREATE-04", Description = "New topic: Status=Draft, TopicType=VocabStudy", ExpectedResult = "Status=Draft, TopicType=VocabStudy", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Status defaults to Draft" } });
+        }
+
+        // TC-TOPIC-CREATE-05 | B | AddAsync and SaveChangesAsync both called once
+        [Fact]
+        public async Task Handle_ValidRequest_AddAndSaveBothCalledOnce()
+        {
+            var repo = GetRepoMock();
+            await CreateHandler(repo: repo).Handle(MakeCommand(), CancellationToken.None);
+            repo.Verify(x => x.AddAsync(It.IsAny<Topic>()), Times.Once);
+            repo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+            QACollector.LogTestCase("Topic - Create", new TestCaseDetail { FunctionGroup = "CreateTopic", TestCaseID = "TC-TOPIC-CREATE-05", Description = "AddAsync and SaveChangesAsync both called once", ExpectedResult = "Both Times.Once", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Persist calls verified" } });
+        }
+
+        // TC-TOPIC-CREATE-06 | A | Repository throws → 500 failure
+        [Fact]
+        public async Task Handle_RepoThrows_ShouldReturn500()
+        {
+            var repo = new Mock<ITopicRepository>();
+            repo.Setup(x => x.IsTopicNameExistsAsync(It.IsAny<string>(), It.IsAny<string?>())).ThrowsAsync(new Exception("DB fail"));
+            var result = await CreateHandler(repo: repo).Handle(MakeCommand(), CancellationToken.None);
+            result.IsSuccess.Should().BeFalse();
+            result.StatusCode.Should().Be(500);
+            QACollector.LogTestCase("Topic - Create", new TestCaseDetail { FunctionGroup = "CreateTopic", TestCaseID = "TC-TOPIC-CREATE-06", Description = "Repository throws → 500", ExpectedResult = "IsSuccess=false, 500", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Exception caught" } });
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
@@ -52,7 +52,7 @@ namespace Tokki.Application.UseCases.Blogs.Commands.RejectBlog
                      404
                 );
             }
-            if (blog.Status != BlogStatus.PendingApproval)
+            if (blog.Status != BlogStatus.PendingApproval && blog.Status != BlogStatus.AIReviewFailed)
             {
                 return OperationResult<bool>.Failure(
                     AppErrors.BlogInvalidPending,

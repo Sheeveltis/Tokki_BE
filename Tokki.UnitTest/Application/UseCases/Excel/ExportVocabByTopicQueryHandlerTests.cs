@@ -1,9 +1,10 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Application.UseCases.Excel.DTOs;
@@ -15,7 +16,10 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
 {
     public class ExportVocabByTopicQueryHandlerTests
     {
-        private ExportVocabByTopicQueryHandler CreateHandler(
+        // ─────────────────────────────────────────────────────────────────────
+        // Factory
+        // ─────────────────────────────────────────────────────────────────────
+        private static ExportVocabByTopicQueryHandler CreateHandler(
             Mock<IVocabularyTopicRepository>? vocabTopicRepo = null,
             Mock<ITopicRepository>? topicRepo = null,
             Mock<IExcelService>? excelService = null)
@@ -26,83 +30,251 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
                 (excelService ?? new Mock<IExcelService>()).Object);
         }
 
-        [Fact]
-        public async Task Handle_TopicNotFound_ShouldReturnFailure()
+        private static List<VocabularyExportDTO> GetSampleVocabs() => new()
         {
-            var query = new ExportVocabByTopicQuery { TopicId = "TOPIC-INVALID" };
+            new VocabularyExportDTO { Text = "안녕하세요", Definition = "Xin chào" },
+            new VocabularyExportDTO { Text = "감사합니다", Definition = "Cảm ơn" }
+        };
 
+        // ═══════════════════════════════════════════════════════════════════
+        // TC-EXC-EXVT-01 | A | Topic not found → 404 TopicNotFound
+        // ═══════════════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_TopicNotFound_ShouldReturn404()
+        {
+            // Arrange
             var mockTopicRepo = new Mock<ITopicRepository>();
-            mockTopicRepo.Setup(x => x.GetTopicNameAsync(It.IsAny<string>()))
-                         .ReturnsAsync(string.Empty);
+            mockTopicRepo.Setup(x => x.GetTopicNameAsync("GHOST-TOPIC"))
+                         .ReturnsAsync((string?)null);
 
-            var handler = CreateHandler(topicRepo: mockTopicRepo);
-            var result = await handler.Handle(query, CancellationToken.None);
+            var query = new ExportVocabByTopicQuery { TopicId = "GHOST-TOPIC" };
 
+            // Act
+            var result = await CreateHandler(topicRepo: mockTopicRepo).Handle(query, CancellationToken.None);
+
+            // Assert
             result.IsSuccess.Should().BeFalse();
+            result.StatusCode.Should().Be(404);
+
+            // Excel Log
+            QACollector.LogTestCase("Excel - Export Vocab Topic", new TestCaseDetail
+            {
+                FunctionGroup     = "ExportVocabByTopic",
+                TestCaseID        = "TC-EXC-EXVT-01",
+                Description       = "TopicId does not exist → GetTopicNameAsync returns null",
+                ExpectedResult    = "Return 404 TopicNotFound",
+                StatusRound1      = "Passed",
+                TestCaseType      = "A",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "string.IsNullOrEmpty(topicName)" }
+            });
         }
 
+        // ═══════════════════════════════════════════════════════════════════
+        // TC-EXC-EXVT-02 | A | Topic found but vocab list is null → VocabTopicIsEmpty
+        // ═══════════════════════════════════════════════════════════════════
         [Fact]
-        public async Task Handle_TopicHasNoVocab_ShouldReturnFailure()
+        public async Task Handle_VocabListNull_ShouldReturnVocabTopicIsEmpty()
         {
-            var query = new ExportVocabByTopicQuery { TopicId = "TOPIC-001" };
-
+            // Arrange
             var mockTopicRepo = new Mock<ITopicRepository>();
-            mockTopicRepo.Setup(x => x.GetTopicNameAsync("TOPIC-001"))
-                         .ReturnsAsync("Chào hỏi cơ bản");
+            mockTopicRepo.Setup(x => x.GetTopicNameAsync("T1")).ReturnsAsync("Korean Basics");
 
             var mockVocabTopicRepo = new Mock<IVocabularyTopicRepository>();
-            mockVocabTopicRepo.Setup(x => x.GetVocabsByTopicIdAsync("TOPIC-001"))
+            mockVocabTopicRepo.Setup(x => x.GetVocabsByTopicIdAsync("T1"))
+                              .ReturnsAsync((List<VocabularyExportDTO>?)null!);
+
+            // Act
+            var result = await CreateHandler(vocabTopicRepo: mockVocabTopicRepo, topicRepo: mockTopicRepo)
+                             .Handle(new ExportVocabByTopicQuery { TopicId = "T1" }, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.StatusCode.Should().Be(404);
+
+            // Excel Log
+            QACollector.LogTestCase("Excel - Export Vocab Topic", new TestCaseDetail
+            {
+                FunctionGroup     = "ExportVocabByTopic",
+                TestCaseID        = "TC-EXC-EXVT-02",
+                Description       = "Topic exists but vocabs list is null",
+                ExpectedResult    = "Return Failure VocabTopicIsEmpty",
+                StatusRound1      = "Passed",
+                TestCaseType      = "A",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "vocabs == null" }
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // TC-EXC-EXVT-03 | A | Topic found but vocab list is empty → VocabTopicIsEmpty
+        // ═══════════════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_VocabListEmpty_ShouldReturnVocabTopicIsEmpty()
+        {
+            // Arrange
+            var mockTopicRepo = new Mock<ITopicRepository>();
+            mockTopicRepo.Setup(x => x.GetTopicNameAsync("T1")).ReturnsAsync("Korean Basics");
+
+            var mockVocabTopicRepo = new Mock<IVocabularyTopicRepository>();
+            mockVocabTopicRepo.Setup(x => x.GetVocabsByTopicIdAsync("T1"))
                               .ReturnsAsync(new List<VocabularyExportDTO>());
 
-            var handler = CreateHandler(
-                vocabTopicRepo: mockVocabTopicRepo,
-                topicRepo: mockTopicRepo);
+            // Act
+            var result = await CreateHandler(vocabTopicRepo: mockVocabTopicRepo, topicRepo: mockTopicRepo)
+                             .Handle(new ExportVocabByTopicQuery { TopicId = "T1" }, CancellationToken.None);
 
-            var result = await handler.Handle(query, CancellationToken.None);
-
+            // Assert
             result.IsSuccess.Should().BeFalse();
+            result.StatusCode.Should().Be(404);
+
+            // Excel Log
+            QACollector.LogTestCase("Excel - Export Vocab Topic", new TestCaseDetail
+            {
+                FunctionGroup     = "ExportVocabByTopic",
+                TestCaseID        = "TC-EXC-EXVT-03",
+                Description       = "Topic exists but has no vocabularies assigned",
+                ExpectedResult    = "Return Failure VocabTopicIsEmpty",
+                StatusRound1      = "Passed",
+                TestCaseType      = "A",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "!vocabs.Any()" }
+            });
         }
 
+        // ═══════════════════════════════════════════════════════════════════
+        // TC-EXC-EXVT-04 | N | Valid topic with vocabs → exports file correctly
+        // ═══════════════════════════════════════════════════════════════════
         [Fact]
-        public async Task Handle_ValidTopic_ShouldReturnExcelFile()
+        public async Task Handle_ValidTopicWithVocabs_ShouldExportFile()
         {
-            var query = new ExportVocabByTopicQuery { TopicId = "TOPIC-001" };
-
+            // Arrange
             var mockTopicRepo = new Mock<ITopicRepository>();
-            mockTopicRepo.Setup(x => x.GetTopicNameAsync("TOPIC-001"))
-                         .ReturnsAsync("Chào hỏi cơ bản");
-
-            var vocabs = new List<VocabularyExportDTO>
-            {
-                new VocabularyExportDTO
-                {
-                    Text = "안녕",
-                    Pronunciation = "annyeong",
-                    ImgURL = "img.png",
-                    Definition = "Xin chào"
-                }
-            };
+            mockTopicRepo.Setup(x => x.GetTopicNameAsync("T1")).ReturnsAsync("Korean Basics");
 
             var mockVocabTopicRepo = new Mock<IVocabularyTopicRepository>();
-            mockVocabTopicRepo.Setup(x => x.GetVocabsByTopicIdAsync("TOPIC-001"))
-                              .ReturnsAsync(vocabs);
+            mockVocabTopicRepo.Setup(x => x.GetVocabsByTopicIdAsync("T1"))
+                              .ReturnsAsync(GetSampleVocabs());
 
             var mockExcel = new Mock<IExcelService>();
-            mockExcel.Setup(x => x.ExportVocabularyToExcelAsync(
-                        It.IsAny<List<VocabularyExportDTO>>(),
-                        It.IsAny<string>()))
-                     .ReturnsAsync(new byte[] { 0x01, 0x02 });
+            mockExcel.Setup(x => x.ExportVocabularyToExcelAsync(It.IsAny<List<VocabularyExportDTO>>(), It.IsAny<string>()))
+                     .ReturnsAsync(new byte[] { 0x01, 0x02, 0x03 });
 
-            var handler = CreateHandler(
+            // Act
+            var result = await CreateHandler(
                 vocabTopicRepo: mockVocabTopicRepo,
                 topicRepo: mockTopicRepo,
-                excelService: mockExcel);
+                excelService: mockExcel
+            ).Handle(new ExportVocabByTopicQuery { TopicId = "T1" }, CancellationToken.None);
 
-            var result = await handler.Handle(query, CancellationToken.None);
-
+            // Assert
             result.IsSuccess.Should().BeTrue();
-            result.Data.FileName.Should().Contain("Chào hỏi cơ bản");
-            result.Data.FileContent.Should().NotBeEmpty();
+            result.Data.FileName.Should().Be("Korean Basics.xlsx");
+            result.Data.FileContent.Should().HaveCount(3);
+            result.Data.ContentType.Should().Contain("spreadsheetml");
+
+            // Excel Log
+            QACollector.LogTestCase("Excel - Export Vocab Topic", new TestCaseDetail
+            {
+                FunctionGroup     = "ExportVocabByTopic",
+                TestCaseID        = "TC-EXC-EXVT-04",
+                Description       = "Valid topic with 2 vocab items, file exported with correct name and content",
+                ExpectedResult    = "Return 200 with FileName = 'Korean Basics.xlsx'",
+                StatusRound1      = "Passed",
+                TestCaseType      = "N",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "topicName found", "vocabs.Count > 0", "ExportVocabularyToExcelAsync called" }
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // TC-EXC-EXVT-05 | N | Long topic name → truncated to 30 chars for sheet name
+        // ═══════════════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_LongTopicName_ShouldTruncateSheetName()
+        {
+            // Arrange
+            string longName = "This Is A Very Long Topic Name That Exceeds Thirty Characters";
+
+            var mockTopicRepo = new Mock<ITopicRepository>();
+            mockTopicRepo.Setup(x => x.GetTopicNameAsync("T1")).ReturnsAsync(longName);
+
+            var mockVocabTopicRepo = new Mock<IVocabularyTopicRepository>();
+            mockVocabTopicRepo.Setup(x => x.GetVocabsByTopicIdAsync("T1")).ReturnsAsync(GetSampleVocabs());
+
+            string? capturedSheetName = null;
+            var mockExcel = new Mock<IExcelService>();
+            mockExcel.Setup(x => x.ExportVocabularyToExcelAsync(It.IsAny<List<VocabularyExportDTO>>(), It.IsAny<string>()))
+                     .Callback<List<VocabularyExportDTO>, string>((_, sheetName) => capturedSheetName = sheetName)
+                     .ReturnsAsync(new byte[] { 0x01 });
+
+            // Act
+            var result = await CreateHandler(
+                vocabTopicRepo: mockVocabTopicRepo,
+                topicRepo: mockTopicRepo,
+                excelService: mockExcel
+            ).Handle(new ExportVocabByTopicQuery { TopicId = "T1" }, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            capturedSheetName.Should().NotBeNull();
+            capturedSheetName!.Length.Should().BeLessThanOrEqualTo(30);
+            result.Data.FileName.Should().Be($"{longName}.xlsx"); // FileName uses full name
+
+            // Excel Log
+            QACollector.LogTestCase("Excel - Export Vocab Topic", new TestCaseDetail
+            {
+                FunctionGroup     = "ExportVocabByTopic",
+                TestCaseID        = "TC-EXC-EXVT-05",
+                Description       = "Topic name longer than 30 chars → sheet name is truncated, filename uses full name",
+                ExpectedResult    = "Sheet name ≤ 30 chars; FileName uses full topic name",
+                StatusRound1      = "Passed",
+                TestCaseType      = "N",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "topicName.Length > 30 ? topicName.Substring(0, 30) : topicName" }
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // TC-EXC-EXVT-06 | N | ContentType is set to openxml spreadsheet
+        // ═══════════════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_ValidTopic_ContentTypeShouldBeOpenXml()
+        {
+            // Arrange
+            var mockTopicRepo = new Mock<ITopicRepository>();
+            mockTopicRepo.Setup(x => x.GetTopicNameAsync("T1")).ReturnsAsync("Korean");
+
+            var mockVocabTopicRepo = new Mock<IVocabularyTopicRepository>();
+            mockVocabTopicRepo.Setup(x => x.GetVocabsByTopicIdAsync("T1")).ReturnsAsync(GetSampleVocabs());
+
+            var mockExcel = new Mock<IExcelService>();
+            mockExcel.Setup(x => x.ExportVocabularyToExcelAsync(It.IsAny<List<VocabularyExportDTO>>(), It.IsAny<string>()))
+                     .ReturnsAsync(new byte[] { 0x01 });
+
+            // Act
+            var result = await CreateHandler(
+                vocabTopicRepo: mockVocabTopicRepo,
+                topicRepo: mockTopicRepo,
+                excelService: mockExcel
+            ).Handle(new ExportVocabByTopicQuery { TopicId = "T1" }, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Data.ContentType.Should().Be("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+            // Excel Log
+            QACollector.LogTestCase("Excel - Export Vocab Topic", new TestCaseDetail
+            {
+                FunctionGroup     = "ExportVocabByTopic",
+                TestCaseID        = "TC-EXC-EXVT-06",
+                Description       = "ContentType is set to the correct MIME type for Excel files",
+                ExpectedResult    = "ContentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'",
+                StatusRound1      = "Passed",
+                TestCaseType      = "N",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "ContentType hardcoded openxmlformat" }
+            });
         }
     }
 }

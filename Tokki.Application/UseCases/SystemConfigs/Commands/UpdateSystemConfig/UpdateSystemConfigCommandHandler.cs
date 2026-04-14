@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 
@@ -24,6 +24,7 @@ namespace Tokki.Application.UseCases.SystemConfigs.Commands.Update
             config.Value = request.Value;
             config.Description = request.Description;
             config.IsActive = request.IsActive;
+            config.ConfigType = request.ConfigType;
             config.UpdatedAt = DateTime.UtcNow.AddHours(7);
 
             await _repository.SaveChangesAsync(cancellationToken);

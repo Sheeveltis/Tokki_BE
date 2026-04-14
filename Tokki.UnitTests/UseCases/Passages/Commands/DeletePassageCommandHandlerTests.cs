@@ -93,7 +93,7 @@ namespace Tokki.UnitTests.Features.Passages.Commands
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
-            result.Message.Should().Be("Đoạn văn đã bị ẩn trước đó.");
+            result.Message.Should().Be("The passage was previously hidden.");
 
             _mockPassageRepo.Verify(x => x.UpdateAsync(It.IsAny<Tokki.Domain.Entities.Passage>()), Times.Never);
             _mockPassageRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
@@ -129,7 +129,7 @@ namespace Tokki.UnitTests.Features.Passages.Commands
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
-            result.Message.Should().Be("Xóa đoạn văn thành công.");
+            result.Message.Should().Be("Successfully deleted paragraph.");
 
             passage.Status.Should().Be(PassageStatus.Hidden);
 

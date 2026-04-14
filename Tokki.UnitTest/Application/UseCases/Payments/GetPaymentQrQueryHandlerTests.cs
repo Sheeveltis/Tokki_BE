@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -16,100 +16,238 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
 {
     public class GetPaymentQrQueryHandlerTests
     {
-        private GetPaymentQrQueryHandler CreateHandler(
+        // ─────────────────────────────────────────────────────────────────────
+        // Factory
+        // ─────────────────────────────────────────────────────────────────────
+        private static GetPaymentQrQueryHandler CreateHandler(
             Mock<IPaymentRepository>? paymentRepo = null,
-            Mock<ISePayService>? sePayService = null)
+            Mock<ISePayService>? sePay = null)
         {
-            var mockSePay = sePayService ?? new Mock<ISePayService>();
-            mockSePay.Setup(x => x.GenerateQrUrl(
-                        It.IsAny<string>(),
-                        It.IsAny<decimal>(),
-                        It.IsAny<string>()))
-                     .Returns("https://sepay.vn/qr/fake-url");
-
             return new GetPaymentQrQueryHandler(
                 (paymentRepo ?? new Mock<IPaymentRepository>()).Object,
-                mockSePay.Object);
+                (sePay       ?? new Mock<ISePayService>()).Object);
         }
 
+        private static Payment BuildPayment(string id = "PAY-001", decimal amount = 99_000m) => new()
+        {
+            Id          = id,
+            UserId      = "USER-001",
+            Amount      = amount,
+            Description = $"Thanh toán {id}",
+            Status      = PaymentStatus.Pending,
+            VipPackageId = "PKG-001"
+        };
+
+        // ═══════════════════════════════════════════════════════════════════
+        // TC-PAY-QR-01 | 404 | Payment not found → Failure
+        // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_PaymentNotFound_ShouldReturn404()
         {
             // Arrange
-            var query = new GetPaymentQrQuery("PAY-INVALID");
+            var mockRepo = new Mock<IPaymentRepository>();
+            mockRepo.Setup(x => x.GetByIdAsync(It.IsAny<string>())).ReturnsAsync((Payment?)null);
 
-            var mockPaymentRepo = new Mock<IPaymentRepository>();
-            mockPaymentRepo.Setup(x => x.GetByIdAsync(It.IsAny<string>()))
-                           .ReturnsAsync((Payment?)null);
+            var query = new GetPaymentQrQuery("INVALID");
 
-            var handler = CreateHandler(paymentRepo: mockPaymentRepo);
-            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Act
+            var result = await CreateHandler(mockRepo).Handle(query, CancellationToken.None);
 
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(404);
 
-            QACollector.LogTestCase("Payment - Get QR", new TestCaseDetail
+            QACollector.LogTestCase("Payments - Get QR", new TestCaseDetail
             {
-                FunctionGroup = "Get Payment QR",
-                TestCaseID = "TC-PAY-QR-01",
-                Description = "Lấy QR với PaymentId không tồn tại",
-                ExpectedResult = "Return 404 PaymentNotFound",
-                StatusRound1 = "Passed",
-                TestCaseType = "A",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "Invalid PaymentId",
-                    "Payment = null",
-                    "Return 404"
-                }
+                FunctionGroup     = "GetPaymentQr",
+                TestCaseID        = "TC-PAY-QR-01",
+                Description       = "PaymentId does not exist → 404 PaymentNotFound",
+                ExpectedResult    = "Return 404",
+                StatusRound1      = "Passed",
+                TestCaseType      = "A",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "payment == null" }
             });
         }
 
+        // ═══════════════════════════════════════════════════════════════════
+        // TC-PAY-QR-02 | 200 | Payment found → QR URL returned
+        // ═══════════════════════════════════════════════════════════════════
         [Fact]
-        public async Task Handle_ValidPayment_ShouldReturnQrUrl()
+        public async Task Handle_PaymentFound_ShouldReturnQrUrl()
         {
             // Arrange
+            var payment = BuildPayment("PAY-001", 99_000m);
+
+            var mockRepo = new Mock<IPaymentRepository>();
+            mockRepo.Setup(x => x.GetByIdAsync("PAY-001")).ReturnsAsync(payment);
+
+            var mockSePay = new Mock<ISePayService>();
+            mockSePay.Setup(x => x.GenerateQrUrl("PAY-001", 99_000m, It.IsAny<string>()))
+                     .Returns("https://qr.sepay.vn/PAY-001");
+
             var query = new GetPaymentQrQuery("PAY-001");
 
-            var payment = new Payment
-            {
-                Id = "PAY-001",
-                UserId = "USER-001",
-                Amount = 99000,
-                Description = "Thanh toán PAY-001",
-                Status = PaymentStatus.Pending
-            };
-
-            var mockPaymentRepo = new Mock<IPaymentRepository>();
-            mockPaymentRepo.Setup(x => x.GetByIdAsync("PAY-001"))
-                           .ReturnsAsync(payment);
-
-            var handler = CreateHandler(paymentRepo: mockPaymentRepo);
-            var result = await handler.Handle(query, CancellationToken.None);
+            // Act
+            var result = await CreateHandler(mockRepo, mockSePay).Handle(query, CancellationToken.None);
 
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
-            result.Data.Should().Contain("sepay.vn");
+            result.Data.Should().Be("https://qr.sepay.vn/PAY-001");
 
-            QACollector.LogTestCase("Payment - Get QR", new TestCaseDetail
+            QACollector.LogTestCase("Payments - Get QR", new TestCaseDetail
             {
-                FunctionGroup = "Get Payment QR",
-                TestCaseID = "TC-PAY-QR-02",
-                Description = "Lấy QR với PaymentId hợp lệ → trả về QR URL",
-                ExpectedResult = "Return 200, Data chứa 'sepay.vn'",
-                StatusRound1 = "Passed",
-                TestCaseType = "N",
-                TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string>
-                {
-                    "Valid PaymentId",
-                    "Payment tồn tại",
-                    "GenerateQrUrl called",
-                    "Return 200"
-                }
+                FunctionGroup     = "GetPaymentQr",
+                TestCaseID        = "TC-PAY-QR-02",
+                Description       = "Payment found → GenerateQrUrl called, URL returned",
+                ExpectedResult    = "Return 200, Data = QR URL",
+                StatusRound1      = "Passed",
+                TestCaseType      = "N",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "payment != null => GenerateQrUrl" }
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // TC-PAY-QR-03 | 200 | GenerateQrUrl called with correct payment fields
+        // ═══════════════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_PaymentFound_ShouldPassCorrectFieldsToGenerateQrUrl()
+        {
+            // Arrange
+            var payment = new Payment
+            {
+                Id          = "PRECISE-ID",
+                Amount      = 199_000m,
+                Description = "Thanh toán PRECISE-ID",
+                Status      = PaymentStatus.Pending,
+                UserId      = "USER-001",
+                VipPackageId = "PKG-001"
+            };
+
+            var mockRepo = new Mock<IPaymentRepository>();
+            mockRepo.Setup(x => x.GetByIdAsync("PRECISE-ID")).ReturnsAsync(payment);
+
+            var mockSePay = new Mock<ISePayService>();
+            mockSePay.Setup(x => x.GenerateQrUrl(It.IsAny<string>(), It.IsAny<decimal>(), It.IsAny<string>()))
+                     .Returns("https://qr.example.com");
+
+            var query = new GetPaymentQrQuery("PRECISE-ID");
+
+            // Act
+            await CreateHandler(mockRepo, mockSePay).Handle(query, CancellationToken.None);
+
+            // Assert – exact parameters verified
+            mockSePay.Verify(x => x.GenerateQrUrl("PRECISE-ID", 199_000m, "Thanh toán PRECISE-ID"), Times.Once);
+
+            QACollector.LogTestCase("Payments - Get QR", new TestCaseDetail
+            {
+                FunctionGroup     = "GetPaymentQr",
+                TestCaseID        = "TC-PAY-QR-03",
+                Description       = "GenerateQrUrl called with exact id, amount, description from Payment entity",
+                ExpectedResult    = "GenerateQrUrl('PRECISE-ID', 199000, 'Thanh toán PRECISE-ID') called once",
+                StatusRound1      = "Passed",
+                TestCaseType      = "N",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "GenerateQrUrl(payment.Id, payment.Amount, payment.Description)" }
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // TC-PAY-QR-04 | 200 | Different payment ID → different QR URL
+        // ═══════════════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_DifferentPaymentId_ShouldReturnDistinctQrUrl()
+        {
+            // Arrange
+            var payment2 = BuildPayment("PAY-002", 49_000m);
+
+            var mockRepo = new Mock<IPaymentRepository>();
+            mockRepo.Setup(x => x.GetByIdAsync("PAY-002")).ReturnsAsync(payment2);
+
+            var mockSePay = new Mock<ISePayService>();
+            mockSePay.Setup(x => x.GenerateQrUrl("PAY-002", It.IsAny<decimal>(), It.IsAny<string>()))
+                     .Returns("https://qr.sepay.vn/PAY-002");
+
+            var query = new GetPaymentQrQuery("PAY-002");
+
+            // Act
+            var result = await CreateHandler(mockRepo, mockSePay).Handle(query, CancellationToken.None);
+
+            // Assert
+            result.Data.Should().Be("https://qr.sepay.vn/PAY-002");
+
+            QACollector.LogTestCase("Payments - Get QR", new TestCaseDetail
+            {
+                FunctionGroup     = "GetPaymentQr",
+                TestCaseID        = "TC-PAY-QR-04",
+                Description       = "Different PaymentId produces distinct QR URL",
+                ExpectedResult    = "QR URL contains 'PAY-002'",
+                StatusRound1      = "Passed",
+                TestCaseType      = "N",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "Each paymentId → unique QR URL" }
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // TC-PAY-QR-05 | 500 | Repository throws → exception propagates
+        // ═══════════════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_RepositoryThrows_ShouldPropagateException()
+        {
+            // Arrange
+            var mockRepo = new Mock<IPaymentRepository>();
+            mockRepo.Setup(x => x.GetByIdAsync(It.IsAny<string>())).ThrowsAsync(new Exception("DB error"));
+
+            // Act & Assert
+            await Assert.ThrowsAsync<Exception>(() =>
+                CreateHandler(mockRepo).Handle(new GetPaymentQrQuery ("PAY-001"), CancellationToken.None));
+
+            QACollector.LogTestCase("Payments - Get QR", new TestCaseDetail
+            {
+                FunctionGroup     = "GetPaymentQr",
+                TestCaseID        = "TC-PAY-QR-05",
+                Description       = "Repository throws → exception propagates",
+                ExpectedResult    = "Throws Exception",
+                StatusRound1      = "Passed",
+                TestCaseType      = "A",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "GetByIdAsync throws DB error" }
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // TC-PAY-QR-06 | 500 | GenerateQrUrl throws → exception propagates
+        // ═══════════════════════════════════════════════════════════════════
+        [Fact]
+        public async Task Handle_GenerateQrUrlThrows_ShouldPropagateException()
+        {
+            // Arrange
+            var payment = BuildPayment();
+            var mockRepo = new Mock<IPaymentRepository>();
+            mockRepo.Setup(x => x.GetByIdAsync(It.IsAny<string>())).ReturnsAsync(payment);
+
+            var mockSePay = new Mock<ISePayService>();
+            mockSePay.Setup(x => x.GenerateQrUrl(It.IsAny<string>(), It.IsAny<decimal>(), It.IsAny<string>()))
+                     .Throws(new Exception("SePay service unreachable"));
+
+            // Act & Assert
+            await Assert.ThrowsAsync<Exception>(() =>
+                CreateHandler(mockRepo, mockSePay).Handle(new GetPaymentQrQuery ("PAY-001"), CancellationToken.None));
+
+            QACollector.LogTestCase("Payments - Get QR", new TestCaseDetail
+            {
+                FunctionGroup     = "GetPaymentQr",
+                TestCaseID        = "TC-PAY-QR-06",
+                Description       = "GenerateQrUrl throws (SePay unreachable) → exception propagates",
+                ExpectedResult    = "Throws Exception",
+                StatusRound1      = "Passed",
+                TestCaseType      = "A",
+                TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
+                AppliedConditions = new List<string> { "sePayService.GenerateQrUrl throws" }
             });
         }
     }

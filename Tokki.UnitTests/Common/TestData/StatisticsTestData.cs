@@ -20,13 +20,13 @@ namespace Tokki.UnitTests.Common.TestData
             {
                 new RevenueChartDto
                 {
-                    Month = "Tháng 1",
+                    Month = "January",
                     Revenue = 500000,
                     TotalOrders = 50
                 },
                 new RevenueChartDto
                 {
-                    Month = "Tháng 2",
+                    Month = "February",
                     Revenue = 700000,
                     TotalOrders = 70
                 }
@@ -36,8 +36,8 @@ namespace Tokki.UnitTests.Common.TestData
         {
             return new List<RevenueByPackageDto>
             {
-                new RevenueByPackageDto { PackageName = "VIP 1 Tháng", Revenue = 5000000, SalesCount = 100, Percentage = 50 },
-                new RevenueByPackageDto { PackageName = "VIP 1 Năm", Revenue = 5000000, SalesCount = 10, Percentage = 50 }
+                new RevenueByPackageDto { PackageName = "VIP 1 Month", Revenue = 5000000, SalesCount = 100, Percentage = 50 },
+                new RevenueByPackageDto { PackageName = "VIP 1 Year", Revenue = 5000000, SalesCount = 10, Percentage = 50 }
             };
         }
         public static List<TransactionReportDto> GetTransactions()

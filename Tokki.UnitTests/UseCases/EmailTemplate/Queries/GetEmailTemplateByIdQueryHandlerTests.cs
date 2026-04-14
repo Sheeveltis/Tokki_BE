@@ -44,7 +44,7 @@ namespace Tokki.UnitTests.Features.EmailTemplates.Queries
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
-            result.Message.Should().Be("Lấy template thành công");
+            result.Message.Should().Be("Get the template successfully");
 
             result.Data.Should().NotBeNull();
             result.Data!.TemplateId.Should().Be(existingId);
