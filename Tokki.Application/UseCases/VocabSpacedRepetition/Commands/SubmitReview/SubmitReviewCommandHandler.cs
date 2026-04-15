@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
@@ -32,26 +32,49 @@ namespace Tokki.Application.UseCases.VocabSpacedRepetition.Commands.SubmitReview
 
             if (progress == null)
             {
+                // TRƯỜNG HỢP 1: TỪ MỚI (CHƯA CÓ TRONG TIẾN TRÌNH)
+                // Theo yêu cầu: "từ mới thì nó sẽ set box level là learning"
                 progress = new UserVocabProgress
                 {
                     UserVocabProgressId = _idGen.Generate(15),
                     UserId = request.UserId,
                     VocabularyId = request.VocabularyId,
 
-                    BoxLevel = BoxLevel.Learning,
-                    Streak = 0,
+                    BoxLevel = BoxLevel.Learning, // Bắt đầu ở Learning (Box 1)
+                    Streak = request.IsCorrect ? 1 : 0,
 
                     IsMastered = false,
-
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    LastReviewedAt = DateTime.UtcNow
                 };
+
+                // Nếu đúng ngay lần đầu, ôn lại sau 1 ngày (Hũ 1). 
+                // Nếu sai, ôn lại ngay sau 10 phút.
+                progress.IntervalDays = request.IsCorrect ? GetIntervalByLevel(BoxLevel.Learning) : 0;
+                
+                if (progress.IntervalDays < 1)
+                    progress.NextReviewAt = DateTime.UtcNow.AddMinutes(10);
+                else
+                    progress.NextReviewAt = DateTime.UtcNow.AddDays(progress.IntervalDays);
 
                 await _repo.AddAsync(progress, cancellationToken);
             }
+            else
+            {
+                // TRƯỜNG HỢP 2: ĐÃ HỌC (NÂNG CẤP HOẶC GIẢM CẤP)
+                CalculateLogic(progress, request.IsCorrect);
+                
+                progress.UpdatedAt = DateTime.UtcNow;
+                progress.LastReviewedAt = DateTime.UtcNow;
 
-            CalculateLogic(progress, request.IsCorrect);
-            progress.UpdatedAt = DateTime.UtcNow;
-            progress.LastReviewedAt = DateTime.UtcNow;
+                // Tính toán ngày ôn tiếp theo dựa trên IntervalDays mới
+                if (progress.IntervalDays < 1)
+                    progress.NextReviewAt = DateTime.UtcNow.AddMinutes(10);
+                else
+                    progress.NextReviewAt = DateTime.UtcNow.AddDays(progress.IntervalDays);
+            }
+            
             await _repo.SaveChangesAsync(cancellationToken);
 
             return OperationResult<ReviewResponse>.Success(new ReviewResponse
@@ -68,14 +91,15 @@ namespace Tokki.Application.UseCases.VocabSpacedRepetition.Commands.SubmitReview
         {
             if (isCorrect)
             {
+                // Nâng cấp level dần dần
                 if (p.BoxLevel < BoxLevel.Mastered)
                 {
                     p.BoxLevel++;
-
-                    p.Streak = 0;
+                    p.Streak = 0; // Reset streak khi lên level mới
                 }
                 else
                 {
+                    // Nếu đã ở level cao nhất, tăng streak để đạt trạng thái "Mastered" hoàn toàn
                     p.Streak++;
 
                     if (p.Streak >= 2)
@@ -83,17 +107,24 @@ namespace Tokki.Application.UseCases.VocabSpacedRepetition.Commands.SubmitReview
                         p.IsMastered = true;
                     }
                 }
+
+                // Cập nhật IntervalDays theo level mới
+                if (p.IsMastered)
+                {
+                    p.IntervalDays = 90; // Thuộc lòng rồi thì 3 tháng sau mới xem lại
+                }
+                else
+                {
+                    p.IntervalDays = GetIntervalByLevel(p.BoxLevel);
+                }
             }
             else
             {
-
+                // GIẢM CÁC THỨ ĐỒ KHI SAI
                 p.Streak = 0;
+                p.IsMastered = false;
 
-                if (p.IsMastered)
-                {
-                    p.IsMastered = false;
-                }
-
+                // Giảm level xuống 1 bậc, tối thiểu là Learning
                 if (p.BoxLevel > BoxLevel.Learning)
                 {
                     p.BoxLevel--;
@@ -102,21 +133,10 @@ namespace Tokki.Application.UseCases.VocabSpacedRepetition.Commands.SubmitReview
                 {
                     p.BoxLevel = BoxLevel.Learning;
                 }
-            }
 
-            if (p.IsMastered)
-            {
-                p.IntervalDays = 90;
+                // Sai thì phải làm lại sớm (10 phút sau)
+                p.IntervalDays = 0;
             }
-            else
-            {
-                p.IntervalDays = GetIntervalByLevel(p.BoxLevel);
-            }
-
-            if (p.IntervalDays < 1)
-                p.NextReviewAt = DateTime.UtcNow.AddMinutes(10); 
-            else
-                p.NextReviewAt = DateTime.UtcNow.AddDays(p.IntervalDays);
         }
         private double GetIntervalByLevel(BoxLevel level)
         {
