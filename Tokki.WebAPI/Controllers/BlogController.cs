@@ -160,9 +160,18 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
+        [HttpPost("user/submit-approval/{id}")]
+        [Authorize]
+        public async Task<IActionResult> SubmitForApproval(string id)
+        {
+            var command = new SubmitBlogForApprovalCommand { BlogId = id };
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
         [HttpPost("staff/submit-approval/{id}")]
         [Authorize(Roles ="Staff")] 
-        public async Task<IActionResult> SubmitForApproval(string id)
+        public async Task<IActionResult> SubmitForApprovalStaff(string id)
         {
             var command = new SubmitBlogForApprovalCommand { BlogId = id };
             var result = await _sender.Send(command);
