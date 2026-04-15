@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System;
@@ -15,18 +15,18 @@ namespace Tokki.Application.UseCases.Games.Commands.UpdateGameResult
     public class UpdateGameResultCommandHandler
         : IRequestHandler<UpdateGameResultCommand, OperationResult<bool>>
     {
-        private readonly IGameRepository _gameRepository;
+
         private readonly IGameMatchSessionRepository _sessionRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<UpdateGameResultCommandHandler> _logger;
 
         public UpdateGameResultCommandHandler(
-            IGameRepository gameRepository,
+
             IGameMatchSessionRepository sessionRepository,
             IHttpContextAccessor httpContextAccessor,
             ILogger<UpdateGameResultCommandHandler> logger)
         {
-            _gameRepository = gameRepository;
+
             _sessionRepository = sessionRepository;
             _httpContextAccessor = httpContextAccessor;
             _logger = logger;
@@ -55,21 +55,10 @@ namespace Tokki.Application.UseCases.Games.Commands.UpdateGameResult
 
             try
             {
-                // 2. Kiểm tra game tồn tại & đang hoạt động
-                var game = await _gameRepository.GetByIdAsync(request.GameId);
-                if (game == null || game.Status != GameStatus.Active)
-                {
-                    return OperationResult<bool>.Failure(
-                        new List<Error> { AppErrors.GameNotFound },
-                        404,
-                        AppErrors.GameNotFound.Description
-                    );
-                }
-
                 // 3. Lấy session hiện tại của user cho Game + Topic + Difficulty
                 var session = await _sessionRepository.GetByUserGameTopicAsync(
                     request.UserId,
-                    request.GameId,
+                    request.GameType,
                     request.TopicId,
                     request.GameDifficulty
                 );
@@ -105,8 +94,8 @@ namespace Tokki.Application.UseCases.Games.Commands.UpdateGameResult
             catch (Exception ex)
             {
                 _logger.LogError(ex,
-                    "Lỗi khi cập nhật kết quả game. UserId={UserId}, GameId={GameId}, TopicId={TopicId}, Difficulty={Difficulty}",
-                    request.UserId, request.GameId, request.TopicId, request.GameDifficulty);
+                    "Lỗi khi cập nhật kết quả game. UserId={UserId}, GameType={GameType}, TopicId={TopicId}, Difficulty={Difficulty}",
+                    request.UserId, request.GameType, request.TopicId, request.GameDifficulty);
 
                 return OperationResult<bool>.Failure(
                     new List<Error> { AppErrors.ServerError },

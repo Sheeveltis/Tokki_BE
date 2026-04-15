@@ -66,6 +66,23 @@ namespace Tokki.WebAPI.Controllers
             var result = await _sender.Send(query);
             return StatusCode(result.StatusCode, result);
         }
+
+        [HttpGet("user/{blogId}")]
+        [Authorize]
+        public async Task<IActionResult> GetByUser(string blogId)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? User.FindFirst("sub")?.Value;
+
+            var query = new GetBlogByIdQuery 
+            { 
+                Id = blogId, 
+                IsAdminView = false,
+                RequesterUserId = userId
+            };
+            var result = await _sender.Send(query);
+            return StatusCode(result.StatusCode, result);
+        }
         [HttpPost("user")]
         [Authorize]
         public async Task<IActionResult> CreateUserBlog([FromBody] CreateUserBlogCommand command)
@@ -143,9 +160,18 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
+        [HttpPost("user/submit-approval/{id}")]
+        [Authorize]
+        public async Task<IActionResult> SubmitForApproval(string id)
+        {
+            var command = new SubmitBlogForApprovalCommand { BlogId = id };
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
         [HttpPost("staff/submit-approval/{id}")]
         [Authorize(Roles ="Staff")] 
-        public async Task<IActionResult> SubmitForApproval(string id)
+        public async Task<IActionResult> SubmitForApprovalStaff(string id)
         {
             var command = new SubmitBlogForApprovalCommand { BlogId = id };
             var result = await _sender.Send(command);

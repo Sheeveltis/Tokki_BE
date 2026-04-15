@@ -49,7 +49,7 @@ namespace Tokki.Infrastructure.Data
         public DbSet<ChatRoomMember> ChatRoomMembers { get; set; }
         public DbSet<ChatMessage> ChatMessages { get; set; }
         public DbSet<UserVocabProgress> UserVocabProgresses { get; set; }
-        public DbSet<Game> Games { get; set; }
+
         public DbSet<GameMatchSession> GameMatchSessions { get; set; }
         public DbSet<UserTopicProgress> UserTopicProgresses { get; set; }
         public DbSet<UserRoadmap> UserRoadmaps { get; set; }
@@ -655,23 +655,6 @@ namespace Tokki.Infrastructure.Data
             // 10. CONFIG GAME / GAME MATCH / GAME MATCH SESSION
             // =========================================================
 
-            modelBuilder.Entity<Game>(entity =>
-            {
-                entity.HasKey(g => g.GameId);
-
-                entity.Property(g => g.GameType)
-                      .HasConversion<int>();
-
-                entity.Property(g => g.Status)
-                      .HasConversion<int>();
-
-                entity.Property(g => g.CreatedAt)
-                      .HasDefaultValueSql("GETUTCDATE()");
-
-                entity.Property(g => g.UpdatedAt)
-                      .HasDefaultValueSql("GETUTCDATE()");
-            });
-
 
             modelBuilder.Entity<GameMatchSession>(entity =>
             {
@@ -686,9 +669,8 @@ namespace Tokki.Infrastructure.Data
                 entity.Property(s => s.GameDifficulty)
         .HasColumnName("Difficulty")
         .HasConversion<int>();
-                entity.Property(s => s.GameId)
-                      .IsRequired()
-                      .HasMaxLength(15);   // khớp với Games.GameId
+                entity.Property(s => s.GameType)
+                      .HasConversion<int>();
 
                 entity.Property(s => s.TopicId)
                       .IsRequired(false)
@@ -704,11 +686,7 @@ namespace Tokki.Infrastructure.Data
 
            
 
-                // Quan hệ tới Game
-                entity.HasOne(s => s.Game)
-                      .WithMany(g => g.PlaySessions)
-                      .HasForeignKey(s => s.GameId)
-                      .OnDelete(DeleteBehavior.Restrict);
+
 
                 // Quan hệ tới Topic (nullable — Solitaire không có topic)
                 entity.HasOne(s => s.Topic)

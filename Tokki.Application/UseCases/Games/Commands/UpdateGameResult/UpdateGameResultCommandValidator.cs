@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 
 namespace Tokki.Application.UseCases.Games.Commands.UpdateGameResult
 {
@@ -6,9 +6,8 @@ namespace Tokki.Application.UseCases.Games.Commands.UpdateGameResult
     {
         public UpdateGameResultCommandValidator()
         {
-            RuleFor(x => x.GameId)
-                .NotEmpty().WithMessage("GameId không được để trống.")
-                .MaximumLength(15).WithMessage("GameId không được vượt quá 15 ký tự.")
+            RuleFor(x => x.GameType)
+                .IsInEnum().WithMessage("GameType không hợp lệ.")
                 .WithName("Game");
 
             RuleFor(x => x.TopicId)

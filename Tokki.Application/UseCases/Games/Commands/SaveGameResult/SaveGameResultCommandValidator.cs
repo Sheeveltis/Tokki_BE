@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 
 namespace Tokki.Application.UseCases.Games.Commands.SaveGameResult
 {
@@ -6,19 +6,10 @@ namespace Tokki.Application.UseCases.Games.Commands.SaveGameResult
     {
         public SaveGameResultCommandValidator()
         {
-            RuleFor(x => x.GameId)
-                .NotEmpty()
-                    .WithMessage("GameId không được để trống.")
-                .MaximumLength(15)
-                    .WithMessage("GameId không được vượt quá 15 ký tự.")
+            RuleFor(x => x.GameType)
+                .IsInEnum()
+                    .WithMessage("GameType không hợp lệ.")
                 .WithName("Game");
-
-            RuleFor(x => x.TopicId)
-                .NotEmpty()
-                    .WithMessage("TopicId không được để trống.")
-                .MaximumLength(50)
-                    .WithMessage("TopicId không được vượt quá 50 ký tự.")
-                .WithName("Chủ đề");
 
             RuleFor(x => x.Score)
                 .GreaterThanOrEqualTo(0)

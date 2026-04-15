@@ -6,7 +6,7 @@ using Tokki.Application.UseCases.Games.DTOs;
 namespace Tokki.Application.UseCases.Games.Queries.GetGameResultForUser
 {
     public class GetGameResultForUserQueryHandler
-        : IRequestHandler<GetGameResultForUserQuery, OperationResult<GameResultDto?>>
+        : IRequestHandler<GetGameResultForUserQuery, OperationResult<PagedResult<GameResultDto>>>
     {
         private readonly IGameMatchSessionRepository _sessionRepository;
         private readonly IAccountRepository _accountRepository;
@@ -19,47 +19,62 @@ namespace Tokki.Application.UseCases.Games.Queries.GetGameResultForUser
             _accountRepository = accountRepository;
         }
 
-        public async Task<OperationResult<GameResultDto?>> Handle(
+        public async Task<OperationResult<PagedResult<GameResultDto>>> Handle(
             GetGameResultForUserQuery request,
             CancellationToken cancellationToken)
         {
-            var session = await _sessionRepository.GetByUserGameTopicAsync(
+            var result = await _sessionRepository.GetAllByUserAsync(
                 request.UserId,
-                request.GameId,
+                request.GameType,
                 request.TopicId,
-                request.GameDifficulty
+                request.GameDifficulty,
+                request.PageNumber,
+                request.PageSize
             );
 
-            if (session == null)
+            var sessions = result.Items;
+            var totalCount = result.TotalCount;
+
+            if (sessions == null || !sessions.Any())
             {
-                return OperationResult<GameResultDto?>.Failure(
-                    new List<Error> { AppErrors.GameResultNotFound },
-                    404,
-                    AppErrors.GameResultNotFound.Description
+                var emptyPaged = PagedResult<GameResultDto>.Create(
+                    new List<GameResultDto>(), 0, request.PageNumber, request.PageSize);
+                return OperationResult<PagedResult<GameResultDto>>.Success(
+                    emptyPaged,
+                    200,
+                    "Không tìm thấy kết quả trò chơi"
                 );
             }
 
-            var userInfo = await _accountRepository.GetBasicInfoAsync(session.UserId);
+            var userInfo = await _accountRepository.GetBasicInfoAsync(request.UserId);
+            var dtoList = new List<GameResultDto>();
 
-            var dto = new GameResultDto
+            foreach (var session in sessions)
             {
-                GameMatchSessionId = session.GameMatchSessionId,
-                UserId = session.UserId,
-                UserName = userInfo?.FullName ?? string.Empty,
-                AvatarUrl = userInfo?.AvatarUrl,
-                TitleName = userInfo?.CurrentTitleName,
-                TitleColorHex = userInfo?.CurrentColorHexTitle,
-                TitleIconUrl = userInfo?.TitleIconUrl,
-                GameId = session.GameId,
-                TopicId = session.TopicId,
-                BestScore = session.BestScore,
-                LatestScore = session.LatestScore,
-                GameDifficulty = session.GameDifficulty,
-                CreatedAt = session.CreatedAt
-            };
+                var dto = new GameResultDto
+                {
+                    GameMatchSessionId = session.GameMatchSessionId,
+                    UserId = session.UserId,
+                    UserName = userInfo?.FullName ?? string.Empty,
+                    AvatarUrl = userInfo?.AvatarUrl,
+                    TitleName = userInfo?.CurrentTitleName,
+                    TitleColorHex = userInfo?.CurrentColorHexTitle,
+                    TitleIconUrl = userInfo?.TitleIconUrl,
+                    GameType = session.GameType,
+                    TopicId = session.TopicId,
+                    BestScore = session.BestScore,
+                    LatestScore = session.LatestScore,
+                    GameDifficulty = session.GameDifficulty,
+                    CreatedAt = session.CreatedAt
+                };
+                dtoList.Add(dto);
+            }
 
-            return OperationResult<GameResultDto?>.Success(
-                dto,
+            var pagedResult = PagedResult<GameResultDto>.Create(
+                dtoList, totalCount, request.PageNumber, request.PageSize);
+
+            return OperationResult<PagedResult<GameResultDto>>.Success(
+                pagedResult,
                 200,
                 "Lấy kết quả trò chơi thành công"
             );

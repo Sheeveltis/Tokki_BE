@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System;
@@ -17,20 +17,20 @@ namespace Tokki.Application.UseCases.Games.Commands.SaveGameResult
     public class SaveGameResultCommandHandler
         : IRequestHandler<SaveGameResultCommand, OperationResult<bool>>
     {
-        private readonly IGameRepository _gameRepository;
+
         private readonly IGameMatchSessionRepository _sessionRepository;
         private readonly IIdGeneratorService _idGeneratorService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<SaveGameResultCommandHandler> _logger;
 
         public SaveGameResultCommandHandler(
-            IGameRepository gameRepository,
+
             IGameMatchSessionRepository sessionRepository,
             IIdGeneratorService idGeneratorService,
             IHttpContextAccessor httpContextAccessor,
             ILogger<SaveGameResultCommandHandler> logger)
         {
-            _gameRepository = gameRepository;
+
             _sessionRepository = sessionRepository;
             _idGeneratorService = idGeneratorService;
             _httpContextAccessor = httpContextAccessor;
@@ -60,21 +60,10 @@ namespace Tokki.Application.UseCases.Games.Commands.SaveGameResult
 
             try
             {
-                // 2. Kiểm tra game tồn tại & đang hoạt động
-                var game = await _gameRepository.GetByIdAsync(request.GameId);
-                if (game == null || game.Status != GameStatus.Active)
-                {
-                    return OperationResult<bool>.Failure(
-                        new List<Error> { AppErrors.GameNotFound },
-                        404,
-                        AppErrors.GameNotFound.Description
-                    );
-                }
-
                 // 3. Lấy session hiện tại của user cho Game + Topic + Difficulty
                 var session = await _sessionRepository.GetByUserGameTopicAsync(
                     request.UserId,
-                    request.GameId,
+                    request.GameType,
                     request.TopicId,
                     request.GameDifficulty
                 );
@@ -88,7 +77,7 @@ namespace Tokki.Application.UseCases.Games.Commands.SaveGameResult
                     {
                         GameMatchSessionId = newId,
                         UserId = request.UserId,
-                        GameId = request.GameId,
+                        GameType = request.GameType,
                         TopicId = request.TopicId,
                         GameDifficulty = request.GameDifficulty,
                         BestScore = request.Score,
@@ -122,8 +111,8 @@ namespace Tokki.Application.UseCases.Games.Commands.SaveGameResult
             catch (Exception ex)
             {
                 _logger.LogError(ex,
-                    "Lỗi khi lưu kết quả game. UserId={UserId}, GameId={GameId}, TopicId={TopicId}, Difficulty={Difficulty}",
-                    request.UserId, request.GameId, request.TopicId, request.GameDifficulty);
+                    "Lỗi khi lưu kết quả game. UserId={UserId}, GameType={GameType}, TopicId={TopicId}, Difficulty={Difficulty}",
+                    request.UserId, request.GameType, request.TopicId, request.GameDifficulty);
 
                 return OperationResult<bool>.Failure(
                     new List<Error> { AppErrors.ServerError },
