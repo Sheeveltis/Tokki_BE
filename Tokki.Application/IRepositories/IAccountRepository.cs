@@ -13,7 +13,7 @@ namespace Tokki.Application.IRepositories
     {
         Task<bool> IsEmailExistsAsync(string email);
         Task AddAsync(Account user);
-        Task SaveChangesAsync(CancellationToken cancellationToken);
+        Task SaveChangesAsync(CancellationToken cancellationToken = default);
         Task<Account?> GetByEmailAsync(string email);
         Task UpdateUserAsync(Account user);
         Task<Account?> GetByIdAsync(string userId);

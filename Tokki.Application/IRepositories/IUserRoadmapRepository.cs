@@ -1,11 +1,11 @@
-﻿using Tokki.Application.UseCases.Roadmap.DTOs;
+using Tokki.Application.UseCases.Roadmap.DTOs;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 
 public interface IUserRoadmapRepository
 {
     Task AddAsync(UserRoadmap roadmap);
-    Task <bool>SaveChangesAsync(CancellationToken cancellationToken);
+    Task <bool>SaveChangesAsync(CancellationToken cancellationToken = default);
     Task<UserRoadmap?> GetActiveRoadmapByUserIdAsync(string userId, CancellationToken cancellationToken = default);
     Task<RoadmapDailyTask?> GetTaskByIdAsync(string taskId, CancellationToken cancellationToken = default);
     Task<RoadmapWeek?> GetWeekByIdAsync(string weekId, CancellationToken cancellationToken = default);
