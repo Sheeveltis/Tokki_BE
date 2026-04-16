@@ -6,6 +6,7 @@ using Tokki.Application.Common.Helpers;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Application.UseCases.Accounts.DTOs;
+using Tokki.Application.UseCases.Gamification.DTOs;
 using Tokki.Application.UseCases.Gamification.Commands.AddGameXp;
 
 namespace Tokki.WebAPI.Controllers
@@ -44,6 +45,17 @@ namespace Tokki.WebAPI.Controllers
             });
         }
 
+        [HttpGet("my-streak")]
+        public async Task<IActionResult> GetMyStreak()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var result = await _gamificationService.GetStreakStatusAsync(userId);
+            return Ok(result);
+        }
+
         [HttpGet("progress")]
         public async Task<IActionResult> GetUserProgress()
         {
@@ -62,6 +74,8 @@ namespace Tokki.WebAPI.Controllers
             long xpGainedInCurrentLevel = user.TotalXP - xpAtStartOfLevel;
             long xpRequiredForThisLevelRange = xpAtStartOfNextLevel - xpAtStartOfLevel;
 
+            var streakStatus = await _gamificationService.GetStreakStatusAsync(userId);
+ 
             return Ok(new
             {
                 Level = currentLevel,
@@ -69,7 +83,8 @@ namespace Tokki.WebAPI.Controllers
                 XPInCurrentLevel = xpGainedInCurrentLevel,
                 MaxXPOfLevel = xpRequiredForThisLevelRange,
                 ProgressPercentage = Math.Round(((double)xpGainedInCurrentLevel / xpRequiredForThisLevelRange) * 100, 2),
-                Streak = user.AchievedGoalStreak,
+                Streak = streakStatus.CurrentStreak,
+                IsCompletedToday = streakStatus.IsCompletedToday,
                 Title = user.CurrentTitle?.Name ?? "N/A"
             });
         }
