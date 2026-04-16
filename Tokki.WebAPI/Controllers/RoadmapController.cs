@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +12,7 @@ using Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap;
 using Tokki.Application.UseCases.Roadmap.Commands.ProcessWeeklyResult;
 using Tokki.Application.UseCases.Roadmap.DTOs;
 using Tokki.Application.UseCases.Roadmap.Queries;
+using Tokki.Application.UseCases.Roadmap.Queries.GetCurrentWeekProgress;
 using Tokki.Application.UseCases.Roadmap.Queries.GetEntranceExam;
 using Tokki.Application.UseCases.Roadmap.Queries.GetEntranceFeedback;
 using Tokki.Application.UseCases.Roadmap.Queries.GetRoadmap;
@@ -88,6 +89,21 @@ namespace Tokki.WebAPI.Controllers
                 return Unauthorized("Không tìm thấy thông tin người dùng.");
 
             var query = new GetRoadmapQuery(userId);
+            var result = await _mediator.Send(query);
+
+            if (result.IsSuccess) return Ok(result);
+            if (result.StatusCode == 404) return NotFound(result);
+            return BadRequest(result);
+        }
+
+        [HttpGet("current-week-progress")]
+        public async Task<IActionResult> GetCurrentWeekProgress()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("Không tìm thấy thông tin người dùng.");
+
+            var query = new GetCurrentWeekProgressQuery(userId);
             var result = await _mediator.Send(query);
 
             if (result.IsSuccess) return Ok(result);
