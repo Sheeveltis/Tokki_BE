@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Tokki.Application.IServices;
 using Tokki.Application.UseCases.Blogs.Commands.ApproveBlog;
 using Tokki.Application.UseCases.Blogs.Commands.CreateBlog;
 using Tokki.Application.UseCases.Blogs.Commands.CreateUserBlog;
@@ -16,6 +17,7 @@ using Tokki.Application.UseCases.Blogs.Queries.ExportBlogs;
 using Tokki.Application.UseCases.Blogs.Queries.GetPagedBlogs;
 using Tokki.Application.UseCases.Blogs.Commands.SaveDraftBlog;
 using Tokki.Application.UseCases.Blogs.Queries.GetMyBlogs;
+using Tokki.Application.UseCases.Blogs.Commands.GenerateBlogCover;
 using Tokki.Domain.Enums;
 
 namespace Tokki.WebAPI.Controllers
@@ -24,7 +26,8 @@ namespace Tokki.WebAPI.Controllers
     [ApiController]
     public class BlogController : ControllerBase
     {
-        private readonly ISender _sender; 
+        private readonly ISender _sender;
+
         public BlogController(ISender sender)
         {
             _sender = sender;
@@ -224,5 +227,20 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
+        [HttpPost("generate-cover")]
+        [Authorize]
+        public async Task<IActionResult> GenerateCover([FromBody] GenerateBlogCoverCommand command)
+        {
+            if (command == null) return BadRequest("Dữ liệu yêu cầu không hợp lệ.");
+            
+            var result = await _sender.Send(command);
+            
+            if (result.IsSuccess && result.Data != null)
+            {
+                return File(result.Data, "image/png", $"cover_{Guid.NewGuid():N}.png");
+            }
+            
+            return StatusCode(result.StatusCode, result);
+        }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Text.Json;
 using FluentValidation;
 using Tokki.Application.Common.Models;
@@ -8,10 +8,12 @@ namespace Tokki.WebAPI.Middlewares
     public class GlobalExceptionMiddleware
     {
         private readonly RequestDelegate _next;
+        private readonly ILogger<GlobalExceptionMiddleware> _logger;
 
-        public GlobalExceptionMiddleware(RequestDelegate next)
+        public GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExceptionMiddleware> logger)
         {
             _next = next;
+            _logger = logger;
         }
 
         public async Task Invoke(HttpContext context)
@@ -22,6 +24,7 @@ namespace Tokki.WebAPI.Middlewares
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Unhandled exception occurred: {Message}", ex.Message);
                 await HandleExceptionAsync(context, ex);
             }
         }
@@ -34,7 +37,7 @@ namespace Tokki.WebAPI.Middlewares
             var response = OperationResult<string>.Failure(
                 AppErrors.ServerError,
                 statusCode,
-                "Đã xảy ra lỗi hệ thống."
+                AppErrors.ServerError.Description
             );
 
             if (exception is ValidationException validationEx)
