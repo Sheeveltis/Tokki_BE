@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Tokki.Domain.Entities
@@ -19,6 +19,7 @@ namespace Tokki.Domain.Entities
         public int Status { get; set; } 
         public double? InitialScore { get; set; }
         public double? CurrentScore { get; set; }
+        public int Priority { get; set; } 
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
