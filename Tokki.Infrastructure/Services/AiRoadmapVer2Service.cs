@@ -74,7 +74,7 @@ namespace Tokki.Infrastructure.Services
         {
             var focusDetails = string.Join("\n", weakTypeInfos.Select(f => $"- {f.Code}: {f.Name} ({f.Skill}) [ID: {f.QuestionTypeId}]"));
             var deferredDetails = deferredTypeIds.Any() 
-                ? "Dạng bài cần lưu ý từ tuần trước: " + string.Join(", ", fullMenu.Where(m => deferredTypeIds.Contains(m.QuestionTypeId)).Select(m => m.Name))
+                ? "DANH SÁCH TẠM HOÃN (Đã sai 2 tuần liên tiếp, cần tạm dừng để học dạng mới): " + string.Join(", ", fullMenu.Where(m => deferredTypeIds.Contains(m.QuestionTypeId)).Select(m => m.Name))
                 : "Không có dạng bài tồn đọng đặc biệt.";
             
             string prompt = $@"
@@ -89,16 +89,38 @@ namespace Tokki.Infrastructure.Services
             - {deferredDetails}
 
             QUY TẮC THIẾT KẾ & PHÂN BỔ (QUAN TRỌNG):
-            1. THỨ 2 (DayIndex 1): 
-               - NẾU weekIndex > 1: BẮT BUỘC có 1 task ""Document"" đầu tiên. Tiêu đề: ""Tái khởi động và Phân tích nội dung tuần {weekIndex}"". Nội dung (HTML): Tóm tắt tiến độ tuần trước dựa trên kết quả bài thi tuần, liệt kê các điểm cần cải thiện ({deferredDetails}), và nêu bật mục tiêu học tập 5 dạng bài của tuần này.
-               - Sau đó là 2 task học tập bình thường: LearnTheory và VirtualQuiz cho dạng bài đầu tiên.
-            2. THỨ 3 - THỨ 6 (HỌC MỚI): Mỗi ngày học 1 dạng bài duy nhất. Một ngày gồm 2 task: LearnTheory và VirtualQuiz.
-            3. THỨ 7 (TỔNG ÔN TẬP - DayIndex 6): 
-               - 1 Task LearnTheory: Tiêu đề BẮT BUỘC là ""Tóm tắt tinh hoa và chiến thuật các dạng bài tuần {weekIndex}"".
-               - Các Task VirtualQuiz: Mỗi task tương ứng với 1 QuestionTypeId khác nhau từ danh sách dạng của tuần này.
-            4. CHỦ NHẬT (THI THỬ - DayIndex 7): 
-               - 1 Task WeeklyExam: Tiêu đề ""Bài kiểm tra tổng hợp tuần {weekIndex}"".
-            5. TÍNH CHÍNH XÁC: Chỉ sử dụng QuestionTypeId từ danh sách đã cho. KHÔNG ĐƯỢC để trống (null) bất kỳ trường nào trong JSON.
+            1. PHÂN BỔ DẠNG BÀI (TUÂN THỦ FIFO): 5 dạng bài trọng tâm trên được đánh số từ 1 đến 5 theo thứ tự ưu tiên. Bạn PHẢI phân bổ như sau:
+               - THỨ 2 (Day 1): Dạng bài 1 (Dạng đầu tiên trong danh sách).
+               - THỨ 3 (Day 2): Dạng bài 2.
+               - THỨ 4 (Day 3): Dạng bài 3.
+               - THỨ 5 (Day 4): Dạng bài 4.
+               - THỨ 6 (Day 5): Dạng bài 5.
+            2. CHI TIẾT CÁC NGÀY:
+               - THỨ 2 (DayIndex 1): 
+                 * NẾU weekIndex > 1: BẮT BUỘC có 1 task ""Document"" đầu tiên (questionTypeId: null). Tiêu đề: ""Tái khởi động và Phân tích nội dung tuần {weekIndex}"". Nội dung (HTML): Tóm tắt tiến độ tuần trước dựa trên kết quả bài thi tuần. ĐẶC BIỆT, nếu có danh sách '{deferredDetails}', bạn phải giải thích khéo léo cho học viên rằng các dạng này sẽ tạm thời được hoãn lại để họ tập trung vào các dạng bài mới, giúp đổi mới tư duy tránh bị quá tải trước khi quay lại ôn tập sau. Cuối cùng, nêu bật mục tiêu học tập 5 dạng bài của tuần này.
+                 * Sau đó là 2 task cho Dạng bài 1: LearnTheory và VirtualQuiz.
+               - THỨ 3 - THỨ 6 (DayIndex 2-5): Mỗi ngày học 1 dạng bài duy nhất theo thứ tự trên. Mỗi ngày gồm 2 task: LearnTheory và VirtualQuiz.
+               - THỨ 7 (TỔNG ÔN TẬP - DayIndex 6): 
+                 * 1 Task LearnTheory (questionTypeId: null): Tiêu đề BẮT BUỘC là ""Tóm tắt tinh hoa và chiến thuật các dạng bài tuần {weekIndex}"".
+                 * Các Task VirtualQuiz: Mỗi task tương ứng với 1 QuestionTypeId khác nhau từ danh sách 5 dạng của tuần này.
+               - CHỦ NHẬT (THI THỬ - DayIndex 7): 
+                 * 1 Task WeeklyExam (questionTypeId: null): Tiêu đề ""Bài kiểm tra tổng hợp tuần {weekIndex}"".
+            3. QUY ĐỊNH VỀ ID: 
+               - CHỈ sử dụng QuestionTypeId từ danh sách 5 dạng bài đã cho ở trên. 
+               - Các task ""Document"" và ""WeeklyExam"" và task LearnTheory của THỨ 7 BẮT BUỘC phải để ""questionTypeId"": null.
+               - KHÔNG tự sinh ID mới, KHÔNG dùng ID không có trong danh sách.
+
+            YÊU CẦU NỘI DUNG CHO TASK LearnTheory (CỰC KỲ QUAN TRỌNG):
+            Phần ""content"" của task LearnTheory phải dài, chi tiết và được trình bày bằng HTML đẹp mắt, chia rõ làm 2 phần lớn:
+            1. GIOI THIEU (Giới thiệu):
+               - Mô tả chi tiết dạng bài này gồm những cái gì, cấu trúc thường gặp.
+               - Những gì học viên cần tập trung nhất khi làm dạng này (Key focus).
+               - Phương pháp học và phương pháp làm bài hiệu quả (Tips & Strategies).
+            2. LY THUYET (Lý thuyết):
+               - Trình bày kiến thức chuyên sâu.
+               - Những điểm lưu ý quan trọng, các lỗi sai thường gặp.
+               - Các ngữ pháp thông dụng thường xuyên xuất hiện trong dạng bài này.
+               - Các kiến thức bổ trợ hoặc phát triển thêm để nâng cao trình độ.
 
             CỐ ĐỊNH CÁC LOẠI TASK: LearnTheory, VirtualQuiz, WeeklyExam, Document.
 

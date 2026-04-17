@@ -284,9 +284,21 @@ namespace Tokki.Application.UseCases.RoadmapVer2.Commands.GenerateRoadmap
 
                                         // Fallback QuestionTypeId cho VirtualQuiz nếu AI quên
                                         string? finalQTypeId = taskDto.QuestionTypeId;
+                                        if (string.IsNullOrWhiteSpace(finalQTypeId) || finalQTypeId.Equals("null", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            finalQTypeId = null;
+                                        }
+
                                         if (taskEnum == RoadmapTaskType.VirtualQuiz && string.IsNullOrEmpty(finalQTypeId))
                                         {
                                             finalQTypeId = dayDto.Tasks.FirstOrDefault(t => t.TaskType == "LearnTheory")?.QuestionTypeId;
+                                        }
+
+                                        // Thêm bước validation cuối cùng để tránh lỗi FK DB
+                                        if (finalQTypeId != null && !allLevelTypeIds.Contains(finalQTypeId))
+                                        {
+                                            _logger.LogWarning("AI returned invalid QuestionTypeId: {InvalidId} for User {UserId}. Setting to null.", finalQTypeId, request.UserId);
+                                            finalQTypeId = null;
                                         }
 
                                         weekEntity.DailyTasks.Add(new RoadmapDailyTask

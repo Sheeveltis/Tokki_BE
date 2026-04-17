@@ -109,7 +109,7 @@ namespace Tokki.Application.UseCases.RoadmapVer2.Commands.GenerateNextWeek
 
                     // 3. Lựa chọn dạng bài cho tuần mới
                     var nextTypes = await SelectTypesForNextWeekAsync(roadmap.UserRoadmapId, request.UserId, weaknessRepo, CancellationToken.None);
-                    if (!nextTypes.Any())
+                    if (nextTypes.Count < MaxQuestionTypesPerWeek)
                     {
                         await FillWithDefaultTypesAsync(nextTypes, roadmap.CurrentLevel, roadmapRepo, CancellationToken.None);
                     }
@@ -156,7 +156,7 @@ namespace Tokki.Application.UseCases.RoadmapVer2.Commands.GenerateNextWeek
                     progress.Set(jobId, new RoadmapProgressState { JobId = jobId, Percent = 85, Step = "Đang chuẩn bị bài thi tổng hợp và lưu trữ dữ liệu tuần mới..." });
 
                     // 5. Lưu thông tin tuần mới
-                    await SaveNextWeekTasksAsync(nextWeek, aiPlan.Weeks.First(), nextTypes, roadmap.TargetAim, request.UserId, roadmapRepo, assemblyService, idGen, CancellationToken.None);
+                    await SaveNextWeekTasksAsync(nextWeek, aiPlan.Weeks.First(), nextTypes, roadmap.TargetAim, request.UserId, roadmapRepo, assemblyService, idGen, allValidTypeIds, CancellationToken.None);
 
                     progress.Set(jobId, new RoadmapProgressState
                     {
@@ -194,6 +194,12 @@ namespace Tokki.Application.UseCases.RoadmapVer2.Commands.GenerateNextWeek
                 .Select(t => t.QuestionTypeId!)
                 .Distinct().ToList();
 
+            var currentRoadmapWeaknesses = (await weaknessRepo.GetByUserIdAsync(currentWeek.UserRoadmap.UserId, token))
+                                            .Where(w => w.RoadmapId == currentWeek.UserRoadmapId)
+                                            .ToList();
+            
+            int maxPriority = currentRoadmapWeaknesses.Any() ? currentRoadmapWeaknesses.Max(w => w.Priority) : 0;
+
             foreach (var typeId in weekTypeIds)
             {
                 var stat = allAnalysis.FirstOrDefault(a => a.QuestionTypeId == typeId);
@@ -220,19 +226,31 @@ namespace Tokki.Application.UseCases.RoadmapVer2.Commands.GenerateNextWeek
                     profile.LastEvaluatedWeekIndex = currentWeek.WeekIndex;
                 }
 
-                var userWeakness = (await weaknessRepo.GetByUserIdAsync(currentWeek.UserRoadmap.UserId, token))
-                                    .FirstOrDefault(w => w.QuestionTypeId == typeId && w.RoadmapId == currentWeek.UserRoadmapId);
+                var userWeakness = currentRoadmapWeaknesses.FirstOrDefault(w => w.QuestionTypeId == typeId);
                 
-                if (userWeakness != null)
+                if (userWeakness == null)
                 {
-                    if (isPassed) userWeakness.Status = 2; // Mastered
-                    else userWeakness.Status = 1; // Needs Review
-
-                    if (profile.ConsecutiveFailWeeks >= 2)
+                    userWeakness = new UserWeakness
                     {
-                        userWeakness.Priority = 999; 
-                        deferredTypes.Add(typeId);
-                    }
+                        Id = idGen.GenerateCustom(15),
+                        UserId = currentWeek.UserRoadmap.UserId,
+                        RoadmapId = currentWeek.UserRoadmapId,
+                        QuestionTypeId = typeId,
+                        Status = 0,
+                        Priority = ++maxPriority,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    await weaknessRepo.AddAsync(userWeakness, token);
+                    currentRoadmapWeaknesses.Add(userWeakness);
+                }
+
+                if (isPassed) userWeakness.Status = 2; // Mastered
+                else userWeakness.Status = 1; // Needs Review
+
+                if (profile.ConsecutiveFailWeeks >= 2)
+                {
+                    userWeakness.Priority = ++maxPriority; 
+                    deferredTypes.Add(typeId);
                 }
             }
 
@@ -246,29 +264,12 @@ namespace Tokki.Application.UseCases.RoadmapVer2.Commands.GenerateNextWeek
             var weaknesses = await weaknessRepo.GetByUserIdAsync(userId, token);
             var currentRoadmapWeaknesses = weaknesses.Where(w => w.RoadmapId == roadmapId).ToList();
 
-            var reviewList = currentRoadmapWeaknesses
-                .Where(w => w.Status == 1 && w.Priority < 999)
+            return currentRoadmapWeaknesses
+                .Where(w => w.Status == 0 || w.Status == 1)
                 .OrderBy(w => w.Priority)
                 .Select(w => w.QuestionTypeId)
                 .Take(MaxQuestionTypesPerWeek)
                 .ToList();
-
-            int slotsLeft = MaxQuestionTypesPerWeek - reviewList.Count;
-            if (slotsLeft > 0)
-            {
-                var nextList = currentRoadmapWeaknesses
-                    .Where(w => StatusFilter(w))
-                    .OrderBy(w => w.Priority)
-                    .Select(w => w.QuestionTypeId)
-                    .Take(slotsLeft)
-                    .ToList();
-                
-                reviewList.AddRange(nextList);
-            }
-
-            return reviewList;
-
-            bool StatusFilter(UserWeakness w) => w.Status == 0 && w.Priority < 999;
         }
 
         private async Task FillWithDefaultTypesAsync(List<string> types, CurrentTopikLevel level, IUserRoadmapRepository roadmapRepo, CancellationToken token)
@@ -278,7 +279,7 @@ namespace Tokki.Application.UseCases.RoadmapVer2.Commands.GenerateNextWeek
             types.AddRange(extras);
         }
 
-        private async Task SaveNextWeekTasksAsync(RoadmapWeek nextWeek, AiWeekPlan weekData, List<string> types, TargetAimLevel target, string userId, IUserRoadmapRepository roadmapRepo, IExamAssemblyService assemblyService, IIdGeneratorService idGen, CancellationToken token)
+        private async Task SaveNextWeekTasksAsync(RoadmapWeek nextWeek, AiWeekPlan weekData, List<string> types, TargetAimLevel target, string userId, IUserRoadmapRepository roadmapRepo, IExamAssemblyService assemblyService, IIdGeneratorService idGen, List<string> allValidTypeIds, CancellationToken token)
         {
             nextWeek.WeekFocusGoal = weekData.WeekGoal;
             nextWeek.Status = RoadmapWeekStatus.InProgress;
@@ -288,6 +289,19 @@ namespace Tokki.Application.UseCases.RoadmapVer2.Commands.GenerateNextWeek
             {
                 foreach (var taskDto in dayDto.Tasks)
                 {
+                    string? finalQTypeId = taskDto.QuestionTypeId;
+                    if (string.IsNullOrWhiteSpace(finalQTypeId) || finalQTypeId.Equals("null", StringComparison.OrdinalIgnoreCase))
+                    {
+                        finalQTypeId = null;
+                    }
+
+                    // Sanity check: AI có thể bịa ID không có trong DB
+                    if (finalQTypeId != null && !allValidTypeIds.Contains(finalQTypeId))
+                    {
+                        _logger.LogWarning("AI returned invalid QuestionTypeId: {InvalidId} for User {UserId}. Setting to null.", finalQTypeId, userId);
+                        finalQTypeId = null; 
+                    }
+
                     var taskEntity = new RoadmapDailyTask
                     {
                         TaskId = idGen.GenerateCustom(15),
@@ -296,7 +310,7 @@ namespace Tokki.Application.UseCases.RoadmapVer2.Commands.GenerateNextWeek
                         Title = taskDto.Title,
                         AiGeneratedContent = taskDto.Content,
                         IsCompleted = false,
-                        QuestionTypeId = taskDto.QuestionTypeId,
+                        QuestionTypeId = finalQTypeId,
                         TaskType = taskDto.TaskType switch
                         {
                             "LearnTheory" => RoadmapTaskType.LearnTheory,
