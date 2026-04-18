@@ -11,6 +11,9 @@ namespace Tokki.Application.UseCases.PronunciationExample.Queries.GetPagedPronun
         public int PageSize { get; set; } = 10;
         public string? SearchTerm { get; set; }
         public Tokki.Domain.Enums.PronunciationDifficulty? Difficulty { get; set; } // Thêm filter độ khó
+
+        [System.Text.Json.Serialization.JsonIgnore]
+        public string? UserId { get; set; }
     }
 
     public class PronunciationExampleDTO
@@ -24,5 +27,6 @@ namespace Tokki.Application.UseCases.PronunciationExample.Queries.GetPagedPronun
         public string? AudioUrl { get; set; }
         public int SortOrder { get; set; }
         public string Difficulty { get; set; } = string.Empty;
+        public bool IsLearned { get; set; }
     }
 }

@@ -27,8 +27,25 @@ namespace Tokki.WebAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetPaged([FromQuery] GetPagedPronunciationExamplesQuery query)
+        public async Task<IActionResult> GetPaged(
+            [FromQuery] string pronunciationRuleId,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? searchTerm = null,
+            [FromQuery] Tokki.Domain.Enums.PronunciationDifficulty? difficulty = null)
         {
+            var userId = User.FindFirstValue("UserId") ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
+            
+            var query = new GetPagedPronunciationExamplesQuery
+            {
+                PronunciationRuleId = pronunciationRuleId,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                SearchTerm = searchTerm,
+                Difficulty = difficulty,
+                UserId = userId
+            };
+
             var result = await _sender.Send(query);
             return StatusCode(result.StatusCode, result);
         }
