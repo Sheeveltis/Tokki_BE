@@ -59,7 +59,6 @@ namespace Tokki.Infrastructure.Data
         //Pronunciation
         public DbSet<PronunciationRule> PronunciationRules { get; set; }
         public DbSet<PronunciationExample> PronunciationExamples { get; set; }
-        public DbSet<UserPronunciationProgress> UserPronunciationProgresses { get; set; }
         public DbSet<UserPronunciationExampleProgress> UserPronunciationExampleProgresses { get; set; }
         //User take exam
         public DbSet<UserExamAnswer> UserExamAnswers { get; set; }

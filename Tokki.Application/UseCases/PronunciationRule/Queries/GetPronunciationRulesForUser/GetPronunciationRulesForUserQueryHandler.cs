@@ -1,35 +1,31 @@
 using MediatR;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.PronunciationRule.DTOs;
 
-namespace Tokki.Application.UseCases.PronunciationRule.Queries.GetPronunciationRules
+namespace Tokki.Application.UseCases.PronunciationRule.Queries.GetPronunciationRulesForUser
 {
-    public class GetPronunciationRulesQueryHandler : IRequestHandler<GetPronunciationRulesQuery, OperationResult<PagedResult<PronunciationRuleDTO>>>
+    public class GetPronunciationRulesForUserQueryHandler : IRequestHandler<GetPronunciationRulesForUserQuery, OperationResult<PagedResult<PronunciationRuleDTO>>>
     {
         private readonly IPronunciationRuleRepository _ruleRepository;
         private readonly IPronunciationExampleRepository _exampleRepository;
-        private readonly IUserPronunciationProgressRepository _progressRepository;
         private readonly IUserPronunciationExampleProgressRepository _exampleProgressRepository;
 
-        public GetPronunciationRulesQueryHandler(
+        public GetPronunciationRulesForUserQueryHandler(
             IPronunciationRuleRepository ruleRepository,
             IPronunciationExampleRepository exampleRepository,
-            IUserPronunciationProgressRepository progressRepository,
             IUserPronunciationExampleProgressRepository exampleProgressRepository)
         {
             _ruleRepository = ruleRepository;
             _exampleRepository = exampleRepository;
-            _progressRepository = progressRepository;
             _exampleProgressRepository = exampleProgressRepository;
         }
 
-        public async Task<OperationResult<PagedResult<PronunciationRuleDTO>>> Handle(GetPronunciationRulesQuery request, CancellationToken cancellationToken)
+        public async Task<OperationResult<PagedResult<PronunciationRuleDTO>>> Handle(GetPronunciationRulesForUserQuery request, CancellationToken cancellationToken)
         {
             var (items, totalCount) = await _ruleRepository.GetPagedAsync(
                 request.PageNumber,
@@ -38,26 +34,13 @@ namespace Tokki.Application.UseCases.PronunciationRule.Queries.GetPronunciationR
                 cancellationToken
             );
 
-            var ruleIds = items.Select(r => r.PronunciationRuleId).ToList();
-            var learnedRules = new List<string>();
             var dtoList = new List<PronunciationRuleDTO>();
-
-            if (!string.IsNullOrEmpty(request.UserId))
-            {
-                var progressList = await _progressRepository.GetByUserIdAndRuleIdsAsync(request.UserId, ruleIds);
-                learnedRules = progressList.Where(p => p.IsLearned).Select(p => p.PronunciationRuleId).ToList();
-            }
 
             foreach (var r in items)
             {
                 var examples = await _exampleRepository.GetExamplesByRuleIdAsync(r.PronunciationRuleId, cancellationToken);
                 var totalExamples = examples.Count;
-                var practicedCount = 0;
-
-                if (!string.IsNullOrEmpty(request.UserId) && totalExamples > 0)
-                {
-                    practicedCount = await _exampleProgressRepository.CountPracticedByUserIdAndRuleIdAsync(request.UserId, r.PronunciationRuleId);
-                }
+                var practicedCount = await _exampleProgressRepository.CountPracticedByUserIdAndRuleIdAsync(request.UserId, r.PronunciationRuleId);
 
                 var progressPercent = totalExamples > 0 ? (int)((double)practicedCount / totalExamples * 100) : 0;
 
@@ -68,10 +51,10 @@ namespace Tokki.Application.UseCases.PronunciationRule.Queries.GetPronunciationR
                     Description = r.Description ?? "",
                     Content = r.Content ?? "",
                     SortOrder = r.SortOrder,
-                    IsLearned = learnedRules.Contains(r.PronunciationRuleId) || (progressPercent == 100 && totalExamples > 0),
                     TotalExamples = totalExamples,
                     PracticedCount = practicedCount,
-                    ProgressPercent = progressPercent
+                    ProgressPercent = progressPercent,
+                    IsLearned = progressPercent == 100 && totalExamples > 0
                 });
             }
 
@@ -82,7 +65,7 @@ namespace Tokki.Application.UseCases.PronunciationRule.Queries.GetPronunciationR
                 request.PageSize
             );
 
-            return OperationResult<PagedResult<PronunciationRuleDTO>>.Success(pagedResult, 200, "Lấy danh sách quy tắc thành công.");
+            return OperationResult<PagedResult<PronunciationRuleDTO>>.Success(pagedResult, 200, "Lấy danh sách quy tắc thành công (User).");
         }
     }
 }

@@ -17,5 +17,6 @@ namespace Tokki.Application.UseCases.PronunciationRule.DTOs
         public int TotalExamples { get; set; } // Tổng số ví dụ
         public int PracticedCount { get; set; } // Số ví dụ đã luyện tập
         public int ProgressPercent { get; set; } // % tiến độ
+        public string ProgressDisplay => $"{PracticedCount}/{TotalExamples}"; // Hiển thị dạng "1/13"
     }
 }

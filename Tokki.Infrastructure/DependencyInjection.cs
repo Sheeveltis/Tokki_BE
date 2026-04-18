@@ -116,7 +116,6 @@ namespace Tokki.Infrastructure
             services.AddScoped<IExcelService, ExcelService>();
             //User topic progress
             services.AddScoped<IUserTopicProgressRepository, UserTopicProgressRepository>();
-            services.AddScoped<IUserPronunciationProgressRepository, UserPronunciationProgressRepository>();
             services.AddScoped<IUserPronunciationExampleProgressRepository, UserPronunciationExampleProgressRepository>();
             // ===== Gemini TOPIK Writing =====
             services.Configure<Tokki.Infrastructure.Configurations.GeminiOptions>(
