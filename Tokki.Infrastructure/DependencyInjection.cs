@@ -144,6 +144,7 @@ namespace Tokki.Infrastructure
             services.AddScoped<IPronunciationRuleRepository, PronunciationRuleRepository>();
             services.AddScoped<IAIPronunciationService, AIPronunciationService>();
             services.AddScoped<IPronunciationExampleRepository, PronunciationExampleRepository>();
+            services.AddScoped<IPronunciationProgressService, PronunciationProgressService>();
             //User take exam
             services.AddScoped<IUserExamRepository, UserExamRepository>();
             services.AddScoped<IExcelBaseService, ExcelBaseService>();

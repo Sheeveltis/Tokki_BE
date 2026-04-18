@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -15,5 +15,6 @@ namespace Tokki.Application.UseCases.PronunciationRule.Commands.EvaluatePronunci
         public IFormFile AudioFile { get; set; } = null!;
 
         public string ExampleId { get; set; } = string.Empty;
+        public string? UserId { get; set; }
     }
 }

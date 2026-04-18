@@ -12,7 +12,6 @@ using Tokki.Application.UseCases.PronunciationExample.Queries.GetExamplesByRuleI
 using Tokki.Application.UseCases.PronunciationExample.Queries.GetPagedPronunciationExamples;
 using Tokki.Application.UseCases.Excel.Commands.ImportPronunciationExample;
 using Tokki.Application.UseCases.Excel.Queries.ExportPronunciationExamples;
-using Tokki.Application.UseCases.UserPronunciation.Commands.PracticePronunciationExample;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -25,21 +24,6 @@ namespace Tokki.WebAPI.Controllers
         public PronunciationExampleController(ISender sender)
         {
             _sender = sender;
-        }
-
-        [HttpPost("{id}/practice")]
-        [Authorize]
-        public async Task<IActionResult> Practice(string id)
-        {
-            var userId = User.FindFirstValue("UserId") ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
-
-            var result = await _sender.Send(new PracticePronunciationExampleCommand
-            {
-                UserId = userId,
-                PronunciationExampleId = id
-            });
-            return StatusCode(result.StatusCode, result);
         }
 
         [HttpGet]
