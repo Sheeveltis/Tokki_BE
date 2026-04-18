@@ -9,6 +9,8 @@ using Tokki.Application.UseCases.PronunciationRule.Queries.GetPronunciationRuleB
 using Tokki.Application.UseCases.PronunciationRule.Queries.GetPronunciationRules;
 using Tokki.Application.UseCases.Excel.Commands.ImportPronunciationRules;
 using Tokki.Application.UseCases.Excel.Queries.ExportPronunciationRules;
+using Tokki.Application.UseCases.Excel.Queries.GetPronunciationRuleTemplate;
+using Tokki.Application.UseCases.UserPronunciation.Commands.CompletePronunciationRule;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -24,8 +26,36 @@ namespace Tokki.WebAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetPronunciationRules([FromQuery] GetPronunciationRulesQuery query)
         {
+            // Tự động lấy UserId từ token nếu người dùng đã đăng nhập để check progress
+            var userId = User.FindFirst("UserId")?.Value
+                        ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            
+            if (!string.IsNullOrEmpty(userId))
+            {
+                query.UserId = userId;
+            }
+
             var result = await _sender.Send(query);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPost("{id}/complete")]
+        [Authorize]
+        public async Task<IActionResult> CompleteRule(string id)
+        {
+            var userId = User.FindFirst("UserId")?.Value
+                        ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            var command = new CompletePronunciationRuleCommand
+            {
+                UserId = userId,
+                PronunciationRuleId = id
+            };
+
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
         }
 
         [HttpGet("{id}")]
@@ -113,6 +143,16 @@ namespace Tokki.WebAPI.Controllers
             var result = await _sender.Send(new ExportPronunciationRulesQuery());
             if (!result.IsSuccess) return BadRequest(result);
  
+            return File(result.Data.FileContent, result.Data.ContentType, result.Data.FileName);
+        }
+
+        [HttpGet("import-template")]
+        [Authorize(Roles = "Admin, Staff")]
+        public async Task<IActionResult> GetImportTemplate()
+        {
+            var result = await _sender.Send(new GetPronunciationRuleTemplateQuery());
+            if (!result.IsSuccess) return BadRequest(result);
+
             return File(result.Data.FileContent, result.Data.ContentType, result.Data.FileName);
         }
     }

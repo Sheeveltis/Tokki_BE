@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,5 +13,9 @@ namespace Tokki.Application.UseCases.PronunciationRule.DTOs
         public string Description { get; set; } = string.Empty;
         public string Content { get; set; } = string.Empty;
         public int SortOrder { get; set; }
+        public bool IsLearned { get; set; } // Trạng thái đã học xong cả bài
+        public int TotalExamples { get; set; } // Tổng số ví dụ
+        public int PracticedCount { get; set; } // Số ví dụ đã luyện tập
+        public int ProgressPercent { get; set; } // % tiến độ
     }
 }

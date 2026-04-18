@@ -235,9 +235,6 @@ namespace Application.Services
                      .Replace("\n", "<br/>");
         }
 
-        /// <summary>
-        /// Hàm encode nhẹ: Chỉ xử lý ký tự HTML đặc biệt, giữ nguyên Tiếng Việt
-        /// </summary>
         private string SanitizeHtml(string input)
         {
             if (string.IsNullOrEmpty(input)) return "";
@@ -267,75 +264,71 @@ namespace Application.Services
 
                 for (int row = 2; row <= rowCount; row++)
                 {
-                    var ruleId = worksheet.Cells[row, 1].Text;
-                    if (string.IsNullOrWhiteSpace(ruleId)) continue;
+                    var targetScript = worksheet.Cells[row, 1].Text;
+                    if (string.IsNullOrWhiteSpace(targetScript)) continue;
 
-                    var targetScript = worksheet.Cells[row, 2].Text;
-
-                    var rawScript = worksheet.Cells[row, 3].Text;
-
-                    var phoneticScript = worksheet.Cells[row, 4].Text;
-
-                    var meaning = worksheet.Cells[row, 5].Text;
-
-                    int.TryParse(worksheet.Cells[row, 6].Text, out int sortOrder);
+                    var rawScript = worksheet.Cells[row, 2].Text;
+                    var phoneticScript = worksheet.Cells[row, 3].Text;
+                    var meaning = worksheet.Cells[row, 4].Text;
+                    int.TryParse(worksheet.Cells[row, 5].Text, out int sortOrder);
+                    var difficulty = worksheet.Cells[row, 6].Text;
 
                     result.Add(new PronunciationExampleExcelDTO
                     {
-                        PronunciationRuleId = ruleId.Trim(),
                         TargetScript = targetScript.Trim(),
                         RawScript = rawScript.Trim(),
                         PhoneticScript = phoneticScript.Trim(),
                         Meaning = meaning.Trim(),
-                        SortOrder = sortOrder
+                        SortOrder = sortOrder,
+                        Difficulty = difficulty?.Trim()
                     });
                 }
             }
 
             return Task.FromResult(result);
         }
- 
+
         public Task<byte[]> ExportExamplesToExcelAsync(List<PronunciationExampleExcelDTO> data, string sheetName)
         {
             ExcelPackage.License.SetNonCommercialPersonal("TokkiProject");
- 
+
             using (var package = new ExcelPackage())
             {
                 var worksheet = package.Workbook.Worksheets.Add(sheetName);
- 
-                worksheet.Cells[1, 1].Value = "PronunciationRuleId";
-                worksheet.Cells[1, 2].Value = "TargetScript";
-                worksheet.Cells[1, 3].Value = "RawScript";
-                worksheet.Cells[1, 4].Value = "PhoneticScript";
-                worksheet.Cells[1, 5].Value = "Meaning";
-                worksheet.Cells[1, 6].Value = "SortOrder";
- 
+
+                worksheet.Cells[1, 1].Value = "TargetScript";
+                worksheet.Cells[1, 2].Value = "RawScript";
+                worksheet.Cells[1, 3].Value = "PhoneticScript";
+                worksheet.Cells[1, 4].Value = "Meaning";
+                worksheet.Cells[1, 5].Value = "SortOrder";
+                worksheet.Cells[1, 6].Value = "Difficulty";
+
                 using (var range = worksheet.Cells[1, 1, 1, 6])
                 {
                     range.Style.Font.Bold = true;
                     range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
                     range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
                 }
- 
+
                 for (int i = 0; i < data.Count; i++)
                 {
                     var item = data[i];
                     int rowIndex = i + 2;
- 
-                    worksheet.Cells[rowIndex, 1].Value = item.PronunciationRuleId;
-                    worksheet.Cells[rowIndex, 2].Value = item.TargetScript;
-                    worksheet.Cells[rowIndex, 3].Value = item.RawScript;
-                    worksheet.Cells[rowIndex, 4].Value = item.PhoneticScript;
-                    worksheet.Cells[rowIndex, 5].Value = item.Meaning;
-                    worksheet.Cells[rowIndex, 6].Value = item.SortOrder;
+
+                    worksheet.Cells[rowIndex, 1].Value = item.TargetScript;
+                    worksheet.Cells[rowIndex, 2].Value = item.RawScript;
+                    worksheet.Cells[rowIndex, 3].Value = item.PhoneticScript;
+                    worksheet.Cells[rowIndex, 4].Value = item.Meaning;
+                    worksheet.Cells[rowIndex, 5].Value = item.SortOrder;
+                    worksheet.Cells[rowIndex, 6].Value = item.Difficulty;
                 }
- 
+
                 worksheet.Cells.AutoFitColumns();
- 
+
                 return Task.FromResult(package.GetAsByteArray());
             }
         }
- 
+
         public Task<List<PronunciationRuleExcelDTO>> ExtractRuleDataAsync(IFormFile file)
         {
             var result = new List<PronunciationRuleExcelDTO>();
@@ -487,18 +480,15 @@ namespace Application.Services
             using var package = new ExcelPackage();
             var ws = package.Workbook.Worksheets.Add("Kết quả tìm ảnh");
 
-            // Đặt chiều cao mặc định của row (pixel)
-            const int imgHeight = 80; // pixel
+            const int imgHeight = 80;
             const int imgWidth  = 80;
-            const double rowHeightPt = 62; // Points (≈ 83 pixel ở 96dpi)
+            const double rowHeightPt = 62;
 
-            // Header: Ảnh AI (Gemini) + Ảnh Pixabay
             var headers = new[] { "STT", "Text (Tiếng Hàn)", "Definition (Nghĩa)",
                                    "🎨 Ảnh AI (Gemini)", "🔍 Ảnh Pixabay", "Trạng thái", "Ghi chú" };
             for (int col = 0; col < headers.Length; col++)
                 ws.Cells[1, col + 1].Value = headers[col];
 
-            // Style header
             using (var range = ws.Cells[1, 1, 1, headers.Length])
             {
                 range.Style.Font.Bold = true;
@@ -509,8 +499,7 @@ namespace Application.Services
                 range.Style.VerticalAlignment   = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
             }
 
-            // Đặt chiều rộng cột ảnh (col 4, 5)
-            ws.Column(4).Width = 14;  // ≈ 100px
+            ws.Column(4).Width = 14;
             ws.Column(5).Width = 14;
 
             var httpClient = _httpClientFactory.CreateClient();
@@ -520,17 +509,14 @@ namespace Application.Services
                 var item = results[i];
                 int row = i + 2;
 
-                // Đặt chiều cao row đủ hiện ảnh
                 ws.Row(row).Height = rowHeightPt;
 
                 ws.Cells[row, 1].Value = i + 1;
                 ws.Cells[row, 2].Value = item.Text;
                 ws.Cells[row, 3].Value = item.Definition;
-                // Col 4, 5: ảnh nhúng vào (xử lý bên dưới)
                 ws.Cells[row, 6].Value = item.Status;
                 ws.Cells[row, 7].Value = item.ErrorMessage ?? "";
 
-                // Color coding
                 Color rowColor = item.Status switch
                 {
                     "Success" => Color.FromArgb(198, 239, 206),
@@ -545,20 +531,16 @@ namespace Application.Services
                     rowRange.Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
                 }
 
-                // Nhúng ảnh EN vào col 4
                 await TryEmbedImageAsync(ws, httpClient, item.ViImgURL, row, 4, imgWidth, imgHeight);
-                // Nhúng ảnh KO vào col 5
                 await TryEmbedImageAsync(ws, httpClient, item.KoImgURL, row, 5, imgWidth, imgHeight);
             }
 
-            // AutoFit các cột văn bản (không AutoFit cột ảnh sẽ bị thu nhỏ)
             ws.Column(1).AutoFit();
             ws.Column(2).AutoFit();
             ws.Column(3).AutoFit();
             ws.Column(6).AutoFit();
             ws.Column(7).AutoFit();
 
-            // Summary sheet
             var summaryWs = package.Workbook.Worksheets.Add("Tổng kết");
             summaryWs.Cells[1, 1].Value = "Thống kê";
             summaryWs.Cells[1, 1].Style.Font.Bold = true;
@@ -586,10 +568,6 @@ namespace Application.Services
             return package.GetAsByteArray();
         }
 
-        /// <summary>
-        /// Download ảnh từ URL và nhúng vào ô Excel chỉ định.
-        /// Nếu download lỗi thì bỏ qua, không cần để lỗi.
-        /// </summary>
         private async Task TryEmbedImageAsync(
             ExcelWorksheet ws, HttpClient client,
             string? imageUrl, int row, int col,
@@ -600,8 +578,6 @@ namespace Application.Services
             try
             {
                 var bytes = await client.GetByteArrayAsync(imageUrl);
-
-                // Lưu ra temp file (EPPlus cần FileInfo)
                 var tempFile = Path.Combine(Path.GetTempPath(), $"tokki_img_{row}_{col}_{Guid.NewGuid():N}.jpg");
                 await File.WriteAllBytesAsync(tempFile, bytes);
 
@@ -611,7 +587,6 @@ namespace Application.Services
                 picture.SetPosition(row - 1, 2, col - 1, 2);
                 picture.SetSize(imgWidthPx, imgHeightPx);
 
-                // Xoá temp file sau khi EPPlus đã đọc xong
                 try { File.Delete(tempFile); } catch { }
             }
             catch (Exception ex)
@@ -754,12 +729,12 @@ namespace Application.Services
                 {
                     var worksheet = package.Workbook.Worksheets[0];
                     var rowCount = worksheet.Dimension?.Rows ?? 0;
- 
+  
                     for (int row = 2; row <= rowCount; row++)
                     {
                         var key = worksheet.Cells[row, 1].Value?.ToString();
                         if (string.IsNullOrWhiteSpace(key)) continue;
- 
+  
                         result.Add(new SystemConfigExcelDTO
                         {
                             Key = key.Trim(),
@@ -773,7 +748,7 @@ namespace Application.Services
             }
             return result;
         }
- 
+  
         public async Task<byte[]> ExportSystemConfigsToExcelAsync(List<SystemConfigExcelDTO> data, string sheetName)
         {
             using (var package = new ExcelPackage())
@@ -784,14 +759,14 @@ namespace Application.Services
                 worksheet.Cells[1, 3].Value = "Description";
                 worksheet.Cells[1, 4].Value = "DataType";
                 worksheet.Cells[1, 5].Value = "ConfigType";
- 
+  
                 using (var range = worksheet.Cells[1, 1, 1, 5])
                 {
                     range.Style.Font.Bold = true;
                     range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
                     range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
                 }
- 
+  
                 for (int i = 0; i < data.Count; i++)
                 {
                     var item = data[i];
@@ -802,9 +777,57 @@ namespace Application.Services
                     worksheet.Cells[rowIndex, 4].Value = item.DataType;
                     worksheet.Cells[rowIndex, 5].Value = item.ConfigType;
                 }
- 
+  
                 worksheet.Cells.AutoFitColumns();
                 return package.GetAsByteArray();
+            }
+        }
+
+        public Task<byte[]> GetPronunciationExampleTemplateAsync()
+        {
+            ExcelPackage.License.SetNonCommercialPersonal("TokkiProject");
+            using (var package = new ExcelPackage())
+            {
+                var worksheet = package.Workbook.Worksheets.Add("PronunciationExamples");
+                string[] headers = { "TargetScript", "RawScript", "PhoneticScript", "Meaning", "SortOrder", "Difficulty" };
+                for (int i = 0; i < headers.Length; i++)
+                {
+                    worksheet.Cells[1, i + 1].Value = headers[i];
+                    worksheet.Cells[1, i + 1].Style.Font.Bold = true;
+                    worksheet.Cells[1, i + 1].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                    worksheet.Cells[1, i + 1].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                }
+                worksheet.Cells[2, 1].Value = "안녕하세요";
+                worksheet.Cells[2, 2].Value = "안녕하세요";
+                worksheet.Cells[2, 3].Value = "an-nyeong-ha-se-yo";
+                worksheet.Cells[2, 4].Value = "Xin chào";
+                worksheet.Cells[2, 5].Value = 1;
+                worksheet.Cells[2, 6].Value = "Medium";
+                worksheet.Cells.AutoFitColumns();
+                return Task.FromResult(package.GetAsByteArray());
+            }
+        }
+
+        public Task<byte[]> GetPronunciationRuleTemplateAsync()
+        {
+            ExcelPackage.License.SetNonCommercialPersonal("TokkiProject");
+            using (var package = new ExcelPackage())
+            {
+                var worksheet = package.Workbook.Worksheets.Add("PronunciationRules");
+                string[] headers = { "RuleName", "Description", "Content", "SortOrder" };
+                for (int i = 0; i < headers.Length; i++)
+                {
+                    worksheet.Cells[1, i + 1].Value = headers[i];
+                    worksheet.Cells[1, i + 1].Style.Font.Bold = true;
+                    worksheet.Cells[1, i + 1].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                    worksheet.Cells[1, i + 1].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                }
+                worksheet.Cells[2, 1].Value = "Quy tắc Patchim";
+                worksheet.Cells[2, 2].Value = "Mô tả về cách phát âm phụ âm cuối";
+                worksheet.Cells[2, 3].Value = "Nội dung chi tiết quy tắc...";
+                worksheet.Cells[2, 4].Value = 1;
+                worksheet.Cells.AutoFitColumns();
+                return Task.FromResult(package.GetAsByteArray());
             }
         }
     }

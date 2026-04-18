@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -14,6 +14,7 @@ namespace Tokki.Application.UseCases.Excel.Commands.ImportPronunciationExample
     public class ImportPronunciationExampleCommand : IRequest<OperationResult<ImportExampleResponse>>
     {
         public IFormFile File { get; set; } = null!;
+        public string PronunciationRuleId { get; set; } = string.Empty;
         [JsonIgnore]
         public string? UserId { get; set; } 
     }

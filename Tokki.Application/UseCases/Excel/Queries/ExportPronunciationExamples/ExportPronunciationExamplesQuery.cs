@@ -6,5 +6,6 @@ namespace Tokki.Application.UseCases.Excel.Queries.ExportPronunciationExamples
  {
     public class ExportPronunciationExamplesQuery : IRequest<OperationResult<ExportFileDTO>>
     {
+        public string? PronunciationRuleId { get; set; }
     }
  }

@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,8 +37,10 @@ namespace Tokki.Application.UseCases.PronunciationExample.Queries.GetExampleDeta
                 Meaning = example.Meaning ?? string.Empty,
                 AudioUrl = example.AudioUrl ?? string.Empty,
                 RuleName = example.PronunciationRule?.RuleName ?? string.Empty,
-                RuleDescription = example.PronunciationRule?.Description ?? string.Empty,
-                RuleContent = example.PronunciationRule?.Content ?? string.Empty
+                RuleDescription = example.PronunciationRule?.Description ?? "",
+                RuleContent = example.PronunciationRule?.Content ?? "",
+                SortOrder = example.SortOrder,
+                Difficulty = example.Difficulty.ToString()
             };
 
             return OperationResult<ExampleDetailDTO>.Success(dto, 200, "Lấy chi tiết bài học thành công.");

@@ -14,5 +14,6 @@ namespace Tokki.Application.UseCases.PronunciationRule.Queries.GetPronunciationR
         public int PageNumber { get; set; } = 1;
         public int PageSize { get; set; } = 20;
         public string? SearchTerm { get; set; }
+        public string? UserId { get; set; } // ID người dùng để check progress
     }
 }

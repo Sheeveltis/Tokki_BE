@@ -26,6 +26,7 @@ namespace Tokki.Application.UseCases.PronunciationExample.Queries.GetPagedPronun
                 request.PageNumber,
                 request.PageSize,
                 request.SearchTerm,
+                request.Difficulty,
                 cancellationToken);
 
             var dtos = items.Select(e => new PronunciationExampleDTO
@@ -37,7 +38,8 @@ namespace Tokki.Application.UseCases.PronunciationExample.Queries.GetPagedPronun
                 PhoneticScript = e.PhoneticScript,
                 Meaning = e.Meaning,
                 AudioUrl = e.AudioUrl,
-                SortOrder = e.SortOrder
+                SortOrder = e.SortOrder,
+                Difficulty = e.Difficulty.ToString()
             }).ToList();
 
             var pagedResult = new PagedResult<PronunciationExampleDTO>(dtos, totalCount, request.PageNumber, request.PageSize);
