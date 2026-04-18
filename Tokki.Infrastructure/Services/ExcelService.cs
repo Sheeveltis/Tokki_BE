@@ -41,17 +41,19 @@ namespace Application.Services
 
                 for (int row = 2; row <= rowCount; row++)
                 {
-                    var text = worksheet.Cells[row, 1].Text;
+                    var text = GetCellValue(worksheet, row, 1);
                     if (string.IsNullOrWhiteSpace(text)) continue;
-                    var pronunciation = worksheet.Cells[row, 2].Text;
-                    var imgUrl = worksheet.Cells[row, 3].Text;
-                    var definition = worksheet.Cells[row, 4].Text;
+
+                    var pronunciation = GetCellValue(worksheet, row, 2);
+                    var imgUrl = GetCellValue(worksheet, row, 3);
+                    var definition = GetCellValue(worksheet, row, 4);
+
                     result.Add(new VocabularyExcelDTO
                     {
-                        Text = text.Trim(),
-                        Pronunciation = pronunciation.Trim(),
-                        ImageUrl = imgUrl.Trim(), 
-                        Definition = definition.Trim()
+                        Text = text,
+                        Pronunciation = pronunciation ?? string.Empty,
+                        ImageUrl = imgUrl ?? string.Empty, 
+                        Definition = definition ?? string.Empty
                     });
                 }
             }

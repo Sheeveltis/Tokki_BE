@@ -142,17 +142,6 @@ namespace Tokki.Application.UseCases.Excel.Commands.AddVocabByExcel
                     }
                 }
 
-                if (response.FailureList.Any())
-                {
-                    // Trộn các list khác về rỗng vì chúng ta dừng hoàn toàn
-                    response.AddedNewVocabList.Clear();
-                    response.LinkedExistingVocabList.Clear();
-                    var errorMsg = $"Phát hiện {response.FailureList.Count} dòng lỗi. Quá trình import bị dừng để đảm bảo tính hoàn vẹn, hãy sửa file Excel và thử lại.";
-                    
-                    // Trả về Success nhưng kèm Data là response (có FailureList) để FE hiển thị lỗi
-                    // Sử dụng status 200 để FE lấy được data dể dàng, nhưng message sẽ báo lỗi
-                    return OperationResult<ImportVocabularyResponse>.Success(response, 200, errorMsg);
-                }
 
                 if (!newItemsToProcess.Any() && !finalVocabsForTopic.Any())
                 {
