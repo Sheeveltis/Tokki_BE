@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Domain.Entities
 {
@@ -36,7 +37,7 @@ namespace Tokki.Domain.Entities
         public string? AudioUrl { get; set; }
 
         public int SortOrder { get; set; } = 0;
-
+        public PronunciationDifficulty Difficulty { get; set; } = PronunciationDifficulty.Medium;
         public bool IsDeleted { get; set; } = false;
 
         [MaxLength(15)]

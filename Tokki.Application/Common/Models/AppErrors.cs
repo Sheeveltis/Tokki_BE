@@ -312,5 +312,10 @@ namespace Tokki.Application.Common.Models
         //Exam
         public static readonly Error GameTypeMismatch = new("Game.GameTypeMismatch", "Trò chơi không đúng loại yêu cầu.");
 
+        // ============================================
+        // NHÓM 25: PRONUNCIATION (Phát âm)
+        // ============================================
+        public static readonly Error PronunciationRuleNotFound = new("Pronunciation.RuleNotFound", "Quy tắc phát âm không tồn tại.");
+        public static readonly Error PronunciationExampleNotFound = new("Pronunciation.ExampleNotFound", "Ví dụ phát âm không tồn tại.");
     }
 }

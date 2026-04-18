@@ -6,9 +6,11 @@ using Tokki.Application.UseCases.PronunciationRule.Commands.CreatePronunciationR
 using Tokki.Application.UseCases.PronunciationRule.Commands.DeletePronunciationRule;
 using Tokki.Application.UseCases.PronunciationRule.Commands.UpdatePronunciationRule;
 using Tokki.Application.UseCases.PronunciationRule.Queries.GetPronunciationRuleById;
-using Tokki.Application.UseCases.PronunciationRule.Queries.GetPronunciationRules;
+using Tokki.Application.UseCases.PronunciationRule.Queries.GetPronunciationRulesForAdmin;
+using Tokki.Application.UseCases.PronunciationRule.Queries.GetPronunciationRulesForUser;
 using Tokki.Application.UseCases.Excel.Commands.ImportPronunciationRules;
 using Tokki.Application.UseCases.Excel.Queries.ExportPronunciationRules;
+using Tokki.Application.UseCases.Excel.Queries.GetPronunciationRuleTemplate;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -21,9 +23,44 @@ namespace Tokki.WebAPI.Controllers
         {
             _sender = sender;
         }
-        [HttpGet]
-        public async Task<IActionResult> GetPronunciationRules([FromQuery] GetPronunciationRulesQuery query)
+
+        [HttpGet("user/get-all")]
+        [Authorize]
+        public async Task<IActionResult> GetPronunciationRulesForUser(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] string? searchTerm = null)
         {
+            var userId = User.FindFirst("UserId")?.Value
+                        ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            var query = new GetPronunciationRulesForUserQuery
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                SearchTerm = searchTerm,
+                UserId = userId
+            };
+
+            var result = await _sender.Send(query);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpGet("admin/get-all")]
+        [Authorize(Roles = "Admin, Staff")]
+        public async Task<IActionResult> GetPronunciationRulesForAdmin(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] string? searchTerm = null)
+        {
+            var query = new GetPronunciationRulesForAdminQuery
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                SearchTerm = searchTerm
+            };
             var result = await _sender.Send(query);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
@@ -113,6 +150,16 @@ namespace Tokki.WebAPI.Controllers
             var result = await _sender.Send(new ExportPronunciationRulesQuery());
             if (!result.IsSuccess) return BadRequest(result);
  
+            return File(result.Data.FileContent, result.Data.ContentType, result.Data.FileName);
+        }
+
+        [HttpGet("import-template")]
+        [Authorize(Roles = "Admin, Staff")]
+        public async Task<IActionResult> GetImportTemplate()
+        {
+            var result = await _sender.Send(new GetPronunciationRuleTemplateQuery());
+            if (!result.IsSuccess) return BadRequest(result);
+
             return File(result.Data.FileContent, result.Data.ContentType, result.Data.FileName);
         }
     }

@@ -17,7 +17,7 @@ namespace Tokki.Domain.Entities
         public long Amount { get; set; } 
 
         public XpSource Action { get; set; } 
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow.AddHours(7);
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         [ForeignKey("UserId")]
         public virtual Account Account { get; set; }

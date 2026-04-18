@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Tokki.Domain.Enums;
 
-namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
+namespace Tokki.Application.UseCases.Roadmap.DTOs
 {
     public class GenerateRoadmapDTO
     {

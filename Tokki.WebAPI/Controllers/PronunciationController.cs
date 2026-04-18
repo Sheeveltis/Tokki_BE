@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tokki.Application.Common.Models;
@@ -23,6 +23,10 @@ namespace Tokki.WebAPI.Controllers
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> Evaluate([FromForm] EvaluatePronunciationCommand command)
         {
+            var userId = User.FindFirst("UserId")?.Value
+                        ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            command.UserId = userId;
+
             var result = await _sender.Send(command);
             if (result.IsSuccess)
             {

@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using System.Linq;
 using Tokki.Application.Common.Models;
 

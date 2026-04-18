@@ -361,5 +361,15 @@ namespace Tokki.Infrastructure.Repositories
                           orderby at.EarnedAt descending
                           select t).ToListAsync();
         }
+        public async Task<List<Title>> GetUnlockedTitlesEarnedOnDateAsync(string userId, TitleRequirementType type, DateTime date)
+        {
+            var today = date.Date;
+            return await (from at in _context.AccountTitles
+                          join t in _context.Titles on at.TitleId equals t.TitleId
+                          where at.UserId == userId 
+                             && at.EarnedAt.Date == today
+                             && t.RequirementType == type
+                          select t).ToListAsync();
+        }
     }
 }

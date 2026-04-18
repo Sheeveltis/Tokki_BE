@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Tokki.Application.Common.Models;
+using Tokki.Application.UseCases.Excel.Queries.GetPronunciationExampleTemplate;
 using Tokki.Application.UseCases.PronunciationExample.Commands.CreatePronunciationExample;
 using Tokki.Application.UseCases.PronunciationExample.Commands.DeletePronunciationExample;
 using Tokki.Application.UseCases.PronunciationExample.Commands.UpdatePronunciationExample;
@@ -26,8 +27,25 @@ namespace Tokki.WebAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetPaged([FromQuery] GetPagedPronunciationExamplesQuery query)
+        public async Task<IActionResult> GetPaged(
+            [FromQuery] string pronunciationRuleId,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? searchTerm = null,
+            [FromQuery] Tokki.Domain.Enums.PronunciationDifficulty? difficulty = null)
         {
+            var userId = User.FindFirstValue("UserId") ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
+            
+            var query = new GetPagedPronunciationExamplesQuery
+            {
+                PronunciationRuleId = pronunciationRuleId,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                SearchTerm = searchTerm,
+                Difficulty = difficulty,
+                UserId = userId
+            };
+
             var result = await _sender.Send(query);
             return StatusCode(result.StatusCode, result);
         }
@@ -76,20 +94,26 @@ namespace Tokki.WebAPI.Controllers
         [HttpPost("import-excel")]
         [Authorize(Roles = "Admin, Staff")]
         [Consumes("multipart/form-data")]
-        public async Task<IActionResult> ImportByExcel(IFormFile file)
+        public async Task<IActionResult> ImportByExcel([FromForm] ImportPronunciationExampleRequest request)
         {
             try
             {
-                if (file == null || file.Length == 0)
+                if (request.File == null || request.File.Length == 0)
                 {
                     return BadRequest("Vui lòng chọn file Excel.");
+                }
+
+                if (string.IsNullOrEmpty(request.RuleId))
+                {
+                    return BadRequest("Vui lòng cung cấp PronunciationRuleId.");
                 }
  
                 var userId = User.FindFirstValue("UserId") ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
  
                 var command = new ImportPronunciationExampleCommand
                 {
-                    File = file,
+                    File = request.File,
+                    PronunciationRuleId = request.RuleId,
                     UserId = userId!,
                 };
  
@@ -101,14 +125,30 @@ namespace Tokki.WebAPI.Controllers
                 return StatusCode(500, ex.ToString());
             }
         }
+
+        public class ImportPronunciationExampleRequest
+        {
+            public IFormFile File { get; set; } = null!;
+            public string RuleId { get; set; } = string.Empty;
+        }
  
         [HttpGet("export-excel")]
         [Authorize(Roles = "Admin, Staff")]
-        public async Task<IActionResult> Export()
+        public async Task<IActionResult> Export([FromQuery] string? ruleId)
         {
-            var result = await _sender.Send(new ExportPronunciationExamplesQuery());
+            var result = await _sender.Send(new ExportPronunciationExamplesQuery { PronunciationRuleId = ruleId });
             if (!result.IsSuccess) return BadRequest(result);
  
+            return File(result.Data.FileContent, result.Data.ContentType, result.Data.FileName);
+        }
+
+        [HttpGet("import-template")]
+        [Authorize(Roles = "Admin, Staff")]
+        public async Task<IActionResult> GetImportTemplate()
+        {
+            var result = await _sender.Send(new GetPronunciationExampleTemplateQuery());
+            if (!result.IsSuccess) return BadRequest(result);
+
             return File(result.Data.FileContent, result.Data.ContentType, result.Data.FileName);
         }
     }

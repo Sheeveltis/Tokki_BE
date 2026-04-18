@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +8,7 @@ using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Application.UseCases.PronunciationRule.DTOs;
+using Hangfire;
 
 namespace Tokki.Application.UseCases.PronunciationRule.Commands.EvaluatePronunciation
 {
@@ -17,16 +18,20 @@ namespace Tokki.Application.UseCases.PronunciationRule.Commands.EvaluatePronunci
         private readonly IAIPronunciationService _aiService; 
         private readonly IPronunciationRuleRepository _ruleRepository;
         private readonly IPronunciationExampleRepository _exampleRepository;
+        private readonly IBackgroundJobClient _backgroundJobClient;
+
         public EvaluatePronunciationCommandHandler(
             ISpeechService speechService,
             IAIPronunciationService aiService,
             IPronunciationRuleRepository ruleRepository,
-            IPronunciationExampleRepository exampleRepository)
+            IPronunciationExampleRepository exampleRepository,
+            IBackgroundJobClient backgroundJobClient)
         {
             _speechService = speechService;
             _aiService = aiService;
             _ruleRepository = ruleRepository;
             _exampleRepository = exampleRepository;
+            _backgroundJobClient = backgroundJobClient;
         }
 
         public async Task<OperationResult<PronunciationResponse>> Handle(EvaluatePronunciationCommand request, CancellationToken cancellationToken)
@@ -58,6 +63,13 @@ namespace Tokki.Application.UseCases.PronunciationRule.Commands.EvaluatePronunci
                 azureResult,
                 example.RawScript,
                 ruleContext);
+
+            // Bắn Hangfire để đánh dấu hoàn thành ví dụ (chỉ khi có UserId và không phải Irrelevant)
+            if (!string.IsNullOrEmpty(request.UserId))
+            {
+                _backgroundJobClient.Enqueue<IPronunciationProgressService>(x => 
+                    x.UpdatePracticeProgressAsync(request.UserId, request.ExampleId, CancellationToken.None));
+            }
 
             return OperationResult<PronunciationResponse>.Success(new PronunciationResponse
             {
