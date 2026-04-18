@@ -54,6 +54,7 @@ namespace Tokki.Infrastructure
             services.AddScoped<IReportRepository, ReportRepository>();
             services.AddScoped<IVipPackageRepository, VipPackageRepository>();
             services.AddScoped<IStatisticsRepository, StatisticsRepository>();
+            services.AddScoped<IStatisticPaymentRepository, StatisticPaymentRepository>();
             services.AddScoped<IStatisticBlogRepository, StatisticBlogRepository>();
             services.AddScoped<ITitleRepository, TitleRepository>();
             services.AddScoped<IUserTitleService, UserTitleService>();
