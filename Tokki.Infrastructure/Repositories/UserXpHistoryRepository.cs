@@ -26,5 +26,14 @@ namespace Tokki.Infrastructure.Repositories
                 .Where(h => h.UserId == userId && h.Action == action && h.CreatedAt.Date == date.Date)
                 .SumAsync(h => (long?)h.Amount) ?? 0;
         }
+
+        public async Task<int> CountActiveDaysAsync(string userId)
+        {
+            return await _context.UserXpHistories
+                .Where(h => h.UserId == userId)
+                .Select(h => h.CreatedAt.Date)
+                .Distinct()
+                .CountAsync();
+        }
     }
 }

@@ -13,11 +13,15 @@ namespace Tokki.Infrastructure.Services
     {
         private readonly IAccountRepository _accountRepository;
         private readonly ITitleRepository _titleRepository;
+        private readonly IUserXpHistoryRepository _userXpHistoryRepository;
 
-        public UserTitleService(IAccountRepository accountRepository, ITitleRepository titleRepository)
+        public UserTitleService(IAccountRepository accountRepository, 
+                               ITitleRepository titleRepository,
+                               IUserXpHistoryRepository userXpHistoryRepository)
         {
             _accountRepository = accountRepository;
             _titleRepository = titleRepository;
+            _userXpHistoryRepository = userXpHistoryRepository;
         }
 
         public async Task<List<Title>> CheckAndUnlockLevelTitlesAsync(string userId)
@@ -87,9 +91,10 @@ namespace Tokki.Infrastructure.Services
                 }
             }
 
-            // 3. Kiểm tra StudyDaysTotal (Tổng số ngày kể từ khi tạo acc)
-            int totalDays = (now.Date - user.CreatedAt.Date).Days + 1; // +1 cho ngày đầu tiên
-            var totalDaysResults = await CheckAndUnlockTitlesAsync(userId, TitleRequirementType.StudyDaysTotal, (long)totalDays);
+            // 3. Kiểm tra StudyDaysTotal (Tổng số ngày THỰC TẾ user có hoạt động học)
+            // Thay vì dùng (now - CreatedAt), ta đếm số ngày duy nhất có phát sinh XP trong lịch sử.
+            int studyDays = await _userXpHistoryRepository.CountActiveDaysAsync(userId);
+            var totalDaysResults = await CheckAndUnlockTitlesAsync(userId, TitleRequirementType.StudyDaysTotal, (long)studyDays);
             allNewlyUnlocked.AddRange(totalDaysResults);
 
             return allNewlyUnlocked.DistinctBy(t => t.TitleId).ToList();
