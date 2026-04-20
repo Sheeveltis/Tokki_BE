@@ -40,6 +40,7 @@ namespace Tokki.Application.UseCases.PronunciationExample.Commands.CreatePronunc
                 Meaning = request.Meaning,
                 AudioUrl = request.AudioUrl,
                 SortOrder = request.SortOrder,
+                Difficulty = request.Difficulty,
                 CreateBy = request.UserId,
                 CreateDate = DateTime.UtcNow
             };
