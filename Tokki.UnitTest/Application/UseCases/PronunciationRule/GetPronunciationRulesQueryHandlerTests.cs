@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -22,7 +22,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PR-GPL-01 | N | Happy path with items → paged result returned, 200
+        // GetPronunciationRules_01 | N | Happy path with items → paged result returned, 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_HasItems_ShouldReturnPagedResultWith200()
@@ -46,7 +46,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation Rule - Get List", new TestCaseDetail
             {
                 FunctionGroup     = "GetPronunciationRules",
-                TestCaseID        = "TC-PR-GPL-01",
+                TestCaseID        = "GetPronunciationRules_01",
                 Description       = "Happy path: 3 rules in DB → paged result returned with IsSuccess=true and StatusCode=200",
                 ExpectedResult    = "IsSuccess=true, StatusCode=200, Items.Count=3",
                 StatusRound1      = "Passed",
@@ -57,7 +57,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PR-GPL-02 | N | Empty result → PagedResult with 0 items
+        // GetPronunciationRules_02 | N | Empty result → PagedResult with 0 items
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NoItems_ShouldReturnEmptyPagedResult()
@@ -81,7 +81,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation Rule - Get List", new TestCaseDetail
             {
                 FunctionGroup     = "GetPronunciationRules",
-                TestCaseID        = "TC-PR-GPL-02",
+                TestCaseID        = "GetPronunciationRules_02",
                 Description       = "No rules in DB → PagedResult with empty Items and TotalCount=0",
                 ExpectedResult    = "IsSuccess=true, Items=[], TotalCount=0",
                 StatusRound1      = "Passed",
@@ -92,7 +92,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PR-GPL-03 | N | DTO list correctly mapped (RuleName, Description, Content, SortOrder)
+        // GetPronunciationRules_03 | N | DTO list correctly mapped (RuleName, Description, Content, SortOrder)
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_HasItems_ShouldMapDTOFieldsCorrectly()
@@ -119,7 +119,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation Rule - Get List", new TestCaseDetail
             {
                 FunctionGroup     = "GetPronunciationRules",
-                TestCaseID        = "TC-PR-GPL-03",
+                TestCaseID        = "GetPronunciationRules_03",
                 Description       = "Each PronunciationRuleDTO correctly mapped from entity (Id, Name, SortOrder)",
                 ExpectedResult    = "All DTO fields match source entities",
                 StatusRound1      = "Passed",
@@ -130,7 +130,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PR-GPL-04 | N | PagedResult metadata correct (TotalCount, PageNumber, PageSize)
+        // GetPronunciationRules_04 | N | PagedResult metadata correct (TotalCount, PageNumber, PageSize)
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_HasItems_ShouldSetPagedResultMetadataCorrectly()
@@ -154,7 +154,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation Rule - Get List", new TestCaseDetail
             {
                 FunctionGroup     = "GetPronunciationRules",
-                TestCaseID        = "TC-PR-GPL-04",
+                TestCaseID        = "GetPronunciationRules_04",
                 Description       = "PagedResult metadata (TotalCount=50, PageNumber=2, PageSize=10) correctly set",
                 ExpectedResult    = "TotalCount=50, PageNumber=2, PageSize=10",
                 StatusRound1      = "Passed",
@@ -165,7 +165,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PR-GPL-05 | A | Repository throws → exception propagates
+        // GetPronunciationRules_05 | A | Repository throws → exception propagates
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
@@ -189,7 +189,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation Rule - Get List", new TestCaseDetail
             {
                 FunctionGroup     = "GetPronunciationRules",
-                TestCaseID        = "TC-PR-GPL-05",
+                TestCaseID        = "GetPronunciationRules_05",
                 Description       = "Repository throws exception on GetPagedAsync → exception propagates to caller",
                 ExpectedResult    = "InvalidOperationException thrown",
                 StatusRound1      = "Passed",
@@ -200,7 +200,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PR-GPL-06 | B | SearchTerm passed through to GetPagedAsync
+        // GetPronunciationRules_06 | B | SearchTerm passed through to GetPagedAsync
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_WithSearchTerm_ShouldPassSearchTermToRepository()
@@ -229,7 +229,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation Rule - Get List", new TestCaseDetail
             {
                 FunctionGroup     = "GetPronunciationRules",
-                TestCaseID        = "TC-PR-GPL-06",
+                TestCaseID        = "GetPronunciationRules_06",
                 Description       = "Boundary: SearchTerm from query is passed through to GetPagedAsync unmodified",
                 ExpectedResult    = "GetPagedAsync(1, 20, '받침', ...) called Times.Once",
                 StatusRound1      = "Passed",

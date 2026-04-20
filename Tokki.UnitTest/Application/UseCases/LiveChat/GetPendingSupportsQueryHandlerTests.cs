@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -19,7 +19,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             return new GetPendingSupportsQueryHandler((repo ?? new Mock<IChatRoomRepository>()).Object);
         }
 
-        // TC-LCH-GPS-01 | N | Repository empty
+        // GetPendingSupports_01 | N | Repository empty
         [Fact]
         public async Task Handle_NoPendingRooms_ShouldReturnEmptyList()
         {
@@ -33,7 +33,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
 
             QACollector.LogTestCase("LiveChat - Get Pending Supports", new TestCaseDetail
             {
-                FunctionGroup = "GetPendingSupports", TestCaseID = "TC-LCH-GPS-01",
+                FunctionGroup = "GetPendingSupports", TestCaseID = "GetPendingSupports_01",
                 Description = "Safely returns bound mapping ignoring empty sets efficiently",
                 ExpectedResult = "Return 200 Empty List DTO", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -41,7 +41,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             });
         }
 
-        // TC-LCH-GPS-02 | N | FullName and Avatar mapped successfully
+        // GetPendingSupports_02 | N | FullName and Avatar mapped successfully
         [Fact]
         public async Task Handle_CustomerExists_ShouldMapFullNameAndAvatar()
         {
@@ -58,7 +58,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
 
             QACollector.LogTestCase("LiveChat - Get Pending Supports", new TestCaseDetail
             {
-                FunctionGroup = "GetPendingSupports", TestCaseID = "TC-LCH-GPS-02",
+                FunctionGroup = "GetPendingSupports", TestCaseID = "GetPendingSupports_02",
                 Description = "If first member references valid customer details strings map through explicitly",
                 ExpectedResult = "Return 200 properly bound variables mapped properly", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -66,7 +66,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             });
         }
 
-        // TC-LCH-GPS-03 | N | FirstOrDefault resolves to null -> Khách ẩn danh
+        // GetPendingSupports_03 | N | FirstOrDefault resolves to null -> Khách ẩn danh
         [Fact]
         public async Task Handle_CustomerNull_ShouldFallbackToAnonymousString()
         {
@@ -82,7 +82,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
 
             QACollector.LogTestCase("LiveChat - Get Pending Supports", new TestCaseDetail
             {
-                FunctionGroup = "GetPendingSupports", TestCaseID = "TC-LCH-GPS-03",
+                FunctionGroup = "GetPendingSupports", TestCaseID = "GetPendingSupports_03",
                 Description = "Members list yields null mapping defaults safely against UI constraints",
                 ExpectedResult = "Return 200 Default Fallback Value Set", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -90,7 +90,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             });
         }
 
-        // TC-LCH-GPS-04 | N | User exists but FullName is null -> Khách ẩn danh
+        // GetPendingSupports_04 | N | User exists but FullName is null -> Khách ẩn danh
         [Fact]
         public async Task Handle_UserFullNameNull_ShouldFallbackToAnonymousString()
         {
@@ -106,7 +106,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
 
             QACollector.LogTestCase("LiveChat - Get Pending Supports", new TestCaseDetail
             {
-                FunctionGroup = "GetPendingSupports", TestCaseID = "TC-LCH-GPS-04",
+                FunctionGroup = "GetPendingSupports", TestCaseID = "GetPendingSupports_04",
                 Description = "Missing database profile string property binds properly through fallback syntax",
                 ExpectedResult = "Return 200, handles ?? operator correctly", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -114,7 +114,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             });
         }
 
-        // TC-LCH-GPS-05 | N | Multiple logic processing
+        // GetPendingSupports_05 | N | Multiple logic processing
         [Fact]
         public async Task Handle_MultipleRooms_ShouldProcessIteratively()
         {
@@ -130,7 +130,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
 
             QACollector.LogTestCase("LiveChat - Get Pending Supports", new TestCaseDetail
             {
-                FunctionGroup = "GetPendingSupports", TestCaseID = "TC-LCH-GPS-05",
+                FunctionGroup = "GetPendingSupports", TestCaseID = "GetPendingSupports_05",
                 Description = "Validates comprehensive multi-element transformation",
                 ExpectedResult = "Return 200, successfully iterates mapping enumerator", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -138,7 +138,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             });
         }
 
-        // TC-LCH-GPS-06 | A | Repository error propagates Native execution stack
+        // GetPendingSupports_06 | A | Repository error propagates Native execution stack
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateExceptionNatively()
         {
@@ -149,7 +149,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
 
             QACollector.LogTestCase("LiveChat - Get Pending Supports", new TestCaseDetail
             {
-                FunctionGroup = "GetPendingSupports", TestCaseID = "TC-LCH-GPS-06",
+                FunctionGroup = "GetPendingSupports", TestCaseID = "GetPendingSupports_06",
                 Description = "Unhandled context issues throws effectively across generic mapping execution flow",
                 ExpectedResult = "Throws Exception internally propagating upwards to execution limits", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

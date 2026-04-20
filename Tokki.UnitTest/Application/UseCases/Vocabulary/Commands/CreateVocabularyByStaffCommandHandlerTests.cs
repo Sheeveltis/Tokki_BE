@@ -59,9 +59,9 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary.Commands.CreateVocabula
             NullLogger<CreateVocabularyByStaffCommandHandler>.Instance
         );
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-VOC-CRS-01 | A | No User -> 401
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // CreateVocabularyByStaffCommandHandler_01 | A | No User -> 401
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_Unauthorized_ShouldReturn401()
         {
@@ -77,7 +77,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary.Commands.CreateVocabula
             QACollector.LogTestCase("Vocabulary - Create By Staff", new TestCaseDetail
             {
                 FunctionGroup = "CreateVocabularyByStaffCommandHandler",
-                TestCaseID = "TC-VOC-CRS-01",
+                TestCaseID = "CreateVocabularyByStaffCommandHandler_01",
                 Description = "Returns error if not logged in",
                 ExpectedResult = "Return 401",
                 StatusRound1 = "Passed",
@@ -87,13 +87,13 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary.Commands.CreateVocabula
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-VOC-CRS-02 | A | Duplicate Vocabulary -> 400
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // CreateVocabularyByStaffCommandHandler_02 | A | Duplicate Vocabulary -> 400
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_DuplicateVocab_ShouldReturn400()
         {
-            var command = new CreateVocabularyByStaffCommand { Text = " hello ", Definition = " xin chao " };
+            var command = new CreateVocabularyByStaffCommand { Text = " hello", Definition = " xin chao" };
             
             _vocabRepoMock.Setup(x => x.GetAllByTextAsync("hello"))
                           .ReturnsAsync(new List<Domain.Entities.Vocabulary> 
@@ -111,7 +111,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary.Commands.CreateVocabula
             QACollector.LogTestCase("Vocabulary - Create By Staff", new TestCaseDetail
             {
                 FunctionGroup = "CreateVocabularyByStaffCommandHandler",
-                TestCaseID = "TC-VOC-CRS-02",
+                TestCaseID = "CreateVocabularyByStaffCommandHandler_02",
                 Description = "Returns error if exact match duplicate exists",
                 ExpectedResult = "Return 400",
                 StatusRound1 = "Passed",
@@ -121,9 +121,9 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary.Commands.CreateVocabula
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-VOC-CRS-03 | N | Draft Status Enforced
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // CreateVocabularyByStaffCommandHandler_03 | N | Draft Status Enforced
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_CreatesDraft_ShouldBeDraft()
         {
@@ -144,7 +144,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary.Commands.CreateVocabula
             QACollector.LogTestCase("Vocabulary - Create By Staff", new TestCaseDetail
             {
                 FunctionGroup = "CreateVocabularyByStaffCommandHandler",
-                TestCaseID = "TC-VOC-CRS-03",
+                TestCaseID = "CreateVocabularyByStaffCommandHandler_03",
                 Description = "Staff created vocabulary must always be in Draft status",
                 ExpectedResult = "Vocabulary object has Draft status",
                 StatusRound1 = "Passed",
@@ -154,9 +154,9 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary.Commands.CreateVocabula
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-VOC-CRS-04 | N | Example skipping (Empty, duplicate req, DB duplicate)
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // CreateVocabularyByStaffCommandHandler_04 | N | Example skipping (Empty, duplicate req, DB duplicate)
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_ExampleFiltering_ShouldFilterCorrectly()
         {
@@ -182,12 +182,12 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary.Commands.CreateVocabula
 
             result.IsSuccess.Should().BeTrue();
             result.Data.Examples.Should().HaveCount(1);
-            result.Message.Should().Contain("bỏ qua");
+            result.Message.Should().Contain("b? qua");
 
             QACollector.LogTestCase("Vocabulary - Create By Staff", new TestCaseDetail
             {
                 FunctionGroup = "CreateVocabularyByStaffCommandHandler",
-                TestCaseID = "TC-VOC-CRS-04",
+                TestCaseID = "CreateVocabularyByStaffCommandHandler_04",
                 Description = "Filters empty and duplicate examples gracefully",
                 ExpectedResult = "Return 201 with exactly 1 mapped example",
                 StatusRound1 = "Passed",
@@ -197,9 +197,9 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary.Commands.CreateVocabula
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-VOC-CRS-05 | N | Full Correct Path with Audio -> 201
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // CreateVocabularyByStaffCommandHandler_05 | N | Full Correct Path with Audio -> 201
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_SuccessWithAudio_ShouldReturn201()
         {
@@ -220,7 +220,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary.Commands.CreateVocabula
             QACollector.LogTestCase("Vocabulary - Create By Staff", new TestCaseDetail
             {
                 FunctionGroup = "CreateVocabularyByStaffCommandHandler",
-                TestCaseID = "TC-VOC-CRS-05",
+                TestCaseID = "CreateVocabularyByStaffCommandHandler_05",
                 Description = "Successful vocab creation with audio generated",
                 ExpectedResult = "Return 201 with AudioURL set",
                 StatusRound1 = "Passed",
@@ -230,9 +230,9 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary.Commands.CreateVocabula
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-VOC-CRS-06 | E | General Exception -> Rollback -> 500
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // CreateVocabularyByStaffCommandHandler_06 | E | General Exception -> Rollback -> 500
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_Exception_ShouldRollbackAndReturn500()
         {
@@ -249,7 +249,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary.Commands.CreateVocabula
             QACollector.LogTestCase("Vocabulary - Create By Staff", new TestCaseDetail
             {
                 FunctionGroup = "CreateVocabularyByStaffCommandHandler",
-                TestCaseID = "TC-VOC-CRS-06",
+                TestCaseID = "CreateVocabularyByStaffCommandHandler_06",
                 Description = "Rollbacks if database throws error",
                 ExpectedResult = "Return 500 ServerError",
                 StatusRound1 = "Passed",

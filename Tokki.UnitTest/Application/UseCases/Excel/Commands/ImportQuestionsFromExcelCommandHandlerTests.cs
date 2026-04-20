@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -31,7 +31,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXC-IMQ-01 | A | Error QuestionTypeId Missing
+        // ImportQuestionsFromExcelCommandHandler_01 | A | Error QuestionTypeId Missing
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_QuestionTypeIdMissing_ShouldReturn400()
@@ -46,7 +46,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel.Commands
             QACollector.LogTestCase("Excel - Import Questions", new TestCaseDetail
             {
                 FunctionGroup = "ImportQuestionsFromExcelCommandHandler",
-                TestCaseID = "TC-EXC-IMQ-01",
+                TestCaseID = "ImportQuestionsFromExcelCommandHandler_01",
                 Description = "Validation immediately denies operations incorrectly bound mapping type empty",
                 ExpectedResult = "Return 400 Warning",
                 StatusRound1 = "Passed",
@@ -57,7 +57,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXC-IMQ-02 | A | Exception Parsing Excel data Extraction
+        // ImportQuestionsFromExcelCommandHandler_02 | A | Exception Parsing Excel data Extraction
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ExtractFailure_ShouldReturn400()
@@ -75,7 +75,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel.Commands
             QACollector.LogTestCase("Excel - Import Questions", new TestCaseDetail
             {
                 FunctionGroup = "ImportQuestionsFromExcelCommandHandler",
-                TestCaseID = "TC-EXC-IMQ-02",
+                TestCaseID = "ImportQuestionsFromExcelCommandHandler_02",
                 Description = "Exceptions parsing excel internal EPPlus wrappers propagate gracefully effectively safe",
                 ExpectedResult = "Return 400 safely extracted from block throws logic",
                 StatusRound1 = "Passed",
@@ -86,7 +86,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXC-IMQ-03 | A | Invalid Options Missing IsCorrect Flag Format
+        // ImportQuestionsFromExcelCommandHandler_03 | A | Invalid Options Missing IsCorrect Flag Format
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_InvalidIsCorrect_ShouldAddToErrorsListOnly()
@@ -109,7 +109,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel.Commands
             QACollector.LogTestCase("Excel - Import Questions", new TestCaseDetail
             {
                 FunctionGroup = "ImportQuestionsFromExcelCommandHandler",
-                TestCaseID = "TC-EXC-IMQ-03",
+                TestCaseID = "ImportQuestionsFromExcelCommandHandler_03",
                 Description = "Invalid 'IsCorrect' format identifies mapping issue properly recording inside Error Log reporting list object dynamically securely.",
                 ExpectedResult = "Failed row count increases safely",
                 StatusRound1 = "Passed",
@@ -120,7 +120,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXC-IMQ-04 | A | Trắc nghiệm nhưng thiếu đáp án Đúng
+        // ImportQuestionsFromExcelCommandHandler_04 | A | Trắc nghiệm nhưng thiếu đáp án Đúng
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NoCorrectOption_ShouldAddToErrorsList()
@@ -144,7 +144,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel.Commands
             QACollector.LogTestCase("Excel - Import Questions", new TestCaseDetail
             {
                 FunctionGroup = "ImportQuestionsFromExcelCommandHandler",
-                TestCaseID = "TC-EXC-IMQ-04",
+                TestCaseID = "ImportQuestionsFromExcelCommandHandler_04",
                 Description = "Multiple questions with all 0 flag correctly rejected effectively",
                 ExpectedResult = "Failed row correctly registered safely",
                 StatusRound1 = "Passed",
@@ -155,7 +155,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXC-IMQ-05 | A | Duplicated Database Content String matched -> Errors List
+        // ImportQuestionsFromExcelCommandHandler_05 | A | Duplicated Database Content String matched -> Errors List
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DuplicatedDBData_ShouldTriggerDuplicateError()
@@ -183,7 +183,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel.Commands
             QACollector.LogTestCase("Excel - Import Questions", new TestCaseDetail
             {
                 FunctionGroup = "ImportQuestionsFromExcelCommandHandler",
-                TestCaseID = "TC-EXC-IMQ-05",
+                TestCaseID = "ImportQuestionsFromExcelCommandHandler_05",
                 Description = "Identical matching duplicates from repo trigger early termination via Signature Generator logic securely",
                 ExpectedResult = "Identifies duplicated elements inside hashset properly",
                 StatusRound1 = "Passed",
@@ -194,7 +194,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXC-IMQ-06 | N | Success Path Mapping Passage and DB insertion perfectly
+        // ImportQuestionsFromExcelCommandHandler_06 | N | Success Path Mapping Passage and DB insertion perfectly
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SuccessValidMapping_ShouldInsertEffectively()
@@ -222,7 +222,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel.Commands
             QACollector.LogTestCase("Excel - Import Questions", new TestCaseDetail
             {
                 FunctionGroup = "ImportQuestionsFromExcelCommandHandler",
-                TestCaseID = "TC-EXC-IMQ-06",
+                TestCaseID = "ImportQuestionsFromExcelCommandHandler_06",
                 Description = "Safe formatting mappings and links accurately tie passages into entity database requests effectively",
                 ExpectedResult = "Success element added, passage instantiated appropriately dynamically",
                 StatusRound1 = "Passed",

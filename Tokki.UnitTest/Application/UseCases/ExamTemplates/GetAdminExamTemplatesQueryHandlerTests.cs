@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -48,7 +48,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             var mockRepo = new Mock<IExamTemplateRepository>();
             mockRepo.Setup(x => x.GetPagedAsync(
                     It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(),
-                    It.IsAny<ExamTemplateStatus?>(), It.IsAny<CancellationToken>(), It.IsAny<ExamType?>()))
+                    It.IsAny<ExamTemplateStatus?>(), It.IsAny<CancellationToken>(), It.IsAny<ExamType?>(), It.IsAny<ExamCreatorFilter?>()))
                     .ReturnsAsync((new List<ExamTemplate>(), 0));
 
             var result = await CreateHandler(mockRepo).Handle(DefaultQuery, CancellationToken.None);
@@ -60,7 +60,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Get Admin List", new TestCaseDetail
             {
                 FunctionGroup     = "GetAdminExamTemplates",
-                TestCaseID        = "TC-EXMT-GADM-01",
+                TestCaseID        = "GetAdminExamTemplates_01",
                 Description       = "No templates → Return Success, Items empty",
                 ExpectedResult    = "Return Success, Items=[]",
                 StatusRound1      = "Passed",
@@ -82,7 +82,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             var mockRepo = new Mock<IExamTemplateRepository>();
             mockRepo.Setup(x => x.GetPagedAsync(
                     It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(),
-                    It.IsAny<ExamTemplateStatus?>(), It.IsAny<CancellationToken>(), It.IsAny<ExamType?>()))
+                    It.IsAny<ExamTemplateStatus?>(), It.IsAny<CancellationToken>(), It.IsAny<ExamType?>(), It.IsAny<ExamCreatorFilter?>()))
                     .ReturnsAsync((templates, 2));
 
             var result = await CreateHandler(mockRepo).Handle(DefaultQuery, CancellationToken.None);
@@ -95,7 +95,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Get Admin List", new TestCaseDetail
             {
                 FunctionGroup     = "GetAdminExamTemplates",
-                TestCaseID        = "TC-EXMT-GADM-02",
+                TestCaseID        = "GetAdminExamTemplates_02",
                 Description       = "2 templates → mapped to AdminExamTemplateDto list",
                 ExpectedResult    = "Return Success, Items.Count=2, mapped correctly",
                 StatusRound1      = "Passed",
@@ -125,7 +125,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             var mockRepo = new Mock<IExamTemplateRepository>();
             mockRepo.Setup(x => x.GetPagedAsync(
                     It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(),
-                    It.IsAny<ExamTemplateStatus?>(), It.IsAny<CancellationToken>(), It.IsAny<ExamType?>()))
+                    It.IsAny<ExamTemplateStatus?>(), It.IsAny<CancellationToken>(), It.IsAny<ExamType?>(), It.IsAny<ExamCreatorFilter?>()))
                     .ReturnsAsync((new List<ExamTemplate> { tmpl }, 1));
 
             var result = await CreateHandler(mockRepo).Handle(DefaultQuery, CancellationToken.None);
@@ -136,7 +136,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Get Admin List", new TestCaseDetail
             {
                 FunctionGroup     = "GetAdminExamTemplates",
-                TestCaseID        = "TC-EXMT-GADM-03",
+                TestCaseID        = "GetAdminExamTemplates_03",
                 Description       = "2 parts (Q1-10, Q11-15) → TotalParts=2, TotalQuestions=15",
                 ExpectedResult    = "TotalParts=2, TotalQuestions=15",
                 StatusRound1      = "Passed",
@@ -156,7 +156,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             };
 
             var mockRepo = new Mock<IExamTemplateRepository>();
-            mockRepo.Setup(x => x.GetPagedAsync(2, 5, null, null, It.IsAny<CancellationToken>(), null))
+            mockRepo.Setup(x => x.GetPagedAsync(2, 5, null, null, It.IsAny<CancellationToken>(), null, It.IsAny<ExamCreatorFilter?>()))
                     .ReturnsAsync((fiveItems, 20));
 
             var query = new GetAdminExamTemplatesQuery { PageNumber = 2, PageSize = 5 };
@@ -169,7 +169,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Get Admin List", new TestCaseDetail
             {
                 FunctionGroup     = "GetAdminExamTemplates",
-                TestCaseID        = "TC-EXMT-GADM-04",
+                TestCaseID        = "GetAdminExamTemplates_04",
                 Description       = "Page 2/5, total=20 → TotalPages=4",
                 ExpectedResult    = "TotalPages=4, PageNumber=2",
                 StatusRound1      = "Passed",
@@ -184,7 +184,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
         {
             var mockRepo = new Mock<IExamTemplateRepository>();
             mockRepo.Setup(x => x.GetPagedAsync(
-                    1, 10, null, ExamTemplateStatus.Published, It.IsAny<CancellationToken>(), null))
+                    1, 10, null, ExamTemplateStatus.Published, It.IsAny<CancellationToken>(), null, It.IsAny<ExamCreatorFilter?>()))
                     .ReturnsAsync((new List<ExamTemplate> { BuildTemplate("ET-001") }, 1));
 
             var query = new GetAdminExamTemplatesQuery
@@ -197,12 +197,12 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
 
             result.IsSuccess.Should().BeTrue();
             mockRepo.Verify(x => x.GetPagedAsync(
-                1, 10, null, ExamTemplateStatus.Published, It.IsAny<CancellationToken>(), null), Times.Once);
+                1, 10, null, ExamTemplateStatus.Published, It.IsAny<CancellationToken>(), null, It.IsAny<ExamCreatorFilter?>()), Times.Once);
 
             QACollector.LogTestCase("Exam Template - Get Admin List", new TestCaseDetail
             {
                 FunctionGroup     = "GetAdminExamTemplates",
-                TestCaseID        = "TC-EXMT-GADM-05",
+                TestCaseID        = "GetAdminExamTemplates_05",
                 Description       = "Status=Published passed directly to repository GetPagedAsync",
                 ExpectedResult    = "Return Success, repo called with Status=Published",
                 StatusRound1      = "Passed",
@@ -218,7 +218,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             var mockRepo = new Mock<IExamTemplateRepository>();
             mockRepo.Setup(x => x.GetPagedAsync(
                     It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(),
-                    It.IsAny<ExamTemplateStatus?>(), It.IsAny<CancellationToken>(), It.IsAny<ExamType?>()))
+                    It.IsAny<ExamTemplateStatus?>(), It.IsAny<CancellationToken>(), It.IsAny<ExamType?>(), It.IsAny<ExamCreatorFilter?>()))
                     .ThrowsAsync(new Exception("DB error"));
 
             await Assert.ThrowsAsync<Exception>(() =>
@@ -227,7 +227,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Get Admin List", new TestCaseDetail
             {
                 FunctionGroup     = "GetAdminExamTemplates",
-                TestCaseID        = "TC-EXMT-GADM-06",
+                TestCaseID        = "GetAdminExamTemplates_06",
                 Description       = "Repository throws → exception propagates",
                 ExpectedResult    = "Throws Exception",
                 StatusRound1      = "Passed",

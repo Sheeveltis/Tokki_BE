@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -58,7 +58,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         };
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-IQE-01 | B | QuestionTypeId is empty → Validation 400
+        // ImportQuestionsFromExcel_01 | B | QuestionTypeId is empty → Validation 400
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyQuestionTypeId_ShouldReturn400Validation()
@@ -78,7 +78,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Import Questions", new TestCaseDetail
             {
                 FunctionGroup     = "ImportQuestionsFromExcel",
-                TestCaseID        = "TC-EXC-IQE-01",
+                TestCaseID        = "ImportQuestionsFromExcel_01",
                 Description       = "QuestionTypeId is whitespace/empty → validation fail 400",
                 ExpectedResult    = "Return 400 Validation error",
                 StatusRound1      = "Passed",
@@ -89,7 +89,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-IQE-02 | A | Excel parsing throws → return 400 ReadError
+        // ImportQuestionsFromExcel_02 | A | Excel parsing throws → return 400 ReadError
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ExcelParsingThrows_ShouldReturn400ReadError()
@@ -113,7 +113,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Import Questions", new TestCaseDetail
             {
                 FunctionGroup     = "ImportQuestionsFromExcel",
-                TestCaseID        = "TC-EXC-IQE-02",
+                TestCaseID        = "ImportQuestionsFromExcel_02",
                 Description       = "ExtractQuestionBankDataAsync throws exception",
                 ExpectedResult    = "Return 400 Excel.ReadError with exception message",
                 StatusRound1      = "Passed",
@@ -124,7 +124,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-IQE-03 | A | Question has invalid IsCorrect format → added to Errors
+        // ImportQuestionsFromExcel_03 | A | Question has invalid IsCorrect format → added to Errors
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_InvalidIsCorrectFormat_ShouldAddToErrors()
@@ -165,7 +165,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Import Questions", new TestCaseDetail
             {
                 FunctionGroup     = "ImportQuestionsFromExcel",
-                TestCaseID        = "TC-EXC-IQE-03",
+                TestCaseID        = "ImportQuestionsFromExcel_03",
                 Description       = "Option IsCorrect field has invalid value ('YES' instead of '0'/'1')",
                 ExpectedResult    = "Return 200, Errors list has 1 item with 'sai format'",
                 StatusRound1      = "Passed",
@@ -176,7 +176,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-IQE-04 | A | Question has options but no correct answer → added to Errors
+        // ImportQuestionsFromExcel_04 | A | Question has options but no correct answer → added to Errors
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_HasOptionsButNoCorrectAnswer_ShouldAddToErrors()
@@ -218,7 +218,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Import Questions", new TestCaseDetail
             {
                 FunctionGroup     = "ImportQuestionsFromExcel",
-                TestCaseID        = "TC-EXC-IQE-04",
+                TestCaseID        = "ImportQuestionsFromExcel_04",
                 Description       = "Multiple choice question has no correct answer (all IsCorrect = 0)",
                 ExpectedResult    = "Return 200, Errors has 1 item 'không có đáp án đúng'",
                 StatusRound1      = "Passed",
@@ -229,7 +229,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-IQE-05 | N | Valid question → inserted to DB, SuccessItems populated
+        // ImportQuestionsFromExcel_05 | N | Valid question → inserted to DB, SuccessItems populated
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidQuestion_ShouldInsertAndReturnSuccess()
@@ -274,7 +274,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Import Questions", new TestCaseDetail
             {
                 FunctionGroup     = "ImportQuestionsFromExcel",
-                TestCaseID        = "TC-EXC-IQE-05",
+                TestCaseID        = "ImportQuestionsFromExcel_05",
                 Description       = "Valid question with correct option is inserted to DB successfully",
                 ExpectedResult    = "Return 200, SuccessItems = 1, Errors = 0",
                 StatusRound1      = "Passed",
@@ -285,7 +285,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-IQE-06 | A | Duplicate question in DB → added to Errors
+        // ImportQuestionsFromExcel_06 | A | Duplicate question in DB → added to Errors
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DuplicateQuestionInDb_ShouldAddToErrors()
@@ -323,7 +323,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Import Questions", new TestCaseDetail
             {
                 FunctionGroup     = "ImportQuestionsFromExcel",
-                TestCaseID        = "TC-EXC-IQE-06",
+                TestCaseID        = "ImportQuestionsFromExcel_06",
                 Description       = "Question signature matches an existing record in DB → marked as Duplicate",
                 ExpectedResult    = "Return 200, Errors = 1 with 'Duplicate' reason",
                 StatusRound1      = "Passed",

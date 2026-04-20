@@ -27,9 +27,9 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             return new UpdateEmailCampaignCommandHandler(_jobRepoMock.Object);
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-ETC-UC-01 | A | Job Not Found -> 404
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdateEmailCampaignCommandHandler_01 | A | Job Not Found -> 404
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_JobNotFound_ShouldReturn404()
         {
@@ -41,12 +41,12 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
 
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(404);
-            result.Message.Should().Be("Không tìm thấy campaign!");
+            result.Message.Should().Be("Kh�ng t�m th?y campaign!");
 
             QACollector.LogTestCase("Email - Update Campaign", new TestCaseDetail
             {
                 FunctionGroup = "UpdateEmailCampaignCommandHandler",
-                TestCaseID = "TC-ETC-UC-01",
+                TestCaseID = "UpdateEmailCampaignCommandHandler_01",
                 Description = "Returns error if JobId does not exist",
                 ExpectedResult = "404 Not Found",
                 StatusRound1 = "Passed",
@@ -56,9 +56,9 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-ETC-UC-02 | A | Job Status not Pending -> 400
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdateEmailCampaignCommandHandler_02 | A | Job Status not Pending -> 400
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_JobNotPending_ShouldReturn400()
         {
@@ -75,7 +75,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("Email - Update Campaign", new TestCaseDetail
             {
                 FunctionGroup = "UpdateEmailCampaignCommandHandler",
-                TestCaseID = "TC-ETC-UC-02",
+                TestCaseID = "UpdateEmailCampaignCommandHandler_02",
                 Description = "Only pending jobs can be updated",
                 ExpectedResult = "400 Bad Request",
                 StatusRound1 = "Passed",
@@ -85,9 +85,9 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-ETC-UC-03 | A | Status updated to not deleted -> 400
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdateEmailCampaignCommandHandler_03 | A | Status updated to not deleted -> 400
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_UpdateStatusNotDeleted_ShouldReturn400()
         {
@@ -104,7 +104,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("Email - Update Campaign", new TestCaseDetail
             {
                 FunctionGroup = "UpdateEmailCampaignCommandHandler",
-                TestCaseID = "TC-ETC-UC-03",
+                TestCaseID = "UpdateEmailCampaignCommandHandler_03",
                 Description = "Rejects moving status to anything other than Deleted context internally",
                 ExpectedResult = "400 Bad Request",
                 StatusRound1 = "Passed",
@@ -114,9 +114,9 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-ETC-UC-04 | N | Patch fields properly -> 200
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdateEmailCampaignCommandHandler_04 | N | Patch fields properly -> 200
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_PatchFields_ShouldUpdateCorrectlyAndReturn200()
         {
@@ -143,7 +143,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("Email - Update Campaign", new TestCaseDetail
             {
                 FunctionGroup = "UpdateEmailCampaignCommandHandler",
-                TestCaseID = "TC-ETC-UC-04",
+                TestCaseID = "UpdateEmailCampaignCommandHandler_04",
                 Description = "Patches basic string/enum fields correctly",
                 ExpectedResult = "200 Success",
                 StatusRound1 = "Passed",
@@ -153,9 +153,9 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-ETC-UC-05 | N | Distinct Specific Emails list stored properly -> 200
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdateEmailCampaignCommandHandler_05 | N | Distinct Specific Emails list stored properly -> 200
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_SpecificEmails_ShouldCleanAndSerializeAndReturn200()
         {
@@ -165,7 +165,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             var cmd = new UpdateEmailCampaignCommand 
             { 
                 JobId = "123", 
-                SpecificEmails = new List<string> { "a@abc.com", " a@abc.com ", "", "b@abc.com" }
+                SpecificEmails = new List<string> { "a@abc.com", " a@abc.com", "", "b@abc.com" }
             };
 
             var result = await handler.Handle(cmd, CancellationToken.None);
@@ -178,7 +178,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("Email - Update Campaign", new TestCaseDetail
             {
                 FunctionGroup = "UpdateEmailCampaignCommandHandler",
-                TestCaseID = "TC-ETC-UC-05",
+                TestCaseID = "UpdateEmailCampaignCommandHandler_05",
                 Description = "Cleans empty strings and duplicate mails in specificEmails string list",
                 ExpectedResult = "200 Success JSON array",
                 StatusRound1 = "Passed",
@@ -188,9 +188,9 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-ETC-UC-06 | N | Update Status to Deleted -> 200
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdateEmailCampaignCommandHandler_06 | N | Update Status to Deleted -> 200
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_UpdateToDeleted_ShouldSetDeletedAndReturn200()
         {
@@ -215,7 +215,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("Email - Update Campaign", new TestCaseDetail
             {
                 FunctionGroup = "UpdateEmailCampaignCommandHandler",
-                TestCaseID = "TC-ETC-UC-06",
+                TestCaseID = "UpdateEmailCampaignCommandHandler_06",
                 Description = "Changing status explicitly to Deleted works as intended",
                 ExpectedResult = "200 Success",
                 StatusRound1 = "Passed",

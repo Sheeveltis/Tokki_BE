@@ -1,4 +1,4 @@
-using FluentValidation.TestHelper;
+﻿using FluentValidation.TestHelper;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -35,7 +35,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
             QACollector.LogTestCase("QuestionBank - Update Question Option", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateQuestionOptionCommandValidator",
-                TestCaseID        = "TC-QB-UQO-01",
+                TestCaseID        = "UpdateQuestionOptionCommandValidator_01",
                 Description       = "All fields empty or null should fail",
                 ExpectedResult    = "Error 'Không có dữ liệu cập nhật.'",
                 StatusRound1      = "Passed",
@@ -61,7 +61,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
             QACollector.LogTestCase("QuestionBank - Update Question Option", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateQuestionOptionCommandValidator",
-                TestCaseID        = "TC-QB-UQO-02",
+                TestCaseID        = "UpdateQuestionOptionCommandValidator_02",
                 Description       = "Invalid KeyOption outside 1-4",
                 ExpectedResult    = "Error 'KeyOption phải là '1', '2', '3' hoặc '4'.'",
                 StatusRound1      = "Passed",
@@ -85,7 +85,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
             QACollector.LogTestCase("QuestionBank - Update Question Option", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateQuestionOptionCommandValidator",
-                TestCaseID        = "TC-QB-UQO-03",
+                TestCaseID        = "UpdateQuestionOptionCommandValidator_03",
                 Description       = "Valid KeyOption only",
                 ExpectedResult    = "No errors",
                 StatusRound1      = "Passed",
@@ -109,7 +109,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
             QACollector.LogTestCase("QuestionBank - Update Question Option", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateQuestionOptionCommandValidator",
-                TestCaseID        = "TC-QB-UQO-04",
+                TestCaseID        = "UpdateQuestionOptionCommandValidator_04",
                 Description       = "Provide Content only",
                 ExpectedResult    = "No errors",
                 StatusRound1      = "Passed",
@@ -133,7 +133,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
             QACollector.LogTestCase("QuestionBank - Update Question Option", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateQuestionOptionCommandValidator",
-                TestCaseID        = "TC-QB-UQO-05",
+                TestCaseID        = "UpdateQuestionOptionCommandValidator_05",
                 Description       = "Provide ImageUrl only",
                 ExpectedResult    = "No errors",
                 StatusRound1      = "Passed",
@@ -157,7 +157,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
             QACollector.LogTestCase("QuestionBank - Update Question Option", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateQuestionOptionCommandValidator",
-                TestCaseID        = "TC-QB-UQO-06",
+                TestCaseID        = "UpdateQuestionOptionCommandValidator_06",
                 Description       = "Provide IsCorrect only",
                 ExpectedResult    = "No errors",
                 StatusRound1      = "Passed",

@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -62,7 +62,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Commands
             QACollector.LogTestCase("Exam - Export PDF", new TestCaseDetail
             {
                 FunctionGroup     = "ExportExamToPdfCommandHandler",
-                TestCaseID        = "TC-EXM-EEV-01",
+                TestCaseID        = "ExportExamToPdfCommandHandler_01",
                 Description       = "Missing ExamId returns 404 cleanly",
                 ExpectedResult    = "Returns 404 failure gracefully",
                 StatusRound1      = "Passed",
@@ -94,7 +94,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Commands
             QACollector.LogTestCase("Exam - Export PDF", new TestCaseDetail
             {
                 FunctionGroup     = "ExportExamToPdfCommandHandler",
-                TestCaseID        = "TC-EXM-EEV-02",
+                TestCaseID        = "ExportExamToPdfCommandHandler_02",
                 Description       = "HTML Template file is missing",
                 ExpectedResult    = "Returns 500 error cleanly",
                 StatusRound1      = "Passed",
@@ -144,7 +144,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Commands
             QACollector.LogTestCase("Exam - Export PDF", new TestCaseDetail
             {
                 FunctionGroup     = "ExportExamToPdfCommandHandler",
-                TestCaseID        = "TC-EXM-EEV-03",
+                TestCaseID        = "ExportExamToPdfCommandHandler_03",
                 Description       = "Valid inputs generates PDF smoothly",
                 ExpectedResult    = "Returns PDF byte array accurately",
                 StatusRound1      = "Passed",
@@ -193,7 +193,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Commands
             QACollector.LogTestCase("Exam - Export PDF", new TestCaseDetail
             {
                 FunctionGroup     = "ExportExamToPdfCommandHandler",
-                TestCaseID        = "TC-EXM-EEV-04",
+                TestCaseID        = "ExportExamToPdfCommandHandler_04",
                 Description       = "Multiple branches hit (Passage=null, different Skills, Topic levels, keyOptions)",
                 ExpectedResult    = "Returns PDF smoothly capturing all UI branches",
                 StatusRound1      = "Passed",

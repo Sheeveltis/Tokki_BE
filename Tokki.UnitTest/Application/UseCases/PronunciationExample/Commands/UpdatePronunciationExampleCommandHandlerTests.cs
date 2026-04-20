@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -23,7 +23,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Commands
             _handler = new UpdatePronunciationExampleCommandHandler(_mockRepo.Object);
         }
 
-        // TC-PRN-UPE-01 | A | NotFound -> 404
+        // UpdatePronunciationExampleCommandHandler_01 | A | NotFound -> 404
         [Fact]
         public async Task Handle_NotFound_Returns404()
         {
@@ -38,7 +38,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Commands
             QACollector.LogTestCase("Pronunciation Example - Update", new TestCaseDetail
             {
                 FunctionGroup = "UpdatePronunciationExampleCommandHandler",
-                TestCaseID = "TC-PRN-UPE-01",
+                TestCaseID = "UpdatePronunciationExampleCommandHandler_01",
                 Description = "Safely guards modification blocks returning null failures mapping frontend accurately",
                 ExpectedResult = "404 code",
                 StatusRound1 = "Passed",
@@ -48,7 +48,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Commands
             });
         }
 
-        // TC-PRN-UPE-02 | N | Skips AudioUrl update when Null
+        // UpdatePronunciationExampleCommandHandler_02 | N | Skips AudioUrl update when Null
         [Fact]
         public async Task Handle_AudioNull_IgnoresUpdate()
         {
@@ -63,7 +63,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Commands
             QACollector.LogTestCase("Pronunciation Example - Update", new TestCaseDetail
             {
                 FunctionGroup = "UpdatePronunciationExampleCommandHandler",
-                TestCaseID = "TC-PRN-UPE-02",
+                TestCaseID = "UpdatePronunciationExampleCommandHandler_02",
                 Description = "Restricts wiping old data paths replacing media blocks using simple string.IsNullOrEmpty checks",
                 ExpectedResult = "Audio url stays old",
                 StatusRound1 = "Passed",
@@ -73,7 +73,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Commands
             });
         }
 
-        // TC-PRN-UPE-03 | N | Valid updates mapped parameters accurately
+        // UpdatePronunciationExampleCommandHandler_03 | N | Valid updates mapped parameters accurately
         [Fact]
         public async Task Handle_ValidPartial_SetsNewStrings()
         {
@@ -94,7 +94,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Commands
             QACollector.LogTestCase("Pronunciation Example - Update", new TestCaseDetail
             {
                 FunctionGroup = "UpdatePronunciationExampleCommandHandler",
-                TestCaseID = "TC-PRN-UPE-03",
+                TestCaseID = "UpdatePronunciationExampleCommandHandler_03",
                 Description = "Replaces data appropriately formatting updates flawlessly",
                 ExpectedResult = "Values matching request context",
                 StatusRound1 = "Passed",
@@ -105,7 +105,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Commands
         }
 
 
-        // TC-PRN-UPE-04 | N | Valid updates Audio when provided string
+        // UpdatePronunciationExampleCommandHandler_04 | N | Valid updates Audio when provided string
         [Fact]
         public async Task Handle_ValidAudio_SetsNewString()
         {
@@ -123,7 +123,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Commands
             QACollector.LogTestCase("Pronunciation Example - Update", new TestCaseDetail
             {
                 FunctionGroup = "UpdatePronunciationExampleCommandHandler",
-                TestCaseID = "TC-PRN-UPE-04",
+                TestCaseID = "UpdatePronunciationExampleCommandHandler_04",
                 Description = "Replaces audio file correctly if supplied path breaks limits structurally",
                 ExpectedResult = "Values audio replaced",
                 StatusRound1 = "Passed",
@@ -133,7 +133,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Commands
             });
         }
 
-        // TC-PRN-UPE-05 | N | Verifies Database Invocation Updates Ensure
+        // UpdatePronunciationExampleCommandHandler_05 | N | Verifies Database Invocation Updates Ensure
         [Fact]
         public async Task Handle_AlwaysInvokesUpdate_SucceedsValid()
         {
@@ -148,7 +148,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Commands
             QACollector.LogTestCase("Pronunciation Example - Update", new TestCaseDetail
             {
                 FunctionGroup = "UpdatePronunciationExampleCommandHandler",
-                TestCaseID = "TC-PRN-UPE-05",
+                TestCaseID = "UpdatePronunciationExampleCommandHandler_05",
                 Description = "Confirms Update execution ensures state mechanics commit physically",
                 ExpectedResult = "Invokes once execution mapped",
                 StatusRound1 = "Passed",
@@ -158,7 +158,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Commands
             });
         }
 
-        // TC-PRN-UPE-06 | N | Verifies Database Save Changes Updates Guarantee
+        // UpdatePronunciationExampleCommandHandler_06 | N | Verifies Database Save Changes Updates Guarantee
         [Fact]
         public async Task Handle_AlwaysInvokesSave_SucceedsValid()
         {
@@ -173,7 +173,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Commands
             QACollector.LogTestCase("Pronunciation Example - Update", new TestCaseDetail
             {
                 FunctionGroup = "UpdatePronunciationExampleCommandHandler",
-                TestCaseID = "TC-PRN-UPE-06",
+                TestCaseID = "UpdatePronunciationExampleCommandHandler_06",
                 Description = "Confirms saving context completes transaction securely flushing entity locks",
                 ExpectedResult = "Invokes once transaction mapped",
                 StatusRound1 = "Passed",

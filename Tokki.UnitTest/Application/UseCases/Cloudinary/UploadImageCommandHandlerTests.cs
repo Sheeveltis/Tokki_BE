@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Moq;
 using System;
@@ -37,7 +37,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CUI-01 | A | Cloudinary returns empty URL → 500 Failure
+        // Upload_Image_01 | A | Cloudinary returns empty URL → 500 Failure
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_CloudinaryReturnsEmptyUrl_ShouldReturn500()
@@ -59,7 +59,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary
             QACollector.LogTestCase("Cloudinary - Upload Image", new TestCaseDetail
             {
                 FunctionGroup     = "Upload Image",
-                TestCaseID        = "TC-CUI-01",
+                TestCaseID        = "Upload_Image_01",
                 Description       = "Cloudinary service returns an empty URL string",
                 ExpectedResult    = "Return 500 Failure",
                 StatusRound1      = "Passed",
@@ -70,7 +70,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CUI-02 | N | Valid file + folder → 200 Success with URL
+        // Upload_Image_02 | N | Valid file + folder → 200 Success with URL
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidFile_ShouldReturnImageUrl()
@@ -88,7 +88,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary
             QACollector.LogTestCase("Cloudinary - Upload Image", new TestCaseDetail
             {
                 FunctionGroup     = "Upload Image",
-                TestCaseID        = "TC-CUI-02",
+                TestCaseID        = "Upload_Image_02",
                 Description       = "Upload valid JPEG image to specified folder",
                 ExpectedResult    = "Return 200 Success with Cloudinary URL",
                 StatusRound1      = "Passed",
@@ -99,7 +99,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CUI-03 | A | Cloudinary throws exception → 500 Failure
+        // Upload_Image_03 | A | Cloudinary throws exception → 500 Failure
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_CloudinaryThrowsException_ShouldReturn500()
@@ -121,7 +121,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary
             QACollector.LogTestCase("Cloudinary - Upload Image", new TestCaseDetail
             {
                 FunctionGroup     = "Upload Image",
-                TestCaseID        = "TC-CUI-03",
+                TestCaseID        = "Upload_Image_03",
                 Description       = "Cloudinary service throws an unhandled exception during upload",
                 ExpectedResult    = "Exception is caught, return 500 with error message",
                 StatusRound1      = "Passed",
@@ -132,7 +132,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CUI-04 | N | Returned URL contains expected domain
+        // Upload_Image_04 | N | Returned URL contains expected domain
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidFile_ReturnedUrlContainsCloudinaryDomain()
@@ -150,7 +150,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary
             QACollector.LogTestCase("Cloudinary - Upload Image", new TestCaseDetail
             {
                 FunctionGroup     = "Upload Image",
-                TestCaseID        = "TC-CUI-04",
+                TestCaseID        = "Upload_Image_04",
                 Description       = "Verify the returned URL references the Cloudinary CDN domain",
                 ExpectedResult    = "URL contains 'cloudinary.com'",
                 StatusRound1      = "Passed",
@@ -161,7 +161,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CUI-05 | B | Large file (5 MB) → behaves same as normal
+        // Upload_Image_05 | B | Large file (5 MB) → behaves same as normal
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_LargeFile_ShouldStillReturnSuccess()
@@ -182,7 +182,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary
             QACollector.LogTestCase("Cloudinary - Upload Image", new TestCaseDetail
             {
                 FunctionGroup     = "Upload Image",
-                TestCaseID        = "TC-CUI-05",
+                TestCaseID        = "Upload_Image_05",
                 Description       = "Upload an image at the upper boundary size (5 MB)",
                 ExpectedResult    = "Handler does not reject large files; returns Success",
                 StatusRound1      = "Passed",
@@ -193,7 +193,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CUI-06 | N | Custom folder name is forwarded to service
+        // Upload_Image_06 | N | Custom folder name is forwarded to service
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidFile_ShouldForwardFolderNameToService()
@@ -213,7 +213,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary
             QACollector.LogTestCase("Cloudinary - Upload Image", new TestCaseDetail
             {
                 FunctionGroup     = "Upload Image",
-                TestCaseID        = "TC-CUI-06",
+                TestCaseID        = "Upload_Image_06",
                 Description       = "Verify the handler passes the FolderName exactly to the Cloudinary service",
                 ExpectedResult    = "UploadImageAsync called with correct folder argument",
                 StatusRound1      = "Passed",

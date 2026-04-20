@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -36,7 +36,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CMC-01 | A | Blog not found → 404
+        // Create_Comment_01 | A | Blog not found → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_BlogNotFound_ShouldReturn404()
@@ -57,7 +57,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments
             QACollector.LogTestCase("Comment - Create", new TestCaseDetail
             {
                 FunctionGroup     = "Create Comment",
-                TestCaseID        = "TC-CMC-01",
+                TestCaseID        = "Create_Comment_01",
                 Description       = "Create comment with BlogId that does not exist",
                 ExpectedResult    = "Return 404 BlogNotFound",
                 StatusRound1      = "Passed",
@@ -68,7 +68,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CMC-02 | A | ParentComment not found → 404
+        // Create_Comment_02 | A | ParentComment not found → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ParentCommentNotFound_ShouldReturn404()
@@ -97,7 +97,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments
             QACollector.LogTestCase("Comment - Create", new TestCaseDetail
             {
                 FunctionGroup     = "Create Comment",
-                TestCaseID        = "TC-CMC-02",
+                TestCaseID        = "Create_Comment_02",
                 Description       = "Reply to a ParentId that does not exist in the repository",
                 ExpectedResult    = "Return 404 CommentNotFound",
                 StatusRound1      = "Passed",
@@ -108,7 +108,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CMC-03 | N | Valid comment → 201 Created
+        // Create_Comment_03 | N | Valid comment → 201 Created
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidComment_ShouldReturn201()
@@ -127,7 +127,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments
             QACollector.LogTestCase("Comment - Create", new TestCaseDetail
             {
                 FunctionGroup     = "Create Comment",
-                TestCaseID        = "TC-CMC-03",
+                TestCaseID        = "Create_Comment_03",
                 Description       = "Create a top-level comment on a valid blog",
                 ExpectedResult    = "Return 201 Created with populated CommentDTO",
                 StatusRound1      = "Passed",
@@ -138,7 +138,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CMC-04 | N | Reply to nested comment flattens to top-level
+        // Create_Comment_04 | N | Reply to nested comment flattens to top-level
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ReplyToNestedComment_ShouldFlattenParentId()
@@ -169,7 +169,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments
             QACollector.LogTestCase("Comment - Create", new TestCaseDetail
             {
                 FunctionGroup     = "Create Comment",
-                TestCaseID        = "TC-CMC-04",
+                TestCaseID        = "Create_Comment_04",
                 Description       = "Reply to a nested comment — ParentId should be flattened to the top-level parent",
                 ExpectedResult    = "Command.ParentId = CMT-001 (top-level), return 201",
                 StatusRound1      = "Passed",
@@ -180,7 +180,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CMC-05 | A | Repository throws exception → 500
+        // Create_Comment_05 | A | Repository throws exception → 500
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldReturn500()
@@ -202,7 +202,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments
             QACollector.LogTestCase("Comment - Create", new TestCaseDetail
             {
                 FunctionGroup     = "Create Comment",
-                TestCaseID        = "TC-CMC-05",
+                TestCaseID        = "Create_Comment_05",
                 Description       = "AddAsync throws exception during persistence",
                 ExpectedResult    = "Return 500 ServerError",
                 StatusRound1      = "Passed",
@@ -213,7 +213,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CMC-06 | N | DTO UserId matches command UserId
+        // Create_Comment_06 | N | DTO UserId matches command UserId
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidComment_DtoUserIdMatchesCommand()
@@ -231,7 +231,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments
             QACollector.LogTestCase("Comment - Create", new TestCaseDetail
             {
                 FunctionGroup     = "Create Comment",
-                TestCaseID        = "TC-CMC-06",
+                TestCaseID        = "Create_Comment_06",
                 Description       = "Verify the returned DTO carries the same UserId as the command",
                 ExpectedResult    = "Data.UserId = 'U-XYZ'",
                 StatusRound1      = "Passed",

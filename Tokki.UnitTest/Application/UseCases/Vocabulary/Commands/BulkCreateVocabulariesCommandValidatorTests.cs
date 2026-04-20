@@ -1,4 +1,4 @@
-using FluentValidation.TestHelper;
+﻿using FluentValidation.TestHelper;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -31,7 +31,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary.Commands
             QACollector.LogTestCase("Vocabulary - Bulk Create Validator", new TestCaseDetail
             {
                 FunctionGroup     = "BulkCreateVocabulariesCommandValidator",
-                TestCaseID        = "TC-VOC-BCVV-01",
+                TestCaseID        = "BulkCreateVocabulariesCommandValidator_01",
                 Description       = "Vocabularies list null",
                 ExpectedResult    = "Throws Empty validation error",
                 StatusRound1      = "Passed",
@@ -53,7 +53,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary.Commands
             QACollector.LogTestCase("Vocabulary - Bulk Create Validator", new TestCaseDetail
             {
                 FunctionGroup     = "BulkCreateVocabulariesCommandValidator",
-                TestCaseID        = "TC-VOC-BCVV-02",
+                TestCaseID        = "BulkCreateVocabulariesCommandValidator_02",
                 Description       = "Vocabularies list empty",
                 ExpectedResult    = "Throws validation error",
                 StatusRound1      = "Passed",
@@ -78,7 +78,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary.Commands
             QACollector.LogTestCase("Vocabulary - Bulk Create Validator", new TestCaseDetail
             {
                 FunctionGroup     = "BulkCreateVocabulariesCommandValidator",
-                TestCaseID        = "TC-VOC-BCVV-03",
+                TestCaseID        = "BulkCreateVocabulariesCommandValidator_03",
                 Description       = "Vocabularies count > 100 checks",
                 ExpectedResult    = "Error max count 100",
                 StatusRound1      = "Passed",
@@ -103,7 +103,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary.Commands
             QACollector.LogTestCase("Vocabulary - Bulk Create Validator", new TestCaseDetail
             {
                 FunctionGroup     = "BulkCreateVocabulariesCommandValidator",
-                TestCaseID        = "TC-VOC-BCVV-04",
+                TestCaseID        = "BulkCreateVocabulariesCommandValidator_04",
                 Description       = "Text property is empty",
                 ExpectedResult    = "Error empty Text",
                 StatusRound1      = "Passed",
@@ -128,7 +128,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary.Commands
             QACollector.LogTestCase("Vocabulary - Bulk Create Validator", new TestCaseDetail
             {
                 FunctionGroup     = "BulkCreateVocabulariesCommandValidator",
-                TestCaseID        = "TC-VOC-BCVV-05",
+                TestCaseID        = "BulkCreateVocabulariesCommandValidator_05",
                 Description       = "Definition length > 500 characters",
                 ExpectedResult    = "Error max length breached",
                 StatusRound1      = "Passed",
@@ -161,7 +161,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary.Commands
             QACollector.LogTestCase("Vocabulary - Bulk Create Validator", new TestCaseDetail
             {
                 FunctionGroup     = "BulkCreateVocabulariesCommandValidator",
-                TestCaseID        = "TC-VOC-BCVV-06",
+                TestCaseID        = "BulkCreateVocabulariesCommandValidator_06",
                 Description       = "Examples list > 10",
                 ExpectedResult    = "Error examples max count",
                 StatusRound1      = "Passed",
@@ -194,7 +194,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary.Commands
             QACollector.LogTestCase("Vocabulary - Bulk Create Validator", new TestCaseDetail
             {
                 FunctionGroup     = "BulkCreateVocabulariesCommandValidator",
-                TestCaseID        = "TC-VOC-BCVV-07",
+                TestCaseID        = "BulkCreateVocabulariesCommandValidator_07",
                 Description       = "Valid mapping attributes",
                 ExpectedResult    = "No errors",
                 StatusRound1      = "Passed",

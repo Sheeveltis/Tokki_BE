@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -24,7 +24,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QT-DEL-01 | A | QuestionType not found → 404
+        // DeleteQuestionType_01 | A | QuestionType not found → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NotFound_ShouldReturn404()
@@ -44,7 +44,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
             QACollector.LogTestCase("Question Type - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteQuestionType",
-                TestCaseID        = "TC-QT-DEL-01",
+                TestCaseID        = "DeleteQuestionType_01",
                 Description       = "QuestionType not found → 404 Failure",
                 ExpectedResult    = "IsSuccess=false, StatusCode=404",
                 StatusRound1      = "Passed",
@@ -55,7 +55,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QT-DEL-02 | N | Happy path: Active type → soft deleted, 200
+        // DeleteQuestionType_02 | N | Happy path: Active type → soft deleted, 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ActiveType_ShouldSoftDeleteAndReturn200()
@@ -79,7 +79,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
             QACollector.LogTestCase("Question Type - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteQuestionType",
-                TestCaseID        = "TC-QT-DEL-02",
+                TestCaseID        = "DeleteQuestionType_02",
                 Description       = "Active QuestionType soft-deleted (IsActive=false), UpdateAsync+SaveChanges called, 200",
                 ExpectedResult    = "IsSuccess=true, StatusCode=200, entity.IsActive=false",
                 StatusRound1      = "Passed",
@@ -90,7 +90,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QT-DEL-03 | N | Already inactive → still returns 200 (idempotent)
+        // DeleteQuestionType_03 | N | Already inactive → still returns 200 (idempotent)
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_AlreadyInactiveType_ShouldStillReturn200()
@@ -112,7 +112,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
             QACollector.LogTestCase("Question Type - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteQuestionType",
-                TestCaseID        = "TC-QT-DEL-03",
+                TestCaseID        = "DeleteQuestionType_03",
                 Description       = "Already inactive QuestionType → 200 returned (idempotent soft delete)",
                 ExpectedResult    = "IsSuccess=true, StatusCode=200",
                 StatusRound1      = "Passed",
@@ -123,7 +123,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QT-DEL-04 | A | Repository throws on UpdateAsync → 500
+        // DeleteQuestionType_04 | A | Repository throws on UpdateAsync → 500
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrowsOnUpdate_ShouldReturn500()
@@ -148,7 +148,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
             QACollector.LogTestCase("Question Type - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteQuestionType",
-                TestCaseID        = "TC-QT-DEL-04",
+                TestCaseID        = "DeleteQuestionType_04",
                 Description       = "UpdateAsync throws → caught in try/catch → 500 returned",
                 ExpectedResult    = "IsSuccess=false, StatusCode=500",
                 StatusRound1      = "Passed",
@@ -159,7 +159,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QT-DEL-05 | B | UpdateAsync called with entity having IsActive=false
+        // DeleteQuestionType_05 | B | UpdateAsync called with entity having IsActive=false
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidDelete_UpdateAsyncCalledWithIsActiveFalse()
@@ -179,7 +179,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
             QACollector.LogTestCase("Question Type - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteQuestionType",
-                TestCaseID        = "TC-QT-DEL-05",
+                TestCaseID        = "DeleteQuestionType_05",
                 Description       = "Boundary: UpdateAsync called with entity.IsActive=false",
                 ExpectedResult    = "UpdateAsync(entity where IsActive=false) Times.Once",
                 StatusRound1      = "Passed",
@@ -190,7 +190,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QT-DEL-06 | B | GetByIdAsync called with exactly the correct Id
+        // DeleteQuestionType_06 | B | GetByIdAsync called with exactly the correct Id
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidDelete_GetByIdCalledWithCorrectId()
@@ -211,7 +211,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
             QACollector.LogTestCase("Question Type - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteQuestionType",
-                TestCaseID        = "TC-QT-DEL-06",
+                TestCaseID        = "DeleteQuestionType_06",
                 Description       = "Boundary: GetByIdAsync called once with the exact QuestionTypeId from command",
                 ExpectedResult    = "GetByIdAsync('QT-SPECIFIC-01') Times.Once",
                 StatusRound1      = "Passed",

@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -40,7 +40,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-APP-01 | A | No token → 401 Unauthorized
+        // Approve_Vocabulary_01 | A | No token → 401 Unauthorized
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_Unauthorized_ShouldReturn401()
@@ -63,7 +63,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Approve", new TestCaseDetail
             {
                 FunctionGroup     = "Approve Vocabulary",
-                TestCaseID        = "TC-VOCAB-APP-01",
+                TestCaseID        = "Approve_Vocabulary_01",
                 Description       = "Approve vocabulary when there is no authentication token",
                 ExpectedResult    = "Return 401 Unauthorized",
                 StatusRound1      = "Passed",
@@ -74,7 +74,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-APP-02 | A | Empty VocabularyIds → 400
+        // Approve_Vocabulary_02 | A | Empty VocabularyIds → 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyVocabularyIds_ShouldReturn400()
@@ -94,7 +94,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Approve", new TestCaseDetail
             {
                 FunctionGroup     = "Approve Vocabulary",
-                TestCaseID        = "TC-VOCAB-APP-02",
+                TestCaseID        = "Approve_Vocabulary_02",
                 Description       = "Approve with empty VocabularyIds list",
                 ExpectedResult    = "Return 400 Bad Request",
                 StatusRound1      = "Passed",
@@ -105,7 +105,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-APP-03 | A | Vocab not found → exception → 500
+        // Approve_Vocabulary_03 | A | Vocab not found → exception → 500
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_VocabNotFound_ShouldReturn500()
@@ -129,7 +129,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Approve", new TestCaseDetail
             {
                 FunctionGroup     = "Approve Vocabulary",
-                TestCaseID        = "TC-VOCAB-APP-03",
+                TestCaseID        = "Approve_Vocabulary_03",
                 Description       = "Approve vocab with ID that doesn't exist → exception thrown → rollback → 500",
                 ExpectedResult    = "Transaction rollback, return 500",
                 StatusRound1      = "Passed",
@@ -140,7 +140,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-APP-04 | A | Vocab not PendingApproval → 500
+        // Approve_Vocabulary_04 | A | Vocab not PendingApproval → 500
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_VocabNotPendingApproval_ShouldReturn500()
@@ -165,7 +165,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Approve", new TestCaseDetail
             {
                 FunctionGroup     = "Approve Vocabulary",
-                TestCaseID        = "TC-VOCAB-APP-04",
+                TestCaseID        = "Approve_Vocabulary_04",
                 Description       = "Approve vocab that is in Active state (not PendingApproval)",
                 ExpectedResult    = "Exception thrown → rollback → return 500",
                 StatusRound1      = "Passed",
@@ -176,7 +176,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-APP-05 | N | Valid PendingApproval vocab → Active + email sent → 200
+        // Approve_Vocabulary_05 | N | Valid PendingApproval vocab → Active + email sent → 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidPendingVocab_ShouldSetActiveAndReturn200()
@@ -219,7 +219,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Approve", new TestCaseDetail
             {
                 FunctionGroup     = "Approve Vocabulary",
-                TestCaseID        = "TC-VOCAB-APP-05",
+                TestCaseID        = "Approve_Vocabulary_05",
                 Description       = "Approve valid vocab in PendingApproval → Status = Active, email sent",
                 ExpectedResult    = "Status = Active, email sent, return 200",
                 StatusRound1      = "Passed",
@@ -230,7 +230,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-APP-06 | N | Multiple vocabs same creator → batch approve → 200
+        // Approve_Vocabulary_06 | N | Multiple vocabs same creator → batch approve → 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_MultipleVocabsSameCreator_ShouldSendOneEmailAndReturn200()
@@ -274,7 +274,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Approve", new TestCaseDetail
             {
                 FunctionGroup     = "Approve Vocabulary",
-                TestCaseID        = "TC-VOCAB-APP-06",
+                TestCaseID        = "Approve_Vocabulary_06",
                 Description       = "Approve 2 vocabs from the same creator → both Active, 1 email sent",
                 ExpectedResult    = "Both vocab.Status = Active, return 200",
                 StatusRound1      = "Passed",

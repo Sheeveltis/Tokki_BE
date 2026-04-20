@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -34,7 +34,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-UPR-01 | A | UserId is null → 401 Unauthorized
+        // Update_Profile_01 | A | UserId is null → 401 Unauthorized
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NoUserId_ShouldReturn401()
@@ -51,7 +51,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Update Profile", new TestCaseDetail
             {
                 FunctionGroup     = "Update Profile",
-                TestCaseID        = "TC-UPR-01",
+                TestCaseID        = "Update_Profile_01",
                 Description       = "UserId is null or empty → cannot identify which user to update",
                 ExpectedResult    = "Return 401 UserUnauthorized",
                 StatusRound1      = "Passed",
@@ -62,7 +62,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-UPR-02 | A | User not found by ID → 404
+        // Update_Profile_02 | A | User not found by ID → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_UserNotFound_ShouldReturn404()
@@ -79,7 +79,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Update Profile", new TestCaseDetail
             {
                 FunctionGroup     = "Update Profile",
-                TestCaseID        = "TC-UPR-02",
+                TestCaseID        = "Update_Profile_02",
                 Description       = "User ID does not exist in the system",
                 ExpectedResult    = "Return 404 UserNotFoundById",
                 StatusRound1      = "Passed",
@@ -90,7 +90,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-UPR-03 | A | Phone already used by another user → 400
+        // Update_Profile_03 | A | Phone already used by another user → 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DuplicatePhone_ShouldReturn400()
@@ -113,7 +113,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Update Profile", new TestCaseDetail
             {
                 FunctionGroup     = "Update Profile",
-                TestCaseID        = "TC-UPR-03",
+                TestCaseID        = "Update_Profile_03",
                 Description       = "Phone number is already used by another account",
                 ExpectedResult    = "Return 400 PhoneNumberDuplicated",
                 StatusRound1      = "Passed",
@@ -129,7 +129,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-UPR-04 | N | Valid full profile update (all fields) → 200
+        // Update_Profile_04 | N | Valid full profile update (all fields) → 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidFullUpdate_ShouldReturn200()
@@ -160,7 +160,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Update Profile", new TestCaseDetail
             {
                 FunctionGroup     = "Update Profile",
-                TestCaseID        = "TC-UPR-04",
+                TestCaseID        = "Update_Profile_04",
                 Description       = "Valid update of FullName, Phone, DateOfBirth, AvatarUrl → all fields updated",
                 ExpectedResult    = "Return 200, all provided fields updated on entity",
                 StatusRound1      = "Passed",
@@ -178,7 +178,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-UPR-05 | N | Only FullName provided → phone logic skipped, return 200
+        // Update_Profile_05 | N | Only FullName provided → phone logic skipped, return 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_OnlyFullNameProvided_ShouldReturn200()
@@ -203,7 +203,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Update Profile", new TestCaseDetail
             {
                 FunctionGroup     = "Update Profile",
-                TestCaseID        = "TC-UPR-05",
+                TestCaseID        = "Update_Profile_05",
                 Description       = "Only FullName provided, phone check and phone update are skipped",
                 ExpectedResult    = "Return 200, only FullName updated",
                 StatusRound1      = "Passed",
@@ -219,7 +219,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-UPR-06 | N | UpdateUserAsync and SaveChangesAsync each called once on success
+        // Update_Profile_06 | N | UpdateUserAsync and SaveChangesAsync each called once on success
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidUpdate_ShouldCallUpdateAndSaveOnce()
@@ -239,7 +239,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Update Profile", new TestCaseDetail
             {
                 FunctionGroup     = "Update Profile",
-                TestCaseID        = "TC-UPR-06",
+                TestCaseID        = "Update_Profile_06",
                 Description       = "Successful update → UpdateUserAsync and SaveChangesAsync each called exactly once",
                 ExpectedResult    = "UpdateUserAsync × 1, SaveChangesAsync × 1",
                 StatusRound1      = "Passed",

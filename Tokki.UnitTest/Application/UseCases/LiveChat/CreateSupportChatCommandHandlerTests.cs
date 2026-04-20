@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -24,7 +24,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
                 (idGen ?? new Mock<IIdGeneratorService>()).Object);
         }
 
-        // TC-LCH-CRT-01 | N | Create Room valid logic verification
+        // CreateSupportChat_01 | N | Create Room valid logic verification
         [Fact]
         public async Task Handle_ValidRequest_ShouldCreateRoomProperly()
         {
@@ -45,7 +45,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
 
             QACollector.LogTestCase("LiveChat - Create Support", new TestCaseDetail
             {
-                FunctionGroup = "CreateSupportChat", TestCaseID = "TC-LCH-CRT-01",
+                FunctionGroup = "CreateSupportChat", TestCaseID = "CreateSupportChat_01",
                 Description = "Ensures correctly structured chat entity builds properly in memory",
                 ExpectedResult = "Return 200, AddRoom invoked comprehensively configured", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -53,7 +53,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             });
         }
 
-        // TC-LCH-CRT-02 | N | Create Admin member with correct binding
+        // CreateSupportChat_02 | N | Create Admin member with correct binding
         [Fact]
         public async Task Handle_ValidRequest_ShouldCreateAdminMember()
         {
@@ -73,7 +73,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
 
             QACollector.LogTestCase("LiveChat - Create Support", new TestCaseDetail
             {
-                FunctionGroup = "CreateSupportChat", TestCaseID = "TC-LCH-CRT-02",
+                FunctionGroup = "CreateSupportChat", TestCaseID = "CreateSupportChat_02",
                 Description = "Ensures correct member permissions configured locally during first support execution",
                 ExpectedResult = "Return 200, AddMember invoked validating member", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -81,7 +81,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             });
         }
 
-        // TC-LCH-CRT-03 | N | Check Output Success String
+        // CreateSupportChat_03 | N | Check Output Success String
         [Fact]
         public async Task Handle_ValidRequest_ShouldReturnProperRoomId()
         {
@@ -97,7 +97,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
 
             QACollector.LogTestCase("LiveChat - Create Support", new TestCaseDetail
             {
-                FunctionGroup = "CreateSupportChat", TestCaseID = "TC-LCH-CRT-03",
+                FunctionGroup = "CreateSupportChat", TestCaseID = "CreateSupportChat_03",
                 Description = "Expected RoomID resolves correctly passed back",
                 ExpectedResult = "Returns RoomId in OperationResult", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -105,7 +105,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             });
         }
 
-        // TC-LCH-CRT-04 | A | AddRoomThrows
+        // CreateSupportChat_04 | A | AddRoomThrows
         [Fact]
         public async Task Handle_AddRoomThrows_ShouldPropagateException()
         {
@@ -118,7 +118,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
 
             QACollector.LogTestCase("LiveChat - Create Support", new TestCaseDetail
             {
-                FunctionGroup = "CreateSupportChat", TestCaseID = "TC-LCH-CRT-04",
+                FunctionGroup = "CreateSupportChat", TestCaseID = "CreateSupportChat_04",
                 Description = "Repository failure during Room addition breaks early",
                 ExpectedResult = "Throws Exception internally mapped", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -126,7 +126,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             });
         }
 
-        // TC-LCH-CRT-05 | A | AddMemberThrows
+        // CreateSupportChat_05 | A | AddMemberThrows
         [Fact]
         public async Task Handle_AddMemberThrows_ShouldPropagateException()
         {
@@ -139,7 +139,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
 
             QACollector.LogTestCase("LiveChat - Create Support", new TestCaseDetail
             {
-                FunctionGroup = "CreateSupportChat", TestCaseID = "TC-LCH-CRT-05",
+                FunctionGroup = "CreateSupportChat", TestCaseID = "CreateSupportChat_05",
                 Description = "Repository failure during linking breaks creation sequence",
                 ExpectedResult = "Throws native Exception tracking downwards", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -147,7 +147,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             });
         }
 
-        // TC-LCH-CRT-06 | A | SaveChangesThrows
+        // CreateSupportChat_06 | A | SaveChangesThrows
         [Fact]
         public async Task Handle_SaveChangesThrows_ShouldPropagateException()
         {
@@ -160,7 +160,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
 
             QACollector.LogTestCase("LiveChat - Create Support", new TestCaseDetail
             {
-                FunctionGroup = "CreateSupportChat", TestCaseID = "TC-LCH-CRT-06",
+                FunctionGroup = "CreateSupportChat", TestCaseID = "CreateSupportChat_06",
                 Description = "Global sync commit propagates internal trace outwards correctly",
                 ExpectedResult = "Throws natively tracking errors backwards", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

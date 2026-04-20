@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -47,7 +47,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             AudioURL = "hello.mp3"
         };
         // ═══════════════════════════════════════════════════════════════════
-        // TC-WDL-RST-01 | 400 | User has no progress → Failure
+        // GetWordleResult_01 | 400 | User has no progress → Failure
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NoProgress_ShouldReturnFailure()
@@ -67,7 +67,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             QACollector.LogTestCase("MiniGame - Get Wordle Result", new TestCaseDetail
             {
                 FunctionGroup     = "GetWordleResult",
-                TestCaseID        = "TC-WDL-RST-01",
+                TestCaseID        = "GetWordleResult_01",
                 Description       = "User has no progress → Failure with must-win message",
                 ExpectedResult    = "Return Failure, message contains 'hoàn thành'",
                 StatusRound1      = "Passed",
@@ -78,7 +78,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-WDL-RST-02 | 400 | User started but hasn't won → Failure
+        // GetWordleResult_02 | 400 | User started but hasn't won → Failure
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ProgressExistsButNotWon_ShouldReturnFailure()
@@ -100,7 +100,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             QACollector.LogTestCase("MiniGame - Get Wordle Result", new TestCaseDetail
             {
                 FunctionGroup     = "GetWordleResult",
-                TestCaseID        = "TC-WDL-RST-02",
+                TestCaseID        = "GetWordleResult_02",
                 Description       = "Progress exists but IsWon=false → Failure",
                 ExpectedResult    = "Return Failure, message contains 'chiến thắng'",
                 StatusRound1      = "Passed",
@@ -111,7 +111,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-WDL-RST-03 | 404 | Win but DailyWordle not found → Failure
+        // GetWordleResult_03 | 404 | Win but DailyWordle not found → Failure
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_WonButGameNotFound_ShouldReturnFailure()
@@ -135,7 +135,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             QACollector.LogTestCase("MiniGame - Get Wordle Result", new TestCaseDetail
             {
                 FunctionGroup     = "GetWordleResult",
-                TestCaseID        = "TC-WDL-RST-03",
+                TestCaseID        = "GetWordleResult_03",
                 Description       = "User won but game deleted → Failure 'Không tìm thấy'",
                 ExpectedResult    = "Return Failure, message 'Không tìm thấy'",
                 StatusRound1      = "Passed",
@@ -146,7 +146,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-WDL-RST-04 | 200 | Win + game found → DTO mapped correctly
+        // GetWordleResult_04 | 200 | Win + game found → DTO mapped correctly
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_WonAndGameFound_ShouldReturnWordleResultDto()
@@ -178,7 +178,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             QACollector.LogTestCase("MiniGame - Get Wordle Result", new TestCaseDetail
             {
                 FunctionGroup     = "GetWordleResult",
-                TestCaseID        = "TC-WDL-RST-04",
+                TestCaseID        = "GetWordleResult_04",
                 Description       = "Win, game and vocab found → full WordleResultDTO returned",
                 ExpectedResult    = "Return 200, Word/Definition/AttemptCount/ImageUrl/AudioUrl correct",
                 StatusRound1      = "Passed",
@@ -189,7 +189,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-WDL-RST-05 | 200 | DailyWordleId echoed in result DTO
+        // GetWordleResult_05 | 200 | DailyWordleId echoed in result DTO
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_WonAndGameFound_ShouldMapDailyWordleId()
@@ -216,7 +216,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             QACollector.LogTestCase("MiniGame - Get Wordle Result", new TestCaseDetail
             {
                 FunctionGroup     = "GetWordleResult",
-                TestCaseID        = "TC-WDL-RST-05",
+                TestCaseID        = "GetWordleResult_05",
                 Description       = "DailyWordleId from game mapped to result DTO",
                 ExpectedResult    = "DTO.DailyWordleId = 'DW-001'",
                 StatusRound1      = "Passed",
@@ -227,7 +227,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-WDL-RST-06 | 500 | VocabularyRepository throws → exception propagates
+        // GetWordleResult_06 | 500 | VocabularyRepository throws → exception propagates
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_VocabRepositoryThrows_ShouldPropagateException()
@@ -251,7 +251,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             QACollector.LogTestCase("MiniGame - Get Wordle Result", new TestCaseDetail
             {
                 FunctionGroup     = "GetWordleResult",
-                TestCaseID        = "TC-WDL-RST-06",
+                TestCaseID        = "GetWordleResult_06",
                 Description       = "VocabularyRepository throws → exception propagates unhandled",
                 ExpectedResult    = "Throws Exception",
                 StatusRound1      = "Passed",

@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -38,7 +38,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-STA-01 | A | No token → 401
+        // Create_Vocabulary_By_Staff_01 | A | No token → 401
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_Unauthorized_ShouldReturn401()
@@ -58,7 +58,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Create By Staff", new TestCaseDetail
             {
                 FunctionGroup     = "Create Vocabulary By Staff",
-                TestCaseID        = "TC-VOCAB-STA-01",
+                TestCaseID        = "Create_Vocabulary_By_Staff_01",
                 Description       = "Staff creates vocabulary without authentication token",
                 ExpectedResult    = "Return 401 Unauthorized",
                 StatusRound1      = "Passed",
@@ -69,7 +69,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-STA-02 | A | Duplicate vocab → 400
+        // Create_Vocabulary_By_Staff_02 | A | Duplicate vocab → 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DuplicateVocab_ShouldReturn400()
@@ -94,7 +94,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Create By Staff", new TestCaseDetail
             {
                 FunctionGroup     = "Create Vocabulary By Staff",
-                TestCaseID        = "TC-VOCAB-STA-02",
+                TestCaseID        = "Create_Vocabulary_By_Staff_02",
                 Description       = "Staff creates vocabulary with Text + Definition that already exists",
                 ExpectedResult    = "Return 400 Vocabulary.Duplicated",
                 StatusRound1      = "Passed",
@@ -105,7 +105,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-STA-03 | N | Valid data → Draft status → 201
+        // Create_Vocabulary_By_Staff_03 | N | Valid data → Draft status → 201
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidData_ShouldReturnDraftStatus201()
@@ -140,7 +140,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Create By Staff", new TestCaseDetail
             {
                 FunctionGroup     = "Create Vocabulary By Staff",
-                TestCaseID        = "TC-VOCAB-STA-03",
+                TestCaseID        = "Create_Vocabulary_By_Staff_03",
                 Description       = "Staff creates valid vocabulary → Status = Draft, message awaiting approval",
                 ExpectedResult    = "Return 201, message contains 'awaiting approval'",
                 StatusRound1      = "Passed",
@@ -151,7 +151,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-STA-04 | A | TTS fails → 201 with null AudioURL
+        // Create_Vocabulary_By_Staff_04 | A | TTS fails → 201 with null AudioURL
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_TtsFails_ShouldStillReturn201WithNullAudio()
@@ -179,7 +179,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Create By Staff", new TestCaseDetail
             {
                 FunctionGroup     = "Create Vocabulary By Staff",
-                TestCaseID        = "TC-VOCAB-STA-04",
+                TestCaseID        = "Create_Vocabulary_By_Staff_04",
                 Description       = "TTS service error → vocab still created with AudioURL = null",
                 ExpectedResult    = "Return 201, AudioURL = null",
                 StatusRound1      = "Passed",
@@ -190,7 +190,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-STA-05 | N | Valid data with examples → 201 with examples
+        // Create_Vocabulary_By_Staff_05 | N | Valid data with examples → 201 with examples
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidDataWithExamples_ShouldReturn201WithExamples()
@@ -220,7 +220,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Create By Staff", new TestCaseDetail
             {
                 FunctionGroup     = "Create Vocabulary By Staff",
-                TestCaseID        = "TC-VOCAB-STA-05",
+                TestCaseID        = "Create_Vocabulary_By_Staff_05",
                 Description       = "Staff creates valid vocabulary with 1 example sentence → successful",
                 ExpectedResult    = "Return 201, vocab and example created",
                 StatusRound1      = "Passed",
@@ -231,7 +231,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-STA-06 | A | Repository throws → 500
+        // Create_Vocabulary_By_Staff_06 | A | Repository throws → 500
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldReturn500()
@@ -256,7 +256,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Create By Staff", new TestCaseDetail
             {
                 FunctionGroup     = "Create Vocabulary By Staff",
-                TestCaseID        = "TC-VOCAB-STA-06",
+                TestCaseID        = "Create_Vocabulary_By_Staff_06",
                 Description       = "Repository.AddAsync throws exception → rollback → 500",
                 ExpectedResult    = "Transaction rollback, return 500",
                 StatusRound1      = "Passed",

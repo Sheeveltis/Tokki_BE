@@ -1,4 +1,4 @@
-using FluentValidation.TestHelper;
+﻿using FluentValidation.TestHelper;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -31,7 +31,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary.Commands
             QACollector.LogTestCase("Vocabulary Admin - Bulk Create By Staff Validator", new TestCaseDetail
             {
                 FunctionGroup     = "BulkCreateVocabulariesByStaffCommandValidator",
-                TestCaseID        = "TC-VSC-BCBV-01",
+                TestCaseID        = "BulkCreateVocabulariesByStaffCommandValidator_01",
                 Description       = "Vocabularies list null",
                 ExpectedResult    = "Error null array",
                 StatusRound1      = "Passed",
@@ -56,7 +56,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary.Commands
             QACollector.LogTestCase("Vocabulary Admin - Bulk Create By Staff Validator", new TestCaseDetail
             {
                 FunctionGroup     = "BulkCreateVocabulariesByStaffCommandValidator",
-                TestCaseID        = "TC-VSC-BCBV-02",
+                TestCaseID        = "BulkCreateVocabulariesByStaffCommandValidator_02",
                 Description       = "Vocabularies max elements",
                 ExpectedResult    = "Error max array length",
                 StatusRound1      = "Passed",
@@ -81,7 +81,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary.Commands
             QACollector.LogTestCase("Vocabulary Admin - Bulk Create By Staff Validator", new TestCaseDetail
             {
                 FunctionGroup     = "BulkCreateVocabulariesByStaffCommandValidator",
-                TestCaseID        = "TC-VSC-BCBV-03",
+                TestCaseID        = "BulkCreateVocabulariesByStaffCommandValidator_03",
                 Description       = "Missing mandatory rules",
                 ExpectedResult    = "Throws error text",
                 StatusRound1      = "Passed",
@@ -105,7 +105,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary.Commands
             QACollector.LogTestCase("Vocabulary Admin - Bulk Create By Staff Validator", new TestCaseDetail
             {
                 FunctionGroup     = "BulkCreateVocabulariesByStaffCommandValidator",
-                TestCaseID        = "TC-VSC-BCBV-04",
+                TestCaseID        = "BulkCreateVocabulariesByStaffCommandValidator_04",
                 Description       = "Text exceeding bounds limit",
                 ExpectedResult    = "Error string max rules",
                 StatusRound1      = "Passed",
@@ -138,7 +138,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary.Commands
             QACollector.LogTestCase("Vocabulary Admin - Bulk Create By Staff Validator", new TestCaseDetail
             {
                 FunctionGroup     = "BulkCreateVocabulariesByStaffCommandValidator",
-                TestCaseID        = "TC-VSC-BCBV-05",
+                TestCaseID        = "BulkCreateVocabulariesByStaffCommandValidator_05",
                 Description       = "Examples > 10",
                 ExpectedResult    = "Throws 10 maximum check",
                 StatusRound1      = "Passed",
@@ -169,7 +169,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary.Commands
             QACollector.LogTestCase("Vocabulary Admin - Bulk Create By Staff Validator", new TestCaseDetail
             {
                 FunctionGroup     = "BulkCreateVocabulariesByStaffCommandValidator",
-                TestCaseID        = "TC-VSC-BCBV-06",
+                TestCaseID        = "BulkCreateVocabulariesByStaffCommandValidator_06",
                 Description       = "Valid inputs",
                 ExpectedResult    = "No errors",
                 StatusRound1      = "Passed",

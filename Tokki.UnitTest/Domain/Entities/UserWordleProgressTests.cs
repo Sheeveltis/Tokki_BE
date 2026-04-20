@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using System;
 using System.Collections.Generic;
 using Tokki.Domain.Entities;
@@ -27,7 +27,7 @@ namespace Tokki.UnitTest.DomainTests.Entities
             QACollector.LogTestCase("Domain - User Wordle Progress", new TestCaseDetail
             {
                 FunctionGroup     = "UserWordleProgress",
-                TestCaseID        = "TC-DOM-UWP-01",
+                TestCaseID        = "UserWordleProgress_01",
                 Description       = "Deserialize array correctly",
                 ExpectedResult    = "Deserialized accurately",
                 StatusRound1      = "Passed",
@@ -49,7 +49,7 @@ namespace Tokki.UnitTest.DomainTests.Entities
             QACollector.LogTestCase("Domain - User Wordle Progress", new TestCaseDetail
             {
                 FunctionGroup     = "UserWordleProgress",
-                TestCaseID        = "TC-DOM-UWP-02",
+                TestCaseID        = "UserWordleProgress_02",
                 Description       = "Null or empty json fallback",
                 ExpectedResult    = "Empty list",
                 StatusRound1      = "Passed",
@@ -72,7 +72,7 @@ namespace Tokki.UnitTest.DomainTests.Entities
             QACollector.LogTestCase("Domain - User Wordle Progress", new TestCaseDetail
             {
                 FunctionGroup     = "UserWordleProgress",
-                TestCaseID        = "TC-DOM-UWP-03",
+                TestCaseID        = "UserWordleProgress_03",
                 Description       = "Serialize array assignments neatly",
                 ExpectedResult    = "Serialized output string correctly",
                 StatusRound1      = "Passed",

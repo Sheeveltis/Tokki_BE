@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -47,7 +47,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteExamTemplate",
-                TestCaseID        = "TC-EXMT-DEL-01",
+                TestCaseID        = "DeleteExamTemplate_01",
                 Description       = "ExamTemplateId not found → ExamTemplateNotFound",
                 ExpectedResult    = "Return Failure (not found)",
                 StatusRound1      = "Passed",
@@ -72,7 +72,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteExamTemplate",
-                TestCaseID        = "TC-EXMT-DEL-02",
+                TestCaseID        = "DeleteExamTemplate_02",
                 Description       = "Template.Status = Deleted → treated as not found",
                 ExpectedResult    = "Return Failure (already deleted = not found)",
                 StatusRound1      = "Passed",
@@ -97,7 +97,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteExamTemplate",
-                TestCaseID        = "TC-EXMT-DEL-03",
+                TestCaseID        = "DeleteExamTemplate_03",
                 Description       = "Published template cannot be deleted → ExamTemplateCantDelete",
                 ExpectedResult    = "Return Failure (cannot delete Published)",
                 StatusRound1      = "Passed",
@@ -124,7 +124,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteExamTemplate",
-                TestCaseID        = "TC-EXMT-DEL-04",
+                TestCaseID        = "DeleteExamTemplate_04",
                 Description       = "Draft template but has linked Exams → ExamTemplateInUse",
                 ExpectedResult    = "Return Failure (in use)",
                 StatusRound1      = "Passed",
@@ -156,7 +156,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteExamTemplate",
-                TestCaseID        = "TC-EXMT-DEL-05",
+                TestCaseID        = "DeleteExamTemplate_05",
                 Description       = "Draft, not in use → soft delete (Status=Deleted), Return 200",
                 ExpectedResult    = "Return 200, template.Status = Deleted",
                 StatusRound1      = "Passed",
@@ -185,7 +185,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteExamTemplate",
-                TestCaseID        = "TC-EXMT-DEL-06",
+                TestCaseID        = "DeleteExamTemplate_06",
                 Description       = "UpdateAsync throws → catch returns ServerError",
                 ExpectedResult    = "Return Failure(ServerError)",
                 StatusRound1      = "Passed",

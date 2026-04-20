@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -66,7 +66,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GURV-01 | A | Session not found → 404
+        // GetUserExamReview_01 | A | Session not found → 404
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SessionNotFound_ShouldReturn404()
@@ -88,7 +88,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Review", new TestCaseDetail
             {
                 FunctionGroup     = "GetUserExamReview",
-                TestCaseID        = "TC-GURV-01",
+                TestCaseID        = "GetUserExamReview_01",
                 Description       = "UserExamId not found → 404",
                 ExpectedResult    = "IsSuccess=false, StatusCode=404",
                 StatusRound1      = "Passed",
@@ -99,7 +99,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GURV-02 | A | Session still InProgress → 400
+        // GetUserExamReview_02 | A | Session still InProgress → 400
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SessionInProgress_ShouldReturn400()
@@ -122,7 +122,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Review", new TestCaseDetail
             {
                 FunctionGroup     = "GetUserExamReview",
-                TestCaseID        = "TC-GURV-02",
+                TestCaseID        = "GetUserExamReview_02",
                 Description       = "Exam not submitted → 400",
                 ExpectedResult    = "IsSuccess=false, StatusCode=400",
                 StatusRound1      = "Passed",
@@ -133,7 +133,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GURV-03 | N | Happy path → 200 with ExamTitle and Questions
+        // GetUserExamReview_03 | N | Happy path → 200 with ExamTitle and Questions
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidReview_ShouldReturn200WithExamTitleAndQuestions()
@@ -157,7 +157,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Review", new TestCaseDetail
             {
                 FunctionGroup     = "GetUserExamReview",
-                TestCaseID        = "TC-GURV-03",
+                TestCaseID        = "GetUserExamReview_03",
                 Description       = "Valid completed exam → 200 with ExamTitle and 1 question",
                 ExpectedResult    = "IsSuccess=true, ExamTitle=TOPIK I 2024, Questions.Count=1",
                 StatusRound1      = "Passed",
@@ -168,7 +168,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GURV-04 | N | Questions ordered by OrderIndex
+        // GetUserExamReview_04 | N | Questions ordered by OrderIndex
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ReviewQuestions_ShouldBeOrderedByIndex()
@@ -201,7 +201,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Review", new TestCaseDetail
             {
                 FunctionGroup     = "GetUserExamReview",
-                TestCaseID        = "TC-GURV-04",
+                TestCaseID        = "GetUserExamReview_04",
                 Description       = "Review questions ordered by OrderIndex ascending",
                 ExpectedResult    = "Questions[0].OrderIndex < Questions[1].OrderIndex",
                 StatusRound1      = "Passed",
@@ -212,7 +212,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GURV-05 | N | TotalScore from session mapped correctly
+        // GetUserExamReview_05 | N | TotalScore from session mapped correctly
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidReview_ShouldMapTotalScoreFromSession()
@@ -234,7 +234,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Review", new TestCaseDetail
             {
                 FunctionGroup     = "GetUserExamReview",
-                TestCaseID        = "TC-GURV-05",
+                TestCaseID        = "GetUserExamReview_05",
                 Description       = "TotalScore mapped from session.Score",
                 ExpectedResult    = "TotalScore=5",
                 StatusRound1      = "Passed",
@@ -245,7 +245,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GURV-06 | E | Repository throws → exception propagates
+        // GetUserExamReview_06 | E | Repository throws → exception propagates
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
@@ -266,7 +266,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Review", new TestCaseDetail
             {
                 FunctionGroup     = "GetUserExamReview",
-                TestCaseID        = "TC-GURV-06",
+                TestCaseID        = "GetUserExamReview_06",
                 Description       = "Repository throws → exception propagates",
                 ExpectedResult    = "Exception with 'DB failure'",
                 StatusRound1      = "Passed",
@@ -277,7 +277,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GURV-07 | N | Missing template part mapping returns Unknown skill
+        // GetUserExamReview_07 | N | Missing template part mapping returns Unknown skill
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_UnknownPartIndex_ShouldReturnUnknownSkillAndZeroScore()
@@ -302,7 +302,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Review", new TestCaseDetail
             {
                 FunctionGroup     = "GetUserExamReview",
-                TestCaseID        = "TC-GURV-07",
+                TestCaseID        = "GetUserExamReview_07",
                 Description       = "OrderIndex does not map to any template part",
                 ExpectedResult    = "Skill=Unknown and QuestionMaxScore=0",
                 StatusRound1      = "Passed",
@@ -313,7 +313,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GURV-08 | N | Writing part mapping to review questions
+        // GetUserExamReview_08 | N | Writing part mapping to review questions
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_WritingAnswers_ShouldMapToReviewQuestions()
@@ -343,7 +343,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Review", new TestCaseDetail
             {
                 FunctionGroup     = "GetUserExamReview",
-                TestCaseID        = "TC-GURV-08",
+                TestCaseID        = "GetUserExamReview_08",
                 Description       = "Writing answers mapped correctly",
                 ExpectedResult    = "Skill=Writing, Properties correctly set",
                 StatusRound1      = "Passed",

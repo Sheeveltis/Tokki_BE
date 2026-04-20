@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -46,7 +46,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Approve", new TestCaseDetail
             {
                 FunctionGroup     = "ApproveExamTemplate",
-                TestCaseID        = "TC-EXMT-APR-01",
+                TestCaseID        = "ApproveExamTemplate_01",
                 Description       = "ExamTemplateId not found → Failure 'Không tìm thấy đề thi'",
                 ExpectedResult    = "Return Failure",
                 StatusRound1      = "Passed",
@@ -75,7 +75,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Approve", new TestCaseDetail
             {
                 FunctionGroup     = "ApproveExamTemplate",
-                TestCaseID        = "TC-EXMT-APR-02",
+                TestCaseID        = "ApproveExamTemplate_02",
                 Description       = "PendingApproval template → Status set to Published",
                 ExpectedResult    = "Return Success(true), Status = Published",
                 StatusRound1      = "Passed",
@@ -103,7 +103,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Approve", new TestCaseDetail
             {
                 FunctionGroup     = "ApproveExamTemplate",
-                TestCaseID        = "TC-EXMT-APR-03",
+                TestCaseID        = "ApproveExamTemplate_03",
                 Description       = "Approve calls UpdateAsync and SaveChangesAsync exactly once",
                 ExpectedResult    = "UpdateAsync × 1, SaveChangesAsync × 1",
                 StatusRound1      = "Passed",
@@ -132,7 +132,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Approve", new TestCaseDetail
             {
                 FunctionGroup     = "ApproveExamTemplate",
-                TestCaseID        = "TC-EXMT-APR-04",
+                TestCaseID        = "ApproveExamTemplate_04",
                 Description       = "Draft template (no status guard in Approve handler) → also Published",
                 ExpectedResult    = "Return Success, Status = Published",
                 StatusRound1      = "Passed",
@@ -160,7 +160,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Approve", new TestCaseDetail
             {
                 FunctionGroup     = "ApproveExamTemplate",
-                TestCaseID        = "TC-EXMT-APR-05",
+                TestCaseID        = "ApproveExamTemplate_05",
                 Description       = "Already Published → re-approve succeeds idempotently",
                 ExpectedResult    = "Return Success, Status stays Published",
                 StatusRound1      = "Passed",
@@ -183,7 +183,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Approve", new TestCaseDetail
             {
                 FunctionGroup     = "ApproveExamTemplate",
-                TestCaseID        = "TC-EXMT-APR-06",
+                TestCaseID        = "ApproveExamTemplate_06",
                 Description       = "Repository throws → exception propagates",
                 ExpectedResult    = "Throws Exception",
                 StatusRound1      = "Passed",

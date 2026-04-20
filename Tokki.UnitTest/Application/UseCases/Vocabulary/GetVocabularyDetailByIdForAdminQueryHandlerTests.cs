@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -24,7 +24,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-GIA-01 | A | Vocab not found → 404
+        // Get_Vocabulary_Detail_By_Id_Admin_01 | A | Vocab not found → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_VocabNotFound_ShouldReturn404()
@@ -45,7 +45,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Get Detail (Admin)", new TestCaseDetail
             {
                 FunctionGroup     = "Get Vocabulary Detail By Id (Admin)",
-                TestCaseID        = "TC-VOCAB-GIA-01",
+                TestCaseID        = "Get_Vocabulary_Detail_By_Id_Admin_01",
                 Description       = "Admin get vocab detail with non-existent ID",
                 ExpectedResult    = "Return 404 VocabularyNotFound",
                 StatusRound1      = "Passed",
@@ -56,7 +56,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-GIA-02 | N | Active vocab → 200 with full admin DTO
+        // Get_Vocabulary_Detail_By_Id_Admin_02 | N | Active vocab → 200 with full admin DTO
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidActiveVocab_ShouldReturn200WithAdminDto()
@@ -80,7 +80,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Get Detail (Admin)", new TestCaseDetail
             {
                 FunctionGroup     = "Get Vocabulary Detail By Id (Admin)",
-                TestCaseID        = "TC-VOCAB-GIA-02",
+                TestCaseID        = "Get_Vocabulary_Detail_By_Id_Admin_02",
                 Description       = "Admin get valid Active vocab → return full admin DTO with audit fields",
                 ExpectedResult    = "Return 200, Data.VocabularyId = VOCAB-001",
                 StatusRound1      = "Passed",
@@ -91,7 +91,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-GIA-03 | N | Deleted vocab → 200 (admin can see deleted)
+        // Get_Vocabulary_Detail_By_Id_Admin_03 | N | Deleted vocab → 200 (admin can see deleted)
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DeletedVocab_AdminCanStillSeeIt_ShouldReturn200()
@@ -114,7 +114,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Get Detail (Admin)", new TestCaseDetail
             {
                 FunctionGroup     = "Get Vocabulary Detail By Id (Admin)",
-                TestCaseID        = "TC-VOCAB-GIA-03",
+                TestCaseID        = "Get_Vocabulary_Detail_By_Id_Admin_03",
                 Description       = "Admin get Deleted vocab → admin endpoint does NOT block Deleted, returns 200",
                 ExpectedResult    = "Return 200, Status = Deleted",
                 StatusRound1      = "Passed",
@@ -125,7 +125,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-GIA-04 | N | PendingApproval vocab → 200
+        // Get_Vocabulary_Detail_By_Id_Admin_04 | N | PendingApproval vocab → 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_PendingApprovalVocab_ShouldReturn200()
@@ -148,7 +148,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Get Detail (Admin)", new TestCaseDetail
             {
                 FunctionGroup     = "Get Vocabulary Detail By Id (Admin)",
-                TestCaseID        = "TC-VOCAB-GIA-04",
+                TestCaseID        = "Get_Vocabulary_Detail_By_Id_Admin_04",
                 Description       = "Admin get PendingApproval vocab → accessible → 200",
                 ExpectedResult    = "Return 200, Data.Status = PendingApproval",
                 StatusRound1      = "Passed",
@@ -159,7 +159,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-GIA-05 | N | DTO has CreateBy and CreateDate audit fields
+        // Get_Vocabulary_Detail_By_Id_Admin_05 | N | DTO has CreateBy and CreateDate audit fields
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidVocab_ShouldIncludeAuditFieldsInDto()
@@ -187,7 +187,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Get Detail (Admin)", new TestCaseDetail
             {
                 FunctionGroup     = "Get Vocabulary Detail By Id (Admin)",
-                TestCaseID        = "TC-VOCAB-GIA-05",
+                TestCaseID        = "Get_Vocabulary_Detail_By_Id_Admin_05",
                 Description       = "Admin DTO includes CreateBy, CreateDate, UpdateBy, UpdateDate fields",
                 ExpectedResult    = "Return 200, CreateBy = USER-001, UpdateBy = ADMIN-001",
                 StatusRound1      = "Passed",
@@ -198,7 +198,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-GIA-06 | N | Vocab with only Deleted examples → Examples list empty in DTO
+        // Get_Vocabulary_Detail_By_Id_Admin_06 | N | Vocab with only Deleted examples → Examples list empty in DTO
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_VocabWithOnlyDeletedExamples_ShouldReturnEmptyExamples()
@@ -232,7 +232,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Get Detail (Admin)", new TestCaseDetail
             {
                 FunctionGroup     = "Get Vocabulary Detail By Id (Admin)",
-                TestCaseID        = "TC-VOCAB-GIA-06",
+                TestCaseID        = "Get_Vocabulary_Detail_By_Id_Admin_06",
                 Description       = "Vocab with only Deleted examples → Admin DTO shows empty Examples list",
                 ExpectedResult    = "Return 200, Examples = empty list",
                 StatusRound1      = "Passed",

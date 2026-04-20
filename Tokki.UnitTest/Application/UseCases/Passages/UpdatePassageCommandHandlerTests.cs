@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -47,7 +47,7 @@ namespace Tokki.UnitTest.Application.UseCases.Passages
 
             QACollector.LogTestCase("Passage - Update", new TestCaseDetail
             {
-                FunctionGroup = "UpdatePassage", TestCaseID = "TC-PAS-UPD-01",
+                FunctionGroup = "UpdatePassage", TestCaseID = "UpdatePassage_01",
                 Description = "Passage not found → 404",
                 ExpectedResult = "Return 404", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -79,7 +79,7 @@ namespace Tokki.UnitTest.Application.UseCases.Passages
 
             QACollector.LogTestCase("Passage - Update", new TestCaseDetail
             {
-                FunctionGroup = "UpdatePassage", TestCaseID = "TC-PAS-UPD-02",
+                FunctionGroup = "UpdatePassage", TestCaseID = "UpdatePassage_02",
                 Description = "MediaType=Text but no content → 400 ValidationFailed",
                 ExpectedResult = "Return 400", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -110,7 +110,7 @@ namespace Tokki.UnitTest.Application.UseCases.Passages
 
             QACollector.LogTestCase("Passage - Update", new TestCaseDetail
             {
-                FunctionGroup = "UpdatePassage", TestCaseID = "TC-PAS-UPD-03",
+                FunctionGroup = "UpdatePassage", TestCaseID = "UpdatePassage_03",
                 Description = "MediaType=Image but no ImageUrl → 400",
                 ExpectedResult = "Return 400", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -142,7 +142,7 @@ namespace Tokki.UnitTest.Application.UseCases.Passages
 
             QACollector.LogTestCase("Passage - Update", new TestCaseDetail
             {
-                FunctionGroup = "UpdatePassage", TestCaseID = "TC-PAS-UPD-04",
+                FunctionGroup = "UpdatePassage", TestCaseID = "UpdatePassage_04",
                 Description = "Different title that already exists → 409 Conflict",
                 ExpectedResult = "Return 409 DuplicateTitle", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -178,7 +178,7 @@ namespace Tokki.UnitTest.Application.UseCases.Passages
 
             QACollector.LogTestCase("Passage - Update", new TestCaseDetail
             {
-                FunctionGroup = "UpdatePassage", TestCaseID = "TC-PAS-UPD-05",
+                FunctionGroup = "UpdatePassage", TestCaseID = "UpdatePassage_05",
                 Description = "Valid update → Title/Content updated, Return 200 with PassageId",
                 ExpectedResult = "Return 200, Data='P-001'", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -212,7 +212,7 @@ namespace Tokki.UnitTest.Application.UseCases.Passages
 
             QACollector.LogTestCase("Passage - Update", new TestCaseDetail
             {
-                FunctionGroup = "UpdatePassage", TestCaseID = "TC-PAS-UPD-06",
+                FunctionGroup = "UpdatePassage", TestCaseID = "UpdatePassage_06",
                 Description = "SaveChangesAsync throws → catch → 500",
                 ExpectedResult = "Return 500", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

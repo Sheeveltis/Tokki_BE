@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -37,7 +37,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         };
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-EXVT-01 | A | Topic not found → 404 TopicNotFound
+        // ExportVocabByTopic_01 | A | Topic not found → 404 TopicNotFound
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_TopicNotFound_ShouldReturn404()
@@ -60,7 +60,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Export Vocab Topic", new TestCaseDetail
             {
                 FunctionGroup     = "ExportVocabByTopic",
-                TestCaseID        = "TC-EXC-EXVT-01",
+                TestCaseID        = "ExportVocabByTopic_01",
                 Description       = "TopicId does not exist → GetTopicNameAsync returns null",
                 ExpectedResult    = "Return 404 TopicNotFound",
                 StatusRound1      = "Passed",
@@ -71,7 +71,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-EXVT-02 | A | Topic found but vocab list is null → VocabTopicIsEmpty
+        // ExportVocabByTopic_02 | A | Topic found but vocab list is null → VocabTopicIsEmpty
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_VocabListNull_ShouldReturnVocabTopicIsEmpty()
@@ -96,7 +96,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Export Vocab Topic", new TestCaseDetail
             {
                 FunctionGroup     = "ExportVocabByTopic",
-                TestCaseID        = "TC-EXC-EXVT-02",
+                TestCaseID        = "ExportVocabByTopic_02",
                 Description       = "Topic exists but vocabs list is null",
                 ExpectedResult    = "Return Failure VocabTopicIsEmpty",
                 StatusRound1      = "Passed",
@@ -107,7 +107,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-EXVT-03 | A | Topic found but vocab list is empty → VocabTopicIsEmpty
+        // ExportVocabByTopic_03 | A | Topic found but vocab list is empty → VocabTopicIsEmpty
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_VocabListEmpty_ShouldReturnVocabTopicIsEmpty()
@@ -132,7 +132,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Export Vocab Topic", new TestCaseDetail
             {
                 FunctionGroup     = "ExportVocabByTopic",
-                TestCaseID        = "TC-EXC-EXVT-03",
+                TestCaseID        = "ExportVocabByTopic_03",
                 Description       = "Topic exists but has no vocabularies assigned",
                 ExpectedResult    = "Return Failure VocabTopicIsEmpty",
                 StatusRound1      = "Passed",
@@ -143,7 +143,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-EXVT-04 | N | Valid topic with vocabs → exports file correctly
+        // ExportVocabByTopic_04 | N | Valid topic with vocabs → exports file correctly
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidTopicWithVocabs_ShouldExportFile()
@@ -177,7 +177,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Export Vocab Topic", new TestCaseDetail
             {
                 FunctionGroup     = "ExportVocabByTopic",
-                TestCaseID        = "TC-EXC-EXVT-04",
+                TestCaseID        = "ExportVocabByTopic_04",
                 Description       = "Valid topic with 2 vocab items, file exported with correct name and content",
                 ExpectedResult    = "Return 200 with FileName = 'Korean Basics.xlsx'",
                 StatusRound1      = "Passed",
@@ -188,7 +188,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-EXVT-05 | N | Long topic name → truncated to 30 chars for sheet name
+        // ExportVocabByTopic_05 | N | Long topic name → truncated to 30 chars for sheet name
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_LongTopicName_ShouldTruncateSheetName()
@@ -225,7 +225,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Export Vocab Topic", new TestCaseDetail
             {
                 FunctionGroup     = "ExportVocabByTopic",
-                TestCaseID        = "TC-EXC-EXVT-05",
+                TestCaseID        = "ExportVocabByTopic_05",
                 Description       = "Topic name longer than 30 chars → sheet name is truncated, filename uses full name",
                 ExpectedResult    = "Sheet name ≤ 30 chars; FileName uses full topic name",
                 StatusRound1      = "Passed",
@@ -236,7 +236,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-EXVT-06 | N | ContentType is set to openxml spreadsheet
+        // ExportVocabByTopic_06 | N | ContentType is set to openxml spreadsheet
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidTopic_ContentTypeShouldBeOpenXml()
@@ -267,7 +267,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Export Vocab Topic", new TestCaseDetail
             {
                 FunctionGroup     = "ExportVocabByTopic",
-                TestCaseID        = "TC-EXC-EXVT-06",
+                TestCaseID        = "ExportVocabByTopic_06",
                 Description       = "ContentType is set to the correct MIME type for Excel files",
                 ExpectedResult    = "ContentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'",
                 StatusRound1      = "Passed",

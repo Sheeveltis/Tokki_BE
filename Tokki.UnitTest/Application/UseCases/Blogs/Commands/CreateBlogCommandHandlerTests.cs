@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -43,7 +43,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CB-01 | A | Category Not Found → Return 404
+        // Create_Blog_01 | A | Category Not Found → Return 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_CategoryNotFound_ShouldReturn404()
@@ -59,7 +59,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Create", new TestCaseDetail
             {
                 FunctionGroup     = "Create Blog",
-                TestCaseID        = "TC-CB-01",
+                TestCaseID        = "Create_Blog_01",
                 Description       = "Attempt to create a blog with an invalid category ID",
                 ExpectedResult    = "Return 404 CategoryNotFound",
                 StatusRound1      = "Passed",
@@ -70,7 +70,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CB-02 | N | Valid request → Creates blog as Draft
+        // Create_Blog_02 | N | Valid request → Creates blog as Draft
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidRequest_ShouldCreateDraftBlog()
@@ -99,7 +99,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Create", new TestCaseDetail
             {
                 FunctionGroup     = "Create Blog",
-                TestCaseID        = "TC-CB-02",
+                TestCaseID        = "Create_Blog_02",
                 Description       = "Provide valid data and category",
                 ExpectedResult    = "Return 201 with generated Blog ID as string",
                 StatusRound1      = "Passed",
@@ -110,7 +110,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CB-03 | N | Tag Creation triggers exact amount of tags
+        // Create_Blog_03 | N | Tag Creation triggers exact amount of tags
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_WithTags_ShouldCallTagGenerator()
@@ -127,12 +127,12 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             var result = await CreateHandler(mockRepo).Handle(command, CancellationToken.None);
 
             result.IsSuccess.Should().BeTrue();
-            mockRepo.Verify(x => x.GetOrCreateTagsAsync(It.Is<List<string>>(t => t.Count == 2)), Times.Once);
+            mockRepo.Verify(x => x.GetOrCreateTagsAsync(It.Is<List<string>>(t => t.Count == 2), It.IsAny<bool>()), Times.Once);
 
             QACollector.LogTestCase("Blog - Create", new TestCaseDetail
             {
                 FunctionGroup     = "Create Blog",
-                TestCaseID        = "TC-CB-03",
+                TestCaseID        = "Create_Blog_03",
                 Description       = "Create blog with a defined list of tags",
                 ExpectedResult    = "GetOrCreateTagsAsync receives correct tag list",
                 StatusRound1      = "Passed",
@@ -143,7 +143,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CB-04 | N | DB Exception triggers 500 ServerError
+        // Create_Blog_04 | N | DB Exception triggers 500 ServerError
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DatabaseThrowsException_ShouldReturn500()
@@ -164,7 +164,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Create", new TestCaseDetail
             {
                 FunctionGroup     = "Create Blog",
-                TestCaseID        = "TC-CB-04",
+                TestCaseID        = "Create_Blog_04",
                 Description       = "Simulate database exception during save",
                 ExpectedResult    = "Return 500 ServerError with detailed message",
                 StatusRound1      = "Passed",
@@ -175,7 +175,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CB-05 | B | Title generates correct Slug
+        // Create_Blog_05 | B | Title generates correct Slug
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_TitleWithAccents_ShouldGenerateCorrectSlug()
@@ -191,7 +191,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Create", new TestCaseDetail
             {
                 FunctionGroup     = "Create Blog",
-                TestCaseID        = "TC-CB-05",
+                TestCaseID        = "Create_Blog_05",
                 Description       = "Title contains Vietnamese accents",
                 ExpectedResult    = "Slug should be normalized to asci format",
                 StatusRound1      = "Passed",
@@ -202,7 +202,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CB-06 | N | Verify ViewCount initializes to 0
+        // Create_Blog_06 | N | Verify ViewCount initializes to 0
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_Initialization_ShouldEnsureViewCountZero()
@@ -217,7 +217,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Create", new TestCaseDetail
             {
                 FunctionGroup     = "Create Blog",
-                TestCaseID        = "TC-CB-06",
+                TestCaseID        = "Create_Blog_06",
                 Description       = "Verify new blog ViewCount starts at 0",
                 ExpectedResult    = "ViewCount is 0 in entity",
                 StatusRound1      = "Passed",

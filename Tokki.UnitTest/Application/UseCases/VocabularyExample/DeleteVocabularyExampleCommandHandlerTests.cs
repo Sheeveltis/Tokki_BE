@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -30,7 +30,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VEXM-DEL-01 | A | No token → 401
+        // Delete_Vocabulary_Example_01 | A | No token → 401
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_Unauthorized_ShouldReturn401()
@@ -50,7 +50,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
             QACollector.LogTestCase("Vocabulary Example - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Vocabulary Example",
-                TestCaseID        = "TC-VEXM-DEL-01",
+                TestCaseID        = "Delete_Vocabulary_Example_01",
                 Description       = "Delete example sentence without authentication token",
                 ExpectedResult    = "Return 401 Unauthorized",
                 StatusRound1      = "Passed",
@@ -61,7 +61,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VEXM-DEL-02 | A | Empty ExampleId → 400
+        // Delete_Vocabulary_Example_02 | A | Empty ExampleId → 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyExampleId_ShouldReturn400()
@@ -81,7 +81,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
             QACollector.LogTestCase("Vocabulary Example - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Vocabulary Example",
-                TestCaseID        = "TC-VEXM-DEL-02",
+                TestCaseID        = "Delete_Vocabulary_Example_02",
                 Description       = "Delete example with empty ExampleId",
                 ExpectedResult    = "Return 400 ExampleIdEmpty",
                 StatusRound1      = "Passed",
@@ -92,7 +92,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VEXM-DEL-03 | A | Example not found → 404
+        // Delete_Vocabulary_Example_03 | A | Example not found → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ExampleNotFound_ShouldReturn404()
@@ -113,7 +113,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
             QACollector.LogTestCase("Vocabulary Example - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Vocabulary Example",
-                TestCaseID        = "TC-VEXM-DEL-03",
+                TestCaseID        = "Delete_Vocabulary_Example_03",
                 Description       = "Delete example with non-existent ExampleId",
                 ExpectedResult    = "Return 404 ExampleNotFound",
                 StatusRound1      = "Passed",
@@ -124,7 +124,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VEXM-DEL-04 | N | Example already Deleted → 200 (idempotent)
+        // Delete_Vocabulary_Example_04 | N | Example already Deleted → 200 (idempotent)
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ExampleAlreadyDeleted_ShouldReturn200Idempotent()
@@ -148,7 +148,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
             QACollector.LogTestCase("Vocabulary Example - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Vocabulary Example",
-                TestCaseID        = "TC-VEXM-DEL-04",
+                TestCaseID        = "Delete_Vocabulary_Example_04",
                 Description       = "Delete example that is already Deleted → idempotent, returns 200",
                 ExpectedResult    = "Return 200 (already deleted, no change needed)",
                 StatusRound1      = "Passed",
@@ -159,7 +159,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VEXM-DEL-05 | N | Valid Active example → soft delete → 200
+        // Delete_Vocabulary_Example_05 | N | Valid Active example → soft delete → 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidActiveExample_ShouldSoftDeleteAndReturn200()
@@ -185,7 +185,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
             QACollector.LogTestCase("Vocabulary Example - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Vocabulary Example",
-                TestCaseID        = "TC-VEXM-DEL-05",
+                TestCaseID        = "Delete_Vocabulary_Example_05",
                 Description       = "Delete valid Active example → Status = Deleted, UpdateAsync called",
                 ExpectedResult    = "Return 200, Status = Deleted, UpdateAsync called once",
                 StatusRound1      = "Passed",
@@ -196,7 +196,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VEXM-DEL-06 | A | Repository throws → 500
+        // Delete_Vocabulary_Example_06 | A | Repository throws → 500
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldReturn500()
@@ -223,7 +223,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
             QACollector.LogTestCase("Vocabulary Example - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Vocabulary Example",
-                TestCaseID        = "TC-VEXM-DEL-06",
+                TestCaseID        = "Delete_Vocabulary_Example_06",
                 Description       = "Repository.UpdateAsync throws exception → return 500",
                 ExpectedResult    = "Return 500 Server Error",
                 StatusRound1      = "Passed",

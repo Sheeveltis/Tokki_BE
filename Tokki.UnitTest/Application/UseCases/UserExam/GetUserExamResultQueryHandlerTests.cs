@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -52,7 +52,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GURS-01 | A | Session not found → 404
+        // GetUserExamResult_01 | A | Session not found → 404
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SessionNotFound_ShouldReturn404()
@@ -74,7 +74,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Result", new TestCaseDetail
             {
                 FunctionGroup     = "GetUserExamResult",
-                TestCaseID        = "TC-GURS-01",
+                TestCaseID        = "GetUserExamResult_01",
                 Description       = "UserExamId not found → 404",
                 ExpectedResult    = "IsSuccess=false, StatusCode=404",
                 StatusRound1      = "Passed",
@@ -85,7 +85,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GURS-02 | A | Session still InProgress → 400
+        // GetUserExamResult_02 | A | Session still InProgress → 400
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SessionNotSubmitted_ShouldReturn400()
@@ -108,7 +108,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Result", new TestCaseDetail
             {
                 FunctionGroup     = "GetUserExamResult",
-                TestCaseID        = "TC-GURS-02",
+                TestCaseID        = "GetUserExamResult_02",
                 Description       = "Exam not submitted → 400 cannot view result",
                 ExpectedResult    = "IsSuccess=false, StatusCode=400",
                 StatusRound1      = "Passed",
@@ -119,7 +119,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GURS-03 | A | Missing exam template structure → 400
+        // GetUserExamResult_03 | A | Missing exam template structure → 400
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_MissingTemplateParts_ShouldReturn400()
@@ -154,7 +154,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Result", new TestCaseDetail
             {
                 FunctionGroup     = "GetUserExamResult",
-                TestCaseID        = "TC-GURS-03",
+                TestCaseID        = "GetUserExamResult_03",
                 Description       = "TemplateParts is empty → 400 corrupted structure",
                 ExpectedResult    = "IsSuccess=false, StatusCode=400",
                 StatusRound1      = "Passed",
@@ -165,7 +165,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GURS-04 | N | Happy path → 200 with UserName and ExamTitle
+        // GetUserExamResult_04 | N | Happy path → 200 with UserName and ExamTitle
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidCompleted_ShouldReturn200WithUserAndExamTitle()
@@ -189,7 +189,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Result", new TestCaseDetail
             {
                 FunctionGroup     = "GetUserExamResult",
-                TestCaseID        = "TC-GURS-04",
+                TestCaseID        = "GetUserExamResult_04",
                 Description       = "Valid completed exam → 200 with UserName and ExamTitle",
                 ExpectedResult    = "IsSuccess=true, UserName=Nguyen Van A",
                 StatusRound1      = "Passed",
@@ -200,7 +200,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GURS-05 | N | Score calculation correct (1 listening correct)
+        // GetUserExamResult_05 | N | Score calculation correct (1 listening correct)
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_OneListeningCorrect_ShouldHaveCorrectListeningScore()
@@ -224,7 +224,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Result", new TestCaseDetail
             {
                 FunctionGroup     = "GetUserExamResult",
-                TestCaseID        = "TC-GURS-05",
+                TestCaseID        = "GetUserExamResult_05",
                 Description       = "1 listening correct, 0 reading correct → scores mapped properly",
                 ExpectedResult    = "Listening.CorrectAnswers=1, Reading.CorrectAnswers=0",
                 StatusRound1      = "Passed",
@@ -235,7 +235,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GURS-06 | E | Repository throws → exception propagates
+        // GetUserExamResult_06 | E | Repository throws → exception propagates
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
@@ -256,7 +256,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Result", new TestCaseDetail
             {
                 FunctionGroup     = "GetUserExamResult",
-                TestCaseID        = "TC-GURS-06",
+                TestCaseID        = "GetUserExamResult_06",
                 Description       = "Repository exception → propagates",
                 ExpectedResult    = "Exception with 'DB error'",
                 StatusRound1      = "Passed",
@@ -267,7 +267,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GURS-07 | N | Writing branch and SkillDurationsDict parsing
+        // GetUserExamResult_07 | N | Writing branch and SkillDurationsDict parsing
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_WritingSkillAndDurations_ShouldCalculateCorrectly()
@@ -298,7 +298,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Result", new TestCaseDetail
             {
                 FunctionGroup     = "GetUserExamResult",
-                TestCaseID        = "TC-GURS-07",
+                TestCaseID        = "GetUserExamResult_07",
                 Description       = "Check Writing calculation logic and SkillDurations dict mapping",
                 ExpectedResult    = "Writing has IsGraded=false, Duration=40, TotalQuestions=4",
                 StatusRound1      = "Passed",

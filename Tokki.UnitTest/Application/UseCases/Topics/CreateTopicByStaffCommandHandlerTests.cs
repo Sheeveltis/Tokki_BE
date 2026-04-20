@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -59,27 +59,27 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
         private static CreateTopicByStaffCommand MakeCmd(string name = "Korean Grammar") =>
             new CreateTopicByStaffCommand { TopicName = name, Level = TopicLevel.Level1 };
 
-        // TC-TOPIC-CSTAFF-01 | A | No auth user → 401
+        // CreateTopicByStaff_01 | A | No auth user → 401
         [Fact]
         public async Task Handle_NoAuthUser_ShouldReturn401()
         {
             var result = await CreateHandler(http: GetHttpContextMock(null)).Handle(MakeCmd(), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(401);
-            QACollector.LogTestCase("Topic - Create By Staff", new TestCaseDetail { FunctionGroup = "CreateTopicByStaff", TestCaseID = "TC-TOPIC-CSTAFF-01", Description = "No auth user → 401", ExpectedResult = "IsSuccess=false, 401", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "No NameIdentifier claim" } });
+            QACollector.LogTestCase("Topic - Create By Staff", new TestCaseDetail { FunctionGroup = "CreateTopicByStaff", TestCaseID = "CreateTopicByStaff_01", Description = "No auth user → 401", ExpectedResult = "IsSuccess=false, 401", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "No NameIdentifier claim" } });
         }
 
-        // TC-TOPIC-CSTAFF-02 | A | Duplicate topic name → 409
+        // CreateTopicByStaff_02 | A | Duplicate topic name → 409
         [Fact]
         public async Task Handle_DuplicateName_ShouldReturn409()
         {
             var result = await CreateHandler(repo: GetRepoMock(nameExists: true)).Handle(MakeCmd(), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(409);
-            QACollector.LogTestCase("Topic - Create By Staff", new TestCaseDetail { FunctionGroup = "CreateTopicByStaff", TestCaseID = "TC-TOPIC-CSTAFF-02", Description = "Duplicate name → 409", ExpectedResult = "IsSuccess=false, 409", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "IsTopicNameExistsAsync returns true" } });
+            QACollector.LogTestCase("Topic - Create By Staff", new TestCaseDetail { FunctionGroup = "CreateTopicByStaff", TestCaseID = "CreateTopicByStaff_02", Description = "Duplicate name → 409", ExpectedResult = "IsSuccess=false, 409", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "IsTopicNameExistsAsync returns true" } });
         }
 
-        // TC-TOPIC-CSTAFF-03 | N | Happy path → 201 with TopicId
+        // CreateTopicByStaff_03 | N | Happy path → 201 with TopicId
         [Fact]
         public async Task Handle_ValidRequest_ShouldReturn201WithTopicId()
         {
@@ -87,10 +87,10 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(201);
             result.Data.Should().Be("TP-STAFF-NEW");
-            QACollector.LogTestCase("Topic - Create By Staff", new TestCaseDetail { FunctionGroup = "CreateTopicByStaff", TestCaseID = "TC-TOPIC-CSTAFF-03", Description = "Valid request → 201, TopicId='TP-STAFF-NEW'", ExpectedResult = "IsSuccess=true, 201", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Auth OK, no duplicate" } });
+            QACollector.LogTestCase("Topic - Create By Staff", new TestCaseDetail { FunctionGroup = "CreateTopicByStaff", TestCaseID = "CreateTopicByStaff_03", Description = "Valid request → 201, TopicId='TP-STAFF-NEW'", ExpectedResult = "IsSuccess=true, 201", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Auth OK, no duplicate" } });
         }
 
-        // TC-TOPIC-CSTAFF-04 | N | Topic created with Status=PendingApproval
+        // CreateTopicByStaff_04 | N | Topic created with Status=PendingApproval
         [Fact]
         public async Task Handle_ValidRequest_TopicCreatedWithPendingApprovalStatus()
         {
@@ -101,10 +101,10 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
             captured.Should().NotBeNull();
             captured!.Status.Should().Be(TopicStatus.PendingApproval);
             captured.TopicType.Should().Be(TopicType.VocabStudy);
-            QACollector.LogTestCase("Topic - Create By Staff", new TestCaseDetail { FunctionGroup = "CreateTopicByStaff", TestCaseID = "TC-TOPIC-CSTAFF-04", Description = "Topic has Status=PendingApproval (awaiting admin approval)", ExpectedResult = "Status=PendingApproval, TopicType=VocabStudy", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Staff topics require approval" } });
+            QACollector.LogTestCase("Topic - Create By Staff", new TestCaseDetail { FunctionGroup = "CreateTopicByStaff", TestCaseID = "CreateTopicByStaff_04", Description = "Topic has Status=PendingApproval (awaiting admin approval)", ExpectedResult = "Status=PendingApproval, TopicType=VocabStudy", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Staff topics require approval" } });
         }
 
-        // TC-TOPIC-CSTAFF-05 | B | AddAsync and SaveChangesAsync called once
+        // CreateTopicByStaff_05 | B | AddAsync and SaveChangesAsync called once
         [Fact]
         public async Task Handle_ValidRequest_AddAndSaveCalledOnce()
         {
@@ -112,10 +112,10 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
             await CreateHandler(repo: repo).Handle(MakeCmd(), CancellationToken.None);
             repo.Verify(x => x.AddAsync(It.IsAny<Topic>()), Times.Once);
             repo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
-            QACollector.LogTestCase("Topic - Create By Staff", new TestCaseDetail { FunctionGroup = "CreateTopicByStaff", TestCaseID = "TC-TOPIC-CSTAFF-05", Description = "AddAsync and SaveChangesAsync each called once", ExpectedResult = "Both Times.Once", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Persist calls verified" } });
+            QACollector.LogTestCase("Topic - Create By Staff", new TestCaseDetail { FunctionGroup = "CreateTopicByStaff", TestCaseID = "CreateTopicByStaff_05", Description = "AddAsync and SaveChangesAsync each called once", ExpectedResult = "Both Times.Once", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Persist calls verified" } });
         }
 
-        // TC-TOPIC-CSTAFF-06 | N | CreateBy set to current userId from HttpContext
+        // CreateTopicByStaff_06 | N | CreateBy set to current userId from HttpContext
         [Fact]
         public async Task Handle_ValidRequest_CreateBySetToCurrentUserId()
         {
@@ -124,7 +124,7 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
             repo.Setup(x => x.AddAsync(It.IsAny<Topic>())).Callback<Topic>(t => captured = t).Returns(Task.CompletedTask);
             await CreateHandler(repo: repo, http: GetHttpContextMock("STAFF-XYZ")).Handle(MakeCmd(), CancellationToken.None);
             captured!.CreateBy.Should().Be("STAFF-XYZ");
-            QACollector.LogTestCase("Topic - Create By Staff", new TestCaseDetail { FunctionGroup = "CreateTopicByStaff", TestCaseID = "TC-TOPIC-CSTAFF-06", Description = "CreateBy='STAFF-XYZ' from HttpContext", ExpectedResult = "CreateBy='STAFF-XYZ'", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "userId from claim mapped to CreateBy" } });
+            QACollector.LogTestCase("Topic - Create By Staff", new TestCaseDetail { FunctionGroup = "CreateTopicByStaff", TestCaseID = "CreateTopicByStaff_06", Description = "CreateBy='STAFF-XYZ' from HttpContext", ExpectedResult = "CreateBy='STAFF-XYZ'", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "userId from claim mapped to CreateBy" } });
         }
     }
 }

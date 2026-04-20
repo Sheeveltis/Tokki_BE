@@ -53,7 +53,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Update", new TestCaseDetail
             {
                 FunctionGroup = "Update Vocabulary",
-                TestCaseID = "TC-VOCAB-UPD-01",
+                TestCaseID = "Update_Vocabulary_01",
                 Description = "Update vocabulary when there is no authentication token",
                 ExpectedResult = "Return 401 Unauthorized",
                 StatusRound1 = "Passed",
@@ -87,7 +87,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Update", new TestCaseDetail
             {
                 FunctionGroup = "Update Vocabulary",
-                TestCaseID = "TC-VOCAB-UPD-02",
+                TestCaseID = "Update_Vocabulary_02",
                 Description = "Update vocabulary with ID does not exist",
                 ExpectedResult = "Return 404 VocabularyNotFound",
                 StatusRound1 = "Passed",
@@ -122,7 +122,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Update", new TestCaseDetail
             {
                 FunctionGroup = "Update Vocabulary",
-                TestCaseID = "TC-VOCAB-UPD-03",
+                TestCaseID = "Update_Vocabulary_03",
                 Description = "Update vocabulary has been deleted (Status = Deleted)",
                 ExpectedResult = "Return 409 VocabularyDeletedCannotUpdate",
                 StatusRound1 = "Passed",
@@ -169,7 +169,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Update", new TestCaseDetail
             {
                 FunctionGroup = "Update Vocabulary",
-                TestCaseID = "TC-VOCAB-UPD-04",
+                TestCaseID = "Update_Vocabulary_04",
                 Description = "Update Text is the same as current Text → textChanged = false → TTS is not called",
                 ExpectedResult = "TTS.SynthesizeKoreanAudioAsync not called, return 200",
                 StatusRound1 = "Passed",
@@ -222,7 +222,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Update", new TestCaseDetail
             {
                 FunctionGroup = "Update Vocabulary",
-                TestCaseID = "TC-VOCAB-UPD-05",
+                TestCaseID = "Update_Vocabulary_05",
                 Description = "Update new Text (different from current Text) → system automatically regenerates audio",
                 ExpectedResult = "TTS is called exactly once, AudioURL updated, return 200",
                 StatusRound1 = "Passed",
@@ -265,7 +265,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Update", new TestCaseDetail
             {
                 FunctionGroup = "Update Vocabulary",
-                TestCaseID = "TC-VOCAB-UPD-06",
+                TestCaseID = "Update_Vocabulary_06",
                 Description = "Update Status → Deleted → cascade Topics and Examples to Deleted",
                 ExpectedResult = "Topics + Examples both Status = Deleted, return 200",
                 StatusRound1 = "Passed",
@@ -308,7 +308,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Update", new TestCaseDetail
             {
                 FunctionGroup = "Update Vocabulary",
-                TestCaseID = "TC-VOCAB-UPD-07",
+                TestCaseID = "Update_Vocabulary_07",
                 Description = "Update Status → Draft → cascade Topics and Examples to Draft",
                 ExpectedResult = "Topics + Examples both Status = Draft, return 200",
                 StatusRound1 = "Passed",
@@ -355,7 +355,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Update", new TestCaseDetail
             {
                 FunctionGroup = "Update Vocabulary",
-                TestCaseID = "TC-VOCAB-UPD-08",
+                TestCaseID = "Update_Vocabulary_08",
                 Description = "Update Status → Active → DO NOT cascade down to children (service keeps children intact)",
                 ExpectedResult = "Children keep their Status, return 200",
                 StatusRound1 = "Passed",

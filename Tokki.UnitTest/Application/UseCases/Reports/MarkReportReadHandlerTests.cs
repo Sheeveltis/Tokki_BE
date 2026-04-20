@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -19,7 +19,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             => new MarkReportReadHandler((repo ?? MockReportRepository.GetMock()).Object);
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RPT-MRR-01 | A | Report not found → failure
+        // MarkReportRead_01 | A | Report not found → failure
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ReportNotFound_ShouldReturnFailure()
@@ -38,7 +38,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             QACollector.LogTestCase("Report - Mark Read", new TestCaseDetail
             {
                 FunctionGroup     = "MarkReportRead",
-                TestCaseID        = "TC-RPT-MRR-01",
+                TestCaseID        = "MarkReportRead_01",
                 Description       = "Report not found → ReportNotFound failure",
                 ExpectedResult    = "IsSuccess=false",
                 StatusRound1      = "Passed",
@@ -49,7 +49,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RPT-MRR-02 | A | UserId does not match report owner → unauthorized
+        // MarkReportRead_02 | A | UserId does not match report owner → unauthorized
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_WrongUser_ShouldReturnUnauthorized()
@@ -74,7 +74,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             QACollector.LogTestCase("Report - Mark Read", new TestCaseDetail
             {
                 FunctionGroup     = "MarkReportRead",
-                TestCaseID        = "TC-RPT-MRR-02",
+                TestCaseID        = "MarkReportRead_02",
                 Description       = "UserId does not match report.UserId → ReportUnauthorized failure",
                 ExpectedResult    = "IsSuccess=false, UpdateAsync never called",
                 StatusRound1      = "Passed",
@@ -85,7 +85,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RPT-MRR-03 | N | Happy path: owner marks read → UserHasRead=true, success
+        // MarkReportRead_03 | N | Happy path: owner marks read → UserHasRead=true, success
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_OwnerMarksRead_ShouldSetUserHasReadAndReturnSuccess()
@@ -109,7 +109,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             QACollector.LogTestCase("Report - Mark Read", new TestCaseDetail
             {
                 FunctionGroup     = "MarkReportRead",
-                TestCaseID        = "TC-RPT-MRR-03",
+                TestCaseID        = "MarkReportRead_03",
                 Description       = "Happy path: owner marks Fixed report as read → UserHasRead=true, UpdateAsync called, success",
                 ExpectedResult    = "IsSuccess=true, Data=true, report.UserHasRead=true, UpdateAsync Once",
                 StatusRound1      = "Passed",
@@ -120,7 +120,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RPT-MRR-04 | N | Already read → still calls UpdateAsync (idempotent)
+        // MarkReportRead_04 | N | Already read → still calls UpdateAsync (idempotent)
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_AlreadyRead_ShouldStillCallUpdateAndReturnSuccess()
@@ -143,7 +143,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             QACollector.LogTestCase("Report - Mark Read", new TestCaseDetail
             {
                 FunctionGroup     = "MarkReportRead",
-                TestCaseID        = "TC-RPT-MRR-04",
+                TestCaseID        = "MarkReportRead_04",
                 Description       = "Report already read → handler still calls UpdateAsync (idempotent), success",
                 ExpectedResult    = "IsSuccess=true, UpdateAsync Times.Once",
                 StatusRound1      = "Passed",
@@ -154,7 +154,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RPT-MRR-05 | B | UpdateAsync called with exact report entity
+        // MarkReportRead_05 | B | UpdateAsync called with exact report entity
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidCommand_UpdateAsyncCalledWithCorrectEntity()
@@ -175,7 +175,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             QACollector.LogTestCase("Report - Mark Read", new TestCaseDetail
             {
                 FunctionGroup     = "MarkReportRead",
-                TestCaseID        = "TC-RPT-MRR-05",
+                TestCaseID        = "MarkReportRead_05",
                 Description       = "Boundary: UpdateAsync called with entity where UserHasRead=true",
                 ExpectedResult    = "UpdateAsync(entity.UserHasRead=true) Times.Once",
                 StatusRound1      = "Passed",
@@ -186,7 +186,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RPT-MRR-06 | A | GetByIdAsync called with correct ReportId
+        // MarkReportRead_06 | A | GetByIdAsync called with correct ReportId
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidCommand_GetByIdCalledWithCorrectReportId()
@@ -207,7 +207,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             QACollector.LogTestCase("Report - Mark Read", new TestCaseDetail
             {
                 FunctionGroup     = "MarkReportRead",
-                TestCaseID        = "TC-RPT-MRR-06",
+                TestCaseID        = "MarkReportRead_06",
                 Description       = "Boundary: GetByIdAsync called with exact ReportId from command",
                 ExpectedResult    = "GetByIdAsync('RPT-SPECIFIC-01') Times.Once",
                 StatusRound1      = "Passed",

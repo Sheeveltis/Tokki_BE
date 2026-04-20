@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -37,7 +37,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-APP-01 | A | No currentUserId in HttpContext → 401 Unauthorized
+        // ApproveQuestionBanks_01 | A | No currentUserId in HttpContext → 401 Unauthorized
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NoCurrentUser_ShouldReturn401()
@@ -57,7 +57,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Approve", new TestCaseDetail
             {
                 FunctionGroup     = "ApproveQuestionBanks",
-                TestCaseID        = "TC-QB-APP-01",
+                TestCaseID        = "ApproveQuestionBanks_01",
                 Description       = "No authenticated user in HttpContext → 401 Unauthorized",
                 ExpectedResult    = "IsSuccess=false, StatusCode=401",
                 StatusRound1      = "Passed",
@@ -68,7 +68,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-APP-02 | A | Empty QuestionBankIds list → 400
+        // ApproveQuestionBanks_02 | A | Empty QuestionBankIds list → 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyIds_ShouldReturn400()
@@ -87,7 +87,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Approve", new TestCaseDetail
             {
                 FunctionGroup     = "ApproveQuestionBanks",
-                TestCaseID        = "TC-QB-APP-02",
+                TestCaseID        = "ApproveQuestionBanks_02",
                 Description       = "Empty QuestionBankIds list after dedup → 400 ValidationFailed",
                 ExpectedResult    = "IsSuccess=false, StatusCode=400",
                 StatusRound1      = "Passed",
@@ -98,7 +98,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-APP-03 | A | One ID not found in DB → 404
+        // ApproveQuestionBanks_03 | A | One ID not found in DB → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_IdNotFound_ShouldReturn404()
@@ -118,7 +118,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Approve", new TestCaseDetail
             {
                 FunctionGroup     = "ApproveQuestionBanks",
-                TestCaseID        = "TC-QB-APP-03",
+                TestCaseID        = "ApproveQuestionBanks_03",
                 Description       = "One QuestionBankId not found in DB → 404 QuestionBankNotFound",
                 ExpectedResult    = "IsSuccess=false, StatusCode=404",
                 StatusRound1      = "Passed",
@@ -129,7 +129,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-APP-04 | A | QB is Deleted → 400
+        // ApproveQuestionBanks_04 | A | QB is Deleted → 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DeletedQB_ShouldReturn400()
@@ -151,7 +151,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Approve", new TestCaseDetail
             {
                 FunctionGroup     = "ApproveQuestionBanks",
-                TestCaseID        = "TC-QB-APP-04",
+                TestCaseID        = "ApproveQuestionBanks_04",
                 Description       = "QB is Deleted status → cannot approve → 400",
                 ExpectedResult    = "IsSuccess=false, StatusCode=400",
                 StatusRound1      = "Passed",
@@ -162,7 +162,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-APP-05 | A | QB not in PendingApproval (e.g. Draft) → 400
+        // ApproveQuestionBanks_05 | A | QB not in PendingApproval (e.g. Draft) → 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_QBInDraftStatus_ShouldReturn400()
@@ -184,7 +184,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Approve", new TestCaseDetail
             {
                 FunctionGroup     = "ApproveQuestionBanks",
-                TestCaseID        = "TC-QB-APP-05",
+                TestCaseID        = "ApproveQuestionBanks_05",
                 Description       = "QB is Draft (not PendingApproval) → cannot approve → 400",
                 ExpectedResult    = "IsSuccess=false, StatusCode=400",
                 StatusRound1      = "Passed",
@@ -195,7 +195,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-APP-06 | N | Happy path: PendingApproval QB → Active, 200, email sent
+        // ApproveQuestionBanks_06 | N | Happy path: PendingApproval QB → Active, 200, email sent
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_PendingApprovalQB_ShouldApproveAndReturn200()
@@ -234,7 +234,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Approve", new TestCaseDetail
             {
                 FunctionGroup     = "ApproveQuestionBanks",
-                TestCaseID        = "TC-QB-APP-06",
+                TestCaseID        = "ApproveQuestionBanks_06",
                 Description       = "Happy path: PendingApproval QB → approved (Active), 200, UpdateRangeAsync+SaveChanges called",
                 ExpectedResult    = "IsSuccess=true, StatusCode=200, Data contains QB-001",
                 StatusRound1      = "Passed",
@@ -245,7 +245,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-APP-07 | N | Idempotent: Already Active QB → included in result, no DB update
+        // ApproveQuestionBanks_07 | N | Idempotent: Already Active QB → included in result, no DB update
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_AlreadyActiveQB_ShouldReturnIdempotentSuccess()
@@ -268,7 +268,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Approve", new TestCaseDetail
             {
                 FunctionGroup     = "ApproveQuestionBanks",
-                TestCaseID        = "TC-QB-APP-07",
+                TestCaseID        = "ApproveQuestionBanks_07",
                 Description       = "Idempotent: QB already Active → included in approvedIds, UpdateRangeAsync not called",
                 ExpectedResult    = "IsSuccess=true, Data contains QB-002, UpdateRangeAsync Times.Never",
                 StatusRound1      = "Passed",
@@ -279,7 +279,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-APP-08 | A | Repository throws exception → 500
+        // ApproveQuestionBanks_08 | A | Repository throws exception → 500
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldReturn500()
@@ -304,7 +304,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Approve", new TestCaseDetail
             {
                 FunctionGroup     = "ApproveQuestionBanks",
-                TestCaseID        = "TC-QB-APP-08",
+                TestCaseID        = "ApproveQuestionBanks_08",
                 Description       = "Repository throws exception → caught in try/catch → 500 ServerError",
                 ExpectedResult    = "IsSuccess=false, StatusCode=500",
                 StatusRound1      = "Passed",

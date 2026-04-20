@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -34,7 +34,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-ECC-01 | N | Valid campaign → 200 Success with JobId
+        // Create_Email_Campaign_01 | N | Valid campaign → 200 Success with JobId
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidCampaign_ShouldReturn200WithJobId()
@@ -62,7 +62,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Create Campaign", new TestCaseDetail
             {
                 FunctionGroup     = "Create Email Campaign",
-                TestCaseID        = "TC-ECC-01",
+                TestCaseID        = "Create_Email_Campaign_01",
                 Description       = "Create a valid email campaign targeting all users",
                 ExpectedResult    = "Return 200 with generated JobId, AddAsync called once",
                 StatusRound1      = "Passed",
@@ -73,7 +73,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-ECC-02 | N | ScheduledTime is persisted correctly
+        // Create_Email_Campaign_02 | N | ScheduledTime is persisted correctly
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_WithScheduledTime_ShouldPersistSchedule()
@@ -110,7 +110,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Create Campaign", new TestCaseDetail
             {
                 FunctionGroup     = "Create Email Campaign",
-                TestCaseID        = "TC-ECC-02",
+                TestCaseID        = "Create_Email_Campaign_02",
                 Description       = "Create campaign with a future ScheduledTime — persisted correctly",
                 ExpectedResult    = "Return 200, EmailJob.ScheduledTime ≈ command.ScheduledTime",
                 StatusRound1      = "Passed",
@@ -121,7 +121,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-ECC-03 | N | CreatedBy is stored in job entity
+        // Create_Email_Campaign_03 | N | CreatedBy is stored in job entity
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidCampaign_CreatedByStoredOnJob()
@@ -151,7 +151,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Create Campaign", new TestCaseDetail
             {
                 FunctionGroup     = "Create Email Campaign",
-                TestCaseID        = "TC-ECC-03",
+                TestCaseID        = "Create_Email_Campaign_03",
                 Description       = "Verify CreatedBy field is forwarded to the stored EmailJob entity",
                 ExpectedResult    = "EmailJob.CreatedBy = 'ADMIN-XYZ'",
                 StatusRound1      = "Passed",
@@ -162,7 +162,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-ECC-04 | N | TargetGroup is stored on entity
+        // Create_Email_Campaign_04 | N | TargetGroup is stored on entity
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidCampaign_TargetGroupStoredOnJob()
@@ -192,7 +192,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Create Campaign", new TestCaseDetail
             {
                 FunctionGroup     = "Create Email Campaign",
-                TestCaseID        = "TC-ECC-04",
+                TestCaseID        = "Create_Email_Campaign_04",
                 Description       = "Verify TargetGroup is correctly persisted on the stored EmailJob entity",
                 ExpectedResult    = "EmailJob.TargetGroup = Vip",
                 StatusRound1      = "Passed",
@@ -203,7 +203,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-ECC-05 | A | AddAsync throws → exception propagates
+        // Create_Email_Campaign_05 | A | AddAsync throws → exception propagates
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_AddAsyncThrows_ShouldPropagateException()
@@ -226,7 +226,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Create Campaign", new TestCaseDetail
             {
                 FunctionGroup     = "Create Email Campaign",
-                TestCaseID        = "TC-ECC-05",
+                TestCaseID        = "Create_Email_Campaign_05",
                 Description       = "Repository throws exception during job creation",
                 ExpectedResult    = "Exception propagates to global middleware",
                 StatusRound1      = "Passed",
@@ -237,7 +237,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-ECC-06 | B | Subject is empty string → still creates job
+        // Create_Email_Campaign_06 | B | Subject is empty string → still creates job
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptySubject_ShouldStillCreateJob()
@@ -260,7 +260,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Create Campaign", new TestCaseDetail
             {
                 FunctionGroup     = "Create Email Campaign",
-                TestCaseID        = "TC-ECC-06",
+                TestCaseID        = "Create_Email_Campaign_06",
                 Description       = "Boundary: create campaign with empty Subject string — handler persists without validation",
                 ExpectedResult    = "Return 200 Success; Subject stored as empty string",
                 StatusRound1      = "Passed",

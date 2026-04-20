@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -45,7 +45,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GPRQ-01 | A | No questions found for the type → 404
+        // GetPracticeQuestions_01 | A | No questions found for the type → 404
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NoQuestionsFound_ShouldReturn404()
@@ -70,7 +70,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Practice Questions", new TestCaseDetail
             {
                 FunctionGroup     = "GetPracticeQuestions",
-                TestCaseID        = "TC-GPRQ-01",
+                TestCaseID        = "GetPracticeQuestions_01",
                 Description       = "No questions for the requested QuestionTypeId → 404",
                 ExpectedResult    = "IsSuccess=false, StatusCode=404",
                 StatusRound1      = "Passed",
@@ -81,7 +81,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GPRQ-02 | A | Repository returns null → 404
+        // GetPracticeQuestions_02 | A | Repository returns null → 404
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NullReturnedFromRepo_ShouldReturn404()
@@ -106,7 +106,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Practice Questions", new TestCaseDetail
             {
                 FunctionGroup     = "GetPracticeQuestions",
-                TestCaseID        = "TC-GPRQ-02",
+                TestCaseID        = "GetPracticeQuestions_02",
                 Description       = "Repository returns null → treated as 404",
                 ExpectedResult    = "IsSuccess=false, StatusCode=404",
                 StatusRound1      = "Passed",
@@ -117,7 +117,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GPRQ-03 | N | 2 questions returned → 2 groups (no shared passage)
+        // GetPracticeQuestions_03 | N | 2 questions returned → 2 groups (no shared passage)
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_TwoQuestionsNoPassage_ShouldReturnTwoGroups()
@@ -146,7 +146,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Practice Questions", new TestCaseDetail
             {
                 FunctionGroup     = "GetPracticeQuestions",
-                TestCaseID        = "TC-GPRQ-03",
+                TestCaseID        = "GetPracticeQuestions_03",
                 Description       = "2 stand-alone questions → 2 separate groups",
                 ExpectedResult    = "IsSuccess=true, Data.Count=2",
                 StatusRound1      = "Passed",
@@ -157,7 +157,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GPRQ-04 | N | Correct option included in each group's questions
+        // GetPracticeQuestions_04 | N | Correct option included in each group's questions
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidQuestions_ShouldIncludeCorrectOptionIdInResult()
@@ -183,7 +183,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Practice Questions", new TestCaseDetail
             {
                 FunctionGroup     = "GetPracticeQuestions",
-                TestCaseID        = "TC-GPRQ-04",
+                TestCaseID        = "GetPracticeQuestions_04",
                 Description       = "Practice question includes CorrectOptionId from the IsCorrect option",
                 ExpectedResult    = "CorrectOptionId=OPT-A1",
                 StatusRound1      = "Passed",
@@ -194,7 +194,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GPRQ-05 | N | Quantity forwarded to repository correctly
+        // GetPracticeQuestions_05 | N | Quantity forwarded to repository correctly
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ShouldForwardQuantityToRepo()
@@ -218,7 +218,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Practice Questions", new TestCaseDetail
             {
                 FunctionGroup     = "GetPracticeQuestions",
-                TestCaseID        = "TC-GPRQ-05",
+                TestCaseID        = "GetPracticeQuestions_05",
                 Description       = "QuestionTypeId and Quantity forwarded to repo correctly",
                 ExpectedResult    = "GetRandomQuestionsForPracticeAsync called with QT-999 and 15",
                 StatusRound1      = "Passed",
@@ -229,7 +229,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GPRQ-06 | E | Repository throws → exception propagates
+        // GetPracticeQuestions_06 | E | Repository throws → exception propagates
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
@@ -253,7 +253,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Practice Questions", new TestCaseDetail
             {
                 FunctionGroup     = "GetPracticeQuestions",
-                TestCaseID        = "TC-GPRQ-06",
+                TestCaseID        = "GetPracticeQuestions_06",
                 Description       = "Repository throws exception → propagates",
                 ExpectedResult    = "Exception with 'DB failure'",
                 StatusRound1      = "Passed",
@@ -264,7 +264,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GPRQ-07 | N | Question with PassageId fetches passage successfully
+        // GetPracticeQuestions_07 | N | Question with PassageId fetches passage successfully
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_QuestionWithPassage_ShouldMapPassageContent()
@@ -294,7 +294,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Practice Questions", new TestCaseDetail
             {
                 FunctionGroup     = "GetPracticeQuestions",
-                TestCaseID        = "TC-GPRQ-07",
+                TestCaseID        = "GetPracticeQuestions_07",
                 Description       = "Question has PassageId, populates passageMap via GetByIdsAsync",
                 ExpectedResult    = "Passage content correctly assigned to shared group",
                 StatusRound1      = "Passed",
@@ -305,7 +305,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GPRQ-08 | N | GetMediaType Unknown branch
+        // GetPracticeQuestions_08 | N | GetMediaType Unknown branch
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_UnknownMediaExtension_ShouldReturnUnknownType()
@@ -332,7 +332,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Practice Questions", new TestCaseDetail
             {
                 FunctionGroup     = "GetPracticeQuestions",
-                TestCaseID        = "TC-GPRQ-08",
+                TestCaseID        = "GetPracticeQuestions_08",
                 Description       = "MediaUrl with unknown extension forces Unknown mapping",
                 ExpectedResult    = "SharedMediaType=Unknown",
                 StatusRound1      = "Passed",

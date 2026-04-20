@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using FluentValidation.TestHelper;
 using System;
 using System.Collections.Generic;
@@ -18,7 +18,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             _validator = new UpdateEmailCampaignCommandValidator();
         }
 
-        // TC-ETC-UCV-01 | A | JobId is Empty -> Error
+        // UpdateEmailCampaignCommandValidator_01 | A | JobId is Empty -> Error
         [Fact]
         public void Validate_EmptyJobId_ShouldHaveError()
         {
@@ -30,7 +30,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("Email - Update Campaign", new TestCaseDetail
             {
                 FunctionGroup = "UpdateEmailCampaignCommandValidator",
-                TestCaseID = "TC-ETC-UCV-01",
+                TestCaseID = "UpdateEmailCampaignCommandValidator_01",
                 Description = "Empty JobId blocked immediately",
                 ExpectedResult = "Validation Error",
                 StatusRound1 = "Passed",
@@ -40,7 +40,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             });
         }
 
-        // TC-ETC-UCV-02 | A | Provided Subject > 255 chars -> Error
+        // UpdateEmailCampaignCommandValidator_02 | A | Provided Subject > 255 chars -> Error
         [Fact]
         public void Validate_LongSubject_ShouldHaveError()
         {
@@ -52,7 +52,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("Email - Update Campaign", new TestCaseDetail
             {
                 FunctionGroup = "UpdateEmailCampaignCommandValidator",
-                TestCaseID = "TC-ETC-UCV-02",
+                TestCaseID = "UpdateEmailCampaignCommandValidator_02",
                 Description = "Subject string truncated safely on exceeding 255 length bounds",
                 ExpectedResult = "Validation Error",
                 StatusRound1 = "Passed",
@@ -62,7 +62,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             });
         }
 
-        // TC-ETC-UCV-03 | A | TargetGroup = None without SpecificEmails -> Error
+        // UpdateEmailCampaignCommandValidator_03 | A | TargetGroup = None without SpecificEmails -> Error
         [Fact]
         public void Validate_NoneTargetWithoutEmails_ShouldHaveError()
         {
@@ -75,7 +75,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("Email - Update Campaign", new TestCaseDetail
             {
                 FunctionGroup = "UpdateEmailCampaignCommandValidator",
-                TestCaseID = "TC-ETC-UCV-03",
+                TestCaseID = "UpdateEmailCampaignCommandValidator_03",
                 Description = "Validates combination constraint avoiding ghosts (None + Empty list)",
                 ExpectedResult = "Validation Error",
                 StatusRound1 = "Passed",
@@ -85,7 +85,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             });
         }
 
-        // TC-ETC-UCV-04 | A | SpecificEmails Array contains invalid formats -> Error
+        // UpdateEmailCampaignCommandValidator_04 | A | SpecificEmails Array contains invalid formats -> Error
         [Fact]
         public void Validate_InvalidEmailInList_ShouldHaveError()
         {
@@ -98,7 +98,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("Email - Update Campaign", new TestCaseDetail
             {
                 FunctionGroup = "UpdateEmailCampaignCommandValidator",
-                TestCaseID = "TC-ETC-UCV-04",
+                TestCaseID = "UpdateEmailCampaignCommandValidator_04",
                 Description = "Validates MailAddress standard internally on array contents",
                 ExpectedResult = "Validation Error",
                 StatusRound1 = "Passed",
@@ -108,7 +108,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             });
         }
 
-        // TC-ETC-UCV-05 | A | Status updated to non-Deleted (e.g. Pending) -> Error
+        // UpdateEmailCampaignCommandValidator_05 | A | Status updated to non-Deleted (e.g. Pending) -> Error
         [Fact]
         public void Validate_InvalidStatusUpdate_ShouldHaveError()
         {
@@ -121,7 +121,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("Email - Update Campaign", new TestCaseDetail
             {
                 FunctionGroup = "UpdateEmailCampaignCommandValidator",
-                TestCaseID = "TC-ETC-UCV-05",
+                TestCaseID = "UpdateEmailCampaignCommandValidator_05",
                 Description = "Prevents modifying internal lifecycle transitions strictly. Only cancellation via Deleted is allowed",
                 ExpectedResult = "Validation Error",
                 StatusRound1 = "Passed",
@@ -131,7 +131,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             });
         }
 
-        // TC-ETC-UCV-06 | N | Valid full update command -> Pass
+        // UpdateEmailCampaignCommandValidator_06 | N | Valid full update command -> Pass
         [Fact]
         public void Validate_ValidPayload_ShouldNotHaveError()
         {
@@ -150,7 +150,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("Email - Update Campaign", new TestCaseDetail
             {
                 FunctionGroup = "UpdateEmailCampaignCommandValidator",
-                TestCaseID = "TC-ETC-UCV-06",
+                TestCaseID = "UpdateEmailCampaignCommandValidator_06",
                 Description = "Satisfies all specific condition blocks safely",
                 ExpectedResult = "No errors",
                 StatusRound1 = "Passed",

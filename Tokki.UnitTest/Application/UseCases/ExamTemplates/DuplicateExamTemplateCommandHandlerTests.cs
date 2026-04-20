@@ -61,8 +61,8 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Duplicate", new TestCaseDetail
             {
                 FunctionGroup     = "DuplicateExamTemplate",
-                TestCaseID        = "TC-EXMT-DUP-01",
-                Description       = "Source template not found → ExamTemplateNotFound",
+                TestCaseID        = "DuplicateExamTemplate_01",
+                Description       = "Source template not found ? ExamTemplateNotFound",
                 ExpectedResult    = "Return Failure",
                 StatusRound1      = "Passed",
                 TestCaseType      = "A",
@@ -101,8 +101,8 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Duplicate", new TestCaseDetail
             {
                 FunctionGroup     = "DuplicateExamTemplate",
-                TestCaseID        = "TC-EXMT-DUP-02",
-                Description       = "Valid template → copy created with Status=Draft, name suffixed '(1)'",
+                TestCaseID        = "DuplicateExamTemplate_02",
+                Description       = "Valid template ? copy created with Status=Draft, name suffixed '(1)'",
                 ExpectedResult    = "Return 201, Status=Draft, Name contains original name",
                 StatusRound1      = "Passed",
                 TestCaseType      = "N",
@@ -139,9 +139,9 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Duplicate", new TestCaseDetail
             {
                 FunctionGroup     = "DuplicateExamTemplate",
-                TestCaseID        = "TC-EXMT-DUP-03",
-                Description       = "Template has 1 part → AddRangeAsync called with 1 duplicated part",
-                ExpectedResult    = "Return 201, AddRangeAsync × 1 with 1 part",
+                TestCaseID        = "DuplicateExamTemplate_03",
+                Description       = "Template has 1 part ? AddRangeAsync called with 1 duplicated part",
+                ExpectedResult    = "Return 201, AddRangeAsync � 1 with 1 part",
                 StatusRound1      = "Passed",
                 TestCaseType      = "N",
                 TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -179,9 +179,9 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Duplicate", new TestCaseDetail
             {
                 FunctionGroup     = "DuplicateExamTemplate",
-                TestCaseID        = "TC-EXMT-DUP-04",
-                Description       = "Template has no parts → AddRangeAsync never called",
-                ExpectedResult    = "Return 201, AddRangeAsync × 0",
+                TestCaseID        = "DuplicateExamTemplate_04",
+                Description       = "Template has no parts ? AddRangeAsync never called",
+                ExpectedResult    = "Return 201, AddRangeAsync � 0",
                 StatusRound1      = "Passed",
                 TestCaseType      = "N",
                 TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -196,7 +196,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             var mockRepo = new Mock<IExamTemplateRepository>();
             mockRepo.Setup(x => x.GetByIdWithPartsAsync("EXMT-001", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(original);
-            // "Original Template (1)" exists → try "(2)"
+            // "Original Template (1)" exists ? try"(2)"
             mockRepo.Setup(x => x.IsNameExistsAsync("Original Template (1)", null)).ReturnsAsync(true);
             mockRepo.Setup(x => x.IsNameExistsAsync("Original Template (2)", null)).ReturnsAsync(false);
 
@@ -218,13 +218,13 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Duplicate", new TestCaseDetail
             {
                 FunctionGroup     = "DuplicateExamTemplate",
-                TestCaseID        = "TC-EXMT-DUP-05",
-                Description       = "'(1)' name taken → auto-increment to '(2)'",
+                TestCaseID        = "DuplicateExamTemplate_05",
+                Description       = "'(1)' name taken ? auto-increment to '(2)'",
                 ExpectedResult    = "Return 201, Name = 'Original Template (2)'",
                 StatusRound1      = "Passed",
                 TestCaseType      = "B",
                 TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "IsNameExistsAsync('(1)') = true → suffix = 2" }
+                AppliedConditions = new List<string> { "IsNameExistsAsync('(1)') = true ? suffix = 2" }
             });
         }
 
@@ -246,8 +246,8 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Duplicate", new TestCaseDetail
             {
                 FunctionGroup     = "DuplicateExamTemplate",
-                TestCaseID        = "TC-EXMT-DUP-06",
-                Description       = "AddAsync throws → catch returns ServerError",
+                TestCaseID        = "DuplicateExamTemplate_06",
+                Description       = "AddAsync throws ? catch returns ServerError",
                 ExpectedResult    = "Return Failure(ServerError)",
                 StatusRound1      = "Passed",
                 TestCaseType      = "A",

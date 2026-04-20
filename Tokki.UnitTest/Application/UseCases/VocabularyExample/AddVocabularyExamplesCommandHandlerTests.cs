@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -34,7 +34,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VEXM-ADD-01 | A | No token → 401
+        // Add_Vocabulary_Examples_01 | A | No token → 401
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_Unauthorized_ShouldReturn401()
@@ -61,7 +61,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
             QACollector.LogTestCase("Vocabulary Example - Add", new TestCaseDetail
             {
                 FunctionGroup     = "Add Vocabulary Examples",
-                TestCaseID        = "TC-VEXM-ADD-01",
+                TestCaseID        = "Add_Vocabulary_Examples_01",
                 Description       = "Add example sentences without authentication token",
                 ExpectedResult    = "Return 401 Unauthorized",
                 StatusRound1      = "Passed",
@@ -72,7 +72,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VEXM-ADD-02 | A | Empty VocabularyId → 400
+        // Add_Vocabulary_Examples_02 | A | Empty VocabularyId → 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyVocabularyId_ShouldReturn400()
@@ -99,7 +99,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
             QACollector.LogTestCase("Vocabulary Example - Add", new TestCaseDetail
             {
                 FunctionGroup     = "Add Vocabulary Examples",
-                TestCaseID        = "TC-VEXM-ADD-02",
+                TestCaseID        = "Add_Vocabulary_Examples_02",
                 Description       = "Add examples with empty VocabularyId",
                 ExpectedResult    = "Return 400 VocabularyIdEmpty",
                 StatusRound1      = "Passed",
@@ -110,7 +110,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VEXM-ADD-03 | A | Empty Examples list → 400
+        // Add_Vocabulary_Examples_03 | A | Empty Examples list → 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyExamplesList_ShouldReturn400()
@@ -136,7 +136,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
             QACollector.LogTestCase("Vocabulary Example - Add", new TestCaseDetail
             {
                 FunctionGroup     = "Add Vocabulary Examples",
-                TestCaseID        = "TC-VEXM-ADD-03",
+                TestCaseID        = "Add_Vocabulary_Examples_03",
                 Description       = "Add examples with empty Examples list",
                 ExpectedResult    = "Return 400 ExamplesEmpty",
                 StatusRound1      = "Passed",
@@ -147,7 +147,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VEXM-ADD-04 | A | VocabularyId not found → 404
+        // Add_Vocabulary_Examples_04 | A | VocabularyId not found → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_VocabularyNotFound_ShouldReturn404()
@@ -175,7 +175,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
             QACollector.LogTestCase("Vocabulary Example - Add", new TestCaseDetail
             {
                 FunctionGroup     = "Add Vocabulary Examples",
-                TestCaseID        = "TC-VEXM-ADD-04",
+                TestCaseID        = "Add_Vocabulary_Examples_04",
                 Description       = "Add examples with VocabularyId that doesn't exist",
                 ExpectedResult    = "Return 404 VocabularyNotFound",
                 StatusRound1      = "Passed",
@@ -186,7 +186,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VEXM-ADD-05 | A | Duplicate sentence → skip → 201
+        // Add_Vocabulary_Examples_05 | A | Duplicate sentence → skip → 201
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DuplicateSentence_ShouldSkipAndReturn201()
@@ -219,7 +219,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
             QACollector.LogTestCase("Vocabulary Example - Add", new TestCaseDetail
             {
                 FunctionGroup     = "Add Vocabulary Examples",
-                TestCaseID        = "TC-VEXM-ADD-05",
+                TestCaseID        = "Add_Vocabulary_Examples_05",
                 Description       = "Example sentence already exists (duplicate) → skipped, still returns 201",
                 ExpectedResult    = "Return 201, CreatedExamples = empty, SkippedSentences.Count = 1",
                 StatusRound1      = "Passed",
@@ -230,7 +230,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VEXM-ADD-06 | N | Valid new example → created → 201
+        // Add_Vocabulary_Examples_06 | N | Valid new example → created → 201
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidNewExample_ShouldCreateAndReturn201()
@@ -263,7 +263,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
             QACollector.LogTestCase("Vocabulary Example - Add", new TestCaseDetail
             {
                 FunctionGroup     = "Add Vocabulary Examples",
-                TestCaseID        = "TC-VEXM-ADD-06",
+                TestCaseID        = "Add_Vocabulary_Examples_06",
                 Description       = "Add 1 valid new example sentence → created successfully",
                 ExpectedResult    = "Return 201, CreatedExamples.Count = 1, AddAsync called once",
                 StatusRound1      = "Passed",

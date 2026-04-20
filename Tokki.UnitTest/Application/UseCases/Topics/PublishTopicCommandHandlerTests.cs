@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
@@ -60,7 +60,7 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
         private static Topic SampleTopic(TopicStatus status = TopicStatus.Draft) =>
             new Topic { TopicId = "T-001", TopicName = "Korean Basics", Status = status };
 
-        // TC-TOPIC-PUB-01 | A | No auth user → 401
+        // PublishTopic_01 | A | No auth user → 401
         [Fact]
         public async Task Handle_NoAuthUser_ShouldReturn401()
         {
@@ -68,10 +68,10 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
                 .Handle(new PublishTopicCommand { TopicId = "T-001" }, CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(401);
-            QACollector.LogTestCase("Topic - Publish", new TestCaseDetail { FunctionGroup = "PublishTopic", TestCaseID = "TC-TOPIC-PUB-01", Description = "No auth user → 401", ExpectedResult = "IsSuccess=false, 401", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "No NameIdentifier claim" } });
+            QACollector.LogTestCase("Topic - Publish", new TestCaseDetail { FunctionGroup = "PublishTopic", TestCaseID = "PublishTopic_01", Description = "No auth user → 401", ExpectedResult = "IsSuccess=false, 401", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "No NameIdentifier claim" } });
         }
 
-        // TC-TOPIC-PUB-02 | A | Topic not found → 404
+        // PublishTopic_02 | A | Topic not found → 404
         [Fact]
         public async Task Handle_TopicNotFound_ShouldReturn404()
         {
@@ -79,10 +79,10 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
                 .Handle(new PublishTopicCommand { TopicId = "MISSING" }, CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(404);
-            QACollector.LogTestCase("Topic - Publish", new TestCaseDetail { FunctionGroup = "PublishTopic", TestCaseID = "TC-TOPIC-PUB-02", Description = "Topic not found → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetByIdAsync returns null" } });
+            QACollector.LogTestCase("Topic - Publish", new TestCaseDetail { FunctionGroup = "PublishTopic", TestCaseID = "PublishTopic_02", Description = "Topic not found → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetByIdAsync returns null" } });
         }
 
-        // TC-TOPIC-PUB-03 | A | Topic already deleted → 400
+        // PublishTopic_03 | A | Topic already deleted → 400
         [Fact]
         public async Task Handle_TopicDeleted_ShouldReturn400()
         {
@@ -90,10 +90,10 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
                 .Handle(new PublishTopicCommand { TopicId = "T-001" }, CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            QACollector.LogTestCase("Topic - Publish", new TestCaseDetail { FunctionGroup = "PublishTopic", TestCaseID = "TC-TOPIC-PUB-03", Description = "Topic deleted → 400", ExpectedResult = "IsSuccess=false, 400", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Status == Deleted" } });
+            QACollector.LogTestCase("Topic - Publish", new TestCaseDetail { FunctionGroup = "PublishTopic", TestCaseID = "PublishTopic_03", Description = "Topic deleted → 400", ExpectedResult = "IsSuccess=false, 400", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Status == Deleted" } });
         }
 
-        // TC-TOPIC-PUB-04 | N | Topic already Active → idempotent 200
+        // PublishTopic_04 | N | Topic already Active → idempotent 200
         [Fact]
         public async Task Handle_TopicAlreadyActive_ShouldReturn200Idempotent()
         {
@@ -101,10 +101,10 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
                 .Handle(new PublishTopicCommand { TopicId = "T-001" }, CancellationToken.None);
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
-            QACollector.LogTestCase("Topic - Publish", new TestCaseDetail { FunctionGroup = "PublishTopic", TestCaseID = "TC-TOPIC-PUB-04", Description = "Already Active → idempotent 200", ExpectedResult = "IsSuccess=true, 200", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Idempotent: already active" } });
+            QACollector.LogTestCase("Topic - Publish", new TestCaseDetail { FunctionGroup = "PublishTopic", TestCaseID = "PublishTopic_04", Description = "Already Active → idempotent 200", ExpectedResult = "IsSuccess=true, 200", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Idempotent: already active" } });
         }
 
-        // TC-TOPIC-PUB-05 | N | Draft topic → published: Status=Active, OrderIndex=maxOrderIndex+1
+        // PublishTopic_05 | N | Draft topic → published: Status=Active, OrderIndex=maxOrderIndex+1
         [Fact]
         public async Task Handle_DraftTopic_ShouldPublishWithCorrectStatus()
         {
@@ -116,10 +116,10 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
             result.StatusCode.Should().Be(200);
             topic.Status.Should().Be(TopicStatus.Active);
             topic.OrderIndex.Should().Be(6);
-            QACollector.LogTestCase("Topic - Publish", new TestCaseDetail { FunctionGroup = "PublishTopic", TestCaseID = "TC-TOPIC-PUB-05", Description = "Draft → Active, OrderIndex=6 (maxOrderIndex+1)", ExpectedResult = "Status=Active, OrderIndex=6", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "maxOrderIndex=5, new=6" } });
+            QACollector.LogTestCase("Topic - Publish", new TestCaseDetail { FunctionGroup = "PublishTopic", TestCaseID = "PublishTopic_05", Description = "Draft → Active, OrderIndex=6 (maxOrderIndex+1)", ExpectedResult = "Status=Active, OrderIndex=6", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "maxOrderIndex=5, new=6" } });
         }
 
-        // TC-TOPIC-PUB-06 | A | Non-Draft topic (e.g. PendingApproval) → 400 invalid transition
+        // PublishTopic_06 | A | Non-Draft topic (e.g. PendingApproval) → 400 invalid transition
         [Fact]
         public async Task Handle_PendingApprovalTopic_ShouldReturn400InvalidTransition()
         {
@@ -127,7 +127,7 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
                 .Handle(new PublishTopicCommand { TopicId = "T-001" }, CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            QACollector.LogTestCase("Topic - Publish", new TestCaseDetail { FunctionGroup = "PublishTopic", TestCaseID = "TC-TOPIC-PUB-06", Description = "PendingApproval → 400 invalid status transition", ExpectedResult = "IsSuccess=false, 400", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Only Draft→Active allowed" } });
+            QACollector.LogTestCase("Topic - Publish", new TestCaseDetail { FunctionGroup = "PublishTopic", TestCaseID = "PublishTopic_06", Description = "PendingApproval → 400 invalid status transition", ExpectedResult = "IsSuccess=false, 400", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Only Draft→Active allowed" } });
         }
     }
 }

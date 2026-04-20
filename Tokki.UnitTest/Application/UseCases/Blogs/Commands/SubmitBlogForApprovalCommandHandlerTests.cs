@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -48,7 +48,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-SB-01 | A | Unauthorized (No UserId context) → 401
+        // Submit_Blog_For_Approval_01 | A | Unauthorized (No UserId context) → 401
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_Unauthorized_ShouldReturn401()
@@ -65,7 +65,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Submit For Approval", new TestCaseDetail
             {
                 FunctionGroup     = "Submit Blog For Approval",
-                TestCaseID        = "TC-SB-01",
+                TestCaseID        = "Submit_Blog_For_Approval_01",
                 Description       = "Missing user id in HttpContext payload",
                 ExpectedResult    = "Return 401 UserUnauthorized",
                 StatusRound1      = "Passed",
@@ -76,7 +76,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-SB-02 | A | Blog Not Found → 404
+        // Submit_Blog_For_Approval_02 | A | Blog Not Found → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_BlogNotFound_ShouldReturn404()
@@ -91,7 +91,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Submit For Approval", new TestCaseDetail
             {
                 FunctionGroup     = "Submit Blog For Approval",
-                TestCaseID        = "TC-SB-02",
+                TestCaseID        = "Submit_Blog_For_Approval_02",
                 Description       = "Attempt to submit a non-existent blog",
                 ExpectedResult    = "Return 404 BlogNotFound",
                 StatusRound1      = "Passed",
@@ -102,7 +102,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-SB-03 | A | User is not the Author → 403 Forbidden
+        // Submit_Blog_For_Approval_03 | A | User is not the Author → 403 Forbidden
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NotAuthor_ShouldReturn403()
@@ -123,7 +123,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Submit For Approval", new TestCaseDetail
             {
                 FunctionGroup     = "Submit Blog For Approval",
-                TestCaseID        = "TC-SB-03",
+                TestCaseID        = "Submit_Blog_For_Approval_03",
                 Description       = "User attempting submission is not the blog author",
                 ExpectedResult    = "Return 403 IsNotAuthor",
                 StatusRound1      = "Passed",
@@ -134,7 +134,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-SB-04 | A | Blog Status is Invalid (e.g. Published) → 400
+        // Submit_Blog_For_Approval_04 | A | Blog Status is Invalid (e.g. Published) → 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_InvalidBlogStatus_ShouldReturn400()
@@ -155,7 +155,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Submit For Approval", new TestCaseDetail
             {
                 FunctionGroup     = "Submit Blog For Approval",
-                TestCaseID        = "TC-SB-04",
+                TestCaseID        = "Submit_Blog_For_Approval_04",
                 Description       = "Attempt to submit a blog that is already Published",
                 ExpectedResult    = "Return 400 BlogInvalidPending",
                 StatusRound1      = "Passed",
@@ -166,7 +166,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-SB-05 | N | Valid Draft Status → PendingApproval and 200
+        // Submit_Blog_For_Approval_05 | N | Valid Draft Status → PendingApproval and 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidDraftBlog_ShouldReturn200()
@@ -189,7 +189,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Submit For Approval", new TestCaseDetail
             {
                 FunctionGroup     = "Submit Blog For Approval",
-                TestCaseID        = "TC-SB-05",
+                TestCaseID        = "Submit_Blog_For_Approval_05",
                 Description       = "Author submits a Draft blog",
                 ExpectedResult    = "Return 200, status updated to PendingApproval",
                 StatusRound1      = "Passed",
@@ -200,7 +200,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-SB-06 | N | Valid Rejected Status → PendingApproval and 200
+        // Submit_Blog_For_Approval_06 | N | Valid Rejected Status → PendingApproval and 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidRejectedBlog_ShouldSubmitAgain()
@@ -221,7 +221,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Submit For Approval", new TestCaseDetail
             {
                 FunctionGroup     = "Submit Blog For Approval",
-                TestCaseID        = "TC-SB-06",
+                TestCaseID        = "Submit_Blog_For_Approval_06",
                 Description       = "Author re-submits a previously Rejected blog",
                 ExpectedResult    = "Return 200, status updated back to PendingApproval",
                 StatusRound1      = "Passed",

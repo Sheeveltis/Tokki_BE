@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -44,7 +44,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email Template - Delete Auto", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteEmailAutoTemplate",
-                TestCaseID        = "TC-EMAIL-DEL-01",
+                TestCaseID        = "DeleteEmailAutoTemplate_01",
                 Description       = "TemplateId does not exist → EmailTemplateNotFound",
                 ExpectedResult    = "Return Failure (not found)",
                 StatusRound1      = "Passed",
@@ -70,7 +70,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email Template - Delete Auto", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteEmailAutoTemplate",
-                TestCaseID        = "TC-EMAIL-DEL-02",
+                TestCaseID        = "DeleteEmailAutoTemplate_02",
                 Description       = "Template already Deleted → idempotent success, no UpdateAsync called",
                 ExpectedResult    = "Return 200, UpdateAsync never called",
                 StatusRound1      = "Passed",
@@ -98,7 +98,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email Template - Delete Auto", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteEmailAutoTemplate",
-                TestCaseID        = "TC-EMAIL-DEL-03",
+                TestCaseID        = "DeleteEmailAutoTemplate_03",
                 Description       = "Active template → Status set to Deleted, UpdateAsync called",
                 ExpectedResult    = "Return 200, template.Status = Deleted",
                 StatusRound1      = "Passed",
@@ -125,7 +125,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email Template - Delete Auto", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteEmailAutoTemplate",
-                TestCaseID        = "TC-EMAIL-DEL-04",
+                TestCaseID        = "DeleteEmailAutoTemplate_04",
                 Description       = "Draft template → also soft-deleteable",
                 ExpectedResult    = "Return 200, draft.Status = Deleted",
                 StatusRound1      = "Passed",
@@ -152,7 +152,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email Template - Delete Auto", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteEmailAutoTemplate",
-                TestCaseID        = "TC-EMAIL-DEL-05",
+                TestCaseID        = "DeleteEmailAutoTemplate_05",
                 Description       = "After deletion, UpdatedAt is set to current VN time",
                 ExpectedResult    = "template.UpdatedAt updated",
                 StatusRound1      = "Passed",
@@ -174,7 +174,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email Template - Delete Auto", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteEmailAutoTemplate",
-                TestCaseID        = "TC-EMAIL-DEL-06",
+                TestCaseID        = "DeleteEmailAutoTemplate_06",
                 Description       = "Repository throws → exception propagates",
                 ExpectedResult    = "Throws Exception",
                 StatusRound1      = "Passed",

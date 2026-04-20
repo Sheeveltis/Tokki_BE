@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -19,7 +19,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             return new GetMyRoomsQueryHandler((repo ?? new Mock<IChatRoomRepository>()).Object);
         }
 
-        // TC-LCH-GMR-01 | N | Empty Rooms list
+        // GetMyRooms_01 | N | Empty Rooms list
         [Fact]
         public async Task Handle_EmptyRooms_ShouldReturnEmptyDTOList()
         {
@@ -34,7 +34,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
 
             QACollector.LogTestCase("LiveChat - Get My Rooms", new TestCaseDetail
             {
-                FunctionGroup = "GetMyRooms", TestCaseID = "TC-LCH-GMR-01",
+                FunctionGroup = "GetMyRooms", TestCaseID = "GetMyRooms_01",
                 Description = "Repository returns empty List mapping securely",
                 ExpectedResult = "Return 200 Empty List DTO", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -42,7 +42,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             });
         }
 
-        // TC-LCH-GMR-02 | N | Room is Group and NOT Support -> Uses Room Name correctly
+        // GetMyRooms_02 | N | Room is Group and NOT Support -> Uses Room Name correctly
         [Fact]
         public async Task Handle_GroupNotSupport_ShouldUseRoomNameAndNoAvatar()
         {
@@ -61,7 +61,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
 
             QACollector.LogTestCase("LiveChat - Get My Rooms", new TestCaseDetail
             {
-                FunctionGroup = "GetMyRooms", TestCaseID = "TC-LCH-GMR-02",
+                FunctionGroup = "GetMyRooms", TestCaseID = "GetMyRooms_02",
                 Description = "General group sets condition mapping directly resolving string explicitly mapping room avatar safely",
                 ExpectedResult = "Return 200, checks bindings", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -69,7 +69,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             });
         }
 
-        // TC-LCH-GMR-03 | N | Room is Not Group -> Use Other Member Info
+        // GetMyRooms_03 | N | Room is Not Group -> Use Other Member Info
         [Fact]
         public async Task Handle_NotGroup_ShouldUseOtherMemberInfo()
         {
@@ -86,7 +86,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
 
             QACollector.LogTestCase("LiveChat - Get My Rooms", new TestCaseDetail
             {
-                FunctionGroup = "GetMyRooms", TestCaseID = "TC-LCH-GMR-03",
+                FunctionGroup = "GetMyRooms", TestCaseID = "GetMyRooms_03",
                 Description = "Private chat pulls other members detailed account parsing it down to display layer",
                 ExpectedResult = "Return 200 Display name binds other member info securely", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -94,7 +94,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             });
         }
 
-        // TC-LCH-GMR-04 | N | Room is Support -> Use Other Member Info appropriately
+        // GetMyRooms_04 | N | Room is Support -> Use Other Member Info appropriately
         [Fact]
         public async Task Handle_IsSupport_ShouldUseOtherMemberInfo()
         {
@@ -111,7 +111,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
 
             QACollector.LogTestCase("LiveChat - Get My Rooms", new TestCaseDetail
             {
-                FunctionGroup = "GetMyRooms", TestCaseID = "TC-LCH-GMR-04",
+                FunctionGroup = "GetMyRooms", TestCaseID = "GetMyRooms_04",
                 Description = "Logical OR branch allows IsSupport=true to pull specific member profile rendering",
                 ExpectedResult = "Return 200, RoomName mapped cleanly", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -119,7 +119,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             });
         }
 
-        // TC-LCH-GMR-05 | N | Missing other member fallback (Support) -> Default Null Coalesce Room Name
+        // GetMyRooms_05 | N | Missing other member fallback (Support) -> Default Null Coalesce Room Name
         [Fact]
         public async Task Handle_MissingOtherMember_ShouldFallbackToGenericRoomName()
         {
@@ -135,7 +135,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             
             QACollector.LogTestCase("LiveChat - Get My Rooms", new TestCaseDetail
             {
-                FunctionGroup = "GetMyRooms", TestCaseID = "TC-LCH-GMR-05",
+                FunctionGroup = "GetMyRooms", TestCaseID = "GetMyRooms_05",
                 Description = "Fallback condition tests missing members default string null coalescing functionality",
                 ExpectedResult = "Return 200 with const generic fallback room descriptor", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -143,7 +143,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             });
         }
 
-        // TC-LCH-GMR-06 | A | Repostory throws unhandled exception -> Propagate Upwards
+        // GetMyRooms_06 | A | Repostory throws unhandled exception -> Propagate Upwards
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
         {
@@ -154,7 +154,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
 
             QACollector.LogTestCase("LiveChat - Get My Rooms", new TestCaseDetail
             {
-                FunctionGroup = "GetMyRooms", TestCaseID = "TC-LCH-GMR-06",
+                FunctionGroup = "GetMyRooms", TestCaseID = "GetMyRooms_06",
                 Description = "Testing repository global failure natively throws unmapped Exception outwards",
                 ExpectedResult = "Throws Exception internally mapped", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

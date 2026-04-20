@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -26,7 +26,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
                 new() { UserEmail = "bob@test.com",   UserName = "Bob" }
             }, count, 1, 10);
 
-        // TC-EXUE-01 | N | Valid query returns 200 with participants
+        // Get_User_Exams_By_ExamId_01 | N | Valid query returns 200 with participants
         [Fact]
         public async Task Handle_ValidQuery_ShouldReturn200WithParticipants()
         {
@@ -44,7 +44,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get User Exams", new TestCaseDetail
             {
-                FunctionGroup = "Get User Exams By ExamId", TestCaseID = "TC-EXUE-01",
+                FunctionGroup = "Get User Exams By ExamId", TestCaseID = "Get_User_Exams_By_ExamId_01",
                 Description = "Valid query returns participant list",
                 ExpectedResult = "Return 200 with 2 participants", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -52,7 +52,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXUE-02 | N | Correct DTO data mapping
+        // Get_User_Exams_By_ExamId_02 | N | Correct DTO data mapping
         [Fact]
         public async Task Handle_ValidQuery_ShouldMapParticipantsCorrectly()
         {
@@ -68,7 +68,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get User Exams", new TestCaseDetail
             {
-                FunctionGroup = "Get User Exams By ExamId", TestCaseID = "TC-EXUE-02",
+                FunctionGroup = "Get User Exams By ExamId", TestCaseID = "Get_User_Exams_By_ExamId_02",
                 Description = "Verify data fields in participant DTOs are correctly mapped",
                 ExpectedResult = "UserId, FullName mapped from repository result", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -76,7 +76,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXUE-03 | N | Empty participants list returns 200 with empty items
+        // Get_User_Exams_By_ExamId_03 | N | Empty participants list returns 200 with empty items
         [Fact]
         public async Task Handle_NoParticipants_ShouldReturn200WithEmptyList()
         {
@@ -94,7 +94,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get User Exams", new TestCaseDetail
             {
-                FunctionGroup = "Get User Exams By ExamId", TestCaseID = "TC-EXUE-03",
+                FunctionGroup = "Get User Exams By ExamId", TestCaseID = "Get_User_Exams_By_ExamId_03",
                 Description = "No participants for this exam; returns 200 with empty list",
                 ExpectedResult = "Empty list, 200 OK", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -102,7 +102,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXUE-04 | N | Paging metadata is accurate
+        // Get_User_Exams_By_ExamId_04 | N | Paging metadata is accurate
         [Fact]
         public async Task Handle_Pagination_ShouldReturnCorrectPageInfo()
         {
@@ -121,7 +121,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get User Exams", new TestCaseDetail
             {
-                FunctionGroup = "Get User Exams By ExamId", TestCaseID = "TC-EXUE-04",
+                FunctionGroup = "Get User Exams By ExamId", TestCaseID = "Get_User_Exams_By_ExamId_04",
                 Description = "Verify paging metadata from PagedResult",
                 ExpectedResult = "TotalCount=30, TotalPages=3, PageNumber=3", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -129,7 +129,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXUE-05 | N | Repo called exactly once with correct ExamId
+        // Get_User_Exams_By_ExamId_05 | N | Repo called exactly once with correct ExamId
         [Fact]
         public async Task Handle_ValidQuery_RepoCalledOnceWithExamId()
         {
@@ -148,7 +148,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get User Exams", new TestCaseDetail
             {
-                FunctionGroup = "Get User Exams By ExamId", TestCaseID = "TC-EXUE-05",
+                FunctionGroup = "Get User Exams By ExamId", TestCaseID = "Get_User_Exams_By_ExamId_05",
                 Description = "Repo is invoked once with the exact ExamId from the query",
                 ExpectedResult = "GetPagedParticipantsByExamIdAsync called once with EX-999", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -156,7 +156,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXUE-06 | A | Repository throws exception
+        // Get_User_Exams_By_ExamId_06 | A | Repository throws exception
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
         {
@@ -171,7 +171,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get User Exams", new TestCaseDetail
             {
-                FunctionGroup = "Get User Exams By ExamId", TestCaseID = "TC-EXUE-06",
+                FunctionGroup = "Get User Exams By ExamId", TestCaseID = "Get_User_Exams_By_ExamId_06",
                 Description = "Repository throws exception; propagates without suppression",
                 ExpectedResult = "Exception propagates", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

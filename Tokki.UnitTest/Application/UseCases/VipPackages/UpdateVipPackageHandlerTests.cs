@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -41,7 +41,7 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
             QACollector.LogTestCase("VipPackage - Update", new TestCaseDetail
             {
                 FunctionGroup = "Update Vip Package",
-                TestCaseID = "TC-VIP-UPD-01",
+                TestCaseID = "Update_Vip_Package_01",
                 Description = "Update VIP package with ID that does not exist",
                 ExpectedResult = "Return Failure VipPackageNotFound",
                 StatusRound1 = "Passed",
@@ -77,7 +77,7 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
             QACollector.LogTestCase("VipPackage - Update", new TestCaseDetail
             {
                 FunctionGroup = "Update Vip Package",
-                TestCaseID = "TC-VIP-UPD-02",
+                TestCaseID = "Update_Vip_Package_02",
                 Description = "Update Price to negative price",
                 ExpectedResult = "Return Failure VipPackageInvalidPrice",
                 StatusRound1 = "Passed",
@@ -124,7 +124,7 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
             QACollector.LogTestCase("VipPackage - Update", new TestCaseDetail
             {
                 FunctionGroup = "Update Vip Package",
-                TestCaseID = "TC-VIP-UPD-03",
+                TestCaseID = "Update_Vip_Package_03",
                 Description = "Update valid VIP package → fields are updated correctly",
                 ExpectedResult = "Return Success, Name/Price/DurationDays/IsActive are updated",
                 StatusRound1 = "Passed",
@@ -168,7 +168,7 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
             QACollector.LogTestCase("VipPackage - Update", new TestCaseDetail
             {
                 FunctionGroup = "Update Vip Package",
-                TestCaseID = "TC-VIP-UPD-04",
+                TestCaseID = "Update_Vip_Package_04",
                 Description = "Update DurationDays = 0 (boundary) → ignore, keep the old value",
                 ExpectedResult = "Return Success, DurationDays are unchanged",
                 StatusRound1 = "Passed",
@@ -212,7 +212,7 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
             QACollector.LogTestCase("VipPackage - Update", new TestCaseDetail
             {
                 FunctionGroup = "Update Vip Package",
-                TestCaseID = "TC-VIP-UPD-05",
+                TestCaseID = "Update_Vip_Package_05",
                 Description = "Name = \"string\" (Swagger placeholder) → field is skipped, keep old value",
                 ExpectedResult = "IsSuccess=true, Name unchanged",
                 StatusRound1 = "Passed",
@@ -255,7 +255,7 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
             QACollector.LogTestCase("VipPackage - Update", new TestCaseDetail
             {
                 FunctionGroup = "Update Vip Package",
-                TestCaseID = "TC-VIP-UPD-06",
+                TestCaseID = "Update_Vip_Package_06",
                 Description = "Update flow must call UpdateAsync once and never AddAsync",
                 ExpectedResult = "UpdateAsync Times.Once, AddAsync Times.Never",
                 StatusRound1 = "Passed",

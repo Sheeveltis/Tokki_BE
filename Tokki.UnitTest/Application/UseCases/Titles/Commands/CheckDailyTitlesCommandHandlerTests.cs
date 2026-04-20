@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -39,7 +39,7 @@ namespace Tokki.UnitTest.Application.UseCases.Titles.Commands
             QACollector.LogTestCase("Title - Check Daily", new TestCaseDetail
             {
                 FunctionGroup     = "CheckDailyTitlesCommandHandler",
-                TestCaseID        = "TC-TTL-CDT-01",
+                TestCaseID        = "CheckDailyTitlesCommandHandler_01",
                 Description       = "No new titles unlocked",
                 ExpectedResult    = "200 Success with specific message",
                 StatusRound1      = "Passed",
@@ -66,7 +66,7 @@ namespace Tokki.UnitTest.Application.UseCases.Titles.Commands
             QACollector.LogTestCase("Title - Check Daily", new TestCaseDetail
             {
                 FunctionGroup     = "CheckDailyTitlesCommandHandler",
-                TestCaseID        = "TC-TTL-CDT-02",
+                TestCaseID        = "CheckDailyTitlesCommandHandler_02",
                 Description       = "Titles unlocked successfully",
                 ExpectedResult    = "200 Success with congratulatory message",
                 StatusRound1      = "Passed",

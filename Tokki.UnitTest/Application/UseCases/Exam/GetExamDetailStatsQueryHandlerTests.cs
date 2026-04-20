@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -37,7 +37,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             QuestionNumbers  = new List<int> { 1, 2, 3, 5, 11, 15, 20 }
         };
 
-        // TC-EXDS-01 | A | Exam not found → Failure
+        // Get_Exam_Detail_Stats_01 | A | Exam not found → Failure
         [Fact]
         public async Task Handle_ExamNotFound_ShouldReturnFailure()
         {
@@ -51,7 +51,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get Detail Stats", new TestCaseDetail
             {
-                FunctionGroup = "Get Exam Detail Stats", TestCaseID = "TC-EXDS-01",
+                FunctionGroup = "Get Exam Detail Stats", TestCaseID = "Get_Exam_Detail_Stats_01",
                 Description = "ExamId returns null stats from repository",
                 ExpectedResult = "Return Failure", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -59,7 +59,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXDS-02 | N | Valid exam with stats → 200 with DTO
+        // Get_Exam_Detail_Stats_02 | N | Valid exam with stats → 200 with DTO
         [Fact]
         public async Task Handle_ValidExam_ShouldReturn200WithDTO()
         {
@@ -75,7 +75,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get Detail Stats", new TestCaseDetail
             {
-                FunctionGroup = "Get Exam Detail Stats", TestCaseID = "TC-EXDS-02",
+                FunctionGroup = "Get Exam Detail Stats", TestCaseID = "Get_Exam_Detail_Stats_02",
                 Description = "Valid exam ID retrieves stats DTO",
                 ExpectedResult = "Return 200 with accurate stats", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -83,7 +83,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXDS-03 | N | AverageScore is rounded to 2 decimals
+        // Get_Exam_Detail_Stats_03 | N | AverageScore is rounded to 2 decimals
         [Fact]
         public async Task Handle_AverageScore_ShouldBeRoundedTo2Decimals()
         {
@@ -97,7 +97,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get Detail Stats", new TestCaseDetail
             {
-                FunctionGroup = "Get Exam Detail Stats", TestCaseID = "TC-EXDS-03",
+                FunctionGroup = "Get Exam Detail Stats", TestCaseID = "Get_Exam_Detail_Stats_03",
                 Description = "AverageScore is rounded to 2 decimal places",
                 ExpectedResult = "AverageScore = 78.57", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -105,7 +105,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXDS-04 | N | SkillDurations correctly deserialized
+        // Get_Exam_Detail_Stats_04 | N | SkillDurations correctly deserialized
         [Fact]
         public async Task Handle_ValidExam_ShouldDeserializeSkillDurations()
         {
@@ -119,7 +119,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get Detail Stats", new TestCaseDetail
             {
-                FunctionGroup = "Get Exam Detail Stats", TestCaseID = "TC-EXDS-04",
+                FunctionGroup = "Get Exam Detail Stats", TestCaseID = "Get_Exam_Detail_Stats_04",
                 Description = "SkillDurations JSON is properly deserialized into a Dictionary",
                 ExpectedResult = "Listening=30, Reading=40", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -127,7 +127,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXDS-05 | N | SkillQuestionCounts populated correctly
+        // Get_Exam_Detail_Stats_05 | N | SkillQuestionCounts populated correctly
         [Fact]
         public async Task Handle_ValidExam_ShouldCalculateSkillQuestionCounts()
         {
@@ -142,7 +142,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get Detail Stats", new TestCaseDetail
             {
-                FunctionGroup = "Get Exam Detail Stats", TestCaseID = "TC-EXDS-05",
+                FunctionGroup = "Get Exam Detail Stats", TestCaseID = "Get_Exam_Detail_Stats_05",
                 Description = "SkillQuestionCounts aggregated correctly by matching question numbers to template part ranges",
                 ExpectedResult = "Listening=4, Reading=3", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -150,7 +150,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXDS-06 | A | Repository exception propagates
+        // Get_Exam_Detail_Stats_06 | A | Repository exception propagates
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
         {
@@ -161,7 +161,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get Detail Stats", new TestCaseDetail
             {
-                FunctionGroup = "Get Exam Detail Stats", TestCaseID = "TC-EXDS-06",
+                FunctionGroup = "Get Exam Detail Stats", TestCaseID = "Get_Exam_Detail_Stats_06",
                 Description = "Repository throws exception during stat retrieval",
                 ExpectedResult = "Exception propagates", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

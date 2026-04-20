@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -50,7 +50,7 @@ namespace Tokki.UnitTest.Application.UseCases.Leaderboard
 
             QACollector.LogTestCase("Leaderboard - Get", new TestCaseDetail
             {
-                FunctionGroup = "GetLeaderboard", TestCaseID = "TC-LDB-01",
+                FunctionGroup = "GetLeaderboard", TestCaseID = "GetLeaderboard_01",
                 Description = "No players registered → Return 200 empty list",
                 ExpectedResult = "Return 200, Data=[]", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -74,7 +74,7 @@ namespace Tokki.UnitTest.Application.UseCases.Leaderboard
 
             QACollector.LogTestCase("Leaderboard - Get", new TestCaseDetail
             {
-                FunctionGroup = "GetLeaderboard", TestCaseID = "TC-LDB-02",
+                FunctionGroup = "GetLeaderboard", TestCaseID = "GetLeaderboard_02",
                 Description = "AllTime Top=10 → Return 200 with 10 items",
                 ExpectedResult = "Return 200, Data.Count=10", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -98,7 +98,7 @@ namespace Tokki.UnitTest.Application.UseCases.Leaderboard
 
             QACollector.LogTestCase("Leaderboard - Get", new TestCaseDetail
             {
-                FunctionGroup = "GetLeaderboard", TestCaseID = "TC-LDB-03",
+                FunctionGroup = "GetLeaderboard", TestCaseID = "GetLeaderboard_03",
                 Description = "Weekly TimeFrame → GetLeaderboardAsync called with Weekly",
                 ExpectedResult = "Return 200, Weekly filter applied", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -123,7 +123,7 @@ namespace Tokki.UnitTest.Application.UseCases.Leaderboard
 
             QACollector.LogTestCase("Leaderboard - Get", new TestCaseDetail
             {
-                FunctionGroup = "GetLeaderboard", TestCaseID = "TC-LDB-04",
+                FunctionGroup = "GetLeaderboard", TestCaseID = "GetLeaderboard_04",
                 Description = "Monthly Top=5 → Repo called correctly, Return 200",
                 ExpectedResult = "Return 200, GetLeaderboardAsync(Monthly,5) called", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -148,7 +148,7 @@ namespace Tokki.UnitTest.Application.UseCases.Leaderboard
 
             QACollector.LogTestCase("Leaderboard - Get", new TestCaseDetail
             {
-                FunctionGroup = "GetLeaderboard", TestCaseID = "TC-LDB-05",
+                FunctionGroup = "GetLeaderboard", TestCaseID = "GetLeaderboard_05",
                 Description = "Default query (AllTime, Top=20) → 200, 20 items",
                 ExpectedResult = "Return 200, Data.Count=20", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -169,7 +169,7 @@ namespace Tokki.UnitTest.Application.UseCases.Leaderboard
 
             QACollector.LogTestCase("Leaderboard - Get", new TestCaseDetail
             {
-                FunctionGroup = "GetLeaderboard", TestCaseID = "TC-LDB-06",
+                FunctionGroup = "GetLeaderboard", TestCaseID = "GetLeaderboard_06",
                 Description = "Repository throws → exception propagates",
                 ExpectedResult = "Throws Exception", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

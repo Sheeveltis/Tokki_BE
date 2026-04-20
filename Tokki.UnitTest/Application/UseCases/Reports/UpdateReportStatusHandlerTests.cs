@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -19,7 +19,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             => new UpdateReportStatusHandler((repo ?? MockReportRepository.GetMock()).Object);
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RPT-UPD-01 | A | Report not found → failure
+        // UpdateReportStatus_01 | A | Report not found → failure
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ReportNotFound_ShouldReturnFailure()
@@ -38,7 +38,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             QACollector.LogTestCase("Report - Update Status", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateReportStatus",
-                TestCaseID        = "TC-RPT-UPD-01",
+                TestCaseID        = "UpdateReportStatus_01",
                 Description       = "Report not found → ReportNotFound failure",
                 ExpectedResult    = "IsSuccess=false",
                 StatusRound1      = "Passed",
@@ -49,7 +49,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RPT-UPD-02 | N | Status=Fixed → ResolvedAt set, UserHasRead=false
+        // UpdateReportStatus_02 | N | Status=Fixed → ResolvedAt set, UserHasRead=false
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_StatusFixed_ShouldSetResolvedAtAndUserHasReadFalse()
@@ -80,7 +80,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             QACollector.LogTestCase("Report - Update Status", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateReportStatus",
-                TestCaseID        = "TC-RPT-UPD-02",
+                TestCaseID        = "UpdateReportStatus_02",
                 Description       = "Status=Fixed → ResolvedAt set to UtcNow, UserHasRead=false, AdminReply stored",
                 ExpectedResult    = "IsSuccess=true, Status=Fixed, UserHasRead=false, ResolvedAt set",
                 StatusRound1      = "Passed",
@@ -91,7 +91,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RPT-UPD-03 | N | Status=Rejected → ResolvedAt set, UserHasRead=false
+        // UpdateReportStatus_03 | N | Status=Rejected → ResolvedAt set, UserHasRead=false
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_StatusRejected_ShouldSetResolvedAtAndUserHasReadFalse()
@@ -119,7 +119,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             QACollector.LogTestCase("Report - Update Status", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateReportStatus",
-                TestCaseID        = "TC-RPT-UPD-03",
+                TestCaseID        = "UpdateReportStatus_03",
                 Description       = "Status=Rejected → ResolvedAt set, UserHasRead=false (notification to user)",
                 ExpectedResult    = "IsSuccess=true, Status=Rejected, UserHasRead=false, ResolvedAt set",
                 StatusRound1      = "Passed",
@@ -130,7 +130,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RPT-UPD-04 | N | Status=Processing → UserHasRead=true, no ResolvedAt
+        // UpdateReportStatus_04 | N | Status=Processing → UserHasRead=true, no ResolvedAt
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_StatusProcessing_ShouldSetUserHasReadTrueAndNoResolvedAt()
@@ -157,7 +157,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             QACollector.LogTestCase("Report - Update Status", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateReportStatus",
-                TestCaseID        = "TC-RPT-UPD-04",
+                TestCaseID        = "UpdateReportStatus_04",
                 Description       = "Status=Processing → UserHasRead=true (else branch), ResolvedAt NOT set",
                 ExpectedResult    = "IsSuccess=true, Status=Processing, UserHasRead=true, ResolvedAt=null",
                 StatusRound1      = "Passed",
@@ -168,7 +168,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RPT-UPD-05 | B | AdminReply stored in report regardless of status
+        // UpdateReportStatus_05 | B | AdminReply stored in report regardless of status
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_WithAdminReply_ShouldStoreAdminReply()
@@ -195,7 +195,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             QACollector.LogTestCase("Report - Update Status", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateReportStatus",
-                TestCaseID        = "TC-RPT-UPD-05",
+                TestCaseID        = "UpdateReportStatus_05",
                 Description       = "AdminReply stored in report entity, UpdateAsync called once",
                 ExpectedResult    = "entity.AdminReply='We are investigating', UpdateAsync Times.Once",
                 StatusRound1      = "Passed",
@@ -206,7 +206,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RPT-UPD-06 | B | UpdateAsync called with the exact updated report
+        // UpdateReportStatus_06 | B | UpdateAsync called with the exact updated report
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidCommand_UpdateAsyncCalledWithUpdatedStatus()
@@ -230,7 +230,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             QACollector.LogTestCase("Report - Update Status", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateReportStatus",
-                TestCaseID        = "TC-RPT-UPD-06",
+                TestCaseID        = "UpdateReportStatus_06",
                 Description       = "Boundary: UpdateAsync called with entity.Status=Fixed",
                 ExpectedResult    = "UpdateAsync(entity.Status=Fixed) Times.Once",
                 StatusRound1      = "Passed",

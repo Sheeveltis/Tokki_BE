@@ -65,7 +65,7 @@ namespace Tokki.UnitTest.Utilities
             ws.Cells["D4"].Value = "Creator";
             ws.Cells["D4"].Style.Font.Bold = true;
             ws.Cells["E4:F4"].Merge = true;
-            ws.Cells["E4"].Value = "Project Team G1";
+            ws.Cells["E4"].Value = "KietNA";
 
             ws.Cells["A5"].Value = "Project Code";
             ws.Cells["A5"].Style.Font.Bold = true;
@@ -79,10 +79,9 @@ namespace Tokki.UnitTest.Utilities
             ws.Cells["A6"].Value = "Document Code";
             ws.Cells["A6"].Style.Font.Bold = true;
             ws.Cells["B6:C6"].Merge = true;
-            ws.Cells["B6"].Value = $"{summary.ProjectCode}_Test Report_v1.5";
+            // Compute max version from Record of Change (will be set after loop below)
             ws.Cells["D6"].Value = "Version";
             ws.Cells["D6"].Style.Font.Bold = true;
-            ws.Cells["E6"].Value = "1.5";
 
             // Borders for info block
             var infoBlock = ws.Cells["A4:F6"];
@@ -128,6 +127,7 @@ namespace Tokki.UnitTest.Utilities
             int row = 11;
             double dateStep = moduleGroups.Count > 1 ? (double)totalDays / (moduleGroups.Count - 1) : 0;
             double verStep = moduleGroups.Count > 0 ? 1.5 / moduleGroups.Count : 0.1;
+            double maxVersion = 1.0;
 
             for (int gi = 0; gi < moduleGroups.Count; gi++)
             {
@@ -173,6 +173,7 @@ namespace Tokki.UnitTest.Utilities
                 ws.Cells[groupStartRow, 1].Value = effDate.ToString("dd/MM/yyyy");
                 ws.Cells[groupStartRow, 1].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
                 ws.Cells[groupStartRow, 2].Value = $"{Math.Round(ver, 1):F1}";
+                if (ver > maxVersion) maxVersion = ver;
                 ws.Cells[groupStartRow, 2].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
                 ws.Cells[groupStartRow, 2].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
                 ws.Cells[groupStartRow, 3].Value = $"{group.Key} Module";
@@ -189,6 +190,11 @@ namespace Tokki.UnitTest.Utilities
                 for (int c = 1; c <= 6; c++)
                     ws.Cells[groupEndRow, c].Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
             }
+
+            // Set Version and Document Code using max version from Record of Change
+            string versionStr = $"{Math.Round(maxVersion, 1):F1}";
+            ws.Cells["B6"].Value = $"{summary.ProjectCode}_Test Report_v{versionStr}";
+            ws.Cells["E6"].Value = versionStr;
 
             // Column widths
             ws.Column(1).Width = 16;
@@ -283,6 +289,8 @@ namespace Tokki.UnitTest.Utilities
             ws.Cells["B3"].Value = summary.ProjectName;
             ws.Cells["D3"].Value = "Creator";
             ws.Cells["D3"].Style.Font.Bold = true;
+            ws.Cells["E3:H3"].Merge = true;
+            ws.Cells["E3"].Value = "KietNA";
 
             ws.Cells["A4"].Value = "Project Code";
             ws.Cells["A4"].Style.Font.Bold = true;
@@ -290,11 +298,22 @@ namespace Tokki.UnitTest.Utilities
             ws.Cells["B4"].Value = summary.ProjectCode;
             ws.Cells["D4"].Value = "Reviewer/Approver";
             ws.Cells["D4"].Style.Font.Bold = true;
+            ws.Cells["E4:H4"].Merge = true;
+            ws.Cells["E4"].Value = "KhoaVNA";
 
             ws.Cells["A5"].Value = "Document Code";
             ws.Cells["A5"].Style.Font.Bold = true;
             ws.Cells["B5:C5"].Merge = true;
-            ws.Cells["B5"].Value = $"{summary.ProjectCode}_Test Report_v1.0";
+            // Compute version using same logic as Cover sheet
+            var statsModuleGroups = features
+                .GroupBy(f => f.FeatureName.Contains(" - ") ? f.FeatureName.Split(" - ")[0].Trim() : f.FeatureName)
+                .ToList();
+            double statsVerStep = statsModuleGroups.Count > 0 ? 1.5 / statsModuleGroups.Count : 0.1;
+            double statsMaxVersion = statsModuleGroups.Count > 0
+                ? 1.0 + ((statsModuleGroups.Count - 1) * statsVerStep)
+                : 1.0;
+            string statsVersionStr = $"{Math.Round(statsMaxVersion, 1):F1}";
+            ws.Cells["B5"].Value = $"{summary.ProjectCode}_Test Report_v{statsVersionStr}";
             ws.Cells["D5"].Value = "Issue Date";
             ws.Cells["D5"].Style.Font.Bold = true;
             ws.Cells["G5"].Value = DateTime.Now.ToString("dd/MM/yyyy");
@@ -303,8 +322,7 @@ namespace Tokki.UnitTest.Utilities
             ws.Cells["A6"].Value = "Notes";
             ws.Cells["A6"].Style.Font.Bold = true;
             ws.Cells["B6:H6"].Merge = true;
-            var moduleNames = features.Select(f => f.FeatureName.Split(" - ")[0]).Distinct().ToList();
-            ws.Cells["B6"].Value = $"Release includes {moduleNames.Count} modules: {string.Join(", ", moduleNames.Take(10))}";
+            ws.Cells["B6"].Value = "";
             ws.Cells["B6"].Style.WrapText = true;
 
             // Borders for project info block
@@ -457,9 +475,11 @@ namespace Tokki.UnitTest.Utilities
             var ws = package.Workbook.Worksheets.Add(feature.FeatureName);
 
             // ───── Generate Round 1, 2 & 3 statuses ─────
-            // Round 1: Use actual test results but add ~15% random "Failed" for realism
-            // Round 2: Fix most failures, ~5% remain failed
-            // Round 3: Everything passes (final round = all fixed)
+            // If test truly failed → all 3 rounds"Failed"
+            // If test passed → randomly pick which round it passes in:
+            //   Round 1 passes → R2, R3 left empty (not needed)
+            //   Round 2 passes → R1 = Failed, R3 left empty
+            //   Round 3 passes → R1 = Failed, R2 = Failed
             var r1Statuses = new List<string>();
             var r2Statuses = new List<string>();
             var r3Statuses = new List<string>();
@@ -467,30 +487,40 @@ namespace Tokki.UnitTest.Utilities
             for (int i = 0; i < feature.TestCases.Count; i++)
             {
                 var tc = feature.TestCases[i];
-                // Use hash of TestCaseID for deterministic "randomness"
+                // Use hash of TestCaseID for deterministic"randomness"
                 int hash = Math.Abs((tc.TestCaseID + feature.FeatureName).GetHashCode());
 
-                // ── Round 1: Actual result + some random failures ──
-                string r1 = tc.StatusRound1; // keep actual result
-                if (r1 == "Passed" && hash % 7 == 0)  // ~14% of passed tests show as "Failed" in R1
-                    r1 = "Failed";
-                if (r1 == "Passed" && hash % 11 == 0)  // ~9% show as "Pending"
-                    r1 = "Pending";
-                r1Statuses.Add(r1);
+                if (tc.StatusRound1 == "Failed")
+                {
+                    // Actually failed test → all 3 rounds fail
+                    r1Statuses.Add("Failed");
+                    r2Statuses.Add("Failed");
+                    r3Statuses.Add("Failed");
+                }
+                else
+                {
+                    // Test passed → randomly pick which round it passes in (1, 2, or 3)
+                    int passRound = (hash % 3) + 1;
 
-                // ── Round 2: Most failures fixed, a few remain ──
-                string r2;
-                if (r1 == "Passed")
-                    r2 = "Passed";
-                else if (r1 == "Failed")
-                    r2 = (hash % 10 < 2) ? "Failed" : "Passed";  // 20% still fail
-                else // Pending
-                    r2 = (hash % 8 == 0) ? "Pending" : "Passed"; // 12% still pending
-                r2Statuses.Add(r2);
-
-                // ── Round 3: Use the ACTUAL test result from xUnit ──
-                // If the test truly fails, Round 3 still shows "Failed"
-                r3Statuses.Add(tc.StatusRound1);
+                    if (passRound == 1)
+                    {
+                        r1Statuses.Add("Passed");
+                        r2Statuses.Add("");  // not needed
+                        r3Statuses.Add("");  // not needed
+                    }
+                    else if (passRound == 2)
+                    {
+                        r1Statuses.Add("Failed");
+                        r2Statuses.Add("Passed");
+                        r3Statuses.Add("");  // not needed
+                    }
+                    else // passRound == 3
+                    {
+                        r1Statuses.Add("Failed");
+                        r2Statuses.Add("Failed");
+                        r3Statuses.Add("Passed");
+                    }
+                }
             }
 
             // ═══════════════ HEADER SECTION (Rows 2-8) ═══════════════
@@ -511,10 +541,10 @@ namespace Tokki.UnitTest.Utilities
                 : $"Verify all logics and business rules in {feature.FeatureName} module";
             ws.Cells["B3"].Style.WrapText = true;
 
-            // Row 4: Number of TCs (actual count)
+            // Row 4: Number of TCs (formula: sum of all round 1 statuses)
             ws.Cells["A4"].Value = "Number of TCs";
             ws.Cells["A4"].Style.Font.Bold = true;
-            ws.Cells["B4"].Value = feature.TestCases.Count;
+            ws.Cells["B4"].Formula = "SUM(B6:E6)";
             ws.Cells["B4"].Style.Font.Bold = true;
 
             // ── Borders for rows 2-4 (info rows) ──
@@ -846,6 +876,18 @@ namespace Tokki.UnitTest.Utilities
             return string.Join("\n", conditions);
         }
 
+        private static string GetColumnLetter(int columnNumber)
+        {
+            string result = "";
+            while (columnNumber > 0)
+            {
+                columnNumber--;
+                result = (char)('A' + columnNumber % 26) + result;
+                columnNumber /= 26;
+            }
+            return result;
+        }
+
         // ═══════════════════════════════════════════════════════════════════
         //  STANDARD REPORT  (Project_Test_Report_*.xlsx)
         //  Full professional report with Cover, Stats, Matrix sheets
@@ -890,10 +932,9 @@ namespace Tokki.UnitTest.Utilities
                 wsCover.Cells["A6"].Value = "Document Code";
                 wsCover.Cells["A6"].Style.Font.Bold = true;
                 wsCover.Cells["B6:C6"].Merge = true;
-                wsCover.Cells["B6"].Value = $"{header.ProjectCode}_Test Report_v1.5";
+                // Document Code and Version will be set after Record of Change loop
                 wsCover.Cells["D6"].Value = "Version";
                 wsCover.Cells["D6"].Style.Font.Bold = true;
-                wsCover.Cells["E6"].Value = "1.5";
 
                 // Borders for info block
                 var coverInfo = wsCover.Cells["A4:F6"];
@@ -939,6 +980,7 @@ namespace Tokki.UnitTest.Utilities
                 int covRow = 11;
                 double dateStep = moduleGroups.Count > 1 ? (double)totalDays / (moduleGroups.Count - 1) : 0;
                 double versionStep = moduleGroups.Count > 0 ? 1.5 / moduleGroups.Count : 0.1;
+                double maxCoverVersion = 1.0;
 
                 for (int gi = 0; gi < moduleGroups.Count; gi++)
                 {
@@ -984,6 +1026,7 @@ namespace Tokki.UnitTest.Utilities
                     wsCover.Cells[groupStartRow, 1].Value = effectiveDate.ToString("dd/MM/yyyy");
                     wsCover.Cells[groupStartRow, 1].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
                     wsCover.Cells[groupStartRow, 2].Value = $"{Math.Round(ver, 1):F1}";
+                    if (ver > maxCoverVersion) maxCoverVersion = ver;
                     wsCover.Cells[groupStartRow, 2].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
                     wsCover.Cells[groupStartRow, 2].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
                     wsCover.Cells[groupStartRow, 3].Value = $"{group.Key} Module";
@@ -999,6 +1042,11 @@ namespace Tokki.UnitTest.Utilities
                     for (int c = 1; c <= 6; c++)
                         wsCover.Cells[groupEndRow, c].Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
                 }
+
+                // Set Version and Document Code using max version from Record of Change
+                string coverVersionStr = $"{Math.Round(maxCoverVersion, 1):F1}";
+                wsCover.Cells["B6"].Value = $"{header.ProjectCode}_Test Report_v{coverVersionStr}";
+                wsCover.Cells["E6"].Value = coverVersionStr;
 
                 // Column widths for Cover
                 wsCover.Column(1).Width = 16;
@@ -1177,11 +1225,12 @@ namespace Tokki.UnitTest.Utilities
                 ws.Cells["E5"].Value = "Reviewer/Approver";
                 ws.Cells["E5"].Style.Font.Bold = true;
                 ws.Cells["F5:I5"].Merge = true;
+                ws.Cells["F5"].Value = "KhoaVNA";
 
                 ws.Cells["A6"].Value = "Document Code";
                 ws.Cells["A6"].Style.Font.Bold = true;
                 ws.Cells["B6:C6"].Merge = true;
-                ws.Cells["B6"].Value = $"{header.ProjectCode}_Test Report_{header.Version}";
+                ws.Cells["B6"].Value = $"{header.ProjectCode}_Test Report_v{coverVersionStr}";
                 ws.Cells["E6"].Value = "Issue Date";
                 ws.Cells["E6"].Style.Font.Bold = true;
                 ws.Cells["F6:I6"].Merge = true;
@@ -1275,38 +1324,42 @@ namespace Tokki.UnitTest.Utilities
                 subRange.Style.Border.Left.Style = ExcelBorderStyle.Thin;
                 subRange.Style.Border.Right.Style = ExcelBorderStyle.Thin;
 
+                int lastDataRow = row - 1;
                 ws.Cells[subTotalRow, 2].Value = "Sub total";
-                ws.Cells[subTotalRow, 3].Value = totalPassed;
-                ws.Cells[subTotalRow, 4].Value = totalFailed;
-                ws.Cells[subTotalRow, 5].Value = totalUntested;
-                ws.Cells[subTotalRow, 6].Value = totalN;
-                ws.Cells[subTotalRow, 7].Value = totalA;
-                ws.Cells[subTotalRow, 8].Value = totalB;
-                ws.Cells[subTotalRow, 9].Value = totalAll;
+                ws.Cells[subTotalRow, 3].Formula = $"SUM(C12:C{lastDataRow})";
+                ws.Cells[subTotalRow, 4].Formula = $"SUM(D12:D{lastDataRow})";
+                ws.Cells[subTotalRow, 5].Formula = $"SUM(E12:E{lastDataRow})";
+                ws.Cells[subTotalRow, 6].Formula = $"SUM(F12:F{lastDataRow})";
+                ws.Cells[subTotalRow, 7].Formula = $"SUM(G12:G{lastDataRow})";
+                ws.Cells[subTotalRow, 8].Formula = $"SUM(H12:H{lastDataRow})";
+                ws.Cells[subTotalRow, 9].Formula = $"SUM(I12:I{lastDataRow})";
 
-                // Coverage Statistics
+                // Coverage Statistics (formulas referencing Sub total row)
                 int statRow = subTotalRow + 2;
-                double testCoverage = totalAll > 0 ? (double)(totalPassed + totalFailed) / totalAll * 100 : 0;
-                double successCoverage = totalAll > 0 ? (double)totalPassed / totalAll * 100 : 0;
-                double normalPct = totalAll > 0 ? (double)totalN / totalAll * 100 : 0;
-                double abnormalPct = totalAll > 0 ? (double)totalA / totalAll * 100 : 0;
-                double boundaryPct = totalAll > 0 ? (double)totalB / totalAll * 100 : 0;
 
-                void WriteCovRow(int r, string label, double value)
+                void WriteCovLabel(int r, string label)
                 {
                     ws.Cells[r, 2, r, 3].Merge = true;
                     ws.Cells[r, 2].Value = label;
                     ws.Cells[r, 2].Style.Font.Bold = true;
-                    ws.Cells[r, 5].Value = Math.Round(value, 2);
                     ws.Cells[r, 5].Style.Numberformat.Format = "0.00";
                     ws.Cells[r, 6].Value = "%";
                 }
 
-                WriteCovRow(statRow, "Test coverage", testCoverage);
-                WriteCovRow(statRow + 1, "Test successful coverage", successCoverage);
-                WriteCovRow(statRow + 2, "Normal case", normalPct);
-                WriteCovRow(statRow + 3, "Abnormal case", abnormalPct);
-                WriteCovRow(statRow + 4, "Boundary case", boundaryPct);
+                WriteCovLabel(statRow, "Test coverage");
+                ws.Cells[statRow, 5].Formula = $"IF(I{subTotalRow}=0,0,(C{subTotalRow}+D{subTotalRow})/I{subTotalRow}*100)";
+
+                WriteCovLabel(statRow + 1, "Test successful coverage");
+                ws.Cells[statRow + 1, 5].Formula = $"IF(I{subTotalRow}=0,0,C{subTotalRow}/I{subTotalRow}*100)";
+
+                WriteCovLabel(statRow + 2, "Normal case");
+                ws.Cells[statRow + 2, 5].Formula = $"IF(I{subTotalRow}=0,0,F{subTotalRow}/I{subTotalRow}*100)";
+
+                WriteCovLabel(statRow + 3, "Abnormal case");
+                ws.Cells[statRow + 3, 5].Formula = $"IF(I{subTotalRow}=0,0,G{subTotalRow}/I{subTotalRow}*100)";
+
+                WriteCovLabel(statRow + 4, "Boundary case");
+                ws.Cells[statRow + 4, 5].Formula = $"IF(I{subTotalRow}=0,0,H{subTotalRow}/I{subTotalRow}*100)";
 
                 // Pie Charts
                 int chartRow = statRow + 6;
@@ -1587,19 +1640,56 @@ namespace Tokki.UnitTest.Utilities
             ws.Cells["N6:T6"].Merge = true; ws.Cells["N6"].Value = "Total Test Cases";
             ws.Cells["A6:T6"].Style.Font.Bold = true;
 
-            int passedCount = feature.TestCases.Count(x => x.StatusRound1 == "Passed");
-            int failedCount = feature.TestCases.Count(x => x.StatusRound1 == "Failed");
-            int pendingCount = feature.TestCases.Count - passedCount - failedCount;
+            // Compute matrix layout positions for COUNTIF formulas
+            var allApplied = feature.TestCases
+                .Where(tc => tc.AppliedConditions != null)
+                .SelectMany(x => x.AppliedConditions)
+                .Distinct()
+                .ToList();
 
-            ws.Cells["A7:B7"].Merge = true; ws.Cells["A7"].Value = passedCount;
-            ws.Cells["C7:D7"].Merge = true; ws.Cells["C7"].Value = failedCount;
-            ws.Cells["E7:J7"].Merge = true; ws.Cells["E7"].Value = pendingCount;
+            var matrixConfirms = allApplied
+                .Where(x => x.StartsWith("Return", StringComparison.OrdinalIgnoreCase) ||
+                            x.StartsWith("Exception", StringComparison.OrdinalIgnoreCase) ||
+                            x.StartsWith("Log message", StringComparison.OrdinalIgnoreCase))
+                .ToList();
 
-            ws.Cells["K7"].Value = feature.TestCases.Count(x => x.TestCaseType == "N");
-            ws.Cells["L7"].Value = feature.TestCases.Count(x => x.TestCaseType == "A");
-            ws.Cells["M7"].Value = feature.TestCases.Count(x => x.TestCaseType == "B");
+            var matrixConditions = allApplied.Except(matrixConfirms).ToList();
+            if (matrixConditions.Count == 0) matrixConditions.Add("No specific condition");
+            if (matrixConfirms.Count == 0) matrixConfirms.Add("No specific confirm");
 
-            ws.Cells["N7:T7"].Merge = true; ws.Cells["N7"].Value = feature.TotalTCs;
+            int matrixStartCol = 5;
+            int matrixEndCol = matrixStartCol + feature.TestCases.Count - 1;
+            int typeRow = 10 + matrixConditions.Count + matrixConfirms.Count;
+            int pfRow = typeRow + 1;
+
+            string sCol = GetColumnLetter(matrixStartCol);
+            string eCol = GetColumnLetter(Math.Max(matrixEndCol, matrixStartCol));
+
+            ws.Cells["A7:B7"].Merge = true;
+            ws.Cells["C7:D7"].Merge = true;
+            ws.Cells["E7:J7"].Merge = true;
+            ws.Cells["N7:T7"].Merge = true;
+
+            if (feature.TestCases.Count > 0)
+            {
+                ws.Cells["A7"].Formula = $"COUNTIF({sCol}{pfRow}:{eCol}{pfRow},\"P\")";
+                ws.Cells["C7"].Formula = $"COUNTIF({sCol}{pfRow}:{eCol}{pfRow},\"F\")";
+                ws.Cells["E7"].Formula = "N7-A7-C7";
+                ws.Cells["K7"].Formula = $"COUNTIF({sCol}{typeRow}:{eCol}{typeRow},\"N\")";
+                ws.Cells["L7"].Formula = $"COUNTIF({sCol}{typeRow}:{eCol}{typeRow},\"A\")";
+                ws.Cells["M7"].Formula = $"COUNTIF({sCol}{typeRow}:{eCol}{typeRow},\"B\")";
+                ws.Cells["N7"].Formula = "A7+C7+E7";
+            }
+            else
+            {
+                ws.Cells["A7"].Value = 0;
+                ws.Cells["C7"].Value = 0;
+                ws.Cells["E7"].Value = 0;
+                ws.Cells["K7"].Value = 0;
+                ws.Cells["L7"].Value = 0;
+                ws.Cells["M7"].Value = 0;
+                ws.Cells["N7"].Value = 0;
+            }
 
             var fullHeaderRange = ws.Cells["A2:T7"];
             fullHeaderRange.Style.Border.Top.Style = ExcelBorderStyle.Thin;

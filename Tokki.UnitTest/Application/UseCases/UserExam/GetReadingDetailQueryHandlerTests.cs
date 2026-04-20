@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -61,7 +61,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GRDD-01 | A | Session not found → 404
+        // GetReadingDetail_01 | A | Session not found → 404
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SessionNotFound_ShouldReturn404()
@@ -83,7 +83,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Reading Detail", new TestCaseDetail
             {
                 FunctionGroup     = "GetReadingDetail",
-                TestCaseID        = "TC-GRDD-01",
+                TestCaseID        = "GetReadingDetail_01",
                 Description       = "Session not found → 404",
                 ExpectedResult    = "IsSuccess=false, StatusCode=404",
                 StatusRound1      = "Passed",
@@ -94,7 +94,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GRDD-02 | A | Session still InProgress → 400
+        // GetReadingDetail_02 | A | Session still InProgress → 400
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SessionInProgress_ShouldReturn400()
@@ -118,7 +118,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Reading Detail", new TestCaseDetail
             {
                 FunctionGroup     = "GetReadingDetail",
-                TestCaseID        = "TC-GRDD-02",
+                TestCaseID        = "GetReadingDetail_02",
                 Description       = "Exam not submitted → 400",
                 ExpectedResult    = "IsSuccess=false, StatusCode=400",
                 StatusRound1      = "Passed",
@@ -129,7 +129,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GRDD-03 | A | Empty template parts → 400
+        // GetReadingDetail_03 | A | Empty template parts → 400
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyTemplateParts_ShouldReturn400()
@@ -153,7 +153,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Reading Detail", new TestCaseDetail
             {
                 FunctionGroup     = "GetReadingDetail",
-                TestCaseID        = "TC-GRDD-03",
+                TestCaseID        = "GetReadingDetail_03",
                 Description       = "No template parts → 400 corrupted structure",
                 ExpectedResult    = "IsSuccess=false, StatusCode=400",
                 StatusRound1      = "Passed",
@@ -164,7 +164,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GRDD-04 | N | Happy path → 200 with TotalQuestions and MaxScore
+        // GetReadingDetail_04 | N | Happy path → 200 with TotalQuestions and MaxScore
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidSession_ShouldReturn200WithTotalQuestionsAndMaxScore()
@@ -188,7 +188,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Reading Detail", new TestCaseDetail
             {
                 FunctionGroup     = "GetReadingDetail",
-                TestCaseID        = "TC-GRDD-04",
+                TestCaseID        = "GetReadingDetail_04",
                 Description       = "Reading part Q21-Q30, Mark=2 → TotalQuestions=10, MaxScore=20",
                 ExpectedResult    = "IsSuccess=true, TotalQuestions=10, MaxScore=20",
                 StatusRound1      = "Passed",
@@ -199,7 +199,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GRDD-05 | N | 1 correct reading answer → Score=2 (mark*1)
+        // GetReadingDetail_05 | N | 1 correct reading answer → Score=2 (mark*1)
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_OneCorrectAnswer_ShouldApplyMarkToScore()
@@ -222,7 +222,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Reading Detail", new TestCaseDetail
             {
                 FunctionGroup     = "GetReadingDetail",
-                TestCaseID        = "TC-GRDD-05",
+                TestCaseID        = "GetReadingDetail_05",
                 Description       = "1 correct reading answer with Mark=2 → Score=2",
                 ExpectedResult    = "CorrectAnswers=1, Score=2.0",
                 StatusRound1      = "Passed",
@@ -233,7 +233,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GRDD-06 | E | Repository throws → exception propagates
+        // GetReadingDetail_06 | E | Repository throws → exception propagates
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
@@ -254,7 +254,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Reading Detail", new TestCaseDetail
             {
                 FunctionGroup     = "GetReadingDetail",
-                TestCaseID        = "TC-GRDD-06",
+                TestCaseID        = "GetReadingDetail_06",
                 Description       = "Repository throws → exception propagates",
                 ExpectedResult    = "Exception with 'timeout'",
                 StatusRound1      = "Passed",
@@ -265,7 +265,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GRDD-07 | N | Null ExamTemplate or incorrect answer false/null
+        // GetReadingDetail_07 | N | Null ExamTemplate or incorrect answer false/null
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NullExamTemplate_ShouldReturn400()
@@ -285,7 +285,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Reading Detail", new TestCaseDetail
             {
                 FunctionGroup     = "GetReadingDetail",
-                TestCaseID        = "TC-GRDD-07",
+                TestCaseID        = "GetReadingDetail_07",
                 Description       = "Null templateParts branch check",
                 ExpectedResult    = "400 error",
                 StatusRound1      = "Passed",
@@ -296,7 +296,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GRDD-08 | N | MediaType parsing branches
+        // GetReadingDetail_08 | N | MediaType parsing branches
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_MediaParsing_ShouldGroupCorrectly()
@@ -328,7 +328,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Reading Detail", new TestCaseDetail
             {
                 FunctionGroup     = "GetReadingDetail",
-                TestCaseID        = "TC-GRDD-08",
+                TestCaseID        = "GetReadingDetail_08",
                 Description       = "Check GetMediaType for Image and Unknown extensions and IsCorrect branches",
                 ExpectedResult    = "2 groups, SharedMediaType='Image' and 'Unknown', Score=0",
                 StatusRound1      = "Passed",

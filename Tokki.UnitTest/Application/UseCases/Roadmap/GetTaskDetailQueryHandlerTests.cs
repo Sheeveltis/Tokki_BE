@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -18,7 +18,7 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
         private static GetTaskDetailQueryHandler CreateHandler(Mock<IUserRoadmapRepository>? repo = null)
             => new GetTaskDetailQueryHandler((repo ?? MockUserRoadmapRepository.GetMock()).Object);
 
-        // TC-RM-GTD-01 | A | Task not found → 404
+        // GetTaskDetail_01 | A | Task not found → 404
         [Fact]
         public async Task Handle_TaskNotFound_ShouldReturn404()
         {
@@ -26,10 +26,10 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             var result = await CreateHandler(repo).Handle(new GetTaskDetailQuery { TaskId = "TASK-MISSING" }, CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(404);
-            QACollector.LogTestCase("Roadmap - Get Task Detail", new TestCaseDetail { FunctionGroup = "GetTaskDetail", TestCaseID = "TC-RM-GTD-01", Description = "Task not found → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetTaskByIdAsync returns null" } });
+            QACollector.LogTestCase("Roadmap - Get Task Detail", new TestCaseDetail { FunctionGroup = "GetTaskDetail", TestCaseID = "GetTaskDetail_01", Description = "Task not found → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetTaskByIdAsync returns null" } });
         }
 
-        // TC-RM-GTD-02 | N | Task found → TaskDetailResult mapped correctly
+        // GetTaskDetail_02 | N | Task found → TaskDetailResult mapped correctly
         [Fact]
         public async Task Handle_TaskFound_ShouldReturnMappedDetail()
         {
@@ -43,10 +43,10 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             result.Data.Title.Should().Be("Study Korean");
             result.Data.Content.Should().Be("Learn grammar basics");
             result.Data.IsCompleted.Should().BeFalse();
-            QACollector.LogTestCase("Roadmap - Get Task Detail", new TestCaseDetail { FunctionGroup = "GetTaskDetail", TestCaseID = "TC-RM-GTD-02", Description = "Task found → TaskDetailResult fields mapped correctly", ExpectedResult = "IsSuccess=true, all fields mapped", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Task exists", "all fields checked" } });
+            QACollector.LogTestCase("Roadmap - Get Task Detail", new TestCaseDetail { FunctionGroup = "GetTaskDetail", TestCaseID = "GetTaskDetail_02", Description = "Task found → TaskDetailResult fields mapped correctly", ExpectedResult = "IsSuccess=true, all fields mapped", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Task exists", "all fields checked" } });
         }
 
-        // TC-RM-GTD-03 | N | Task with QuestionType → Skill field mapped
+        // GetTaskDetail_03 | N | Task with QuestionType → Skill field mapped
         [Fact]
         public async Task Handle_TaskWithQuestionType_ShouldMapSkill()
         {
@@ -55,10 +55,10 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             var repo   = MockUserRoadmapRepository.GetMock(task: task);
             var result = await CreateHandler(repo).Handle(new GetTaskDetailQuery { TaskId = "TASK-003" }, CancellationToken.None);
             result.Data!.Skill.Should().Be("Reading");
-            QACollector.LogTestCase("Roadmap - Get Task Detail", new TestCaseDetail { FunctionGroup = "GetTaskDetail", TestCaseID = "TC-RM-GTD-03", Description = "Task with QuestionType → Skill='Reading'", ExpectedResult = "Data.Skill='Reading'", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "QuestionType set, Skill=Reading" } });
+            QACollector.LogTestCase("Roadmap - Get Task Detail", new TestCaseDetail { FunctionGroup = "GetTaskDetail", TestCaseID = "GetTaskDetail_03", Description = "Task with QuestionType → Skill='Reading'", ExpectedResult = "Data.Skill='Reading'", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "QuestionType set, Skill=Reading" } });
         }
 
-        // TC-RM-GTD-04 | N | Task without QuestionType → Skill null
+        // GetTaskDetail_04 | N | Task without QuestionType → Skill null
         [Fact]
         public async Task Handle_TaskWithoutQuestionType_ShouldHaveNullSkill()
         {
@@ -67,10 +67,10 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             var repo   = MockUserRoadmapRepository.GetMock(task: task);
             var result = await CreateHandler(repo).Handle(new GetTaskDetailQuery { TaskId = "TASK-004" }, CancellationToken.None);
             result.Data!.Skill.Should().BeNull();
-            QACollector.LogTestCase("Roadmap - Get Task Detail", new TestCaseDetail { FunctionGroup = "GetTaskDetail", TestCaseID = "TC-RM-GTD-04", Description = "Task with null QuestionType → Skill=null", ExpectedResult = "Data.Skill=null", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "QuestionType=null", "Skill field = null" } });
+            QACollector.LogTestCase("Roadmap - Get Task Detail", new TestCaseDetail { FunctionGroup = "GetTaskDetail", TestCaseID = "GetTaskDetail_04", Description = "Task with null QuestionType → Skill=null", ExpectedResult = "Data.Skill=null", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "QuestionType=null", "Skill field = null" } });
         }
 
-        // TC-RM-GTD-05 | B | Completed task returns IsCompleted=true
+        // GetTaskDetail_05 | B | Completed task returns IsCompleted=true
         [Fact]
         public async Task Handle_CompletedTask_ShouldReturnIsCompletedTrue()
         {
@@ -78,10 +78,10 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             var repo   = MockUserRoadmapRepository.GetMock(task: task);
             var result = await CreateHandler(repo).Handle(new GetTaskDetailQuery { TaskId = "TASK-005" }, CancellationToken.None);
             result.Data!.IsCompleted.Should().BeTrue();
-            QACollector.LogTestCase("Roadmap - Get Task Detail", new TestCaseDetail { FunctionGroup = "GetTaskDetail", TestCaseID = "TC-RM-GTD-05", Description = "Completed task → IsCompleted=true in result", ExpectedResult = "Data.IsCompleted=true", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "task.IsCompleted=true" } });
+            QACollector.LogTestCase("Roadmap - Get Task Detail", new TestCaseDetail { FunctionGroup = "GetTaskDetail", TestCaseID = "GetTaskDetail_05", Description = "Completed task → IsCompleted=true in result", ExpectedResult = "Data.IsCompleted=true", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "task.IsCompleted=true" } });
         }
 
-        // TC-RM-GTD-06 | B | GetTaskByIdAsync called with correct TaskId
+        // GetTaskDetail_06 | B | GetTaskByIdAsync called with correct TaskId
         [Fact]
         public async Task Handle_ValidQuery_GetTaskByIdCalledWithCorrectId()
         {
@@ -90,7 +90,7 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             var repo = MockUserRoadmapRepository.GetMock(task: task);
             await CreateHandler(repo).Handle(new GetTaskDetailQuery { TaskId = taskId }, CancellationToken.None);
             repo.Verify(x => x.GetTaskByIdAsync(taskId, It.IsAny<CancellationToken>()), Times.Once);
-            QACollector.LogTestCase("Roadmap - Get Task Detail", new TestCaseDetail { FunctionGroup = "GetTaskDetail", TestCaseID = "TC-RM-GTD-06", Description = "GetTaskByIdAsync called with exact TaskId", ExpectedResult = "GetTaskByIdAsync Times.Once", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "TaskId passed correctly" } });
+            QACollector.LogTestCase("Roadmap - Get Task Detail", new TestCaseDetail { FunctionGroup = "GetTaskDetail", TestCaseID = "GetTaskDetail_06", Description = "GetTaskByIdAsync called with exact TaskId", ExpectedResult = "GetTaskByIdAsync Times.Once", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "TaskId passed correctly" } });
         }
     }
 }

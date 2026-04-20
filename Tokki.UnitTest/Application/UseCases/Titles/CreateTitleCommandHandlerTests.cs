@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -41,7 +41,7 @@ namespace Tokki.UnitTest.Application.UseCases.Titles
         private static CreateTitleCommand MakeCommand(string name = "Bậc học giả", long xp = 1000)
             => new CreateTitleCommand { Name = name, Description = "Top learner", RequirementQuantity = xp, ColorHex = "#GOLD" };
 
-        // TC-TITLE-CREATE-01 | A | Title name already exists → 400 failure
+        // CreateTitle_01 | A | Title name already exists → 400 failure
         [Fact]
         public async Task Handle_DuplicateName_ShouldReturn400Failure()
         {
@@ -50,20 +50,20 @@ namespace Tokki.UnitTest.Application.UseCases.Titles
             var result   = await CreateHandler(repo).Handle(MakeCommand(), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            QACollector.LogTestCase("Title - Create", new TestCaseDetail { FunctionGroup = "CreateTitle", TestCaseID = "TC-TITLE-CREATE-01", Description = "Duplicate name → 400 failure", ExpectedResult = "IsSuccess=false, 400", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetTitleByNameAsync returns existing title" } });
+            QACollector.LogTestCase("Title - Create", new TestCaseDetail { FunctionGroup = "CreateTitle", TestCaseID = "CreateTitle_01", Description = "Duplicate name → 400 failure", ExpectedResult = "IsSuccess=false, 400", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetTitleByNameAsync returns existing title" } });
         }
 
-        // TC-TITLE-CREATE-02 | A | RequiredXP is negative → 400 failure
+        // CreateTitle_02 | A | RequiredXP is negative → 400 failure
         [Fact]
         public async Task Handle_NegativeXP_ShouldReturn400Failure()
         {
             var result = await CreateHandler().Handle(MakeCommand(xp: -1), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            QACollector.LogTestCase("Title - Create", new TestCaseDetail { FunctionGroup = "CreateTitle", TestCaseID = "TC-TITLE-CREATE-02", Description = "RequiredXP=-1 → 400 failure", ExpectedResult = "IsSuccess=false, 400", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "RequiredXP < 0 guard" } });
+            QACollector.LogTestCase("Title - Create", new TestCaseDetail { FunctionGroup = "CreateTitle", TestCaseID = "CreateTitle_02", Description = "RequiredXP=-1 → 400 failure", ExpectedResult = "IsSuccess=false, 400", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "RequiredXP < 0 guard" } });
         }
 
-        // TC-TITLE-CREATE-03 | N | Happy path: new unique name, valid XP → 201 with Title entity
+        // CreateTitle_03 | N | Happy path: new unique name, valid XP → 201 with Title entity
         [Fact]
         public async Task Handle_ValidRequest_ShouldReturn201WithTitle()
         {
@@ -73,10 +73,10 @@ namespace Tokki.UnitTest.Application.UseCases.Titles
             result.StatusCode.Should().Be(201);
             result.Data.Should().NotBeNull();
             result.Data!.TitleId.Should().Be("T-NEW");
-            QACollector.LogTestCase("Title - Create", new TestCaseDetail { FunctionGroup = "CreateTitle", TestCaseID = "TC-TITLE-CREATE-03", Description = "Valid request → 201, TitleId='T-NEW'", ExpectedResult = "IsSuccess=true, 201, Data.TitleId='T-NEW'", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "No duplicate, valid XP" } });
+            QACollector.LogTestCase("Title - Create", new TestCaseDetail { FunctionGroup = "CreateTitle", TestCaseID = "CreateTitle_03", Description = "Valid request → 201, TitleId='T-NEW'", ExpectedResult = "IsSuccess=true, 201, Data.TitleId='T-NEW'", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "No duplicate, valid XP" } });
         }
 
-        // TC-TITLE-CREATE-04 | N | Created title fields match request
+        // CreateTitle_04 | N | Created title fields match request
         [Fact]
         public async Task Handle_ValidRequest_CreatedTitleFieldsMatchCommand()
         {
@@ -87,20 +87,20 @@ namespace Tokki.UnitTest.Application.UseCases.Titles
             captured.Should().NotBeNull();
             captured!.Name.Should().Be("Bậc văn nhân");
             captured.RequirementQuantity.Should().Be(2000);
-            QACollector.LogTestCase("Title - Create", new TestCaseDetail { FunctionGroup = "CreateTitle", TestCaseID = "TC-TITLE-CREATE-04", Description = "Title fields (Name, RequiredXP, IsSystemGiven) match command", ExpectedResult = "All fields correct", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Command fields mapped to entity" } });
+            QACollector.LogTestCase("Title - Create", new TestCaseDetail { FunctionGroup = "CreateTitle", TestCaseID = "CreateTitle_04", Description = "Title fields (Name, RequiredXP, IsSystemGiven) match command", ExpectedResult = "All fields correct", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Command fields mapped to entity" } });
         }
 
-        // TC-TITLE-CREATE-05 | B | AddAsync called once on success
+        // CreateTitle_05 | B | AddAsync called once on success
         [Fact]
         public async Task Handle_ValidRequest_AddCalledOnce()
         {
             var repo = GetRepoMock();
             await CreateHandler(repo).Handle(MakeCommand(), CancellationToken.None);
             repo.Verify(x => x.AddAsync(It.IsAny<Title>()), Times.Once);
-            QACollector.LogTestCase("Title - Create", new TestCaseDetail { FunctionGroup = "CreateTitle", TestCaseID = "TC-TITLE-CREATE-05", Description = "AddAsync called once on success", ExpectedResult = "Times.Once", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Persist call verified" } });
+            QACollector.LogTestCase("Title - Create", new TestCaseDetail { FunctionGroup = "CreateTitle", TestCaseID = "CreateTitle_05", Description = "AddAsync called once on success", ExpectedResult = "Times.Once", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Persist call verified" } });
         }
 
-        // TC-TITLE-CREATE-06 | B | Duplicate name → AddAsync never called
+        // CreateTitle_06 | B | Duplicate name → AddAsync never called
         [Fact]
         public async Task Handle_DuplicateName_AddNeverCalled()
         {
@@ -108,7 +108,7 @@ namespace Tokki.UnitTest.Application.UseCases.Titles
             var repo     = GetRepoMock(existing);
             await CreateHandler(repo).Handle(MakeCommand(), CancellationToken.None);
             repo.Verify(x => x.AddAsync(It.IsAny<Title>()), Times.Never);
-            QACollector.LogTestCase("Title - Create", new TestCaseDetail { FunctionGroup = "CreateTitle", TestCaseID = "TC-TITLE-CREATE-06", Description = "Duplicate name → early return, AddAsync never called", ExpectedResult = "Times.Never", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Guard returns before AddAsync" } });
+            QACollector.LogTestCase("Title - Create", new TestCaseDetail { FunctionGroup = "CreateTitle", TestCaseID = "CreateTitle_06", Description = "Duplicate name → early return, AddAsync never called", ExpectedResult = "Times.Never", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Guard returns before AddAsync" } });
         }
     }
 }

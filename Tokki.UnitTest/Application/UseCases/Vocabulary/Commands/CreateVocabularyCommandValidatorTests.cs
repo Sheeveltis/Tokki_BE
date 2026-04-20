@@ -25,12 +25,12 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary.Commands
             var result = _validator.TestValidate(command);
 
             result.ShouldHaveValidationErrorFor(x => x.Text)
-                  .WithErrorMessage("Text không được để trống.");
+                  .WithErrorMessage("Text kh�ng du?c d? tr?ng.");
 
             QACollector.LogTestCase("Vocabulary - Create Validator", new TestCaseDetail
             {
                 FunctionGroup     = "CreateVocabularyCommandValidator",
-                TestCaseID        = "TC-VOC-CVV-01",
+                TestCaseID        = "CreateVocabularyCommandValidator_01",
                 Description       = "Empty Text",
                 ExpectedResult    = "Throws Empty validation error",
                 StatusRound1      = "Passed",
@@ -47,12 +47,12 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary.Commands
             var result = _validator.TestValidate(command);
 
             result.ShouldHaveValidationErrorFor(x => x.Definition)
-                  .WithErrorMessage("Definition không được vượt quá 500 ký tự.");
+                  .WithErrorMessage("Definition kh�ng du?c vu?t qu� 500 k� t?.");
 
             QACollector.LogTestCase("Vocabulary - Create Validator", new TestCaseDetail
             {
                 FunctionGroup     = "CreateVocabularyCommandValidator",
-                TestCaseID        = "TC-VOC-CVV-02",
+                TestCaseID        = "CreateVocabularyCommandValidator_02",
                 Description       = "Definition limit exceeded",
                 ExpectedResult    = "Throws Length Exception",
                 StatusRound1      = "Passed",
@@ -72,18 +72,18 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary.Commands
                 Examples = new List<VocabularyExampleDto>
                 {
                     new VocabularyExampleDto { Sentence = "Hello" },
-                    new VocabularyExampleDto { Sentence = "  hello " }
+                    new VocabularyExampleDto { Sentence = "  hello" }
                 }
             };
             var result = _validator.TestValidate(command);
 
             result.ShouldHaveValidationErrorFor("Examples")
-                  .WithErrorMessage("Danh sách câu ví dụ bị trùng: hello");
+                  .WithErrorMessage("Danh s�ch c�u v� d? b? tr�ng: hello");
 
             QACollector.LogTestCase("Vocabulary - Create Validator", new TestCaseDetail
             {
                 FunctionGroup     = "CreateVocabularyCommandValidator",
-                TestCaseID        = "TC-VOC-CVV-03",
+                TestCaseID        = "CreateVocabularyCommandValidator_03",
                 Description       = "Duplicate examples tracking",
                 ExpectedResult    = "Throws custom duplicate error",
                 StatusRound1      = "Passed",
@@ -112,7 +112,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary.Commands
             QACollector.LogTestCase("Vocabulary - Create Validator", new TestCaseDetail
             {
                 FunctionGroup     = "CreateVocabularyCommandValidator",
-                TestCaseID        = "TC-VOC-CVV-04",
+                TestCaseID        = "CreateVocabularyCommandValidator_04",
                 Description       = "Valid inputs check",
                 ExpectedResult    = "No errors",
                 StatusRound1      = "Passed",

@@ -21,7 +21,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Queries
             return new GetCategoryByIdQueryHandler(_repoMock.Object);
         }
 
-        // TC-CAT-GBI-01 | A | Category Not Found
+        // GetCategoryByIdQueryHandler_01 | A | Category Not Found
         [Fact]
         public async Task Handle_CategoryNotFound_ShouldReturn404()
         {
@@ -37,7 +37,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Queries
             QACollector.LogTestCase("Category - Get By Id", new TestCaseDetail
             {
                 FunctionGroup = "GetCategoryByIdQueryHandler",
-                TestCaseID = "TC-CAT-GBI-01",
+                TestCaseID = "GetCategoryByIdQueryHandler_01",
                 Description = "Returns 404 cleanly when Category misses",
                 ExpectedResult = "404 NotFound",
                 StatusRound1 = "Passed",
@@ -47,7 +47,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Queries
             });
         }
 
-        // TC-CAT-GBI-02 | N | Entity maps to DTO safely
+        // GetCategoryByIdQueryHandler_02 | N | Entity maps to DTO safely
         [Fact]
         public async Task Handle_CategoryMapped_ShouldReturnCategoryDTO()
         {
@@ -69,7 +69,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Queries
             QACollector.LogTestCase("Category - Get By Id", new TestCaseDetail
             {
                 FunctionGroup = "GetCategoryByIdQueryHandler",
-                TestCaseID = "TC-CAT-GBI-02",
+                TestCaseID = "GetCategoryByIdQueryHandler_02",
                 Description = "Valid map populates exact properties down to CreatedAt",
                 ExpectedResult = "Success, Properties match natively",
                 StatusRound1 = "Passed",
@@ -79,7 +79,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Queries
             });
         }
 
-        // TC-CAT-GBI-03 | B | Validation 404 message output format
+        // GetCategoryByIdQueryHandler_03 | B | Validation 404 message output format
         [Fact]
         public async Task Handle_CategoryNotFoundMessage_ShouldReadCorrectly()
         {
@@ -89,12 +89,12 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Queries
             var handler = CreateHandler();
             var result = await handler.Handle(new GetCategoryByIdQuery("fake"), CancellationToken.None);
 
-            result.Message.Should().Contain("thất bại"); // AppErrors uses predefined strings. Typically "Lấy Danh mục thất bại."
+            result.Message.Should().Contain("th?t b?i"); // AppErrors uses predefined strings. Typically"L?y Danh m?c th?t b?i."
 
             QACollector.LogTestCase("Category - Get By Id", new TestCaseDetail
             {
                 FunctionGroup = "GetCategoryByIdQueryHandler",
-                TestCaseID = "TC-CAT-GBI-03",
+                TestCaseID = "GetCategoryByIdQueryHandler_03",
                 Description = "Expected message uses generic wrapper OperationMessages.GetFail",
                 ExpectedResult = "Matches OperationMessages format",
                 StatusRound1 = "Passed",
@@ -104,7 +104,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Queries
             });
         }
 
-        // TC-CAT-GBI-04 | B | Validation 200 message output format
+        // GetCategoryByIdQueryHandler_04 | B | Validation 200 message output format
         [Fact]
         public async Task Handle_CategorySuccessMessage_ShouldReadCorrectly()
         {
@@ -114,12 +114,12 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Queries
             var handler = CreateHandler();
             var result = await handler.Handle(new GetCategoryByIdQuery("c1"), CancellationToken.None);
 
-            result.Message.Should().Contain("thành công");
+            result.Message.Should().Contain("th�nh c�ng");
 
             QACollector.LogTestCase("Category - Get By Id", new TestCaseDetail
             {
                 FunctionGroup = "GetCategoryByIdQueryHandler",
-                TestCaseID = "TC-CAT-GBI-04",
+                TestCaseID = "GetCategoryByIdQueryHandler_04",
                 Description = "Expected 200 message uses generic wrapper OperationMessages.GetSuccess",
                 ExpectedResult = "Matches OperationMessages format",
                 StatusRound1 = "Passed",
@@ -129,7 +129,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Queries
             });
         }
 
-        // TC-CAT-GBI-05 | B | Verifies exactly one call to the repo GetByIdAsync
+        // GetCategoryByIdQueryHandler_05 | B | Verifies exactly one call to the repo GetByIdAsync
         [Fact]
         public async Task Handle_VerifyCallCountToRepo()
         {
@@ -144,7 +144,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Queries
             QACollector.LogTestCase("Category - Get By Id", new TestCaseDetail
             {
                 FunctionGroup = "GetCategoryByIdQueryHandler",
-                TestCaseID = "TC-CAT-GBI-05",
+                TestCaseID = "GetCategoryByIdQueryHandler_05",
                 Description = "Validates exactly 1 interaction occurred locally through dependency map",
                 ExpectedResult = "Times.Once",
                 StatusRound1 = "Passed",
@@ -154,7 +154,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Queries
             });
         }
 
-        // TC-CAT-GBI-06 | N | Slug populates seamlessly
+        // GetCategoryByIdQueryHandler_06 | N | Slug populates seamlessly
         [Fact]
         public async Task Handle_CategoryMappedSlug_ReturnsProperValue()
         {
@@ -169,7 +169,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Queries
             QACollector.LogTestCase("Category - Get By Id", new TestCaseDetail
             {
                 FunctionGroup = "GetCategoryByIdQueryHandler",
-                TestCaseID = "TC-CAT-GBI-06",
+                TestCaseID = "GetCategoryByIdQueryHandler_06",
                 Description = "Slug DTO map handles populated schema constraints perfectly",
                 ExpectedResult = "slug-name",
                 StatusRound1 = "Passed",

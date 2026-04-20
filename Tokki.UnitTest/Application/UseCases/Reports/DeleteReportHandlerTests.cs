@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -19,7 +19,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             => new DeleteReportHandler((repo ?? MockReportRepository.GetMock()).Object);
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RPT-DEL-01 | A | Report not found → failure
+        // DeleteReport_01 | A | Report not found → failure
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ReportNotFound_ShouldReturnFailure()
@@ -38,7 +38,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             QACollector.LogTestCase("Report - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteReport",
-                TestCaseID        = "TC-RPT-DEL-01",
+                TestCaseID        = "DeleteReport_01",
                 Description       = "Report not found → ReportNotFound failure",
                 ExpectedResult    = "IsSuccess=false",
                 StatusRound1      = "Passed",
@@ -49,7 +49,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RPT-DEL-02 | A | Non-admin deleting other user's report → unauthorized
+        // DeleteReport_02 | A | Non-admin deleting other user's report → unauthorized
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NonAdminWrongUser_ShouldReturnUnauthorized()
@@ -75,7 +75,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             QACollector.LogTestCase("Report - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteReport",
-                TestCaseID        = "TC-RPT-DEL-02",
+                TestCaseID        = "DeleteReport_02",
                 Description       = "Non-admin user tries to delete another user's report → ReportUnauthorized failure",
                 ExpectedResult    = "IsSuccess=false, DeleteAsync never called",
                 StatusRound1      = "Passed",
@@ -86,7 +86,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RPT-DEL-03 | A | Non-admin deleting non-Pending report → cannot delete
+        // DeleteReport_03 | A | Non-admin deleting non-Pending report → cannot delete
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NonAdminNonPendingReport_ShouldReturnCannotDelete()
@@ -112,7 +112,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             QACollector.LogTestCase("Report - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteReport",
-                TestCaseID        = "TC-RPT-DEL-03",
+                TestCaseID        = "DeleteReport_03",
                 Description       = "Non-admin deletes own report with status Fixed → ReportCannotDelete failure",
                 ExpectedResult    = "IsSuccess=false, DeleteAsync never called",
                 StatusRound1      = "Passed",
@@ -123,7 +123,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RPT-DEL-04 | N | Non-admin deletes own Pending report → success
+        // DeleteReport_04 | N | Non-admin deletes own Pending report → success
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NonAdminOwnPendingReport_ShouldDelete()
@@ -150,7 +150,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             QACollector.LogTestCase("Report - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteReport",
-                TestCaseID        = "TC-RPT-DEL-04",
+                TestCaseID        = "DeleteReport_04",
                 Description       = "Happy path: non-admin deletes own Pending report → DeleteAsync called, success",
                 ExpectedResult    = "IsSuccess=true, Data=true, DeleteAsync Times.Once",
                 StatusRound1      = "Passed",
@@ -161,7 +161,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RPT-DEL-05 | N | Admin deletes any report regardless of status → success
+        // DeleteReport_05 | N | Admin deletes any report regardless of status → success
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_AdminDeletesFixedReport_ShouldSucceed()
@@ -187,7 +187,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             QACollector.LogTestCase("Report - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteReport",
-                TestCaseID        = "TC-RPT-DEL-05",
+                TestCaseID        = "DeleteReport_05",
                 Description       = "Admin bypasses ownership and status check → deletes Fixed report, success",
                 ExpectedResult    = "IsSuccess=true, DeleteAsync Times.Once",
                 StatusRound1      = "Passed",
@@ -198,7 +198,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RPT-DEL-06 | N | Admin deletes Rejected report of another user → success
+        // DeleteReport_06 | N | Admin deletes Rejected report of another user → success
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_AdminDeletesAnotherUsersReport_ShouldSucceed()
@@ -224,7 +224,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             QACollector.LogTestCase("Report - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteReport",
-                TestCaseID        = "TC-RPT-DEL-06",
+                TestCaseID        = "DeleteReport_06",
                 Description       = "Admin deletes another user's Rejected report → success (no ownership check)",
                 ExpectedResult    = "IsSuccess=true, DeleteAsync Times.Once",
                 StatusRound1      = "Passed",

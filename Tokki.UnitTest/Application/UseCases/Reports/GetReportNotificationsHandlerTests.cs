@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -18,7 +18,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
         private static GetReportNotificationsHandler CreateHandler(Mock<IReportRepository>? repo = null)
             => new GetReportNotificationsHandler((repo ?? MockReportRepository.GetMock()).Object);
 
-        // TC-RPT-GRN-01 | N | No unread resolved reports → empty list
+        // GetReportNotifications_01 | N | No unread resolved reports → empty list
         [Fact]
         public async Task Handle_NoUnreadReports_ShouldReturnEmptyList()
         {
@@ -26,10 +26,10 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             var result = await CreateHandler(repo).Handle(new GetReportNotificationsQuery { UserId = "USER-001" }, CancellationToken.None);
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().BeEmpty();
-            QACollector.LogTestCase("Report - Get Notifications", new TestCaseDetail { FunctionGroup = "GetReportNotifications", TestCaseID = "TC-RPT-GRN-01", Description = "No unread resolved reports → empty success list", ExpectedResult = "IsSuccess=true, Count=0", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetUnreadResolvedReportsAsync returns []" } });
+            QACollector.LogTestCase("Report - Get Notifications", new TestCaseDetail { FunctionGroup = "GetReportNotifications", TestCaseID = "GetReportNotifications_01", Description = "No unread resolved reports → empty success list", ExpectedResult = "IsSuccess=true, Count=0", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetUnreadResolvedReportsAsync returns []" } });
         }
 
-        // TC-RPT-GRN-02 | N | 2 unread resolved reports → 2 DTOs
+        // GetReportNotifications_02 | N | 2 unread resolved reports → 2 DTOs
         [Fact]
         public async Task Handle_TwoUnreadReports_ShouldReturnTwoDtos()
         {
@@ -42,10 +42,10 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             var result = await CreateHandler(repo).Handle(new GetReportNotificationsQuery { UserId = "USER-001" }, CancellationToken.None);
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().HaveCount(2);
-            QACollector.LogTestCase("Report - Get Notifications", new TestCaseDetail { FunctionGroup = "GetReportNotifications", TestCaseID = "TC-RPT-GRN-02", Description = "2 unread reports → 2 DTOs", ExpectedResult = "IsSuccess=true, Count=2", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "2 unread reports" } });
+            QACollector.LogTestCase("Report - Get Notifications", new TestCaseDetail { FunctionGroup = "GetReportNotifications", TestCaseID = "GetReportNotifications_02", Description = "2 unread reports → 2 DTOs", ExpectedResult = "IsSuccess=true, Count=2", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "2 unread reports" } });
         }
 
-        // TC-RPT-GRN-03 | N | DTO fields mapped correctly from entity
+        // GetReportNotifications_03 | N | DTO fields mapped correctly from entity
         [Fact]
         public async Task Handle_ValidReport_ShouldMapFieldsCorrectly()
         {
@@ -59,10 +59,10 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             dto.Status.Should().Be((int)ReportStatus.Fixed);
             dto.AdminReply.Should().Be("Fixed in patch");
             dto.TargetUrl.Should().Be("/vocab/1");
-            QACollector.LogTestCase("Report - Get Notifications", new TestCaseDetail { FunctionGroup = "GetReportNotifications", TestCaseID = "TC-RPT-GRN-03", Description = "DTO fields mapped: ReportId, Status int, AdminReply, TargetUrl", ExpectedResult = "All fields match", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "All entity fields verified in DTO" } });
+            QACollector.LogTestCase("Report - Get Notifications", new TestCaseDetail { FunctionGroup = "GetReportNotifications", TestCaseID = "GetReportNotifications_03", Description = "DTO fields mapped: ReportId, Status int, AdminReply, TargetUrl", ExpectedResult = "All fields match", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "All entity fields verified in DTO" } });
         }
 
-        // TC-RPT-GRN-04 | B | GetUnreadResolvedReportsAsync called with correct UserId
+        // GetReportNotifications_04 | B | GetUnreadResolvedReportsAsync called with correct UserId
         [Fact]
         public async Task Handle_ValidQuery_GetUnreadCalledWithCorrectUserId()
         {
@@ -70,10 +70,10 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             var handler = CreateHandler(repo);
             await handler.Handle(new GetReportNotificationsQuery { UserId = "USER-XYZ" }, CancellationToken.None);
             repo.Verify(x => x.GetUnreadResolvedReportsAsync("USER-XYZ"), Times.Once);
-            QACollector.LogTestCase("Report - Get Notifications", new TestCaseDetail { FunctionGroup = "GetReportNotifications", TestCaseID = "TC-RPT-GRN-04", Description = "GetUnreadResolvedReportsAsync called with exact UserId", ExpectedResult = "GetUnreadResolvedReportsAsync('USER-XYZ') Once", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "UserId='USER-XYZ' in query" } });
+            QACollector.LogTestCase("Report - Get Notifications", new TestCaseDetail { FunctionGroup = "GetReportNotifications", TestCaseID = "GetReportNotifications_04", Description = "GetUnreadResolvedReportsAsync called with exact UserId", ExpectedResult = "GetUnreadResolvedReportsAsync('USER-XYZ') Once", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "UserId='USER-XYZ' in query" } });
         }
 
-        // TC-RPT-GRN-05 | A | Repository throws → failure returned (try/catch)
+        // GetReportNotifications_05 | A | Repository throws → failure returned (try/catch)
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldReturnFailure()
         {
@@ -82,10 +82,10 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
                 .ThrowsAsync(new Exception("DB error"));
             var result = await CreateHandler(repo).Handle(new GetReportNotificationsQuery { UserId = "USER-001" }, CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
-            QACollector.LogTestCase("Report - Get Notifications", new TestCaseDetail { FunctionGroup = "GetReportNotifications", TestCaseID = "TC-RPT-GRN-05", Description = "Repository throws → caught → ReportFetchFailed failure", ExpectedResult = "IsSuccess=false", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetUnreadResolvedReportsAsync throws", "catch block returns failure" } });
+            QACollector.LogTestCase("Report - Get Notifications", new TestCaseDetail { FunctionGroup = "GetReportNotifications", TestCaseID = "GetReportNotifications_05", Description = "Repository throws → caught → ReportFetchFailed failure", ExpectedResult = "IsSuccess=false", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetUnreadResolvedReportsAsync throws", "catch block returns failure" } });
         }
 
-        // TC-RPT-GRN-06 | N | Rejected report Status mapped as int=3
+        // GetReportNotifications_06 | N | Rejected report Status mapped as int=3
         [Fact]
         public async Task Handle_RejectedReport_StatusMappedAsInt3()
         {
@@ -93,7 +93,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             var repo   = MockReportRepository.GetMock(returnedUnread: new List<Report> { report });
             var result = await CreateHandler(repo).Handle(new GetReportNotificationsQuery { UserId = "USER-001" }, CancellationToken.None);
             result.Data![0].Status.Should().Be(3); // Rejected = 3
-            QACollector.LogTestCase("Report - Get Notifications", new TestCaseDetail { FunctionGroup = "GetReportNotifications", TestCaseID = "TC-RPT-GRN-06", Description = "ReportStatus.Rejected → DTO.Status=3", ExpectedResult = "DTO.Status=3", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Status=Rejected(3)" } });
+            QACollector.LogTestCase("Report - Get Notifications", new TestCaseDetail { FunctionGroup = "GetReportNotifications", TestCaseID = "GetReportNotifications_06", Description = "ReportStatus.Rejected → DTO.Status=3", ExpectedResult = "DTO.Status=3", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Status=Rejected(3)" } });
         }
     }
 }

@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -52,7 +52,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Submit", new TestCaseDetail
             {
                 FunctionGroup     = "SubmitExamTemplate",
-                TestCaseID        = "TC-EXMT-SUB-01",
+                TestCaseID        = "SubmitExamTemplate_01",
                 Description       = "Template not found → Failure",
                 ExpectedResult    = "Return Failure",
                 StatusRound1      = "Passed",
@@ -78,7 +78,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Submit", new TestCaseDetail
             {
                 FunctionGroup     = "SubmitExamTemplate",
-                TestCaseID        = "TC-EXMT-SUB-02",
+                TestCaseID        = "SubmitExamTemplate_02",
                 Description       = "Status = Published → 'Trạng thái hiện tại không thể gửi duyệt'",
                 ExpectedResult    = "Return Failure",
                 StatusRound1      = "Passed",
@@ -104,7 +104,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Submit", new TestCaseDetail
             {
                 FunctionGroup     = "SubmitExamTemplate",
-                TestCaseID        = "TC-EXMT-SUB-03",
+                TestCaseID        = "SubmitExamTemplate_03",
                 Description       = "Draft with no parts → 'Đề thi chưa có nội dung phần thi'",
                 ExpectedResult    = "Return Failure",
                 StatusRound1      = "Passed",
@@ -133,7 +133,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Submit", new TestCaseDetail
             {
                 FunctionGroup     = "SubmitExamTemplate",
-                TestCaseID        = "TC-EXMT-SUB-04",
+                TestCaseID        = "SubmitExamTemplate_04",
                 Description       = "Draft with parts → Status = PendingApproval, Return Success",
                 ExpectedResult    = "Return Success(true), Status = PendingApproval",
                 StatusRound1      = "Passed",
@@ -161,7 +161,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Submit", new TestCaseDetail
             {
                 FunctionGroup     = "SubmitExamTemplate",
-                TestCaseID        = "TC-EXMT-SUB-05",
+                TestCaseID        = "SubmitExamTemplate_05",
                 Description       = "Rejected template with parts → re-submit allowed → PendingApproval",
                 ExpectedResult    = "Return Success, Status = PendingApproval",
                 StatusRound1      = "Passed",
@@ -184,7 +184,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Submit", new TestCaseDetail
             {
                 FunctionGroup     = "SubmitExamTemplate",
-                TestCaseID        = "TC-EXMT-SUB-06",
+                TestCaseID        = "SubmitExamTemplate_06",
                 Description       = "Repository throws → exception propagates",
                 ExpectedResult    = "Throws Exception",
                 StatusRound1      = "Passed",

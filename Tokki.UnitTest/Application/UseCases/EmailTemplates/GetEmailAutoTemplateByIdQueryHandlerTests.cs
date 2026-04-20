@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -42,7 +42,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email Template - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetEmailAutoTemplateById",
-                TestCaseID        = "TC-EMAIL-GBI-01",
+                TestCaseID        = "GetEmailAutoTemplateById_01",
                 Description       = "TemplateId is empty/whitespace → EmailTemplateNotFound",
                 ExpectedResult    = "Return Failure",
                 StatusRound1      = "Passed",
@@ -66,7 +66,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email Template - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetEmailAutoTemplateById",
-                TestCaseID        = "TC-EMAIL-GBI-02",
+                TestCaseID        = "GetEmailAutoTemplateById_02",
                 Description       = "TemplateId doesn't exist → EmailTemplateNotFound",
                 ExpectedResult    = "Return Failure",
                 StatusRound1      = "Passed",
@@ -91,7 +91,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email Template - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetEmailAutoTemplateById",
-                TestCaseID        = "TC-EMAIL-GBI-03",
+                TestCaseID        = "GetEmailAutoTemplateById_03",
                 Description       = "Template exists but Status=Deleted → treated as not found",
                 ExpectedResult    = "Return Failure (soft-deleted considered missing)",
                 StatusRound1      = "Passed",
@@ -119,7 +119,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email Template - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetEmailAutoTemplateById",
-                TestCaseID        = "TC-EMAIL-GBI-04",
+                TestCaseID        = "GetEmailAutoTemplateById_04",
                 Description       = "Active template found → Return 200 with template entity",
                 ExpectedResult    = "Return 200, Data = EmailTemplate",
                 StatusRound1      = "Passed",
@@ -145,7 +145,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email Template - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetEmailAutoTemplateById",
-                TestCaseID        = "TC-EMAIL-GBI-05",
+                TestCaseID        = "GetEmailAutoTemplateById_05",
                 Description       = "Draft template (not Deleted) → Return 200, Status=Draft",
                 ExpectedResult    = "Return 200, Data.Status = Draft",
                 StatusRound1      = "Passed",
@@ -168,7 +168,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email Template - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetEmailAutoTemplateById",
-                TestCaseID        = "TC-EMAIL-GBI-06",
+                TestCaseID        = "GetEmailAutoTemplateById_06",
                 Description       = "Repository throws → exception propagates",
                 ExpectedResult    = "Throws Exception",
                 StatusRound1      = "Passed",

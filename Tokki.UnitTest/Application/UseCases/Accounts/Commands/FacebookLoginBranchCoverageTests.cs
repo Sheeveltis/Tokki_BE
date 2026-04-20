@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -90,7 +90,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
 
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
-                FunctionGroup = "FacebookLoginCommandHandler", TestCaseID = "TC-FBL-B01",
+                FunctionGroup = "FacebookLoginCommandHandler", TestCaseID = "FacebookLoginCommandHandler_01",
                 Description = "Social login found but linked account null → 404",
                 ExpectedResult = "404", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -115,7 +115,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
 
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
-                FunctionGroup = "FacebookLoginCommandHandler", TestCaseID = "TC-FBL-B02",
+                FunctionGroup = "FacebookLoginCommandHandler", TestCaseID = "FacebookLoginCommandHandler_02",
                 Description = "Social login found, account temp-locked → 403",
                 ExpectedResult = "403 AccountLocked", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -140,7 +140,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
 
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
-                FunctionGroup = "FacebookLoginCommandHandler", TestCaseID = "TC-FBL-B03",
+                FunctionGroup = "FacebookLoginCommandHandler", TestCaseID = "FacebookLoginCommandHandler_03",
                 Description = "Social login found, account Inactive → 403",
                 ExpectedResult = "403 AccountInActive", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -165,7 +165,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
 
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
-                FunctionGroup = "FacebookLoginCommandHandler", TestCaseID = "TC-FBL-B04",
+                FunctionGroup = "FacebookLoginCommandHandler", TestCaseID = "FacebookLoginCommandHandler_04",
                 Description = "Email exists path, account locked → 403",
                 ExpectedResult = "403 AccountLocked", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -190,7 +190,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
 
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
-                FunctionGroup = "FacebookLoginCommandHandler", TestCaseID = "TC-FBL-B05",
+                FunctionGroup = "FacebookLoginCommandHandler", TestCaseID = "FacebookLoginCommandHandler_05",
                 Description = "Email exists path, account Inactive → 403",
                 ExpectedResult = "403 AccountInActive", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -215,7 +215,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
 
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
-                FunctionGroup = "FacebookLoginCommandHandler", TestCaseID = "TC-FBL-B06",
+                FunctionGroup = "FacebookLoginCommandHandler", TestCaseID = "FacebookLoginCommandHandler_06",
                 Description = "New account path, DEFAULT_PASSWORD_FOR_USER null → 500",
                 ExpectedResult = "500 ServerError", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -241,7 +241,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
 
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
-                FunctionGroup = "FacebookLoginCommandHandler", TestCaseID = "TC-FBL-B07",
+                FunctionGroup = "FacebookLoginCommandHandler", TestCaseID = "FacebookLoginCommandHandler_07",
                 Description = "New account created but email send throws → 200 + warning message",
                 ExpectedResult = "200 + message contains email failure note", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -267,7 +267,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
 
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
-                FunctionGroup = "FacebookLoginCommandHandler", TestCaseID = "TC-FBL-B08",
+                FunctionGroup = "FacebookLoginCommandHandler", TestCaseID = "FacebookLoginCommandHandler_08",
                 Description = "HttpClient throws → outer catch returns 401",
                 ExpectedResult = "401 InvalidFacebookToken", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

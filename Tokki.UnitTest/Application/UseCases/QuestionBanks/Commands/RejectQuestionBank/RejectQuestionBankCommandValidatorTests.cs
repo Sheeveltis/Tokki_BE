@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using FluentValidation.TestHelper;
 using System.Collections.Generic;
 using Tokki.Application.UseCases.QuestionBanks.Commands.RejectQuestionBank;
@@ -13,7 +13,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.RejectQuest
         private readonly RejectQuestionBanksCommandValidator _validator = new();
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-V-REJ-01 | A | Null QuestionBankIds -> Fails
+        // RejectQuestionBanksCommandValidator_01 | A | Null QuestionBankIds -> Fails
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public void Validate_NullQuestionBankIds_ShouldHaveError()
@@ -25,7 +25,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.RejectQuest
             QACollector.LogTestCase("Question Bank - Reject", new TestCaseDetail
             {
                 FunctionGroup = "RejectQuestionBanksCommandValidator",
-                TestCaseID = "TC-QB-V-REJ-01",
+                TestCaseID = "RejectQuestionBanksCommandValidator_01",
                 Description = "Validator returns error if QuestionBankIds is null",
                 ExpectedResult = "Validation failed",
                 StatusRound1 = "Passed",
@@ -36,7 +36,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.RejectQuest
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-V-REJ-02 | A | Empty QuestionBankIds -> Fails
+        // RejectQuestionBanksCommandValidator_02 | A | Empty QuestionBankIds -> Fails
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public void Validate_EmptyItemsQuestionBankIds_ShouldHaveError()
@@ -48,7 +48,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.RejectQuest
             QACollector.LogTestCase("Question Bank - Reject", new TestCaseDetail
             {
                 FunctionGroup = "RejectQuestionBanksCommandValidator",
-                TestCaseID = "TC-QB-V-REJ-02",
+                TestCaseID = "RejectQuestionBanksCommandValidator_02",
                 Description = "Validator returns error if QuestionBankIds contains only empty logic",
                 ExpectedResult = "Validation failed",
                 StatusRound1 = "Passed",
@@ -59,7 +59,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.RejectQuest
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-V-REJ-03 | A | Duplicate QuestionBankIds -> Fails
+        // RejectQuestionBanksCommandValidator_03 | A | Duplicate QuestionBankIds -> Fails
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public void Validate_DuplicateQuestionBankIds_ShouldHaveError()
@@ -71,7 +71,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.RejectQuest
             QACollector.LogTestCase("Question Bank - Reject", new TestCaseDetail
             {
                 FunctionGroup = "RejectQuestionBanksCommandValidator",
-                TestCaseID = "TC-QB-V-REJ-03",
+                TestCaseID = "RejectQuestionBanksCommandValidator_03",
                 Description = "Validator returns error if QuestionBankIds contains duplicates",
                 ExpectedResult = "Validation failed",
                 StatusRound1 = "Passed",
@@ -82,7 +82,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.RejectQuest
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-V-REJ-04 | A | Empty RejectReason -> Fails
+        // RejectQuestionBanksCommandValidator_04 | A | Empty RejectReason -> Fails
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public void Validate_EmptyRejectReason_ShouldHaveError()
@@ -94,7 +94,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.RejectQuest
             QACollector.LogTestCase("Question Bank - Reject", new TestCaseDetail
             {
                 FunctionGroup = "RejectQuestionBanksCommandValidator",
-                TestCaseID = "TC-QB-V-REJ-04",
+                TestCaseID = "RejectQuestionBanksCommandValidator_04",
                 Description = "Validator returns error if RejectReason is empty",
                 ExpectedResult = "Validation failed",
                 StatusRound1 = "Passed",
@@ -105,7 +105,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.RejectQuest
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-V-REJ-05 | N | Valid -> Success
+        // RejectQuestionBanksCommandValidator_05 | N | Valid -> Success
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public void Validate_Valid_ShouldNotHaveError()
@@ -117,7 +117,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.RejectQuest
             QACollector.LogTestCase("Question Bank - Reject", new TestCaseDetail
             {
                 FunctionGroup = "RejectQuestionBanksCommandValidator",
-                TestCaseID = "TC-QB-V-REJ-05",
+                TestCaseID = "RejectQuestionBanksCommandValidator_05",
                 Description = "Validator passes on valid command",
                 ExpectedResult = "No errors",
                 StatusRound1 = "Passed",

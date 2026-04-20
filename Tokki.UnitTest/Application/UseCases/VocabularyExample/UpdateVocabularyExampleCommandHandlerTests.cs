@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -31,7 +31,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VEXM-UPD-01 | A | No token → 401
+        // Update_Vocabulary_Example_01 | A | No token → 401
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_Unauthorized_ShouldReturn401()
@@ -55,7 +55,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
             QACollector.LogTestCase("Vocabulary Example - Update", new TestCaseDetail
             {
                 FunctionGroup     = "Update Vocabulary Example",
-                TestCaseID        = "TC-VEXM-UPD-01",
+                TestCaseID        = "Update_Vocabulary_Example_01",
                 Description       = "Update example sentence without authentication token",
                 ExpectedResult    = "Return 401 Unauthorized",
                 StatusRound1      = "Passed",
@@ -66,7 +66,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VEXM-UPD-02 | A | Example not found → 404
+        // Update_Vocabulary_Example_02 | A | Example not found → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ExampleNotFound_ShouldReturn404()
@@ -91,7 +91,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
             QACollector.LogTestCase("Vocabulary Example - Update", new TestCaseDetail
             {
                 FunctionGroup     = "Update Vocabulary Example",
-                TestCaseID        = "TC-VEXM-UPD-02",
+                TestCaseID        = "Update_Vocabulary_Example_02",
                 Description       = "Update example with non-existent ExampleId",
                 ExpectedResult    = "Return 404 ExampleNotFound",
                 StatusRound1      = "Passed",
@@ -102,7 +102,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VEXM-UPD-03 | A | Sentence duplicate (different example) → 400
+        // Update_Vocabulary_Example_03 | A | Sentence duplicate (different example) → 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DuplicateSentence_ShouldReturn400()
@@ -138,7 +138,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
             QACollector.LogTestCase("Vocabulary Example - Update", new TestCaseDetail
             {
                 FunctionGroup     = "Update Vocabulary Example",
-                TestCaseID        = "TC-VEXM-UPD-03",
+                TestCaseID        = "Update_Vocabulary_Example_03",
                 Description       = "Update Sentence to a value that already exists in another example",
                 ExpectedResult    = "Return 400 ExampleDuplicate",
                 StatusRound1      = "Passed",
@@ -149,7 +149,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VEXM-UPD-04 | N | Update Sentence only (unchanged same value) → 200, no dup check
+        // Update_Vocabulary_Example_04 | N | Update Sentence only (unchanged same value) → 200, no dup check
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SameSentence_ShouldNotCheckDuplicateAndReturn200()
@@ -183,7 +183,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
             QACollector.LogTestCase("Vocabulary Example - Update", new TestCaseDetail
             {
                 FunctionGroup     = "Update Vocabulary Example",
-                TestCaseID        = "TC-VEXM-UPD-04",
+                TestCaseID        = "Update_Vocabulary_Example_04",
                 Description       = "Update Sentence to same value as current → no duplicate check, returns 200",
                 ExpectedResult    = "Return 200, GetBySentenceAsync not called",
                 StatusRound1      = "Passed",
@@ -194,7 +194,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VEXM-UPD-05 | N | Valid new Sentence + Translation → 200 with updated DTO
+        // Update_Vocabulary_Example_05 | N | Valid new Sentence + Translation → 200 with updated DTO
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidUpdate_ShouldUpdateAndReturn200()
@@ -233,7 +233,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
             QACollector.LogTestCase("Vocabulary Example - Update", new TestCaseDetail
             {
                 FunctionGroup     = "Update Vocabulary Example",
-                TestCaseID        = "TC-VEXM-UPD-05",
+                TestCaseID        = "Update_Vocabulary_Example_05",
                 Description       = "Update Sentence + Translation to new valid values → updated successfully",
                 ExpectedResult    = "Return 200, DTO.Sentence = '새 문장', UpdateAsync called once",
                 StatusRound1      = "Passed",
@@ -244,7 +244,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VEXM-UPD-06 | N | Update Status only → 200
+        // Update_Vocabulary_Example_06 | N | Update Status only → 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_UpdateStatusOnly_ShouldChangeStatusAndReturn200()
@@ -277,7 +277,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
             QACollector.LogTestCase("Vocabulary Example - Update", new TestCaseDetail
             {
                 FunctionGroup     = "Update Vocabulary Example",
-                TestCaseID        = "TC-VEXM-UPD-06",
+                TestCaseID        = "Update_Vocabulary_Example_06",
                 Description       = "Update only Status = Deleted → status changed, returns 200",
                 ExpectedResult    = "Return 200, example.Status = Deleted",
                 StatusRound1      = "Passed",

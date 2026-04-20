@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -26,7 +26,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GML-01 | A | User not found → Return 404
+        // Get_My_Level_01 | A | User not found → Return 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_UserNotFound_ShouldReturn404()
@@ -41,7 +41,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Get My Level", new TestCaseDetail
             {
                 FunctionGroup     = "Get My Level",
-                TestCaseID        = "TC-GML-01",
+                TestCaseID        = "Get_My_Level_01",
                 Description       = "Query with non-existent UserId",
                 ExpectedResult    = "Return 404 UserNotFound",
                 StatusRound1      = "Passed",
@@ -52,7 +52,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GML-02 | N | User exists, Level is Null → Return null Level
+        // Get_My_Level_02 | N | User exists, Level is Null → Return null Level
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NullLevel_ShouldReturnNullInDto()
@@ -72,7 +72,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Get My Level", new TestCaseDetail
             {
                 FunctionGroup     = "Get My Level",
-                TestCaseID        = "TC-GML-02",
+                TestCaseID        = "Get_My_Level_02",
                 Description       = "User exists but Level is null",
                 ExpectedResult    = "Return 200 with Level = null",
                 StatusRound1      = "Passed",
@@ -83,7 +83,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GML-03 | N | User exists, Level is 1 → Return 1
+        // Get_My_Level_03 | N | User exists, Level is 1 → Return 1
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_Level1_ShouldReturn1()
@@ -103,7 +103,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Get My Level", new TestCaseDetail
             {
                 FunctionGroup     = "Get My Level",
-                TestCaseID        = "TC-GML-03",
+                TestCaseID        = "Get_My_Level_03",
                 Description       = "User exists and Level is Level1",
                 ExpectedResult    = "Return 200 with Level = 1",
                 StatusRound1      = "Passed",
@@ -114,7 +114,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GML-04 | N | User exists, Level is 6 → Return 6
+        // Get_My_Level_04 | N | User exists, Level is 6 → Return 6
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_Level6_ShouldReturn6()
@@ -134,7 +134,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Get My Level", new TestCaseDetail
             {
                 FunctionGroup     = "Get My Level",
-                TestCaseID        = "TC-GML-04",
+                TestCaseID        = "Get_My_Level_04",
                 Description       = "User exists and Level is Level6",
                 ExpectedResult    = "Return 200 with Level = 6",
                 StatusRound1      = "Passed",
@@ -145,7 +145,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GML-05 | N | Verify GetByIdAsync is called exactly once
+        // Get_My_Level_05 | N | Verify GetByIdAsync is called exactly once
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidRequest_ShouldCallRepositoryOnce()
@@ -161,7 +161,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Get My Level", new TestCaseDetail
             {
                 FunctionGroup     = "Get My Level",
-                TestCaseID        = "TC-GML-05",
+                TestCaseID        = "Get_My_Level_05",
                 Description       = "Verify Repository GetByIdAsync is called exactly once",
                 ExpectedResult    = "GetByIdAsync called 1 time",
                 StatusRound1      = "Passed",
@@ -172,7 +172,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GML-06 | B | Empty UserId edge case
+        // Get_My_Level_06 | B | Empty UserId edge case
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyUserId_ShouldReturn404()
@@ -188,7 +188,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Get My Level", new TestCaseDetail
             {
                 FunctionGroup     = "Get My Level",
-                TestCaseID        = "TC-GML-06",
+                TestCaseID        = "Get_My_Level_06",
                 Description       = "Empty string provided as UserId",
                 ExpectedResult    = "Return 404 UserNotFound",
                 StatusRound1      = "Passed",

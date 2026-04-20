@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -26,7 +26,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             new() { TemplatePartId = "P3", Skill = QuestionSkill.Listening } // duplicate skill
         };
 
-        // TC-EXTS-01 | A | Template has no parts → 404
+        // Get_Template_Skills_01 | A | Template has no parts → 404
         [Fact]
         public async Task Handle_NoParts_ShouldReturn404()
         {
@@ -41,7 +41,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get Template Skills", new TestCaseDetail
             {
-                FunctionGroup = "Get Template Skills", TestCaseID = "TC-EXTS-01",
+                FunctionGroup = "Get Template Skills", TestCaseID = "Get_Template_Skills_01",
                 Description = "Template exists but has no parts configured",
                 ExpectedResult = "Return 404", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -49,7 +49,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXTS-02 | A | Template returns null → 404
+        // Get_Template_Skills_02 | A | Template returns null → 404
         [Fact]
         public async Task Handle_NullParts_ShouldReturn404()
         {
@@ -64,7 +64,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get Template Skills", new TestCaseDetail
             {
-                FunctionGroup = "Get Template Skills", TestCaseID = "TC-EXTS-02",
+                FunctionGroup = "Get Template Skills", TestCaseID = "Get_Template_Skills_02",
                 Description = "Repository returns null instead of a list",
                 ExpectedResult = "Return 404", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -72,7 +72,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXTS-03 | N | Valid template with parts → distinct skills returned
+        // Get_Template_Skills_03 | N | Valid template with parts → distinct skills returned
         [Fact]
         public async Task Handle_ValidTemplate_ShouldReturnDistinctSkills()
         {
@@ -90,7 +90,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get Template Skills", new TestCaseDetail
             {
-                FunctionGroup = "Get Template Skills", TestCaseID = "TC-EXTS-03",
+                FunctionGroup = "Get Template Skills", TestCaseID = "Get_Template_Skills_03",
                 Description = "3 parts with 2 distinct skills → return 2 skills",
                 ExpectedResult = "Return 200 with [Listening, Reading]", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -98,7 +98,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXTS-04 | N | Skills returned as strings
+        // Get_Template_Skills_04 | N | Skills returned as strings
         [Fact]
         public async Task Handle_ValidTemplate_ShouldReturnSkillsAsStrings()
         {
@@ -111,7 +111,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get Template Skills", new TestCaseDetail
             {
-                FunctionGroup = "Get Template Skills", TestCaseID = "TC-EXTS-04",
+                FunctionGroup = "Get Template Skills", TestCaseID = "Get_Template_Skills_04",
                 Description = "Skills returned as string representation of enum values",
                 ExpectedResult = "All items are valid enum string names", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -119,7 +119,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXTS-05 | N | Single-skill template returns 1 entry
+        // Get_Template_Skills_05 | N | Single-skill template returns 1 entry
         [Fact]
         public async Task Handle_SingleSkillTemplate_ShouldReturnOne()
         {
@@ -137,7 +137,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get Template Skills", new TestCaseDetail
             {
-                FunctionGroup = "Get Template Skills", TestCaseID = "TC-EXTS-05",
+                FunctionGroup = "Get Template Skills", TestCaseID = "Get_Template_Skills_05",
                 Description = "Multiple Writing parts → deduplicated to 1 entry",
                 ExpectedResult = "Return ['Writing']", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -145,7 +145,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXTS-06 | A | Repository throws → exception propagates
+        // Get_Template_Skills_06 | A | Repository throws → exception propagates
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
         {
@@ -156,7 +156,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get Template Skills", new TestCaseDetail
             {
-                FunctionGroup = "Get Template Skills", TestCaseID = "TC-EXTS-06",
+                FunctionGroup = "Get Template Skills", TestCaseID = "Get_Template_Skills_06",
                 Description = "Repository fails; exception propagates unhandled",
                 ExpectedResult = "Exception thrown", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

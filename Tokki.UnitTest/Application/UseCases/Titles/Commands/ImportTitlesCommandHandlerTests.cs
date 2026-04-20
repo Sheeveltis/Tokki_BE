@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Moq;
 using System;
@@ -52,7 +52,7 @@ namespace Tokki.UnitTest.Application.UseCases.Titles.Commands
             QACollector.LogTestCase("Title - Import", new TestCaseDetail
             {
                 FunctionGroup     = "ImportTitlesCommandHandler",
-                TestCaseID        = "TC-TTL-IMT-01",
+                TestCaseID        = "ImportTitlesCommandHandler_01",
                 Description       = "File is null",
                 ExpectedResult    = "Failure message 'File không hợp lệ.'",
                 StatusRound1      = "Passed",
@@ -76,7 +76,7 @@ namespace Tokki.UnitTest.Application.UseCases.Titles.Commands
             QACollector.LogTestCase("Title - Import", new TestCaseDetail
             {
                 FunctionGroup     = "ImportTitlesCommandHandler",
-                TestCaseID        = "TC-TTL-IMT-02",
+                TestCaseID        = "ImportTitlesCommandHandler_02",
                 Description       = "Excel parsed data is empty",
                 ExpectedResult    = "Failure message 'Không có dữ liệu trong file.'",
                 StatusRound1      = "Passed",
@@ -108,7 +108,7 @@ namespace Tokki.UnitTest.Application.UseCases.Titles.Commands
             QACollector.LogTestCase("Title - Import", new TestCaseDetail
             {
                 FunctionGroup     = "ImportTitlesCommandHandler",
-                TestCaseID        = "TC-TTL-IMT-03",
+                TestCaseID        = "ImportTitlesCommandHandler_03",
                 Description       = "Invalid data rows testing mapping logic",
                 ExpectedResult    = "Returns 400 failure with error blocks",
                 StatusRound1      = "Passed",
@@ -151,7 +151,7 @@ namespace Tokki.UnitTest.Application.UseCases.Titles.Commands
             QACollector.LogTestCase("Title - Import", new TestCaseDetail
             {
                 FunctionGroup     = "ImportTitlesCommandHandler",
-                TestCaseID        = "TC-TTL-IMT-04",
+                TestCaseID        = "ImportTitlesCommandHandler_04",
                 Description       = "Valid inputs imported successfully",
                 ExpectedResult    = "Returns success counts",
                 StatusRound1      = "Passed",

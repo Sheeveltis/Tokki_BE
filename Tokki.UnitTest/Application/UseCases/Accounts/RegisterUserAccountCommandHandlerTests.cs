@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -43,7 +43,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             };
 
         // ═══════════════════════════════════════════════════════════
-        // TC-REG-01 | A | Duplicate email → 409
+        // Register_User_Account_01 | A | Duplicate email → 409
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DuplicateEmail_ShouldReturn409()
@@ -59,7 +59,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Register", new TestCaseDetail
             {
                 FunctionGroup     = "Register User Account",
-                TestCaseID        = "TC-REG-01",
+                TestCaseID        = "Register_User_Account_01",
                 Description       = "Email already registered in the system",
                 ExpectedResult    = "Return 409 EmailDuplicated",
                 StatusRound1      = "Passed",
@@ -70,7 +70,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-REG-02 | A | Duplicate phone number → 409
+        // Register_User_Account_02 | A | Duplicate phone number → 409
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DuplicatePhone_ShouldReturn409()
@@ -87,7 +87,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Register", new TestCaseDetail
             {
                 FunctionGroup     = "Register User Account",
-                TestCaseID        = "TC-REG-02",
+                TestCaseID        = "Register_User_Account_02",
                 Description       = "Phone number already exists in the system",
                 ExpectedResult    = "Return 409 PhoneNumberDuplicated",
                 StatusRound1      = "Passed",
@@ -98,7 +98,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-REG-03 | N | Valid registration without phone → 201
+        // Register_User_Account_03 | N | Valid registration without phone → 201
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidRegistration_NoPhone_ShouldReturn201()
@@ -112,7 +112,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Register", new TestCaseDetail
             {
                 FunctionGroup     = "Register User Account",
-                TestCaseID        = "TC-REG-03",
+                TestCaseID        = "Register_User_Account_03",
                 Description       = "Valid registration without phone number (optional field skipped)",
                 ExpectedResult    = "Return 201, UserId in Data, phone check skipped",
                 StatusRound1      = "Passed",
@@ -129,7 +129,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-REG-04 | N | Valid registration with phone → account has correct role/status/hash
+        // Register_User_Account_04 | N | Valid registration with phone → account has correct role/status/hash
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidRegistration_WithPhone_ShouldCreateCorrectAccount()
@@ -153,7 +153,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Register", new TestCaseDetail
             {
                 FunctionGroup     = "Register User Account",
-                TestCaseID        = "TC-REG-04",
+                TestCaseID        = "Register_User_Account_04",
                 Description       = "Valid registration with phone → Role = User, Status = Active, password hashed",
                 ExpectedResult    = "Return 201, Role = User, Status = Active, BCrypt hash correct",
                 StatusRound1      = "Passed",
@@ -170,7 +170,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-REG-05 | N | IsPhoneNumberExistsAsync NOT called when phone is null
+        // Register_User_Account_05 | N | IsPhoneNumberExistsAsync NOT called when phone is null
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NoPhone_ShouldNotCallPhoneCheck()
@@ -185,7 +185,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Register", new TestCaseDetail
             {
                 FunctionGroup     = "Register User Account",
-                TestCaseID        = "TC-REG-05",
+                TestCaseID        = "Register_User_Account_05",
                 Description       = "No phone provided → IsPhoneNumberExistsAsync is never called",
                 ExpectedResult    = "IsPhoneNumberExistsAsync called × 0",
                 StatusRound1      = "Passed",
@@ -201,7 +201,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-REG-06 | N | AddAsync and SaveChangesAsync called on success
+        // Register_User_Account_06 | N | AddAsync and SaveChangesAsync called on success
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidRegistration_ShouldCallAddAndSave()
@@ -218,7 +218,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Register", new TestCaseDetail
             {
                 FunctionGroup     = "Register User Account",
-                TestCaseID        = "TC-REG-06",
+                TestCaseID        = "Register_User_Account_06",
                 Description       = "Valid registration → AddAsync and SaveChangesAsync each called once",
                 ExpectedResult    = "AddAsync × 1, SaveChangesAsync × 1",
                 StatusRound1      = "Passed",

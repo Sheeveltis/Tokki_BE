@@ -18,9 +18,9 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
 {
     public class UpdateBlogCommandHandlerTests
     {
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
         // FACTORY
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
         private static UpdateBlogCommandHandler CreateHandler(Mock<IBlogRepository>? repo = null)
         {
             repo ??= MockBlogRepository.GetMock();
@@ -29,9 +29,9 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             return new UpdateBlogCommandHandler(repo.Object, logger.Object);
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-UB-01 | A | Blog Not Found → 404
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // Update_Blog_01 | A | Blog Not Found ? 404
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_BlogNotFound_ShouldReturn404()
         {
@@ -45,7 +45,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Update", new TestCaseDetail
             {
                 FunctionGroup     = "Update Blog",
-                TestCaseID        = "TC-UB-01",
+                TestCaseID        = "Update_Blog_01",
                 Description       = "Attempt to update a non-existent blog",
                 ExpectedResult    = "Return 404 BlogNotFound",
                 StatusRound1      = "Passed",
@@ -55,9 +55,9 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-UB-02 | A | Category Changed and Invalid → 404
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // Update_Blog_02 | A | Category Changed and Invalid ? 404
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_InvalidCategoryChange_ShouldReturn404Category()
         {
@@ -66,7 +66,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             
             var mockRepo = MockBlogRepository.GetMock(new List<Blog> { blog });
             
-            // Set up mock so ONLY "OLD-CAT" exists
+            // Set up mock so ONLY"OLD-CAT" exists
             mockRepo.Setup(x => x.CategoryExistsAsync("INVALID-CAT")).ReturnsAsync(false);
 
             var command = new UpdateBlogCommand 
@@ -84,7 +84,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Update", new TestCaseDetail
             {
                 FunctionGroup     = "Update Blog",
-                TestCaseID        = "TC-UB-02",
+                TestCaseID        = "Update_Blog_02",
                 Description       = "Change category to a non-existent category ID",
                 ExpectedResult    = "Return 404 CategoryNotFound",
                 StatusRound1      = "Passed",
@@ -94,9 +94,9 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-UB-03 | N | Valid Update without explicit Slug (uses Title) -> 200
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // Update_Blog_03 | N | Valid Update without explicit Slug (uses Title) -> 200
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_NoExplicitSlug_ShouldGenerateSlugFromTitle()
         {
@@ -123,7 +123,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Update", new TestCaseDetail
             {
                 FunctionGroup     = "Update Blog",
-                TestCaseID        = "TC-UB-03",
+                TestCaseID        = "Update_Blog_03",
                 Description       = "Update without explicit slug, forces fallback to Title generation",
                 ExpectedResult    = "Return 200, Slug matches newly generated title",
                 StatusRound1      = "Passed",
@@ -133,9 +133,9 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-UB-04 | N | Valid Update with explicit Slug -> 200
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // Update_Blog_04 | N | Valid Update with explicit Slug -> 200
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_ExplicitSlug_ShouldGenerateSlugFromProvidedSlug()
         {
@@ -160,7 +160,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Update", new TestCaseDetail
             {
                 FunctionGroup     = "Update Blog",
-                TestCaseID        = "TC-UB-04",
+                TestCaseID        = "Update_Blog_04",
                 Description       = "Update with explicit custom slug",
                 ExpectedResult    = "Return 200, Slug is derived from provided explicit string",
                 StatusRound1      = "Passed",
@@ -170,9 +170,9 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-UB-05 | N | Tag list is cleared and regenerated
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // Update_Blog_05 | N | Tag list is cleared and regenerated
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_WithNewTags_ShouldClearAndAddTags()
         {
@@ -198,7 +198,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Update", new TestCaseDetail
             {
                 FunctionGroup     = "Update Blog",
-                TestCaseID        = "TC-UB-05",
+                TestCaseID        = "Update_Blog_05",
                 Description       = "Update tags with a new list",
                 ExpectedResult    = "Old tags cleared, exactly matching new tag list",
                 StatusRound1      = "Passed",
@@ -208,9 +208,9 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-UB-06 | A | Database Exception triggers 500 ServerError
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // Update_Blog_06 | A | Database Exception triggers 500 ServerError
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_DatabaseException_ShouldReturn500()
         {
@@ -226,13 +226,13 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
 
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(500);
-            result.Message.Should().Contain("Lỗi hệ thống: Mock Update Failure");
+            result.Message.Should().Contain("L?i h? th?ng: Mock Update Failure");
             result.Errors.Should().Contain(AppErrors.ServerError);
 
             QACollector.LogTestCase("Blog - Update", new TestCaseDetail
             {
                 FunctionGroup     = "Update Blog",
-                TestCaseID        = "TC-UB-06",
+                TestCaseID        = "Update_Blog_06",
                 Description       = "Simulate exception during Update save context",
                 ExpectedResult    = "Return 500 ServerError with inner exception details",
                 StatusRound1      = "Passed",

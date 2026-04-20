@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -48,7 +48,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserTopicProgress
             QACollector.LogTestCase("User Topic Progress - Complete", new TestCaseDetail
             {
                 FunctionGroup = "CompleteTopic",
-                TestCaseID = "TC-UTP-COMP-01",
+                TestCaseID = "CompleteTopic_01",
                 Description = "TopicId does not exist → return 404",
                 ExpectedResult = "IsSuccess=false, StatusCode=404",
                 StatusRound1 = "Passed",
@@ -92,7 +92,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserTopicProgress
             QACollector.LogTestCase("User Topic Progress - Complete", new TestCaseDetail
             {
                 FunctionGroup = "CompleteTopic",
-                TestCaseID = "TC-UTP-COMP-02",
+                TestCaseID = "CompleteTopic_02",
                 Description = "No existing progress record → AddAsync called, Update NOT called",
                 ExpectedResult = "IsSuccess=true, AddAsync called once",
                 StatusRound1 = "Passed",
@@ -147,7 +147,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserTopicProgress
             QACollector.LogTestCase("User Topic Progress - Complete", new TestCaseDetail
             {
                 FunctionGroup = "CompleteTopic",
-                TestCaseID = "TC-UTP-COMP-03",
+                TestCaseID = "CompleteTopic_03",
                 Description = "Existing progress record found → Update called, IsLearned set to true",
                 ExpectedResult = "IsSuccess=true, Update called once, IsLearned=true",
                 StatusRound1 = "Passed",
@@ -194,7 +194,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserTopicProgress
             QACollector.LogTestCase("User Topic Progress - Complete", new TestCaseDetail
             {
                 FunctionGroup = "CompleteTopic",
-                TestCaseID = "TC-UTP-COMP-04",
+                TestCaseID = "CompleteTopic_04",
                 Description = "SaveChangesAsync throws exception → return 500",
                 ExpectedResult = "IsSuccess=false, StatusCode=500",
                 StatusRound1 = "Passed",
@@ -247,7 +247,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserTopicProgress
             QACollector.LogTestCase("User Topic Progress - Complete", new TestCaseDetail
             {
                 FunctionGroup = "CompleteTopic",
-                TestCaseID = "TC-UTP-COMP-05",
+                TestCaseID = "CompleteTopic_05",
                 Description = "New progress record has IsLearned=true and CompletedAt set to current UTC time",
                 ExpectedResult = "IsLearned=true, CompletedAt within acceptable range",
                 StatusRound1 = "Passed",
@@ -303,7 +303,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserTopicProgress
             QACollector.LogTestCase("User Topic Progress - Complete", new TestCaseDetail
             {
                 FunctionGroup = "CompleteTopic",
-                TestCaseID = "TC-UTP-COMP-06",
+                TestCaseID = "CompleteTopic_06",
                 Description = "Topic already completed → calling again is idempotent, Update called, return 200",
                 ExpectedResult = "IsSuccess=true, Update called once, IsLearned still true",
                 StatusRound1 = "Passed",

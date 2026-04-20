@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -17,7 +17,7 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
         private static GetVirtualQuizQueryHandler CreateHandler(Mock<IUserRoadmapRepository>? repo = null)
             => new GetVirtualQuizQueryHandler((repo ?? MockUserRoadmapRepository.GetMock()).Object);
 
-        // TC-RM-GVQ-01 | A | QuestionType not found → 404
+        // GetVirtualQuiz_01 | A | QuestionType not found → 404
         [Fact]
         public async Task Handle_QuestionTypeNotExists_ShouldReturn404()
         {
@@ -25,10 +25,10 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             var result = await CreateHandler(repo).Handle(new GetVirtualQuizQuery("QT-MISSING", 5), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(404);
-            QACollector.LogTestCase("Roadmap - Get Virtual Quiz", new TestCaseDetail { FunctionGroup = "GetVirtualQuiz", TestCaseID = "TC-RM-GVQ-01", Description = "QuestionType not found → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "QuestionTypeExistsAsync=false" } });
+            QACollector.LogTestCase("Roadmap - Get Virtual Quiz", new TestCaseDetail { FunctionGroup = "GetVirtualQuiz", TestCaseID = "GetVirtualQuiz_01", Description = "QuestionType not found → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "QuestionTypeExistsAsync=false" } });
         }
 
-        // TC-RM-GVQ-02 | A | No questions in type → 404
+        // GetVirtualQuiz_02 | A | No questions in type → 404
         [Fact]
         public async Task Handle_NoQuestionsAvailable_ShouldReturn404()
         {
@@ -36,10 +36,10 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             var result = await CreateHandler(repo).Handle(new GetVirtualQuizQuery("QT-001", 5), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(404);
-            QACollector.LogTestCase("Roadmap - Get Virtual Quiz", new TestCaseDetail { FunctionGroup = "GetVirtualQuiz", TestCaseID = "TC-RM-GVQ-02", Description = "QuestionType exists but no questions → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetRandomQuestionsByTypeAsync returns []" } });
+            QACollector.LogTestCase("Roadmap - Get Virtual Quiz", new TestCaseDetail { FunctionGroup = "GetVirtualQuiz", TestCaseID = "GetVirtualQuiz_02", Description = "QuestionType exists but no questions → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetRandomQuestionsByTypeAsync returns []" } });
         }
 
-        // TC-RM-GVQ-03 | N | Happy path: 3 questions → 3 VirtualQuizQuestionViewModels
+        // GetVirtualQuiz_03 | N | Happy path: 3 questions → 3 VirtualQuizQuestionViewModels
         [Fact]
         public async Task Handle_QuestionsFound_ShouldReturnViewModels()
         {
@@ -48,10 +48,10 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             var result = await CreateHandler(repo).Handle(new GetVirtualQuizQuery("QT-001", 3), CancellationToken.None);
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().HaveCount(3);
-            QACollector.LogTestCase("Roadmap - Get Virtual Quiz", new TestCaseDetail { FunctionGroup = "GetVirtualQuiz", TestCaseID = "TC-RM-GVQ-03", Description = "3 questions returned → 3 VirtualQuizQuestionViewModels", ExpectedResult = "IsSuccess=true, Count=3", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "3 questions from repo" } });
+            QACollector.LogTestCase("Roadmap - Get Virtual Quiz", new TestCaseDetail { FunctionGroup = "GetVirtualQuiz", TestCaseID = "GetVirtualQuiz_03", Description = "3 questions returned → 3 VirtualQuizQuestionViewModels", ExpectedResult = "IsSuccess=true, Count=3", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "3 questions from repo" } });
         }
 
-        // TC-RM-GVQ-04 | N | DTO fields mapped: QuestionId, Content, Options
+        // GetVirtualQuiz_04 | N | DTO fields mapped: QuestionId, Content, Options
         [Fact]
         public async Task Handle_QuestionsFound_ShouldMapFieldsCorrectly()
         {
@@ -73,10 +73,10 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             vm.Content.Should().Be("What is 안녕?");
             vm.Options.Should().HaveCount(2);
             vm.Options[0].KeyOption.Should().Be("A");
-            QACollector.LogTestCase("Roadmap - Get Virtual Quiz", new TestCaseDetail { FunctionGroup = "GetVirtualQuiz", TestCaseID = "TC-RM-GVQ-04", Description = "DTO fields mapped: QuestionId, Content, Options", ExpectedResult = "All fields verified", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "QB fields mapped to ViewModel" } });
+            QACollector.LogTestCase("Roadmap - Get Virtual Quiz", new TestCaseDetail { FunctionGroup = "GetVirtualQuiz", TestCaseID = "GetVirtualQuiz_04", Description = "DTO fields mapped: QuestionId, Content, Options", ExpectedResult = "All fields verified", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "QB fields mapped to ViewModel" } });
         }
 
-        // TC-RM-GVQ-05 | B | GetRandomQuestionsByTypeAsync called with correct params
+        // GetVirtualQuiz_05 | B | GetRandomQuestionsByTypeAsync called with correct params
         [Fact]
         public async Task Handle_ValidQuery_GetRandomCalledWithCorrectParams()
         {
@@ -84,10 +84,10 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             var repo = MockUserRoadmapRepository.GetMock(questionTypeExists: true, randomQuestions: qbs);
             await CreateHandler(repo).Handle(new GetVirtualQuizQuery("QT-SPEC", 7), CancellationToken.None);
             repo.Verify(x => x.GetRandomQuestionsByTypeAsync("QT-SPEC", 7, It.IsAny<CancellationToken>()), Times.Once);
-            QACollector.LogTestCase("Roadmap - Get Virtual Quiz", new TestCaseDetail { FunctionGroup = "GetVirtualQuiz", TestCaseID = "TC-RM-GVQ-05", Description = "GetRandomQuestionsByTypeAsync called with correct QuestionTypeId and Count", ExpectedResult = "Times.Once('QT-SPEC', 7)", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "QuestionTypeId='QT-SPEC', Count=7" } });
+            QACollector.LogTestCase("Roadmap - Get Virtual Quiz", new TestCaseDetail { FunctionGroup = "GetVirtualQuiz", TestCaseID = "GetVirtualQuiz_05", Description = "GetRandomQuestionsByTypeAsync called with correct QuestionTypeId and Count", ExpectedResult = "Times.Once('QT-SPEC', 7)", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "QuestionTypeId='QT-SPEC', Count=7" } });
         }
 
-        // TC-RM-GVQ-06 | N | Question with Passage → PassageContent mapped
+        // GetVirtualQuiz_06 | N | Question with Passage → PassageContent mapped
         [Fact]
         public async Task Handle_QuestionWithPassage_ShouldMapPassageContent()
         {
@@ -101,7 +101,7 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             var repo   = MockUserRoadmapRepository.GetMock(questionTypeExists: true, randomQuestions: new List<QuestionBank> { qb });
             var result = await CreateHandler(repo).Handle(new GetVirtualQuizQuery("QT-001", 1), CancellationToken.None);
             result.Data![0].PassageContent.Should().Be("Passage text");
-            QACollector.LogTestCase("Roadmap - Get Virtual Quiz", new TestCaseDetail { FunctionGroup = "GetVirtualQuiz", TestCaseID = "TC-RM-GVQ-06", Description = "Question with Passage → PassageContent mapped correctly", ExpectedResult = "PassageContent='Passage text'", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "QB.Passage.Content mapped" } });
+            QACollector.LogTestCase("Roadmap - Get Virtual Quiz", new TestCaseDetail { FunctionGroup = "GetVirtualQuiz", TestCaseID = "GetVirtualQuiz_06", Description = "Question with Passage → PassageContent mapped correctly", ExpectedResult = "PassageContent='Passage text'", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "QB.Passage.Content mapped" } });
         }
     }
 }

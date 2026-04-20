@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -57,7 +57,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PR-EVL-01 | A | ExampleId not found → EXAMPLE_NOT_FOUND failure
+        // EvaluatePronunciation_01 | A | ExampleId not found → EXAMPLE_NOT_FOUND failure
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ExampleNotFound_ShouldReturnExampleNotFoundFailure()
@@ -82,7 +82,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation - Evaluate", new TestCaseDetail
             {
                 FunctionGroup     = "EvaluatePronunciation",
-                TestCaseID        = "TC-PR-EVL-01",
+                TestCaseID        = "EvaluatePronunciation_01",
                 Description       = "ExampleId does not exist → EXAMPLE_NOT_FOUND failure returned",
                 ExpectedResult    = "IsSuccess=false, error code EXAMPLE_NOT_FOUND",
                 StatusRound1      = "Passed",
@@ -93,7 +93,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PR-EVL-02 | A | Low scores (completeness<30 OR accuracy<20) → IsIrrelevant=true, no AI call
+        // EvaluatePronunciation_02 | A | Low scores (completeness<30 OR accuracy<20) → IsIrrelevant=true, no AI call
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_LowScores_ShouldReturnIrrelevantWithoutCallingAI()
@@ -131,7 +131,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation - Evaluate", new TestCaseDetail
             {
                 FunctionGroup     = "EvaluatePronunciation",
-                TestCaseID        = "TC-PR-EVL-02",
+                TestCaseID        = "EvaluatePronunciation_02",
                 Description       = "Azure returns low scores (accuracy<20, completeness<30) → IsIrrelevant=true, AI never called",
                 ExpectedResult    = "IsSuccess=true, IsIrrelevant=true, GenerateFeedbackAsync Times.Never",
                 StatusRound1      = "Passed",
@@ -142,7 +142,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PR-EVL-03 | N | Good scores, rule found → GenerateFeedbackAsync called with rule context
+        // EvaluatePronunciation_03 | N | Good scores, rule found → GenerateFeedbackAsync called with rule context
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_GoodScoresRuleFound_ShouldCallAIWithRuleContext()
@@ -189,7 +189,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation - Evaluate", new TestCaseDetail
             {
                 FunctionGroup     = "EvaluatePronunciation",
-                TestCaseID        = "TC-PR-EVL-03",
+                TestCaseID        = "EvaluatePronunciation_03",
                 Description       = "Good scores, rule found → GenerateFeedbackAsync called with ruleContext containing RuleName",
                 ExpectedResult    = "GenerateFeedbackAsync(context contains RuleName) Times.Once",
                 StatusRound1      = "Passed",
@@ -200,7 +200,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PR-EVL-04 | N | Good scores, rule NOT found → fallback context used
+        // EvaluatePronunciation_04 | N | Good scores, rule NOT found → fallback context used
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_GoodScoresRuleNotFound_ShouldUseFallbackContext()
@@ -245,7 +245,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation - Evaluate", new TestCaseDetail
             {
                 FunctionGroup     = "EvaluatePronunciation",
-                TestCaseID        = "TC-PR-EVL-04",
+                TestCaseID        = "EvaluatePronunciation_04",
                 Description       = "Good scores but rule not found → fallback context 'Quy tắc phát âm cơ bản' used",
                 ExpectedResult    = "AI called with context='Quy tắc phát âm cơ bản'",
                 StatusRound1      = "Passed",
@@ -256,7 +256,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PR-EVL-05 | N | Happy path → IsSuccess=true, IsIrrelevant=false, 200, score from AI
+        // EvaluatePronunciation_05 | N | Happy path → IsSuccess=true, IsIrrelevant=false, 200, score from AI
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_FullHappyPath_ShouldReturn200WithRelevantResponse()
@@ -305,7 +305,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation - Evaluate", new TestCaseDetail
             {
                 FunctionGroup     = "EvaluatePronunciation",
-                TestCaseID        = "TC-PR-EVL-05",
+                TestCaseID        = "EvaluatePronunciation_05",
                 Description       = "Full happy path: example found, good scores, AI returns feedback → 200 with PronunciationResponse",
                 ExpectedResult    = "IsSuccess=true, StatusCode=200, IsIrrelevant=false, AccuracyScore=90, AiFeedback set",
                 StatusRound1      = "Passed",
@@ -316,7 +316,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PR-EVL-06 | A | SpeechService throws → exception propagates
+        // EvaluatePronunciation_06 | A | SpeechService throws → exception propagates
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SpeechServiceThrows_ShouldPropagateException()
@@ -348,7 +348,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation - Evaluate", new TestCaseDetail
             {
                 FunctionGroup     = "EvaluatePronunciation",
-                TestCaseID        = "TC-PR-EVL-06",
+                TestCaseID        = "EvaluatePronunciation_06",
                 Description       = "ISpeechService.AssessPronunciationAsync throws → exception propagates",
                 ExpectedResult    = "InvalidOperationException thrown",
                 StatusRound1      = "Passed",
@@ -359,7 +359,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PR-EVL-07 | A | AI service throws → exception propagates
+        // EvaluatePronunciation_07 | A | AI service throws → exception propagates
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_AIServiceThrows_ShouldPropagateException()
@@ -400,7 +400,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation - Evaluate", new TestCaseDetail
             {
                 FunctionGroup     = "EvaluatePronunciation",
-                TestCaseID        = "TC-PR-EVL-07",
+                TestCaseID        = "EvaluatePronunciation_07",
                 Description       = "IAIPronunciationService.GenerateFeedbackAsync throws → exception propagates",
                 ExpectedResult    = "InvalidOperationException thrown",
                 StatusRound1      = "Passed",

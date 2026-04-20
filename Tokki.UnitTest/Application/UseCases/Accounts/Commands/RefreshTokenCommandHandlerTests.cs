@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Threading;
@@ -24,7 +24,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             return new RefreshTokenCommandHandler(_refreshTokenServiceMock.Object, _jwtMock.Object);
         }
 
-        // TC-ACC-RFT-01 | N | Valid Token with Null Avatar -> Default avatar assigned
+        // RefreshTokenCommandHandler_01 | N | Valid Token with Null Avatar -> Default avatar assigned
         [Fact]
         public async Task Handle_NullAvatar_ShouldUseDefaultAvatar()
         {
@@ -44,7 +44,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Refresh Token", new TestCaseDetail
             {
                 FunctionGroup = "RefreshTokenCommandHandler",
-                TestCaseID = "TC-ACC-RFT-01",
+                TestCaseID = "RefreshTokenCommandHandler_01",
                 Description = "Null Avatar correctly outputs default-avatar",
                 ExpectedResult = "default-avatar string returned",
                 StatusRound1 = "Passed",
@@ -54,7 +54,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-RFT-02 | N | Valid Token with Has Avatar -> Actual avatar assigned
+        // RefreshTokenCommandHandler_02 | N | Valid Token with Has Avatar -> Actual avatar assigned
         [Fact]
         public async Task Handle_HasAvatar_ShouldUseRealAvatar()
         {
@@ -74,7 +74,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Refresh Token", new TestCaseDetail
             {
                 FunctionGroup = "RefreshTokenCommandHandler",
-                TestCaseID = "TC-ACC-RFT-02",
+                TestCaseID = "RefreshTokenCommandHandler_02",
                 Description = "Valid Avatar is preserved directly in output",
                 ExpectedResult = "Actual AvatarUrl returned",
                 StatusRound1 = "Passed",
@@ -84,7 +84,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-RFT-03 | A | Verify Throws Exception -> Bubbles up
+        // RefreshTokenCommandHandler_03 | A | Verify Throws Exception -> Bubbles up
         [Fact]
         public async Task Handle_VerifyThrows_ShouldBubbleUp()
         {
@@ -100,7 +100,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Refresh Token", new TestCaseDetail
             {
                 FunctionGroup = "RefreshTokenCommandHandler",
-                TestCaseID = "TC-ACC-RFT-03",
+                TestCaseID = "RefreshTokenCommandHandler_03",
                 Description = "Verify exception is bubbled up un-intercepted",
                 ExpectedResult = "Throws Exception",
                 StatusRound1 = "Passed",
@@ -110,7 +110,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-RFT-04 | B | Verify Rotate is called with old token
+        // RefreshTokenCommandHandler_04 | B | Verify Rotate is called with old token
         [Fact]
         public async Task Handle_ShouldCallRotateWithExactOldToken()
         {
@@ -128,7 +128,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Refresh Token", new TestCaseDetail
             {
                 FunctionGroup = "RefreshTokenCommandHandler",
-                TestCaseID = "TC-ACC-RFT-04",
+                TestCaseID = "RefreshTokenCommandHandler_04",
                 Description = "Output depends on exact Rotation of validated token",
                 ExpectedResult = "RotateRefreshTokenAsync called once",
                 StatusRound1 = "Passed",
@@ -138,7 +138,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-RFT-05 | B | Request checks expiration adds 60 mins
+        // RefreshTokenCommandHandler_05 | B | Request checks expiration adds 60 mins
         [Fact]
         public async Task Handle_GenerateToken_ShouldAdd60MinsExpire()
         {
@@ -162,7 +162,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Refresh Token", new TestCaseDetail
             {
                 FunctionGroup = "RefreshTokenCommandHandler",
-                TestCaseID = "TC-ACC-RFT-05",
+                TestCaseID = "RefreshTokenCommandHandler_05",
                 Description = "Ensure Token is requested with correct Expiration window (60m)",
                 ExpectedResult = "Date generated within tolerance",
                 StatusRound1 = "Passed",
@@ -172,7 +172,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-RFT-06 | N | Verify Login Response Mapping 
+        // RefreshTokenCommandHandler_06 | N | Verify Login Response Mapping 
         [Fact]
         public async Task Handle_Success_ShouldMapLoginResponsePerfectly()
         {
@@ -194,7 +194,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Refresh Token", new TestCaseDetail
             {
                 FunctionGroup = "RefreshTokenCommandHandler",
-                TestCaseID = "TC-ACC-RFT-06",
+                TestCaseID = "RefreshTokenCommandHandler_06",
                 Description = "Correctly maps LoginResponse properties like Roles",
                 ExpectedResult = "All DTO fields matched",
                 StatusRound1 = "Passed",

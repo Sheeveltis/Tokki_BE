@@ -23,9 +23,9 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
                 (repo ?? MockQuestionTypeRepository.GetMock()).Object);
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-QT-UPD-01 | A | QuestionType not found → failure
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdateQuestionType_01 | A | QuestionType not found ? failure
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_NotFound_ShouldReturnFailure()
         {
@@ -43,8 +43,8 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
             QACollector.LogTestCase("Question Type - Update", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateQuestionType",
-                TestCaseID        = "TC-QT-UPD-01",
-                Description       = "QuestionType not found → failure (no status code specified in handler, defaults)",
+                TestCaseID        = "UpdateQuestionType_01",
+                Description       = "QuestionType not found ? failure (no status code specified in handler, defaults)",
                 ExpectedResult    = "IsSuccess=false",
                 StatusRound1      = "Passed",
                 TestCaseType      = "A",
@@ -53,9 +53,9 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-QT-UPD-02 | A | Duplicate name (different entity) → failure
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdateQuestionType_02 | A | Duplicate name (different entity) ? failure
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_DuplicateName_ShouldReturnFailure()
         {
@@ -66,7 +66,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
             var command = new UpdateQuestionTypeCommand
             {
                 QuestionTypeId = "QT-001",
-                Name           = "Existing Name", // differs from current "Reading Basic" → triggers check
+                Name           = "Existing Name", // differs from current"Reading Basic" ? triggers check
                 Status         = 1
             };
 
@@ -75,14 +75,14 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
 
             // Assert
             result.IsSuccess.Should().BeFalse();
-            result.Message.Should().Contain("tên");
+            result.Message.Should().Contain("t�n");
 
             QACollector.LogTestCase("Question Type - Update", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateQuestionType",
-                TestCaseID        = "TC-QT-UPD-02",
-                Description       = "New name already taken by another entity → failure with name-conflict message",
-                ExpectedResult    = "IsSuccess=false, Message contains 'tên'",
+                TestCaseID        = "UpdateQuestionType_02",
+                Description       = "New name already taken by another entity ? failure with name-conflict message",
+                ExpectedResult    = "IsSuccess=false, Message contains 't�n'",
                 StatusRound1      = "Passed",
                 TestCaseType      = "A",
                 TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -90,9 +90,9 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-QT-UPD-03 | A | Duplicate code → failure
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdateQuestionType_03 | A | Duplicate code ? failure
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_DuplicateCode_ShouldReturnFailure()
         {
@@ -103,8 +103,8 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
             var command = new UpdateQuestionTypeCommand
             {
                 QuestionTypeId = "QT-001",
-                Name           = "Reading Basic",   // same name → skips name check
-                Code           = "CONFLICT001",     // differs from current "RB001" → triggers check
+                Name           = "Reading Basic",   // same name ? skips name check
+                Code           = "CONFLICT001",     // differs from current"RB001" ? triggers check
                 Status         = 1
             };
 
@@ -118,8 +118,8 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
             QACollector.LogTestCase("Question Type - Update", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateQuestionType",
-                TestCaseID        = "TC-QT-UPD-03",
-                Description       = "Code conflicts with another entity → failure with code-conflict message",
+                TestCaseID        = "UpdateQuestionType_03",
+                Description       = "Code conflicts with another entity ? failure with code-conflict message",
                 ExpectedResult    = "IsSuccess=false, Message contains 'code'",
                 StatusRound1      = "Passed",
                 TestCaseType      = "A",
@@ -128,9 +128,9 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-QT-UPD-04 | N | Happy path: patch name + description, 200
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdateQuestionType_04 | N | Happy path: patch name + description, 200
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_ValidUpdate_ShouldReturn200()
         {
@@ -160,7 +160,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
             QACollector.LogTestCase("Question Type - Update", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateQuestionType",
-                TestCaseID        = "TC-QT-UPD-04",
+                TestCaseID        = "UpdateQuestionType_04",
                 Description       = "Happy path: name and description updated, UpdateAsync+SaveChanges called, 200",
                 ExpectedResult    = "IsSuccess=true, StatusCode=200, entity updated",
                 StatusRound1      = "Passed",
@@ -170,9 +170,9 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-QT-UPD-05 | N | Status=1 → IsActive=true; Status=0 → IsActive=false
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdateQuestionType_05 | N | Status=1 ? IsActive=true; Status=0 ? IsActive=false
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_Status0_ShouldSetIsActiveFalse()
         {
@@ -183,7 +183,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
             var command = new UpdateQuestionTypeCommand
             {
                 QuestionTypeId = "QT-001",
-                Name           = "Reading Basic", // same → no name check
+                Name           = "Reading Basic", // same ? no name check
                 Status         = 0               // deactivate
             };
 
@@ -197,8 +197,8 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
             QACollector.LogTestCase("Question Type - Update", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateQuestionType",
-                TestCaseID        = "TC-QT-UPD-05",
-                Description       = "Status=0 → entity.IsActive set to false",
+                TestCaseID        = "UpdateQuestionType_05",
+                Description       = "Status=0 ? entity.IsActive set to false",
                 ExpectedResult    = "IsSuccess=true, entity.IsActive=false",
                 StatusRound1      = "Passed",
                 TestCaseType      = "N",
@@ -207,9 +207,9 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-QT-UPD-06 | N | Same name as current → name-check skipped
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdateQuestionType_06 | N | Same name as current ? name-check skipped
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_SameNameAsCurrent_ShouldSkipNameCheck()
         {
@@ -220,7 +220,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
             var command = new UpdateQuestionTypeCommand
             {
                 QuestionTypeId = "QT-001",
-                Name           = "Reading Basic", // same as entity.Name → skips IsNameExistsAsync
+                Name           = "Reading Basic", // same as entity.Name ? skips IsNameExistsAsync
                 Status         = 1
             };
 
@@ -234,8 +234,8 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
             QACollector.LogTestCase("Question Type - Update", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateQuestionType",
-                TestCaseID        = "TC-QT-UPD-06",
-                Description       = "Name unchanged (same as current entity) → IsNameExistsAsync never called",
+                TestCaseID        = "UpdateQuestionType_06",
+                Description       = "Name unchanged (same as current entity) ? IsNameExistsAsync never called",
                 ExpectedResult    = "IsSuccess=true, IsNameExistsAsync Times.Never",
                 StatusRound1      = "Passed",
                 TestCaseType      = "N",

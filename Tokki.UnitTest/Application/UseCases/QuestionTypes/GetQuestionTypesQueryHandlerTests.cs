@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -24,7 +24,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QT-GLS-01 | N | Empty repository → empty paged result, 200
+        // GetQuestionTypes_01 | N | Empty repository → empty paged result, 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyRepository_ShouldReturnEmptyPagedResult()
@@ -45,7 +45,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
             QACollector.LogTestCase("Question Type - Get List", new TestCaseDetail
             {
                 FunctionGroup     = "GetQuestionTypes",
-                TestCaseID        = "TC-QT-GLS-01",
+                TestCaseID        = "GetQuestionTypes_01",
                 Description       = "Empty repository → PagedResult.Items empty, TotalCount=0, success",
                 ExpectedResult    = "IsSuccess=true, Items empty, TotalCount=0",
                 StatusRound1      = "Passed",
@@ -56,7 +56,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QT-GLS-02 | N | 3 items → paged result with correct count
+        // GetQuestionTypes_02 | N | 3 items → paged result with correct count
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ThreeItems_ShouldReturnPagedResultWithCorrectCount()
@@ -78,7 +78,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
             QACollector.LogTestCase("Question Type - Get List", new TestCaseDetail
             {
                 FunctionGroup     = "GetQuestionTypes",
-                TestCaseID        = "TC-QT-GLS-02",
+                TestCaseID        = "GetQuestionTypes_02",
                 Description       = "3 items from repo → PagedResult.Items.Count=3, TotalCount=3",
                 ExpectedResult    = "IsSuccess=true, Items.Count=3, TotalCount=3",
                 StatusRound1      = "Passed",
@@ -89,7 +89,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QT-GLS-03 | N | Paging: Page 2 with 5 items → correct PageNumber reflected
+        // GetQuestionTypes_03 | N | Paging: Page 2 with 5 items → correct PageNumber reflected
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_Page2_ShouldReturnPageNumber2InResult()
@@ -112,7 +112,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
             QACollector.LogTestCase("Question Type - Get List", new TestCaseDetail
             {
                 FunctionGroup     = "GetQuestionTypes",
-                TestCaseID        = "TC-QT-GLS-03",
+                TestCaseID        = "GetQuestionTypes_03",
                 Description       = "Page 2, size 5, totalCount 12 → PagedResult reflects all pagination params",
                 ExpectedResult    = "IsSuccess=true, PageNumber=2, PageSize=5, TotalCount=12",
                 StatusRound1      = "Passed",
@@ -123,7 +123,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QT-GLS-04 | B | GetPagedAsync called with correct filter params
+        // GetQuestionTypes_04 | B | GetPagedAsync called with correct filter params
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_WithFilters_GetPagedCalledWithCorrectParams()
@@ -158,7 +158,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
             QACollector.LogTestCase("Question Type - Get List", new TestCaseDetail
             {
                 FunctionGroup     = "GetQuestionTypes",
-                TestCaseID        = "TC-QT-GLS-04",
+                TestCaseID        = "GetQuestionTypes_04",
                 Description       = "Boundary: GetPagedAsync called with exact filter params (keyword, skill, difficulty, examType)",
                 ExpectedResult    = "GetPagedAsync(1, 20, 'Reading', Reading, Medium, TOEIC) Times.Once",
                 StatusRound1      = "Passed",
@@ -169,7 +169,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QT-GLS-05 | B | TotalPages calculated correctly
+        // GetQuestionTypes_05 | B | TotalPages calculated correctly
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_PaginationMath_ShouldCalculateTotalPagesCorrectly()
@@ -190,7 +190,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
             QACollector.LogTestCase("Question Type - Get List", new TestCaseDetail
             {
                 FunctionGroup     = "GetQuestionTypes",
-                TestCaseID        = "TC-QT-GLS-05",
+                TestCaseID        = "GetQuestionTypes_05",
                 Description       = "Boundary: TotalPages = ceil(11/5) = 3",
                 ExpectedResult    = "TotalPages=3 (11 items, pageSize=5)",
                 StatusRound1      = "Passed",
@@ -201,7 +201,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QT-GLS-06 | A | Repository throws → exception propagates
+        // GetQuestionTypes_06 | A | Repository throws → exception propagates
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
@@ -227,7 +227,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
             QACollector.LogTestCase("Question Type - Get List", new TestCaseDetail
             {
                 FunctionGroup     = "GetQuestionTypes",
-                TestCaseID        = "TC-QT-GLS-06",
+                TestCaseID        = "GetQuestionTypes_06",
                 Description       = "Repository GetPagedAsync throws → exception propagates (no catch in handler)",
                 ExpectedResult    = "InvalidOperationException thrown",
                 StatusRound1      = "Passed",

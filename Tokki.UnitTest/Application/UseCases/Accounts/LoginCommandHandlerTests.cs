@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using FluentValidation;
 using Moq;
 using System;
@@ -113,7 +113,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-LOGIN-01 | A | Email not found → 404
+        // Login_01 | A | Email not found → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_UserNotFound_ShouldReturn404()
@@ -127,7 +127,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
                 FunctionGroup   = "Login",
-                TestCaseID      = "TC-LOGIN-01",
+                TestCaseID      = "Login_01",
                 Description     = "Email does not exist in the system",
                 ExpectedResult  = "Return 404 UserNotFound",
                 StatusRound1    = "Passed",
@@ -138,7 +138,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-LOGIN-02 | A | Account Inactive → 403
+        // Login_02 | A | Account Inactive → 403
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_AccountInactive_ShouldReturn403()
@@ -153,7 +153,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
                 FunctionGroup   = "Login",
-                TestCaseID      = "TC-LOGIN-02",
+                TestCaseID      = "Login_02",
                 Description     = "Account status is Inactive",
                 ExpectedResult  = "Return 403 AccountInActive",
                 StatusRound1    = "Passed",
@@ -164,7 +164,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-LOGIN-03 | A | Account Banned → 403
+        // Login_03 | A | Account Banned → 403
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_AccountBanned_ShouldReturn403()
@@ -179,7 +179,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
                 FunctionGroup   = "Login",
-                TestCaseID      = "TC-LOGIN-03",
+                TestCaseID      = "Login_03",
                 Description     = "Account is permanently banned",
                 ExpectedResult  = "Return 403 AccountBanned",
                 StatusRound1    = "Passed",
@@ -190,7 +190,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-LOGIN-04 | A | Account temporarily locked → 403 with remaining minutes
+        // Login_04 | A | Account temporarily locked → 403 with remaining minutes
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_AccountLockedUntilFuture_ShouldReturn403WithRemainingMinutes()
@@ -208,7 +208,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
                 FunctionGroup   = "Login",
-                TestCaseID      = "TC-LOGIN-04",
+                TestCaseID      = "Login_04",
                 Description     = "Account is temporarily locked, LockedUntil is 15 minutes in the future",
                 ExpectedResult  = "Return 403, message contains remaining minutes",
                 StatusRound1    = "Passed",
@@ -219,7 +219,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-LOGIN-05 | B | LockedUntil expired → auto-unlock, login succeeds
+        // Login_05 | B | LockedUntil expired → auto-unlock, login succeeds
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_LockedUntilExpired_ShouldAllowLogin()
@@ -241,7 +241,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
                 FunctionGroup   = "Login",
-                TestCaseID      = "TC-LOGIN-05",
+                TestCaseID      = "Login_05",
                 Description     = "LockedUntil has expired (1 min ago) → auto-unlock, login succeeds",
                 ExpectedResult  = "Return 200 login successful",
                 StatusRound1    = "Passed",
@@ -252,7 +252,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-LOGIN-06 | A | Wrong password → 400, FailedLoginCount increments
+        // Login_06 | A | Wrong password → 400, FailedLoginCount increments
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_WrongPassword_ShouldReturn400AndIncrementFailedCount()
@@ -276,7 +276,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
                 FunctionGroup   = "Login",
-                TestCaseID      = "TC-LOGIN-06",
+                TestCaseID      = "Login_06",
                 Description     = "Wrong password → FailedLoginCount increments by 1",
                 ExpectedResult  = "Return 400, FailedLoginCount = 1",
                 StatusRound1    = "Passed",
@@ -287,7 +287,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-LOGIN-07 | B | Wrong password reaches limit (5th) → lock level 1
+        // Login_07 | B | Wrong password reaches limit (5th) → lock level 1
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_WrongPassword_ReachesLimit_ShouldLockLevel1()
@@ -313,7 +313,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
                 FunctionGroup   = "Login",
-                TestCaseID      = "TC-LOGIN-07",
+                TestCaseID      = "Login_07",
                 Description     = "5th wrong password (= limit) → lock level 1 (5 min), LockedUntil set",
                 ExpectedResult  = "FailedLoginCount = 5, LockedUntil is set, Return 400",
                 StatusRound1    = "Passed",
@@ -330,7 +330,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-LOGIN-08 | B | Wrong password reaches 2x limit → lock level 2 (30 min)
+        // Login_08 | B | Wrong password reaches 2x limit → lock level 2 (30 min)
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_WrongPassword_ReachesDoubleLimit_ShouldLockLevel2()
@@ -353,7 +353,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
                 FunctionGroup   = "Login",
-                TestCaseID      = "TC-LOGIN-08",
+                TestCaseID      = "Login_08",
                 Description     = "10th wrong password (limit x2) → lock level 2 (30 min)",
                 ExpectedResult  = "LockedUntil = now + 30 min",
                 StatusRound1    = "Passed",
@@ -369,7 +369,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-LOGIN-09 | B | Wrong password ≥ 3x limit, PERMANENT_LOCK → Banned
+        // Login_09 | B | Wrong password ≥ 3x limit, PERMANENT_LOCK → Banned
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_WrongPassword_ReachesTripleLimit_ShouldPermanentlyBan()
@@ -392,7 +392,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
                 FunctionGroup   = "Login",
-                TestCaseID      = "TC-LOGIN-09",
+                TestCaseID      = "Login_09",
                 Description     = "15th wrong password (>= limit x3), action PERMANENT_LOCK → permanently banned",
                 ExpectedResult  = "Status = Banned, LockedUntil = null",
                 StatusRound1    = "Passed",
@@ -408,7 +408,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-LOGIN-10 | A | Using default password → 403
+        // Login_10 | A | Using default password → 403
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_UsingDefaultPassword_ShouldReturn403()
@@ -427,7 +427,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
                 FunctionGroup   = "Login",
-                TestCaseID      = "TC-LOGIN-10",
+                TestCaseID      = "Login_10",
                 Description     = "User logs in with the system default password → blocked",
                 ExpectedResult  = "Return 403 DefaultPasswordUsed",
                 StatusRound1    = "Passed",
@@ -443,7 +443,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-LOGIN-11 | N | Valid credentials, RememberMe = false → 200, JWT, no refresh token
+        // Login_11 | N | Valid credentials, RememberMe = false → 200, JWT, no refresh token
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidCredentials_NoRememberMe_ShouldReturn200WithJwt()
@@ -476,7 +476,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
                 FunctionGroup   = "Login",
-                TestCaseID      = "TC-LOGIN-11",
+                TestCaseID      = "Login_11",
                 Description     = "Valid credentials, RememberMe = false → JWT returned, no refresh token, FailedLoginCount reset",
                 ExpectedResult  = "Return 200, token = fake-jwt-token, RefreshToken = null, FailedLoginCount = 0",
                 StatusRound1    = "Passed",
@@ -493,7 +493,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-LOGIN-12 | N | Valid credentials, RememberMe = true → 200, JWT + refresh token
+        // Login_12 | N | Valid credentials, RememberMe = true → 200, JWT + refresh token
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidCredentials_RememberMe_ShouldReturn200WithRefreshToken()
@@ -517,7 +517,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
                 FunctionGroup   = "Login",
-                TestCaseID      = "TC-LOGIN-12",
+                TestCaseID      = "Login_12",
                 Description     = "Valid credentials, RememberMe = true → both JWT and refresh token returned",
                 ExpectedResult  = "Return 200, Token = fake-jwt-token, RefreshToken = fake-refresh-token",
                 StatusRound1    = "Passed",

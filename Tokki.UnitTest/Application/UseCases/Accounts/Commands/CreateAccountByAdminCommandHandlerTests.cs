@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -36,7 +36,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CABA-01 | A | Email Exists -> 409 Conflict
+        // CreateAccountByAdminCommandHandler_01 | A | Email Exists -> 409 Conflict
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmailExists_ShouldReturn409()
@@ -58,7 +58,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Create By Admin", new TestCaseDetail
             {
                 FunctionGroup = "CreateAccountByAdminCommandHandler",
-                TestCaseID = "TC-CABA-01",
+                TestCaseID = "CreateAccountByAdminCommandHandler_01",
                 Description = "Returns 409 when email already exists",
                 ExpectedResult = "Return 409 and EmailDuplicated error",
                 StatusRound1 = "Passed",
@@ -69,7 +69,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CABA-02 | A | Phone Number Exists -> 409 Conflict
+        // CreateAccountByAdminCommandHandler_02 | A | Phone Number Exists -> 409 Conflict
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_PhoneExists_ShouldReturn409()
@@ -92,7 +92,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Create By Admin", new TestCaseDetail
             {
                 FunctionGroup = "CreateAccountByAdminCommandHandler",
-                TestCaseID = "TC-CABA-02",
+                TestCaseID = "CreateAccountByAdminCommandHandler_02",
                 Description = "Returns 409 when phone number already exists",
                 ExpectedResult = "Return 409 and PhoneNumberDuplicated error",
                 StatusRound1 = "Passed",
@@ -103,7 +103,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CABA-03 | A | Config Missing Default Password -> 500
+        // CreateAccountByAdminCommandHandler_03 | A | Config Missing Default Password -> 500
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ConfigMissing_ShouldReturn500()
@@ -125,7 +125,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Create By Admin", new TestCaseDetail
             {
                 FunctionGroup = "CreateAccountByAdminCommandHandler",
-                TestCaseID = "TC-CABA-03",
+                TestCaseID = "CreateAccountByAdminCommandHandler_03",
                 Description = "Returns 500 when default password config is missing",
                 ExpectedResult = "Return 500 ServerError",
                 StatusRound1 = "Passed",
@@ -136,7 +136,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CABA-04 | N | Success Creates User Role -> 201
+        // CreateAccountByAdminCommandHandler_04 | N | Success Creates User Role -> 201
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SuccessUser_ShouldReturn201()
@@ -162,7 +162,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Create By Admin", new TestCaseDetail
             {
                 FunctionGroup = "CreateAccountByAdminCommandHandler",
-                TestCaseID = "TC-CABA-04",
+                TestCaseID = "CreateAccountByAdminCommandHandler_04",
                 Description = "Successfully creates User role account",
                 ExpectedResult = "Return 201",
                 StatusRound1 = "Passed",
@@ -173,7 +173,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CABA-05 | B | Success but Email Sends Fails -> 201
+        // CreateAccountByAdminCommandHandler_05 | B | Success but Email Sends Fails -> 201
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmailSendFails_ShouldStillReturn201()
@@ -200,7 +200,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Create By Admin", new TestCaseDetail
             {
                 FunctionGroup = "CreateAccountByAdminCommandHandler",
-                TestCaseID = "TC-CABA-05",
+                TestCaseID = "CreateAccountByAdminCommandHandler_05",
                 Description = "Account creates successfully even if email sending throws exception",
                 ExpectedResult = "Return 201 without failure",
                 StatusRound1 = "Passed",
@@ -211,7 +211,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CABA-06 | E | Database Add Throws Exception -> 500
+        // CreateAccountByAdminCommandHandler_06 | E | Database Add Throws Exception -> 500
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DatabaseException_ShouldReturn500()
@@ -235,7 +235,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Create By Admin", new TestCaseDetail
             {
                 FunctionGroup = "CreateAccountByAdminCommandHandler",
-                TestCaseID = "TC-CABA-06",
+                TestCaseID = "CreateAccountByAdminCommandHandler_06",
                 Description = "Returns 500 when database insertion fails",
                 ExpectedResult = "Return 500 ServerError",
                 StatusRound1 = "Passed",

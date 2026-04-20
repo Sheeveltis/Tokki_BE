@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Hangfire;
 using Moq;
 using System;
@@ -62,7 +62,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-SUEX-01 | A | Session not found → 404
+        // SubmitUserExam_01 | A | Session not found → 404
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SessionNotFound_ShouldReturn404()
@@ -86,7 +86,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Submit", new TestCaseDetail
             {
                 FunctionGroup     = "SubmitUserExam",
-                TestCaseID        = "TC-SUEX-01",
+                TestCaseID        = "SubmitUserExam_01",
                 Description       = "Submit with non-existent UserExamId → 404",
                 ExpectedResult    = "IsSuccess=false, StatusCode=404",
                 StatusRound1      = "Passed",
@@ -97,7 +97,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-SUEX-02 | A | UserId mismatch → 403 Forbidden
+        // SubmitUserExam_02 | A | UserId mismatch → 403 Forbidden
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_UserIdMismatch_ShouldReturn403()
@@ -122,7 +122,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Submit", new TestCaseDetail
             {
                 FunctionGroup     = "SubmitUserExam",
-                TestCaseID        = "TC-SUEX-02",
+                TestCaseID        = "SubmitUserExam_02",
                 Description       = "Different user attempts to submit another user's exam → 403",
                 ExpectedResult    = "IsSuccess=false, StatusCode=403",
                 StatusRound1      = "Passed",
@@ -133,7 +133,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-SUEX-03 | A | Exam already Completed → 400
+        // SubmitUserExam_03 | A | Exam already Completed → 400
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ExamAlreadyCompleted_ShouldReturn400()
@@ -158,7 +158,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Submit", new TestCaseDetail
             {
                 FunctionGroup     = "SubmitUserExam",
-                TestCaseID        = "TC-SUEX-03",
+                TestCaseID        = "SubmitUserExam_03",
                 Description       = "Exam already submitted (Completed) → 400 Bad Request",
                 ExpectedResult    = "IsSuccess=false, StatusCode=400",
                 StatusRound1      = "Passed",
@@ -169,7 +169,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-SUEX-04 | N | Happy path: valid submit → 200, score calculated
+        // SubmitUserExam_04 | N | Happy path: valid submit → 200, score calculated
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidSubmit_ShouldReturn200WithScore()
@@ -197,7 +197,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Submit", new TestCaseDetail
             {
                 FunctionGroup     = "SubmitUserExam",
-                TestCaseID        = "TC-SUEX-04",
+                TestCaseID        = "SubmitUserExam_04",
                 Description       = "Valid submit with 1 correct answer → 200, FinalMcqScore=1",
                 ExpectedResult    = "IsSuccess=true, FinalMcqScore=1",
                 StatusRound1      = "Passed",
@@ -208,7 +208,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-SUEX-05 | N | SaveChangesAsync called once on success
+        // SubmitUserExam_05 | N | SaveChangesAsync called once on success
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidSubmit_ShouldCallSaveChangesOnce()
@@ -234,7 +234,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Submit", new TestCaseDetail
             {
                 FunctionGroup     = "SubmitUserExam",
-                TestCaseID        = "TC-SUEX-05",
+                TestCaseID        = "SubmitUserExam_05",
                 Description       = "SaveChangesAsync called exactly once when exam is submitted",
                 ExpectedResult    = "SaveChangesAsync Times.Once",
                 StatusRound1      = "Passed",
@@ -245,7 +245,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-SUEX-06 | E | Repository throws → exception propagates
+        // SubmitUserExam_06 | E | Repository throws → exception propagates
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
@@ -268,7 +268,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Submit", new TestCaseDetail
             {
                 FunctionGroup     = "SubmitUserExam",
-                TestCaseID        = "TC-SUEX-06",
+                TestCaseID        = "SubmitUserExam_06",
                 Description       = "Repository throws exception → exception propagates up",
                 ExpectedResult    = "Exception thrown with 'DB error'",
                 StatusRound1      = "Passed",

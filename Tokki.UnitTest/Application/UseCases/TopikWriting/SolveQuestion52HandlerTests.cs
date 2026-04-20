@@ -15,7 +15,7 @@ namespace Tokki.UnitTest.Application.UseCases.TopikWriting
             => new SolveQuestion52Handler(
                 (mockJobs ?? MockBackgroundJobClient.GetMock()).Object);
 
-        // ── TC-WRT52-01 ─────────────────────────────────────────────
+        // ── Writing_Grading_01 ─────────────────────────────────────────────
         [Fact]
         public async Task Handle_ValidRequest_ShouldReturn202WithGradingStatus()
         {
@@ -41,7 +41,7 @@ namespace Tokki.UnitTest.Application.UseCases.TopikWriting
             QACollector.LogTestCase("TopikWriting", new TestCaseDetail
             {
                 FunctionGroup = "Writing Grading",
-                TestCaseID = "TC-WRT52-01",
+                TestCaseID = "Writing_Grading_01",
                 Description = "Submit question 52 validly → enqueue job successfully",
                 ExpectedResult = "Returns 202, Score = -1, status = grading",
                 StatusRound1 = "Passed",
@@ -55,7 +55,7 @@ namespace Tokki.UnitTest.Application.UseCases.TopikWriting
             });
         }
 
-        // ── TC-WRT52-02 ─────────────────────────────────────────────
+        // ── Writing_Grading_02 ─────────────────────────────────────────────
         [Fact]
         public async Task Handle_HangfireThrowsException_ShouldReturn500()
         {
@@ -80,7 +80,7 @@ namespace Tokki.UnitTest.Application.UseCases.TopikWriting
             QACollector.LogTestCase("TopikWriting", new TestCaseDetail
             {
                 FunctionGroup = "Writing Grading",
-                TestCaseID = "TC-WRT52-02",
+                TestCaseID = "Writing_Grading_02",
                 Description = "Hangfire throws exception → returns 500",
                 ExpectedResult = "IsSuccess = false, StatusCode = 500, Message contains 'Error processing sentence 52'",
                 StatusRound1 = "Passed",
@@ -94,7 +94,7 @@ namespace Tokki.UnitTest.Application.UseCases.TopikWriting
             });
         }
 
-        // ── TC-WRT52-03 ─────────────────────────────────────────────
+        // ── Writing_Grading_03 ─────────────────────────────────────────────
         [Fact]
         public async Task Handle_EmptyAnswerId_ShouldStillEnqueueAndReturn202()
         {
@@ -119,7 +119,7 @@ namespace Tokki.UnitTest.Application.UseCases.TopikWriting
             QACollector.LogTestCase("TopikWriting", new TestCaseDetail
             {
                 FunctionGroup = "Writing Grading",
-                TestCaseID = "TC-WRT52-03",
+                TestCaseID = "Writing_Grading_03",
                 Description = "UserExamWritingAnswerId is empty → handler does not validate, still enqueues",
                 ExpectedResult = "Returns 202 because the handler has no validation logic",
                 StatusRound1 = "Passed",

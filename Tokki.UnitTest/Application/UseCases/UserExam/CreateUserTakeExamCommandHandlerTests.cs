@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -55,7 +55,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Create Session", new TestCaseDetail
             {
                 FunctionGroup = "Create User Take Exam",
-                TestCaseID = "TC-UEXM-CRE-01",
+                TestCaseID = "Create_User_Take_Exam_01",
                 Description = "Create session with non-existent ExamId",
                 ExpectedResult = "Return 404",
                 StatusRound1 = "Passed",
@@ -110,7 +110,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Create Session", new TestCaseDetail
             {
                 FunctionGroup = "Create User Take Exam",
-                TestCaseID = "TC-UEXM-CRE-02",
+                TestCaseID = "Create_User_Take_Exam_02",
                 Description = "There is already an InProgress session → return the old session, do not create a new one",
                 ExpectedResult = "Return Success with UserExamId = SESSION-EXISTING",
                 StatusRound1 = "Passed",
@@ -200,7 +200,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Create Session", new TestCaseDetail
             {
                 FunctionGroup = "Create User Take Exam",
-                TestCaseID = "TC-UEXM-CRE-03",
+                TestCaseID = "Create_User_Take_Exam_03",
                 Description = "Create a new session for a valid exam → AddSessionAsync is called",
                 ExpectedResult = "Return Success, AddSessionAsync called once",
                 StatusRound1 = "Passed",
@@ -275,7 +275,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Create Session", new TestCaseDetail
             {
                 FunctionGroup = "Create User Take Exam",
-                TestCaseID = "TC-UEXM-CRE-04",
+                TestCaseID = "Create_User_Take_Exam_04",
                 Description = "Exam has only Writing questions → creates UserExamWritingAnswer for each question",
                 ExpectedResult = "2 UserExamWritingAnswers created, UserExamAnswers empty",
                 StatusRound1 = "Passed",
@@ -347,7 +347,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Create Session", new TestCaseDetail
             {
                 FunctionGroup = "Create User Take Exam",
-                TestCaseID = "TC-UEXM-CRE-05",
+                TestCaseID = "Create_User_Take_Exam_05",
                 Description = "Exam has Reading and Writing questions → creates both UserExamAnswer and UserExamWritingAnswer",
                 ExpectedResult = "2 UserExamAnswers + 2 UserExamWritingAnswers",
                 StatusRound1 = "Passed",
@@ -418,7 +418,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Create Session", new TestCaseDetail
             {
                 FunctionGroup = "Create User Take Exam",
-                TestCaseID = "TC-UEXM-CRE-06",
+                TestCaseID = "Create_User_Take_Exam_06",
                 Description = "CurrentSkill is assigned to the skill of the TemplatePart with the smallest QuestionFrom",
                 ExpectedResult = "CurrentSkill = Listening (QuestionFrom=1 < Reading QuestionFrom=5)",
                 StatusRound1 = "Passed",

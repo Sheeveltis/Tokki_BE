@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -54,7 +54,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Create Campaign", new TestCaseDetail
             {
                 FunctionGroup     = "CreateEmailCampaign",
-                TestCaseID        = "TC-EMAIL-CAMP-01",
+                TestCaseID        = "CreateEmailCampaign_01",
                 Description       = "Valid request → EmailJob created with Status=Pending",
                 ExpectedResult    = "Return 200, job.Status = Pending",
                 StatusRound1      = "Passed",
@@ -82,7 +82,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Create Campaign", new TestCaseDetail
             {
                 FunctionGroup     = "CreateEmailCampaign",
-                TestCaseID        = "TC-EMAIL-CAMP-02",
+                TestCaseID        = "CreateEmailCampaign_02",
                 Description       = "JobId generated and returned as Result.Data",
                 ExpectedResult    = "Result.Data = generated JobId",
                 StatusRound1      = "Passed",
@@ -120,7 +120,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Create Campaign", new TestCaseDetail
             {
                 FunctionGroup     = "CreateEmailCampaign",
-                TestCaseID        = "TC-EMAIL-CAMP-03",
+                TestCaseID        = "CreateEmailCampaign_03",
                 Description       = "SpecificEmails list serialized to JSON and stored",
                 ExpectedResult    = "job.SpecificEmails contains serialized JSON of email list",
                 StatusRound1      = "Passed",
@@ -148,7 +148,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Create Campaign", new TestCaseDetail
             {
                 FunctionGroup     = "CreateEmailCampaign",
-                TestCaseID        = "TC-EMAIL-CAMP-04",
+                TestCaseID        = "CreateEmailCampaign_04",
                 Description       = "SpecificEmails is null → job.SpecificEmails = null",
                 ExpectedResult    = "job.SpecificEmails = null",
                 StatusRound1      = "Passed",
@@ -186,7 +186,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Create Campaign", new TestCaseDetail
             {
                 FunctionGroup     = "CreateEmailCampaign",
-                TestCaseID        = "TC-EMAIL-CAMP-05",
+                TestCaseID        = "CreateEmailCampaign_05",
                 Description       = "ScheduledTime = null → defaults to current VN time",
                 ExpectedResult    = "job.ScheduledTime ≈ DateTime.UtcNow.AddHours(7)",
                 StatusRound1      = "Passed",
@@ -208,7 +208,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Create Campaign", new TestCaseDetail
             {
                 FunctionGroup     = "CreateEmailCampaign",
-                TestCaseID        = "TC-EMAIL-CAMP-06",
+                TestCaseID        = "CreateEmailCampaign_06",
                 Description       = "Repository AddAsync throws → exception propagates",
                 ExpectedResult    = "Throws Exception",
                 StatusRound1      = "Passed",

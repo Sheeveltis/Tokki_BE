@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -64,7 +64,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetExamTemplateById",
-                TestCaseID        = "TC-EXMT-GBI-01",
+                TestCaseID        = "GetExamTemplateById_01",
                 Description       = "Template not found → ExamTemplateNotFound",
                 ExpectedResult    = "Return Failure",
                 StatusRound1      = "Passed",
@@ -92,7 +92,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetExamTemplateById",
-                TestCaseID        = "TC-EXMT-GBI-02",
+                TestCaseID        = "GetExamTemplateById_02",
                 Description       = "Template found → mapped to ExamTemplateDto correctly",
                 ExpectedResult    = "Return Success, Data.ExamTemplateId = 'EXMT-001'",
                 StatusRound1      = "Passed",
@@ -118,7 +118,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetExamTemplateById",
-                TestCaseID        = "TC-EXMT-GBI-03",
+                TestCaseID        = "GetExamTemplateById_03",
                 Description       = "1 part (Q1-Q10) → TotalParts=1, TotalQuestions=10",
                 ExpectedResult    = "TotalParts=1, TotalQuestions=10",
                 StatusRound1      = "Passed",
@@ -146,7 +146,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetExamTemplateById",
-                TestCaseID        = "TC-EXMT-GBI-04",
+                TestCaseID        = "GetExamTemplateById_04",
                 Description       = "Parts mapped with Skill=Listening, QuestionTypeName='Multiple Choice'",
                 ExpectedResult    = "Parts[0].Skill=Listening, QuestionTypeName='Multiple Choice'",
                 StatusRound1      = "Passed",
@@ -192,7 +192,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetExamTemplateById",
-                TestCaseID        = "TC-EXMT-GBI-05",
+                TestCaseID        = "GetExamTemplateById_05",
                 Description       = "Part has null QuestionType → QuestionTypeName = '' (empty)",
                 ExpectedResult    = "Parts[0].QuestionTypeName = ''",
                 StatusRound1      = "Passed",
@@ -215,7 +215,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetExamTemplateById",
-                TestCaseID        = "TC-EXMT-GBI-06",
+                TestCaseID        = "GetExamTemplateById_06",
                 Description       = "Repository throws → exception propagates",
                 ExpectedResult    = "Throws Exception",
                 StatusRound1      = "Passed",

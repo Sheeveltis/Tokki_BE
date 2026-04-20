@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -20,7 +20,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Queries.GetQuestionB
         private GetQuestionBankByIdQueryHandler CreateHandler() => new(_repoMock.Object);
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-ID-01 | A | NotFound -> 404
+        // GetQuestionBankByIdQueryHandler_01 | A | NotFound -> 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NotFound_ShouldReturn404()
@@ -38,7 +38,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Queries.GetQuestionB
             QACollector.LogTestCase("Question Bank - Get By Id", new TestCaseDetail
             {
                 FunctionGroup = "GetQuestionBankByIdQueryHandler",
-                TestCaseID = "TC-QB-ID-01",
+                TestCaseID = "GetQuestionBankByIdQueryHandler_01",
                 Description = "Returns error if entity not found",
                 ExpectedResult = "Return 404",
                 StatusRound1 = "Passed",
@@ -49,7 +49,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Queries.GetQuestionB
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-ID-02 | N | Full Loading -> 200
+        // GetQuestionBankByIdQueryHandler_02 | N | Full Loading -> 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_FullLoading_ShouldReturn200()
@@ -80,7 +80,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Queries.GetQuestionB
             QACollector.LogTestCase("Question Bank - Get By Id", new TestCaseDetail
             {
                 FunctionGroup = "GetQuestionBankByIdQueryHandler",
-                TestCaseID = "TC-QB-ID-02",
+                TestCaseID = "GetQuestionBankByIdQueryHandler_02",
                 Description = "Returns DTO with all nested models",
                 ExpectedResult = "Return 200 Data",
                 StatusRound1 = "Passed",
@@ -91,7 +91,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Queries.GetQuestionB
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-ID-03 | N | Null Navigation Properties -> 200
+        // GetQuestionBankByIdQueryHandler_03 | N | Null Navigation Properties -> 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NullNavigations_ShouldReturn200()
@@ -117,7 +117,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Queries.GetQuestionB
             QACollector.LogTestCase("Question Bank - Get By Id", new TestCaseDetail
             {
                 FunctionGroup = "GetQuestionBankByIdQueryHandler",
-                TestCaseID = "TC-QB-ID-03",
+                TestCaseID = "GetQuestionBankByIdQueryHandler_03",
                 Description = "Returns 200 safely when navigations are null",
                 ExpectedResult = "Return 200",
                 StatusRound1 = "Passed",
@@ -128,7 +128,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Queries.GetQuestionB
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-ID-04 | E | Exception In Repo -> 500 equivalent if external, but we mock the query 
+        // GetQuestionBankByIdQueryHandler_04 | E | Exception In Repo -> 500 equivalent if external, but we mock the query 
         // We will just do a standard exception catch if one exists, otherwise xunit catches it.
         // Wait, the handler does NOT have a try/catch, so it throws up to middleware. This is standard in MediatR.
         // ═══════════════════════════════════════════════════════════
@@ -147,7 +147,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Queries.GetQuestionB
             QACollector.LogTestCase("Question Bank - Get By Id", new TestCaseDetail
             {
                 FunctionGroup = "GetQuestionBankByIdQueryHandler",
-                TestCaseID = "TC-QB-ID-04",
+                TestCaseID = "GetQuestionBankByIdQueryHandler_04",
                 Description = "Throws implicitly if Repo throws",
                 ExpectedResult = "Throws Exception",
                 StatusRound1 = "Passed",
@@ -158,7 +158,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Queries.GetQuestionB
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-ID-05 | A | Empty ID defaults -> repo might handle or we fail
+        // GetQuestionBankByIdQueryHandler_05 | A | Empty ID defaults -> repo might handle or we fail
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyId_Returns404IfRepoNull()
@@ -176,7 +176,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Queries.GetQuestionB
             QACollector.LogTestCase("Question Bank - Get By Id", new TestCaseDetail
             {
                 FunctionGroup = "GetQuestionBankByIdQueryHandler",
-                TestCaseID = "TC-QB-ID-05",
+                TestCaseID = "GetQuestionBankByIdQueryHandler_05",
                 Description = "Returns error if empty id triggers repo null",
                 ExpectedResult = "Return 404",
                 StatusRound1 = "Passed",
@@ -187,7 +187,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Queries.GetQuestionB
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-ID-06 | N | Success Content Mapping
+        // GetQuestionBankByIdQueryHandler_06 | N | Success Content Mapping
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_OptionsMappedCorrectly_Return200()
@@ -211,7 +211,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Queries.GetQuestionB
             QACollector.LogTestCase("Question Bank - Get By Id", new TestCaseDetail
             {
                 FunctionGroup = "GetQuestionBankByIdQueryHandler",
-                TestCaseID = "TC-QB-ID-06",
+                TestCaseID = "GetQuestionBankByIdQueryHandler_06",
                 Description = "Maps base properties correctly",
                 ExpectedResult = "Return 200 Data",
                 StatusRound1 = "Passed",

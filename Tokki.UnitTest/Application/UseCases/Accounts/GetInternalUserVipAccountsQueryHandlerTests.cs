@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -63,7 +63,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GIV-01 | N | Base Filter: Only User or VIP roles are returned
+        // Get_Internal_User_Vip_Accounts_01 | N | Base Filter: Only User or VIP roles are returned
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NoFilters_ShouldReturnOnlyUserAndVipRoles()
@@ -80,7 +80,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Get VIP Accounts", new TestCaseDetail
             {
                 FunctionGroup     = "Get Internal User Vip Accounts",
-                TestCaseID        = "TC-GIV-01",
+                TestCaseID        = "Get_Internal_User_Vip_Accounts_01",
                 Description       = "Query without specific filters should exclude Admin/Staff roles",
                 ExpectedResult    = "Return only AccountRole.User and AccountRole.Vip",
                 StatusRound1      = "Passed",
@@ -91,7 +91,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GIV-02 | N | Filter by Status works correctly
+        // Get_Internal_User_Vip_Accounts_02 | N | Filter by Status works correctly
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_StatusFilter_ShouldReturnMatchingStatus()
@@ -108,7 +108,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Get VIP Accounts", new TestCaseDetail
             {
                 FunctionGroup     = "Get Internal User Vip Accounts",
-                TestCaseID        = "TC-GIV-02",
+                TestCaseID        = "Get_Internal_User_Vip_Accounts_02",
                 Description       = "Filter by Status = Inactive",
                 ExpectedResult    = "Return exactly 1 matching account",
                 StatusRound1      = "Passed",
@@ -119,7 +119,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GIV-03 | N | Search by partial Name
+        // Get_Internal_User_Vip_Accounts_03 | N | Search by partial Name
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SearchNameFilter_ShouldReturnMatchingName()
@@ -136,7 +136,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Get VIP Accounts", new TestCaseDetail
             {
                 FunctionGroup     = "Get Internal User Vip Accounts",
-                TestCaseID        = "TC-GIV-03",
+                TestCaseID        = "Get_Internal_User_Vip_Accounts_03",
                 Description       = "Case-insensitive SearchName filter",
                 ExpectedResult    = "Return Alice's account",
                 StatusRound1      = "Passed",
@@ -147,7 +147,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GIV-04 | N | VIP Status Active vs NoVip
+        // Get_Internal_User_Vip_Accounts_04 | N | VIP Status Active vs NoVip
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_VipStatusActiveFilter_ShouldReturnOnlyFutureVips()
@@ -164,7 +164,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Get VIP Accounts", new TestCaseDetail
             {
                 FunctionGroup     = "Get Internal User Vip Accounts",
-                TestCaseID        = "TC-GIV-04",
+                TestCaseID        = "Get_Internal_User_Vip_Accounts_04",
                 Description       = "Filter by VipStatus = Active",
                 ExpectedResult    = "Return accounts where VipExpirationDate > now",
                 StatusRound1      = "Passed",
@@ -175,7 +175,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GIV-05 | N | VIP Status NoVIP
+        // Get_Internal_User_Vip_Accounts_05 | N | VIP Status NoVIP
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_VipStatusNoVipFilter_ShouldReturnOnlyNullVips()
@@ -192,7 +192,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Get VIP Accounts", new TestCaseDetail
             {
                 FunctionGroup     = "Get Internal User Vip Accounts",
-                TestCaseID        = "TC-GIV-05",
+                TestCaseID        = "Get_Internal_User_Vip_Accounts_05",
                 Description       = "Filter by VipStatus = NoVip",
                 ExpectedResult    = "Return accounts where VipExpirationDate == null",
                 StatusRound1      = "Passed",
@@ -203,7 +203,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GIV-06 | B | Paging skips correctly
+        // Get_Internal_User_Vip_Accounts_06 | B | Paging skips correctly
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_Paging_ShouldHonorPageNumberAndSize()
@@ -222,7 +222,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Get VIP Accounts", new TestCaseDetail
             {
                 FunctionGroup     = "Get Internal User Vip Accounts",
-                TestCaseID        = "TC-GIV-06",
+                TestCaseID        = "Get_Internal_User_Vip_Accounts_06",
                 Description       = "Paging with pageSize=2, pageNumber=2 on 3 items",
                 ExpectedResult    = "Return 1 item on the 2nd page",
                 StatusRound1      = "Passed",

@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -25,7 +25,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-DC-01 | A | CategoryNotFound → 404
+        // Delete_Category_01 | A | CategoryNotFound → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_CategoryNotFound_ShouldReturn404()
@@ -40,7 +40,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
             QACollector.LogTestCase("Category - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Category",
-                TestCaseID        = "TC-DC-01",
+                TestCaseID        = "Delete_Category_01",
                 Description       = "Attempt to delete a category that does not exist",
                 ExpectedResult    = "Return 404 NotFound",
                 StatusRound1      = "Passed",
@@ -51,7 +51,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-DC-02 | A | Database Exception → 500
+        // Delete_Category_02 | A | Database Exception → 500
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DatabaseException_ShouldReturn500()
@@ -72,7 +72,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
             QACollector.LogTestCase("Category - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Category",
-                TestCaseID        = "TC-DC-02",
+                TestCaseID        = "Delete_Category_02",
                 Description       = "Exception occurs during repository DeleteAsync",
                 ExpectedResult    = "Return 500 ServerError",
                 StatusRound1      = "Passed",
@@ -83,7 +83,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-DC-03 | N | Valid Delete → 200
+        // Delete_Category_03 | N | Valid Delete → 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidRequest_ShouldReturn200()
@@ -103,7 +103,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
             QACollector.LogTestCase("Category - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Category",
-                TestCaseID        = "TC-DC-03",
+                TestCaseID        = "Delete_Category_03",
                 Description       = "Valid payload matching existing Category",
                 ExpectedResult    = "Return 200 Success and executes delete",
                 StatusRound1      = "Passed",
@@ -114,7 +114,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-DC-04 | B | Null ID → 404
+        // Delete_Category_04 | B | Null ID → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NullId_ShouldReturn404()
@@ -128,7 +128,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
             QACollector.LogTestCase("Category - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Category",
-                TestCaseID        = "TC-DC-04",
+                TestCaseID        = "Delete_Category_04",
                 Description       = "Delete payload is sent with null ID",
                 ExpectedResult    = "Lookup fails, returns 404 safely",
                 StatusRound1      = "Passed",
@@ -139,7 +139,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-DC-05 | N | Verify Reference Matching
+        // Delete_Category_05 | N | Verify Reference Matching
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_Delete_VerifiesEntityReference()
@@ -155,7 +155,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
             QACollector.LogTestCase("Category - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Category",
-                TestCaseID        = "TC-DC-05",
+                TestCaseID        = "Delete_Category_05",
                 Description       = "Ensure the exact object instance retrieved is passed into Delete",
                 ExpectedResult    = "DeleteAsync verifies the same reference",
                 StatusRound1      = "Passed",
@@ -166,7 +166,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-DC-06 | N | Localized Error Handling
+        // Delete_Category_06 | N | Localized Error Handling
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_Exception_ValidatesMessageString()
@@ -184,7 +184,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
             QACollector.LogTestCase("Category - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Category",
-                TestCaseID        = "TC-DC-06",
+                TestCaseID        = "Delete_Category_06",
                 Description       = "Database constraints or unexpected failures",
                 ExpectedResult    = "Return generic localized error message",
                 StatusRound1      = "Passed",

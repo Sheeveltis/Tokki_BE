@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using FluentValidation.TestHelper;
 using Moq;
 using System;
@@ -27,7 +27,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
             _validator = new CreateQuestionBankCommandValidator(_mockTypeRepo.Object);
         }
 
-        // TC-QB-CBV-01 | A | Empty QuestionTypeId -> Error
+        // CreateQuestionBankCommandValidator_01 | A | Empty QuestionTypeId -> Error
         [Fact]
         public async Task ValidateAsync_EmptyQuestionTypeId_ShouldHaveError()
         {
@@ -40,7 +40,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
             QACollector.LogTestCase("Question Bank - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreateQuestionBankCommandValidator",
-                TestCaseID = "TC-QB-CBV-01",
+                TestCaseID = "CreateQuestionBankCommandValidator_01",
                 Description = "Empty TypeId is blocked unconditionally before DB query",
                 ExpectedResult = "Validation Error",
                 StatusRound1 = "Passed",
@@ -50,7 +50,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
             });
         }
 
-        // TC-QB-CBV-02 | A | TypeId Not Found in DB -> Error
+        // CreateQuestionBankCommandValidator_02 | A | TypeId Not Found in DB -> Error
         [Fact]
         public async Task ValidateAsync_TypeIdNotFound_ShouldHaveError()
         {
@@ -66,7 +66,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
             QACollector.LogTestCase("Question Bank - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreateQuestionBankCommandValidator",
-                TestCaseID = "TC-QB-CBV-02",
+                TestCaseID = "CreateQuestionBankCommandValidator_02",
                 Description = "Database lookup prevents linking bad question types",
                 ExpectedResult = "Validation Error",
                 StatusRound1 = "Passed",
@@ -76,7 +76,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
             });
         }
 
-        // TC-QB-CBV-03 | A | TypeId Inactive -> Error
+        // CreateQuestionBankCommandValidator_03 | A | TypeId Inactive -> Error
         [Fact]
         public async Task ValidateAsync_TypeIdInactive_ShouldHaveError()
         {
@@ -92,7 +92,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
             QACollector.LogTestCase("Question Bank - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreateQuestionBankCommandValidator",
-                TestCaseID = "TC-QB-CBV-03",
+                TestCaseID = "CreateQuestionBankCommandValidator_03",
                 Description = "Database lookup prevents using disabled configuration templates",
                 ExpectedResult = "Validation Error",
                 StatusRound1 = "Passed",
@@ -102,7 +102,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
             });
         }
 
-        // TC-QB-CBV-04 | A | Listening Skill missing MediaUrl -> Error
+        // CreateQuestionBankCommandValidator_04 | A | Listening Skill missing MediaUrl -> Error
         [Fact]
         public async Task ValidateAsync_ListeningSkillWithoutMedia_ShouldHaveError()
         {
@@ -118,7 +118,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
             QACollector.LogTestCase("Question Bank - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreateQuestionBankCommandValidator",
-                TestCaseID = "TC-QB-CBV-04",
+                TestCaseID = "CreateQuestionBankCommandValidator_04",
                 Description = "Enforces skill boundaries requiring media for listening banks",
                 ExpectedResult = "Validation Error",
                 StatusRound1 = "Passed",
@@ -128,7 +128,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
             });
         }
 
-        // TC-QB-CBV-05 | A | Reading Skill missing Content -> Error
+        // CreateQuestionBankCommandValidator_05 | A | Reading Skill missing Content -> Error
         [Fact]
         public async Task ValidateAsync_ReadingSkillWithoutContent_ShouldHaveError()
         {
@@ -144,7 +144,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
             QACollector.LogTestCase("Question Bank - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreateQuestionBankCommandValidator",
-                TestCaseID = "TC-QB-CBV-05",
+                TestCaseID = "CreateQuestionBankCommandValidator_05",
                 Description = "Enforces skill boundaries requiring passage string for reading banks",
                 ExpectedResult = "Validation Error",
                 StatusRound1 = "Passed",
@@ -154,7 +154,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
             });
         }
 
-        // TC-QB-CBV-06 | A | Writing Skill containing options -> Error
+        // CreateQuestionBankCommandValidator_06 | A | Writing Skill containing options -> Error
         [Fact]
         public async Task ValidateAsync_WritingSkillWithOptions_ShouldHaveError()
         {
@@ -174,7 +174,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
             QACollector.LogTestCase("Question Bank - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreateQuestionBankCommandValidator",
-                TestCaseID = "TC-QB-CBV-06",
+                TestCaseID = "CreateQuestionBankCommandValidator_06",
                 Description = "Enforces writing tasks to be strictly essay type without multiple choice data",
                 ExpectedResult = "Validation Error",
                 StatusRound1 = "Passed",
@@ -184,7 +184,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
             });
         }
 
-        // TC-QB-CBV-07 | N | Fully Valid Request -> Pass
+        // CreateQuestionBankCommandValidator_07 | N | Fully Valid Request -> Pass
         [Fact]
         public async Task ValidateAsync_ValidReadingWithCorrectOptions_ShouldPass()
         {
@@ -208,7 +208,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands
             QACollector.LogTestCase("Question Bank - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreateQuestionBankCommandValidator",
-                TestCaseID = "TC-QB-CBV-07",
+                TestCaseID = "CreateQuestionBankCommandValidator_07",
                 Description = "Valid reading configuration matching exact constraints safely parses logic",
                 ExpectedResult = "No errors",
                 StatusRound1 = "Passed",

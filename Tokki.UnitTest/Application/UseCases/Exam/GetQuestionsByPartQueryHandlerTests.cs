@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -45,7 +45,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             }
         };
 
-        // TC-EXQP-01 | A | TemplatePart not found → 404
+        // Get_Questions_By_Part_01 | A | TemplatePart not found → 404
         [Fact]
         public async Task Handle_TemplatePartNotFound_ShouldReturn404()
         {
@@ -61,7 +61,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get Questions By Part", new TestCaseDetail
             {
-                FunctionGroup = "Get Questions By Part", TestCaseID = "TC-EXQP-01",
+                FunctionGroup = "Get Questions By Part", TestCaseID = "Get_Questions_By_Part_01",
                 Description = "TemplatePart ID not found in repository",
                 ExpectedResult = "Return 404 TemplatePartNotFound", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -69,7 +69,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXQP-02 | N | Valid part → returns questions
+        // Get_Questions_By_Part_02 | N | Valid part → returns questions
         [Fact]
         public async Task Handle_ValidPart_ShouldReturnQuestions()
         {
@@ -87,7 +87,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get Questions By Part", new TestCaseDetail
             {
-                FunctionGroup = "Get Questions By Part", TestCaseID = "TC-EXQP-02",
+                FunctionGroup = "Get Questions By Part", TestCaseID = "Get_Questions_By_Part_02",
                 Description = "Valid TemplatePartId returns available questions",
                 ExpectedResult = "Return 200 with questions", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -95,7 +95,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXQP-03 | N | DTO mapping — Listening → media type = Audio
+        // Get_Questions_By_Part_03 | N | DTO mapping — Listening → media type = Audio
         [Fact]
         public async Task Handle_ListeningPart_ShouldMapMediaTypeToAudio()
         {
@@ -113,7 +113,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get Questions By Part", new TestCaseDetail
             {
-                FunctionGroup = "Get Questions By Part", TestCaseID = "TC-EXQP-03",
+                FunctionGroup = "Get Questions By Part", TestCaseID = "Get_Questions_By_Part_03",
                 Description = "Listening questions should have MediaType = Audio",
                 ExpectedResult = "MediaType = 'Audio' for Listening skill", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -121,7 +121,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXQP-04 | N | Reading/Writing → media type = Image
+        // Get_Questions_By_Part_04 | N | Reading/Writing → media type = Image
         [Fact]
         public async Task Handle_ReadingPart_ShouldMapMediaTypeToImage()
         {
@@ -146,7 +146,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get Questions By Part", new TestCaseDetail
             {
-                FunctionGroup = "Get Questions By Part", TestCaseID = "TC-EXQP-04",
+                FunctionGroup = "Get Questions By Part", TestCaseID = "Get_Questions_By_Part_04",
                 Description = "Reading questions should have MediaType = Image",
                 ExpectedResult = "MediaType = 'Image'", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -154,7 +154,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXQP-05 | N | Empty question bank returns 200 with empty items
+        // Get_Questions_By_Part_05 | N | Empty question bank returns 200 with empty items
         [Fact]
         public async Task Handle_EmptyBank_ShouldReturn200WithEmpty()
         {
@@ -173,7 +173,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get Questions By Part", new TestCaseDetail
             {
-                FunctionGroup = "Get Questions By Part", TestCaseID = "TC-EXQP-05",
+                FunctionGroup = "Get Questions By Part", TestCaseID = "Get_Questions_By_Part_05",
                 Description = "No available questions for this part type → empty list returned",
                 ExpectedResult = "200 with empty Items", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -181,7 +181,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXQP-06 | A | Repository throws → exception propagates
+        // Get_Questions_By_Part_06 | A | Repository throws → exception propagates
         [Fact]
         public async Task Handle_BankRepositoryThrows_ShouldPropagateException()
         {
@@ -198,7 +198,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get Questions By Part", new TestCaseDetail
             {
-                FunctionGroup = "Get Questions By Part", TestCaseID = "TC-EXQP-06",
+                FunctionGroup = "Get Questions By Part", TestCaseID = "Get_Questions_By_Part_06",
                 Description = "QuestionBank repository throws exception",
                 ExpectedResult = "Exception propagates", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using FluentValidation.TestHelper;
 using System;
 using System.Collections.Generic;
@@ -30,7 +30,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             };
         }
 
-        // TC-ACC-CBA-01 | N | Happy path
+        // CreateAccountByAdminCommandValidator_01 | N | Happy path
         [Fact]
         public void Validate_ValidCommand_ShouldNotHaveAnyErrors()
         {
@@ -41,7 +41,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Create By Admin", new TestCaseDetail
             {
                 FunctionGroup = "CreateAccountByAdminCommandValidator",
-                TestCaseID = "TC-ACC-CBA-01",
+                TestCaseID = "CreateAccountByAdminCommandValidator_01",
                 Description = "Valid command should pass validation",
                 ExpectedResult = "No validation errors",
                 StatusRound1 = "Passed",
@@ -51,7 +51,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-CBA-02 | A | Missing Email
+        // CreateAccountByAdminCommandValidator_02 | A | Missing Email
         [Fact]
         public void Validate_EmptyEmail_ShouldHaveError()
         {
@@ -64,7 +64,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Create By Admin", new TestCaseDetail
             {
                 FunctionGroup = "CreateAccountByAdminCommandValidator",
-                TestCaseID = "TC-ACC-CBA-02",
+                TestCaseID = "CreateAccountByAdminCommandValidator_02",
                 Description = "Empty email fails validation",
                 ExpectedResult = "Email là bắt buộc.",
                 StatusRound1 = "Passed",
@@ -74,7 +74,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-CBA-03 | A | Invalid Email Format
+        // CreateAccountByAdminCommandValidator_03 | A | Invalid Email Format
         [Fact]
         public void Validate_InvalidEmail_ShouldHaveError()
         {
@@ -87,7 +87,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Create By Admin", new TestCaseDetail
             {
                 FunctionGroup = "CreateAccountByAdminCommandValidator",
-                TestCaseID = "TC-ACC-CBA-03",
+                TestCaseID = "CreateAccountByAdminCommandValidator_03",
                 Description = "Invalid email format fails validation",
                 ExpectedResult = "Email không đúng định dạng.",
                 StatusRound1 = "Passed",
@@ -97,7 +97,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-CBA-04 | A | Exceed Max Length Email
+        // CreateAccountByAdminCommandValidator_04 | A | Exceed Max Length Email
         [Fact]
         public void Validate_EmailExceedsMaxLength_ShouldHaveError()
         {
@@ -110,7 +110,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Create By Admin", new TestCaseDetail
             {
                 FunctionGroup = "CreateAccountByAdminCommandValidator",
-                TestCaseID = "TC-ACC-CBA-04",
+                TestCaseID = "CreateAccountByAdminCommandValidator_04",
                 Description = "Email exceeding max length fails validation",
                 ExpectedResult = "Email không được vượt quá 255 ký tự.",
                 StatusRound1 = "Passed",
@@ -120,7 +120,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-CBA-05 | A | Missing FullName
+        // CreateAccountByAdminCommandValidator_05 | A | Missing FullName
         [Fact]
         public void Validate_EmptyFullName_ShouldHaveError()
         {
@@ -133,7 +133,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Create By Admin", new TestCaseDetail
             {
                 FunctionGroup = "CreateAccountByAdminCommandValidator",
-                TestCaseID = "TC-ACC-CBA-05",
+                TestCaseID = "CreateAccountByAdminCommandValidator_05",
                 Description = "Empty FullName fails validation",
                 ExpectedResult = "Họ tên là bắt buộc.",
                 StatusRound1 = "Passed",
@@ -143,7 +143,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-CBA-06 | A | Invalid PhoneNumber
+        // CreateAccountByAdminCommandValidator_06 | A | Invalid PhoneNumber
         [Fact]
         public void Validate_InvalidPhoneNumber_ShouldHaveError()
         {
@@ -156,7 +156,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Create By Admin", new TestCaseDetail
             {
                 FunctionGroup = "CreateAccountByAdminCommandValidator",
-                TestCaseID = "TC-ACC-CBA-06",
+                TestCaseID = "CreateAccountByAdminCommandValidator_06",
                 Description = "Invalid PhoneNumber format fails validation",
                 ExpectedResult = "Số điện thoại không hợp lệ...",
                 StatusRound1 = "Passed",
@@ -166,7 +166,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-CBA-07 | A | Invalid DateOfBirth (Future date)
+        // CreateAccountByAdminCommandValidator_07 | A | Invalid DateOfBirth (Future date)
         [Fact]
         public void Validate_FutureDateOfBirth_ShouldHaveError()
         {
@@ -179,7 +179,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Create By Admin", new TestCaseDetail
             {
                 FunctionGroup = "CreateAccountByAdminCommandValidator",
-                TestCaseID = "TC-ACC-CBA-07",
+                TestCaseID = "CreateAccountByAdminCommandValidator_07",
                 Description = "Future DateOfBirth fails validation",
                 ExpectedResult = "Ngày sinh phải là ngày trong quá khứ.",
                 StatusRound1 = "Passed",
@@ -189,7 +189,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-CBA-08 | A | Invalid Role
+        // CreateAccountByAdminCommandValidator_08 | A | Invalid Role
         [Fact]
         public void Validate_InvalidRole_ShouldHaveError()
         {
@@ -202,7 +202,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Create By Admin", new TestCaseDetail
             {
                 FunctionGroup = "CreateAccountByAdminCommandValidator",
-                TestCaseID = "TC-ACC-CBA-08",
+                TestCaseID = "CreateAccountByAdminCommandValidator_08",
                 Description = "Invalid Role (e.g. Admin) fails validation",
                 ExpectedResult = "Vai trò chỉ có thể là Staff hoặc User.",
                 StatusRound1 = "Passed",

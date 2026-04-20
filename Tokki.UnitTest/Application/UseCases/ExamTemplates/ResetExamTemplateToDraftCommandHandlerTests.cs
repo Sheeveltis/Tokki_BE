@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -46,7 +46,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Reset To Draft", new TestCaseDetail
             {
                 FunctionGroup     = "ResetExamTemplateToDraft",
-                TestCaseID        = "TC-EXMT-RST-01",
+                TestCaseID        = "ResetExamTemplateToDraft_01",
                 Description       = "Template not found → Failure 'Không tìm thấy đề thi mẫu'",
                 ExpectedResult    = "Return Failure",
                 StatusRound1      = "Passed",
@@ -72,7 +72,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Reset To Draft", new TestCaseDetail
             {
                 FunctionGroup     = "ResetExamTemplateToDraft",
-                TestCaseID        = "TC-EXMT-RST-02",
+                TestCaseID        = "ResetExamTemplateToDraft_02",
                 Description       = "Status = Draft (not Rejected) → Failure 'chỉ có thể mở lại khi đã bị Từ chối'",
                 ExpectedResult    = "Return Failure",
                 StatusRound1      = "Passed",
@@ -97,7 +97,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Reset To Draft", new TestCaseDetail
             {
                 FunctionGroup     = "ResetExamTemplateToDraft",
-                TestCaseID        = "TC-EXMT-RST-03",
+                TestCaseID        = "ResetExamTemplateToDraft_03",
                 Description       = "Status = PendingApproval → cannot reset to draft",
                 ExpectedResult    = "Return Failure",
                 StatusRound1      = "Passed",
@@ -126,7 +126,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Reset To Draft", new TestCaseDetail
             {
                 FunctionGroup     = "ResetExamTemplateToDraft",
-                TestCaseID        = "TC-EXMT-RST-04",
+                TestCaseID        = "ResetExamTemplateToDraft_04",
                 Description       = "Rejected template → Status reset to Draft, Return Success",
                 ExpectedResult    = "Return Success(true), Status = Draft",
                 StatusRound1      = "Passed",
@@ -154,7 +154,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Reset To Draft", new TestCaseDetail
             {
                 FunctionGroup     = "ResetExamTemplateToDraft",
-                TestCaseID        = "TC-EXMT-RST-05",
+                TestCaseID        = "ResetExamTemplateToDraft_05",
                 Description       = "UpdateAsync and SaveChangesAsync each called exactly once",
                 ExpectedResult    = "UpdateAsync × 1, SaveChangesAsync × 1",
                 StatusRound1      = "Passed",
@@ -177,7 +177,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Reset To Draft", new TestCaseDetail
             {
                 FunctionGroup     = "ResetExamTemplateToDraft",
-                TestCaseID        = "TC-EXMT-RST-06",
+                TestCaseID        = "ResetExamTemplateToDraft_06",
                 Description       = "Repository throws → exception propagates",
                 ExpectedResult    = "Throws Exception",
                 StatusRound1      = "Passed",

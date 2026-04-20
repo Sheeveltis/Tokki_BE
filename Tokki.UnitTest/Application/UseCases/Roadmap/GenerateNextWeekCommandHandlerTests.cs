@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -45,7 +45,7 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
                 mockLog.Object);
         }
 
-        // TC-RM-GNW-01 | A | Week not found → 404
+        // GenerateNextWeek_01 | A | Week not found → 404
         [Fact]
         public async Task Handle_WeekNotFound_ShouldReturn404()
         {
@@ -53,10 +53,10 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             var result = await CreateHandler(repo).Handle(new GenerateNextWeekCommand { UserId = "USER-001", FinishedWeekId = "WEEK-MISSING" }, CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(404);
-            QACollector.LogTestCase("Roadmap - Generate Next Week", new TestCaseDetail { FunctionGroup = "GenerateNextWeek", TestCaseID = "TC-RM-GNW-01", Description = "Week not found → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetWeekByIdAsync returns null" } });
+            QACollector.LogTestCase("Roadmap - Generate Next Week", new TestCaseDetail { FunctionGroup = "GenerateNextWeek", TestCaseID = "GenerateNextWeek_01", Description = "Week not found → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetWeekByIdAsync returns null" } });
         }
 
-        // TC-RM-GNW-02 | A | Week has exam but user hasn't submitted → 400
+        // GenerateNextWeek_02 | A | Week has exam but user hasn't submitted → 400
         [Fact]
         public async Task Handle_WeekHasExamButNotSubmitted_ShouldReturn400()
         {
@@ -65,10 +65,10 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             var result = await CreateHandler(repo).Handle(new GenerateNextWeekCommand { UserId = "USER-001", FinishedWeekId = week.RoadmapWeekId }, CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            QACollector.LogTestCase("Roadmap - Generate Next Week", new TestCaseDetail { FunctionGroup = "GenerateNextWeek", TestCaseID = "TC-RM-GNW-02", Description = "Week has exam but not submitted → 400", ExpectedResult = "IsSuccess=false, 400", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "WeeklyExamId set, user exam = null" } });
+            QACollector.LogTestCase("Roadmap - Generate Next Week", new TestCaseDetail { FunctionGroup = "GenerateNextWeek", TestCaseID = "GenerateNextWeek_02", Description = "Week has exam but not submitted → 400", ExpectedResult = "IsSuccess=false, 400", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "WeeklyExamId set, user exam = null" } });
         }
 
-        // TC-RM-GNW-03 | A | User does not own the week's roadmap → 403
+        // GenerateNextWeek_03 | A | User does not own the week's roadmap → 403
         [Fact]
         public async Task Handle_WrongUser_ShouldReturn403()
         {
@@ -77,10 +77,10 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             var result = await CreateHandler(repo).Handle(new GenerateNextWeekCommand { UserId = "OTHER-USER", FinishedWeekId = week.RoadmapWeekId }, CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(403);
-            QACollector.LogTestCase("Roadmap - Generate Next Week", new TestCaseDetail { FunctionGroup = "GenerateNextWeek", TestCaseID = "TC-RM-GNW-03", Description = "Wrong user for roadmap → 403", ExpectedResult = "IsSuccess=false, 403", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "UserId mismatch with roadmap owner" } });
+            QACollector.LogTestCase("Roadmap - Generate Next Week", new TestCaseDetail { FunctionGroup = "GenerateNextWeek", TestCaseID = "GenerateNextWeek_03", Description = "Wrong user for roadmap → 403", ExpectedResult = "IsSuccess=false, 403", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "UserId mismatch with roadmap owner" } });
         }
 
-        // TC-RM-GNW-04 | N | No next week exists → week completed, 200 (all done)
+        // GenerateNextWeek_04 | N | No next week exists → week completed, 200 (all done)
         [Fact]
         public async Task Handle_NoNextWeek_ShouldReturnRoadmapComplete200()
         {
@@ -89,10 +89,10 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             var result = await CreateHandler(repo).Handle(new GenerateNextWeekCommand { UserId = "USER-001", FinishedWeekId = "W1" }, CancellationToken.None);
             // Handler returns Failure("Bạn đã hoàn thành!", 200) — which is IsSuccess=false with status 200
             result.StatusCode.Should().Be(200);
-            QACollector.LogTestCase("Roadmap - Generate Next Week", new TestCaseDetail { FunctionGroup = "GenerateNextWeek", TestCaseID = "TC-RM-GNW-04", Description = "No next week → 'Bạn đã hoàn thành!' returned with 200", ExpectedResult = "StatusCode=200", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetWeekByIndexAsync returns null (last week)", "all done message" } });
+            QACollector.LogTestCase("Roadmap - Generate Next Week", new TestCaseDetail { FunctionGroup = "GenerateNextWeek", TestCaseID = "GenerateNextWeek_04", Description = "No next week → 'Bạn đã hoàn thành!' returned with 200", ExpectedResult = "StatusCode=200", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetWeekByIndexAsync returns null (last week)", "all done message" } });
         }
 
-        // TC-RM-GNW-05 | A | Next week exists but AI returns null → 500
+        // GenerateNextWeek_05 | A | Next week exists but AI returns null → 500
         [Fact]
         public async Task Handle_AiReturnsNull_ShouldReturn500()
         {
@@ -108,10 +108,10 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             var result = await CreateHandler(repo, aiService).Handle(new GenerateNextWeekCommand { UserId = "USER-001", FinishedWeekId = "W1" }, CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(500);
-            QACollector.LogTestCase("Roadmap - Generate Next Week", new TestCaseDetail { FunctionGroup = "GenerateNextWeek", TestCaseID = "TC-RM-GNW-05", Description = "AI returns null plan → 500", ExpectedResult = "IsSuccess=false, 500", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GenerateNextWeekPlanAsync returns null" } });
+            QACollector.LogTestCase("Roadmap - Generate Next Week", new TestCaseDetail { FunctionGroup = "GenerateNextWeek", TestCaseID = "GenerateNextWeek_05", Description = "AI returns null plan → 500", ExpectedResult = "IsSuccess=false, 500", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GenerateNextWeekPlanAsync returns null" } });
         }
 
-        // TC-RM-GNW-06 | N | Happy path: next week generated with tasks → success
+        // GenerateNextWeek_06 | N | Happy path: next week generated with tasks → success
         [Fact]
         public async Task Handle_HappyPath_ShouldGenerateNextWeekAndReturnSuccess()
         {
@@ -133,9 +133,9 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             var result = await CreateHandler(repo, aiService).Handle(new GenerateNextWeekCommand { UserId = "USER-001", FinishedWeekId = "W1" }, CancellationToken.None);
             result.IsSuccess.Should().BeTrue();
             result.Data!.IsGenerated.Should().BeTrue();
-            QACollector.LogTestCase("Roadmap - Generate Next Week", new TestCaseDetail { FunctionGroup = "GenerateNextWeek", TestCaseID = "TC-RM-GNW-06", Description = "Happy path: AI generates plan → success, IsGenerated=true", ExpectedResult = "IsSuccess=true, Data.IsGenerated=true", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "AI returns valid plan", "next week generated" } });
+            QACollector.LogTestCase("Roadmap - Generate Next Week", new TestCaseDetail { FunctionGroup = "GenerateNextWeek", TestCaseID = "GenerateNextWeek_06", Description = "Happy path: AI generates plan → success, IsGenerated=true", ExpectedResult = "IsSuccess=true, Data.IsGenerated=true", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "AI returns valid plan", "next week generated" } });
         }
-        // TC-RM-GNW-07 | N | HasExam evaluates scores and warning properly
+        // GenerateNextWeek_07 | N | HasExam evaluates scores and warning properly
         [Fact]
         public async Task Handle_ExamScoreEvaluatedWithWarning()
         {
@@ -167,10 +167,10 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             result.Data!.HasWarning.Should().BeTrue();
             result.Data!.WarningMessage.Should().Contain("Bạn vẫn chưa nắm vững");
 
-            QACollector.LogTestCase("Roadmap - Generate Next Week", new TestCaseDetail { FunctionGroup = "GenerateNextWeek", TestCaseID = "TC-RM-GNW-07", Description = "Evaluates exam score and triggers warning for consecutive weakness", ExpectedResult = "HasWarning is true", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Weakness over max failures" } });
+            QACollector.LogTestCase("Roadmap - Generate Next Week", new TestCaseDetail { FunctionGroup = "GenerateNextWeek", TestCaseID = "GenerateNextWeek_07", Description = "Evaluates exam score and triggers warning for consecutive weakness", ExpectedResult = "HasWarning is true", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Weakness over max failures" } });
         }
 
-        // TC-RM-GNW-08 | A | Insufficient types skips weekly exam
+        // GenerateNextWeek_08 | A | Insufficient types skips weekly exam
         [Fact]
         public async Task Handle_InsufficientTypes_SkipsExamGenerating()
         {
@@ -194,7 +194,7 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             // Should skip exam generation because isValid is false
             examAssembly.Verify(x => x.GenerateWeeklyExamFromScopeAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<List<string>>(), It.IsAny<ExamType>(), It.IsAny<CancellationToken>()), Times.Never);
 
-            QACollector.LogTestCase("Roadmap - Generate Next Week", new TestCaseDetail { FunctionGroup = "GenerateNextWeek", TestCaseID = "TC-RM-GNW-08", Description = "Skips creating weekly exam if question availability invalid", ExpectedResult = "Skips generating exam smoothly", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Invalid question availability" } });
+            QACollector.LogTestCase("Roadmap - Generate Next Week", new TestCaseDetail { FunctionGroup = "GenerateNextWeek", TestCaseID = "GenerateNextWeek_08", Description = "Skips creating weekly exam if question availability invalid", ExpectedResult = "Skips generating exam smoothly", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Invalid question availability" } });
         }
     }
 }

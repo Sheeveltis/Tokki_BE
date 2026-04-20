@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -28,7 +28,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             };
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GEAN-01 | A | Session not found → 404
+        // GetExamAnalysis_01 | A | Session not found → 404
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SessionNotFound_ShouldReturn404()
@@ -50,7 +50,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Analysis", new TestCaseDetail
             {
                 FunctionGroup     = "GetExamAnalysis",
-                TestCaseID        = "TC-GEAN-01",
+                TestCaseID        = "GetExamAnalysis_01",
                 Description       = "UserExamId not found → 404",
                 ExpectedResult    = "IsSuccess=false, StatusCode=404",
                 StatusRound1      = "Passed",
@@ -61,7 +61,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GEAN-02 | A | Session still InProgress → 400
+        // GetExamAnalysis_02 | A | Session still InProgress → 400
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SessionInProgress_ShouldReturn400()
@@ -84,7 +84,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Analysis", new TestCaseDetail
             {
                 FunctionGroup     = "GetExamAnalysis",
-                TestCaseID        = "TC-GEAN-02",
+                TestCaseID        = "GetExamAnalysis_02",
                 Description       = "Exam not submitted (InProgress) → 400",
                 ExpectedResult    = "IsSuccess=false, StatusCode=400",
                 StatusRound1      = "Passed",
@@ -95,7 +95,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GEAN-03 | N | No analysis data → 200 with empty analysis lists
+        // GetExamAnalysis_03 | N | No analysis data → 200 with empty analysis lists
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NoAnalysisData_ShouldReturn200WithEmptyAnalysis()
@@ -121,7 +121,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Analysis", new TestCaseDetail
             {
                 FunctionGroup     = "GetExamAnalysis",
-                TestCaseID        = "TC-GEAN-03",
+                TestCaseID        = "GetExamAnalysis_03",
                 Description       = "No analysis data → 200 with empty analysis lists",
                 ExpectedResult    = "IsSuccess=true, all lists empty",
                 StatusRound1      = "Passed",
@@ -132,7 +132,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GEAN-04 | N | Analysis data grouped by skill correctly
+        // GetExamAnalysis_04 | N | Analysis data grouped by skill correctly
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_AnalysisData_ShouldGroupBySkill()
@@ -165,7 +165,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Analysis", new TestCaseDetail
             {
                 FunctionGroup     = "GetExamAnalysis",
-                TestCaseID        = "TC-GEAN-04",
+                TestCaseID        = "GetExamAnalysis_04",
                 Description       = "3 types (R/L/W) → each grouped into correct list",
                 ExpectedResult    = "Each list has 1 item",
                 StatusRound1      = "Passed",
@@ -176,7 +176,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GEAN-05 | N | GetExamAnalysisSummaryAsync called with correct UserExamId
+        // GetExamAnalysis_05 | N | GetExamAnalysisSummaryAsync called with correct UserExamId
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidRequest_ShouldCallAnalysisRepoWithCorrectId()
@@ -200,7 +200,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Analysis", new TestCaseDetail
             {
                 FunctionGroup     = "GetExamAnalysis",
-                TestCaseID        = "TC-GEAN-05",
+                TestCaseID        = "GetExamAnalysis_05",
                 Description       = "GetExamAnalysisSummaryAsync called once with correct UserExamId",
                 ExpectedResult    = "Times.Once with 'UE-001'",
                 StatusRound1      = "Passed",
@@ -211,7 +211,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GEAN-06 | E | Repository throws → exception propagates
+        // GetExamAnalysis_06 | E | Repository throws → exception propagates
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
@@ -232,7 +232,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Analysis", new TestCaseDetail
             {
                 FunctionGroup     = "GetExamAnalysis",
-                TestCaseID        = "TC-GEAN-06",
+                TestCaseID        = "GetExamAnalysis_06",
                 Description       = "Repository throws exception → propagates",
                 ExpectedResult    = "Exception with 'DB failure'",
                 StatusRound1      = "Passed",

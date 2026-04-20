@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -37,7 +37,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
             return m;
         }
 
-        // TC-VEO-B01: OTP key not found → OtpNotFound
+        // VerifyEmailOtpCommandHandler_01: OTP key not found → OtpNotFound
         [Fact]
         public async Task Handle_OtpKeyNotFound_ShouldReturnOtpNotFound()
         {
@@ -51,7 +51,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Verify Email", new TestCaseDetail
             {
-                FunctionGroup = "VerifyEmailOtpCommandHandler", TestCaseID = "TC-VEO-B01",
+                FunctionGroup = "VerifyEmailOtpCommandHandler", TestCaseID = "VerifyEmailOtpCommandHandler_01",
                 Description = "No OTP key in Redis → OtpNotFound failure",
                 ExpectedResult = "Failure OtpNotFound", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -59,7 +59,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
             });
         }
 
-        // TC-VEO-B02: Redis returns null-deserialized entry → OtpNotFound
+        // VerifyEmailOtpCommandHandler_02: Redis returns null-deserialized entry → OtpNotFound
         [Fact]
         public async Task Handle_InvalidJsonInRedis_ShouldReturnOtpNotFound()
         {
@@ -73,7 +73,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Verify Email", new TestCaseDetail
             {
-                FunctionGroup = "VerifyEmailOtpCommandHandler", TestCaseID = "TC-VEO-B02",
+                FunctionGroup = "VerifyEmailOtpCommandHandler", TestCaseID = "VerifyEmailOtpCommandHandler_02",
                 Description = "Redis contains 'null' → deserialization returns null → OtpNotFound",
                 ExpectedResult = "Failure OtpNotFound", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -81,7 +81,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
             });
         }
 
-        // TC-VEO-B03: AttemptCount already >= max → OtpMaxRetryExceeded
+        // VerifyEmailOtpCommandHandler_03: AttemptCount already >= max → OtpMaxRetryExceeded
         [Fact]
         public async Task Handle_AlreadyMaxRetries_ShouldReturnMaxRetryExceeded()
         {
@@ -96,7 +96,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Verify Email", new TestCaseDetail
             {
-                FunctionGroup = "VerifyEmailOtpCommandHandler", TestCaseID = "TC-VEO-B03",
+                FunctionGroup = "VerifyEmailOtpCommandHandler", TestCaseID = "VerifyEmailOtpCommandHandler_03",
                 Description = "OTP already revoked (AttemptCount >= max) → OtpMaxRetryExceeded",
                 ExpectedResult = "Failure OtpMaxRetryExceeded", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -104,7 +104,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
             });
         }
 
-        // TC-VEO-B04: Wrong OTP → AttemptCount incremented, < max → 400 with remaining attempts
+        // VerifyEmailOtpCommandHandler_04: Wrong OTP → AttemptCount incremented, < max → 400 with remaining attempts
         [Fact]
         public async Task Handle_WrongOtp_BelowMax_ShouldIncrementAndReturn400()
         {
@@ -127,7 +127,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Verify Email", new TestCaseDetail
             {
-                FunctionGroup = "VerifyEmailOtpCommandHandler", TestCaseID = "TC-VEO-B04",
+                FunctionGroup = "VerifyEmailOtpCommandHandler", TestCaseID = "VerifyEmailOtpCommandHandler_04",
                 Description = "Wrong OTP, attempt 2/5 → AttemptCount updated, return 400 with remaining info",
                 ExpectedResult = "400 with 'còn X lần thử'", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -135,7 +135,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
             });
         }
 
-        // TC-VEO-B05: Wrong OTP → hits max retry → OtpRevoked + key deleted
+        // VerifyEmailOtpCommandHandler_05: Wrong OTP → hits max retry → OtpRevoked + key deleted
         [Fact]
         public async Task Handle_WrongOtp_ReachesMax_ShouldRevokeAndDeleteKey()
         {
@@ -152,7 +152,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Verify Email", new TestCaseDetail
             {
-                FunctionGroup = "VerifyEmailOtpCommandHandler", TestCaseID = "TC-VEO-B05",
+                FunctionGroup = "VerifyEmailOtpCommandHandler", TestCaseID = "VerifyEmailOtpCommandHandler_05",
                 Description = "Wrong OTP on last attempt → key deleted, OtpRevoked returned",
                 ExpectedResult = "OtpRevoked + DeleteAsync called", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -160,7 +160,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
             });
         }
 
-        // TC-VEO-B06: TTL null/zero → fallback to 300s
+        // VerifyEmailOtpCommandHandler_06: TTL null/zero → fallback to 300s
         [Fact]
         public async Task Handle_WrongOtp_NullTtl_ShouldFallbackTo300s()
         {
@@ -180,7 +180,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Verify Email", new TestCaseDetail
             {
-                FunctionGroup = "VerifyEmailOtpCommandHandler", TestCaseID = "TC-VEO-B06",
+                FunctionGroup = "VerifyEmailOtpCommandHandler", TestCaseID = "VerifyEmailOtpCommandHandler_06",
                 Description = "GetTtlAsync returns null → fallback TTL of 300s used",
                 ExpectedResult = "SetAsync called with TimeSpan.FromSeconds(300)", StatusRound1 = "Passed",
                 TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -188,7 +188,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
             });
         }
 
-        // TC-VEO-B07: Correct OTP → key deleted + 200 success
+        // VerifyEmailOtpCommandHandler_07: Correct OTP → key deleted + 200 success
         [Fact]
         public async Task Handle_CorrectOtp_ShouldDeleteKeyAndReturn200()
         {
@@ -205,7 +205,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Verify Email", new TestCaseDetail
             {
-                FunctionGroup = "VerifyEmailOtpCommandHandler", TestCaseID = "TC-VEO-B07",
+                FunctionGroup = "VerifyEmailOtpCommandHandler", TestCaseID = "VerifyEmailOtpCommandHandler_07",
                 Description = "Correct OTP → key deleted + 200 success message",
                 ExpectedResult = "200 + DeleteAsync called", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -213,7 +213,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
             });
         }
 
-        // TC-VEO-B08: Config returns non-numeric → fallback maxRetry = 5
+        // VerifyEmailOtpCommandHandler_08: Config returns non-numeric → fallback maxRetry = 5
         [Fact]
         public async Task Handle_InvalidRetryLimitConfig_ShouldFallbackTo5()
         {
@@ -230,7 +230,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Verify Email", new TestCaseDetail
             {
-                FunctionGroup = "VerifyEmailOtpCommandHandler", TestCaseID = "TC-VEO-B08",
+                FunctionGroup = "VerifyEmailOtpCommandHandler", TestCaseID = "VerifyEmailOtpCommandHandler_08",
                 Description = "OTP_RETRY_LIMIT not parseable → default 5 used, correct OTP still passes",
                 ExpectedResult = "200 success (default maxRetry=5 applied)", StatusRound1 = "Passed",
                 TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

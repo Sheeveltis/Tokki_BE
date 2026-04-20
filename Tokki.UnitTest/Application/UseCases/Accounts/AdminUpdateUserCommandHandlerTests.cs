@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -52,7 +52,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             };
 
         // ═══════════════════════════════════════════════════════════
-        // TC-AUU-01 | A | Target user not found → 404
+        // Admin_Update_User_01 | A | Target user not found → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_TargetUserNotFound_ShouldReturn404()
@@ -66,7 +66,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Admin Update User", new TestCaseDetail
             {
                 FunctionGroup     = "Admin Update User",
-                TestCaseID        = "TC-AUU-01",
+                TestCaseID        = "Admin_Update_User_01",
                 Description       = "Target user ID does not exist in the system",
                 ExpectedResult    = "Return 404 UserNotFoundById",
                 StatusRound1      = "Passed",
@@ -77,7 +77,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-AUU-02 | A | Duplicate phone used by another user → 400
+        // Admin_Update_User_02 | A | Duplicate phone used by another user → 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DuplicatePhoneByOtherUser_ShouldReturn400()
@@ -96,7 +96,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Admin Update User", new TestCaseDetail
             {
                 FunctionGroup     = "Admin Update User",
-                TestCaseID        = "TC-AUU-02",
+                TestCaseID        = "Admin_Update_User_02",
                 Description       = "New phone number is already used by another user",
                 ExpectedResult    = "Return 400 PhoneNumberDuplicated",
                 StatusRound1      = "Passed",
@@ -112,7 +112,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-AUU-03 | A | Trying to set Status = Inactive → 400 (invalid transition)
+        // Admin_Update_User_03 | A | Trying to set Status = Inactive → 400 (invalid transition)
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_StatusSetToInactive_ShouldReturn400()
@@ -127,7 +127,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Admin Update User", new TestCaseDetail
             {
                 FunctionGroup     = "Admin Update User",
-                TestCaseID        = "TC-AUU-03",
+                TestCaseID        = "Admin_Update_User_03",
                 Description       = "Setting Status=Inactive via update is forbidden; use soft-delete endpoint",
                 ExpectedResult    = "Return 400 AccountInvalidStatusTransition",
                 StatusRound1      = "Passed",
@@ -138,7 +138,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-AUU-04 | N | Valid update (FullName + Role, no phone change) → 200
+        // Admin_Update_User_04 | N | Valid update (FullName + Role, no phone change) → 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidUpdateNoPhoneChange_ShouldReturn200()
@@ -166,7 +166,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Admin Update User", new TestCaseDetail
             {
                 FunctionGroup     = "Admin Update User",
-                TestCaseID        = "TC-AUU-04",
+                TestCaseID        = "Admin_Update_User_04",
                 Description       = "Valid update of FullName and Role without changing phone",
                 ExpectedResult    = "Return 200, FullName = 'Alice Updated', Role = Staff",
                 StatusRound1      = "Passed",
@@ -184,7 +184,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-AUU-05 | N | Valid update with new unique phone → 200, phone updated
+        // Admin_Update_User_05 | N | Valid update with new unique phone → 200, phone updated
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidUpdateWithNewPhone_ShouldReturn200()
@@ -210,7 +210,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Admin Update User", new TestCaseDetail
             {
                 FunctionGroup     = "Admin Update User",
-                TestCaseID        = "TC-AUU-05",
+                TestCaseID        = "Admin_Update_User_05",
                 Description       = "Valid update with a new unique phone number → phone updated on entity",
                 ExpectedResult    = "Return 200, PhoneNumber = '0900000099'",
                 StatusRound1      = "Passed",
@@ -227,7 +227,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-AUU-06 | N | UpdateUserAsync and SaveChangesAsync each called once on success
+        // Admin_Update_User_06 | N | UpdateUserAsync and SaveChangesAsync each called once on success
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidUpdate_ShouldCallUpdateAndSaveOnce()
@@ -244,7 +244,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Admin Update User", new TestCaseDetail
             {
                 FunctionGroup     = "Admin Update User",
-                TestCaseID        = "TC-AUU-06",
+                TestCaseID        = "Admin_Update_User_06",
                 Description       = "Successful update → UpdateUserAsync and SaveChangesAsync each called exactly once",
                 ExpectedResult    = "UpdateUserAsync × 1, SaveChangesAsync × 1",
                 StatusRound1      = "Passed",

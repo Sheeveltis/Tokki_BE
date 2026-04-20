@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using FluentValidation.TestHelper;
 using System;
 using System.Collections.Generic;
@@ -18,7 +18,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             _validator = new CreateEmailAutoTemplateCommandValidator();
         }
 
-        // TC-EMT-CEAV-01 | A | TemplateName Empty -> Error
+        // CreateEmailAutoTemplateCommandValidator_01 | A | TemplateName Empty -> Error
         [Fact]
         public void Validate_EmptyTemplateName_ShouldHaveError()
         {
@@ -30,7 +30,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("EmailTemplate - AutoTemplate", new TestCaseDetail
             {
                 FunctionGroup = "CreateEmailAutoTemplateCommandValidator",
-                TestCaseID = "TC-EMT-CEAV-01",
+                TestCaseID = "CreateEmailAutoTemplateCommandValidator_01",
                 Description = "Empty template name rejected immediately",
                 ExpectedResult = "Validation Error",
                 StatusRound1 = "Passed",
@@ -40,7 +40,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             });
         }
 
-        // TC-EMT-CEAV-02 | A | Value <= 0 -> Error
+        // CreateEmailAutoTemplateCommandValidator_02 | A | Value <= 0 -> Error
         [Fact]
         public void Validate_ValueZeroOrLess_ShouldHaveError()
         {
@@ -52,7 +52,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("EmailTemplate - AutoTemplate", new TestCaseDetail
             {
                 FunctionGroup = "CreateEmailAutoTemplateCommandValidator",
-                TestCaseID = "TC-EMT-CEAV-02",
+                TestCaseID = "CreateEmailAutoTemplateCommandValidator_02",
                 Description = "Day value boundaries block zero and negative metrics",
                 ExpectedResult = "Validation Error",
                 StatusRound1 = "Passed",
@@ -62,7 +62,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             });
         }
 
-        // TC-EMT-CEAV-03 | A | Description > 500 chars -> Error
+        // CreateEmailAutoTemplateCommandValidator_03 | A | Description > 500 chars -> Error
         [Fact]
         public void Validate_LongDescription_ShouldHaveError()
         {
@@ -74,7 +74,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("EmailTemplate - AutoTemplate", new TestCaseDetail
             {
                 FunctionGroup = "CreateEmailAutoTemplateCommandValidator",
-                TestCaseID = "TC-EMT-CEAV-03",
+                TestCaseID = "CreateEmailAutoTemplateCommandValidator_03",
                 Description = "Length bounds on Description capped correctly",
                 ExpectedResult = "Validation Error",
                 StatusRound1 = "Passed",
@@ -84,7 +84,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             });
         }
 
-        // TC-EMT-CEAV-04 | A | VipExpiringReminder missing TargetGroup rule
+        // CreateEmailAutoTemplateCommandValidator_04 | A | VipExpiringReminder missing TargetGroup rule
         [Fact]
         public void Validate_VipReminderContextIssue_ShouldHaveError()
         {
@@ -106,7 +106,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("EmailTemplate - AutoTemplate", new TestCaseDetail
             {
                 FunctionGroup = "CreateEmailAutoTemplateCommandValidator",
-                TestCaseID = "TC-EMT-CEAV-04",
+                TestCaseID = "CreateEmailAutoTemplateCommandValidator_04",
                 Description = "Prevents logically assigning VIP templates to strict irregular groups like Inactive",
                 ExpectedResult = "Validation Error",
                 StatusRound1 = "Passed",
@@ -116,7 +116,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             });
         }
 
-        // TC-EMT-CEAV-05 | N | Valid VipExpiringReminder Context
+        // CreateEmailAutoTemplateCommandValidator_05 | N | Valid VipExpiringReminder Context
         [Fact]
         public void Validate_VipReminderContextValid_ShouldNotHaveError()
         {
@@ -136,7 +136,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("EmailTemplate - AutoTemplate", new TestCaseDetail
             {
                 FunctionGroup = "CreateEmailAutoTemplateCommandValidator",
-                TestCaseID = "TC-EMT-CEAV-05",
+                TestCaseID = "CreateEmailAutoTemplateCommandValidator_05",
                 Description = "Cross property checks pass correctly aligning VIP group with context type",
                 ExpectedResult = "No Errors",
                 StatusRound1 = "Passed",
@@ -146,7 +146,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             });
         }
 
-        // TC-EMT-CEAV-06 | N | Completely Valid Any Template
+        // CreateEmailAutoTemplateCommandValidator_06 | N | Completely Valid Any Template
         [Fact]
         public void Validate_ValidBasicTemplate_ShouldNotHaveError()
         {
@@ -166,7 +166,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("EmailTemplate - AutoTemplate", new TestCaseDetail
             {
                 FunctionGroup = "CreateEmailAutoTemplateCommandValidator",
-                TestCaseID = "TC-EMT-CEAV-06",
+                TestCaseID = "CreateEmailAutoTemplateCommandValidator_06",
                 Description = "General promotion completely circumvents context blocks",
                 ExpectedResult = "No Errors",
                 StatusRound1 = "Passed",

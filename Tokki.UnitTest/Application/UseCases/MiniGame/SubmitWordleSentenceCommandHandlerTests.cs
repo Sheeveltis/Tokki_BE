@@ -101,7 +101,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             QACollector.LogTestCase("Wordle - Submit Sentence", new TestCaseDetail
             {
                 FunctionGroup = "Submit Wordle Sentence",
-                TestCaseID = "TC-WDL-SEN-01",
+                TestCaseID = "Submit_Wordle_Sentence_01",
                 Description = "Submit valid sentence → AI evaluates, saves submission, returns response",
                 ExpectedResult = "Return Success, TargetWord = '학생', AI called once",
                 StatusRound1 = "Passed",
@@ -171,7 +171,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             QACollector.LogTestCase("Wordle - Submit Sentence", new TestCaseDetail
             {
                 FunctionGroup = "Submit Wordle Sentence",
-                TestCaseID = "TC-WDL-SEN-02",
+                TestCaseID = "Submit_Wordle_Sentence_02",
                 Description = "TotalScore = 85.6 → AiScore is rounded to 86",
                 ExpectedResult = "AiScore = 86 (Math.Round)",
                 StatusRound1 = "Passed",
@@ -210,7 +210,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             QACollector.LogTestCase("Wordle - Submit Sentence", new TestCaseDetail
             {
                 FunctionGroup = "Submit Wordle Sentence",
-                TestCaseID = "TC-WDL-SEN-03",
+                TestCaseID = "Submit_Wordle_Sentence_03",
                 Description = "DailyWordleId does not exist → return 404",
                 ExpectedResult = "Return 404 Failure",
                 StatusRound1 = "Passed",
@@ -254,7 +254,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             QACollector.LogTestCase("Wordle - Submit Sentence", new TestCaseDetail
             {
                 FunctionGroup = "Submit Wordle Sentence",
-                TestCaseID = "TC-WDL-SEN-04",
+                TestCaseID = "Submit_Wordle_Sentence_04",
                 Description = "DailyWordle exists but Vocabulary = null → return 404",
                 ExpectedResult = "Return 404 Failure",
                 StatusRound1 = "Passed",
@@ -311,7 +311,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             QACollector.LogTestCase("Wordle - Submit Sentence", new TestCaseDetail
             {
                 FunctionGroup = "Submit Wordle Sentence",
-                TestCaseID = "TC-WDL-SEN-05",
+                TestCaseID = "Submit_Wordle_Sentence_05",
                 Description = "⚠️ AI service throws exception → exception propagates (handler has no try/catch)",
                 ExpectedResult = "Exception propagates — MAY FAIL if handler has try/catch",
                 StatusRound1 = "Failed",
@@ -377,7 +377,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             QACollector.LogTestCase("Wordle - Submit Sentence", new TestCaseDetail
             {
                 FunctionGroup = "Submit Wordle Sentence",
-                TestCaseID = "TC-WDL-SEN-06",
+                TestCaseID = "Submit_Wordle_Sentence_06",
                 Description = "⚠️ TotalScore=84.5 → expect 85 but Banker's Rounding = 84",
                 ExpectedResult = "WILL FAIL: Math.Round(84.5) = 84 not 85",
                 StatusRound1 = "Failed",

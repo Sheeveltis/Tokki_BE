@@ -22,7 +22,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
         private static ExamStatProjection GetSampleProjection(string id = "EX-001") => new()
         {
             ExamId           = id,
-            Title            = "Exam " + id,
+            Title            = "Exam" + id,
             Status           = ExamStatus.Published,
             TotalParticipants = 10,
             AverageScore     = 85.333,
@@ -44,7 +44,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             return mock;
         }
 
-        // TC-EXSS-01 | N | Valid query returns 200
+        // Get_Exams_Stats_01 | N | Valid query returns 200
         [Fact]
         public async Task Handle_ValidQuery_ShouldReturn200()
         {
@@ -58,7 +58,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get Stats List", new TestCaseDetail
             {
-                FunctionGroup = "Get Exams Stats", TestCaseID = "TC-EXSS-01",
+                FunctionGroup = "Get Exams Stats", TestCaseID = "Get_Exams_Stats_01",
                 Description = "Basic paged stats query returns success",
                 ExpectedResult = "Return 200, 2 items", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -66,7 +66,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXSS-02 | N | AverageScore rounded to 2 decimals
+        // Get_Exams_Stats_02 | N | AverageScore rounded to 2 decimals
         [Fact]
         public async Task Handle_ValidQuery_AverageScoreIsRounded()
         {
@@ -79,7 +79,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get Stats List", new TestCaseDetail
             {
-                FunctionGroup = "Get Exams Stats", TestCaseID = "TC-EXSS-02",
+                FunctionGroup = "Get Exams Stats", TestCaseID = "Get_Exams_Stats_02",
                 Description = "AverageScore rounded to 2 decimal places",
                 ExpectedResult = "AverageScore = 85.33", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -87,7 +87,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXSS-03 | N | AverageDuration rounded to 1 decimal
+        // Get_Exams_Stats_03 | N | AverageDuration rounded to 1 decimal
         [Fact]
         public async Task Handle_ValidQuery_AverageDurationRoundedTo1Decimal()
         {
@@ -98,7 +98,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get Stats List", new TestCaseDetail
             {
-                FunctionGroup = "Get Exams Stats", TestCaseID = "TC-EXSS-03",
+                FunctionGroup = "Get Exams Stats", TestCaseID = "Get_Exams_Stats_03",
                 Description = "AverageDurationMinutes rounded to 1 decimal place",
                 ExpectedResult = "AverageDuration = 44.7", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -106,7 +106,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXSS-04 | N | Null SkillDurations → empty dictionary
+        // Get_Exams_Stats_04 | N | Null SkillDurations ? empty dictionary
         [Fact]
         public async Task Handle_NullSkillDurations_ShouldReturnEmptyDictionary()
         {
@@ -117,15 +117,15 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get Stats List", new TestCaseDetail
             {
-                FunctionGroup = "Get Exams Stats", TestCaseID = "TC-EXSS-04",
+                FunctionGroup = "Get Exams Stats", TestCaseID = "Get_Exams_Stats_04",
                 Description = "Null SkillDurations JSON results in empty Dictionary instead of null",
                 ExpectedResult = "SkillDurations is empty dict", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "isNullOrEmpty → new Dictionary<>()" }
+                AppliedConditions = new List<string> { "isNullOrEmpty ? new Dictionary<>()" }
             });
         }
 
-        // TC-EXSS-05 | N | Pagination properties on PagedResult
+        // Get_Exams_Stats_05 | N | Pagination properties on PagedResult
         [Fact]
         public async Task Handle_Pagination_ShouldCorrectlyCalculateTotalPages()
         {
@@ -144,7 +144,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get Stats List", new TestCaseDetail
             {
-                FunctionGroup = "Get Exams Stats", TestCaseID = "TC-EXSS-05",
+                FunctionGroup = "Get Exams Stats", TestCaseID = "Get_Exams_Stats_05",
                 Description = "50 total / pageSize 10 should yield TotalPages = 5",
                 ExpectedResult = "TotalPages = 5", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -152,7 +152,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXSS-06 | A | Repository throws exception
+        // Get_Exams_Stats_06 | A | Repository throws exception
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
         {
@@ -166,7 +166,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get Stats List", new TestCaseDetail
             {
-                FunctionGroup = "Get Exams Stats", TestCaseID = "TC-EXSS-06",
+                FunctionGroup = "Get Exams Stats", TestCaseID = "Get_Exams_Stats_06",
                 Description = "Repository throws; exception propagates unhandled",
                 ExpectedResult = "Exception propagates", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

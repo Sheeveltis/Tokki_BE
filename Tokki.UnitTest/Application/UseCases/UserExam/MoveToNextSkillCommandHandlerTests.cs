@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -49,7 +49,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-MNSK-01 | A | UserExamId not found → 404
+        // MoveToNextSkill_01 | A | UserExamId not found → 404
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SessionNotFound_ShouldReturn404()
@@ -71,7 +71,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Move To Next Skill", new TestCaseDetail
             {
                 FunctionGroup     = "MoveToNextSkill",
-                TestCaseID        = "TC-MNSK-01",
+                TestCaseID        = "MoveToNextSkill_01",
                 Description       = "UserExamId does not exist → 404 Not Found",
                 ExpectedResult    = "IsSuccess=false, StatusCode=404",
                 StatusRound1      = "Passed",
@@ -82,7 +82,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-MNSK-02 | A | Exam already Completed → 400
+        // MoveToNextSkill_02 | A | Exam already Completed → 400
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SessionAlreadyCompleted_ShouldReturn400()
@@ -105,7 +105,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Move To Next Skill", new TestCaseDetail
             {
                 FunctionGroup     = "MoveToNextSkill",
-                TestCaseID        = "TC-MNSK-02",
+                TestCaseID        = "MoveToNextSkill_02",
                 Description       = "Exam session is already Completed → 400 Bad Request",
                 ExpectedResult    = "IsSuccess=false, StatusCode=400",
                 StatusRound1      = "Passed",
@@ -116,7 +116,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-MNSK-03 | A | Already on last skill → 400
+        // MoveToNextSkill_03 | A | Already on last skill → 400
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_CurrentSkillIsLast_ShouldReturn400()
@@ -139,7 +139,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Move To Next Skill", new TestCaseDetail
             {
                 FunctionGroup     = "MoveToNextSkill",
-                TestCaseID        = "TC-MNSK-03",
+                TestCaseID        = "MoveToNextSkill_03",
                 Description       = "Current skill is the last skill (Writing) → 400",
                 ExpectedResult    = "IsSuccess=false, StatusCode=400",
                 StatusRound1      = "Passed",
@@ -150,7 +150,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-MNSK-04 | N | Move Listening→Reading → 200, CurrentSkill updated
+        // MoveToNextSkill_04 | N | Move Listening→Reading → 200, CurrentSkill updated
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_MoveFromListeningToReading_ShouldReturn200()
@@ -176,7 +176,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Move To Next Skill", new TestCaseDetail
             {
                 FunctionGroup     = "MoveToNextSkill",
-                TestCaseID        = "TC-MNSK-04",
+                TestCaseID        = "MoveToNextSkill_04",
                 Description       = "Move from Listening to Reading → 200 success",
                 ExpectedResult    = "IsSuccess=true, StatusCode=200",
                 StatusRound1      = "Passed",
@@ -187,7 +187,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-MNSK-05 | N | SaveChangesAsync called once on success
+        // MoveToNextSkill_05 | N | SaveChangesAsync called once on success
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidMove_ShouldCallSaveChangesOnce()
@@ -211,7 +211,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Move To Next Skill", new TestCaseDetail
             {
                 FunctionGroup     = "MoveToNextSkill",
-                TestCaseID        = "TC-MNSK-05",
+                TestCaseID        = "MoveToNextSkill_05",
                 Description       = "On valid move, SaveChangesAsync is called exactly once",
                 ExpectedResult    = "SaveChangesAsync called Times.Once",
                 StatusRound1      = "Passed",
@@ -222,7 +222,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-MNSK-06 | E | Repository throws exception → propagates
+        // MoveToNextSkill_06 | E | Repository throws exception → propagates
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
@@ -243,7 +243,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Move To Next Skill", new TestCaseDetail
             {
                 FunctionGroup     = "MoveToNextSkill",
-                TestCaseID        = "TC-MNSK-06",
+                TestCaseID        = "MoveToNextSkill_06",
                 Description       = "Repository throws exception → exception propagates",
                 ExpectedResult    = "Exception thrown with message 'DB connection failed'",
                 StatusRound1      = "Passed",

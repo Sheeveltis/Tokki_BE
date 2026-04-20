@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -26,12 +26,12 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs.Queries
             return new GetPagedBlogsQueryHandler(_blogRepoMock.Object, _accountRepoMock.Object);
         }
 
-        // TC-BLG-GPB-01 | N | Empty Result -> 200
+        // GetPagedBlogsQueryHandler_01 | N | Empty Result -> 200
         [Fact]
         public async Task Handle_EmptyResult_ShouldReturnEmptyDtoList()
         {
             var pagedData = new PagedResult<Blog>(new List<Blog>(), 0, 1, 10);
-            _blogRepoMock.Setup(x => x.GetPagedAsync(1, 10, null, null, null, null, It.IsAny<CancellationToken>()))
+            _blogRepoMock.Setup(x => x.GetPagedAsync(1, 10, null, null, null, null, It.IsAny<bool?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
                          .ReturnsAsync(pagedData);
             
             _accountRepoMock.Setup(x => x.GetBasicInfosAsync(It.IsAny<List<string>>()))
@@ -47,7 +47,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs.Queries
             QACollector.LogTestCase("Blog - Get Paged", new TestCaseDetail
             {
                 FunctionGroup = "GetPagedBlogsQueryHandler",
-                TestCaseID = "TC-BLG-GPB-01",
+                TestCaseID = "GetPagedBlogsQueryHandler_01",
                 Description = "Empty collection handled gracefully",
                 ExpectedResult = "Empty Items list",
                 StatusRound1 = "Passed",
@@ -57,14 +57,14 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs.Queries
             });
         }
 
-        // TC-BLG-GPB-02 | N | Missing Author Info mapped cleanly
+        // GetPagedBlogsQueryHandler_02 | N | Missing Author Info mapped cleanly
         [Fact]
         public async Task Handle_MissingAuthorInfo_ShouldMapUnknownAuthor()
         {
             var blogs = new List<Blog> { new Blog { Id = "b1", AuthorId = "unknown-id", Tags = new List<Tag>() } };
             var pagedData = new PagedResult<Blog>(blogs, 1, 1, 10);
             
-            _blogRepoMock.Setup(x => x.GetPagedAsync(1, 10, null, null, null, null, It.IsAny<CancellationToken>()))
+            _blogRepoMock.Setup(x => x.GetPagedAsync(1, 10, null, null, null, null, It.IsAny<bool?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
                          .ReturnsAsync(pagedData);
             _accountRepoMock.Setup(x => x.GetBasicInfosAsync(It.IsAny<List<string>>()))
                             .ReturnsAsync(new Dictionary<string, AccountBasicInfoDTO>()); // Missing in dictionary
@@ -77,7 +77,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs.Queries
             QACollector.LogTestCase("Blog - Get Paged", new TestCaseDetail
             {
                 FunctionGroup = "GetPagedBlogsQueryHandler",
-                TestCaseID = "TC-BLG-GPB-02",
+                TestCaseID = "GetPagedBlogsQueryHandler_02",
                 Description = "Maps missing author IDs to default fallback string",
                 ExpectedResult = "'Người dùng ẩn danh'",
                 StatusRound1 = "Passed",
@@ -87,14 +87,14 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs.Queries
             });
         }
 
-        // TC-BLG-GPB-03 | N | Valid Author mapped
+        // GetPagedBlogsQueryHandler_03 | N | Valid Author mapped
         [Fact]
         public async Task Handle_ValidAuthorInfo_ShouldMapRealAuthorName()
         {
             var blogs = new List<Blog> { new Blog { Id = "b1", AuthorId = "valid-id", Tags = new List<Tag>() } };
             var pagedData = new PagedResult<Blog>(blogs, 1, 1, 10);
             
-            _blogRepoMock.Setup(x => x.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<BlogStatus?>(), It.IsAny<CancellationToken>()))
+            _blogRepoMock.Setup(x => x.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<BlogStatus?>(), It.IsAny<bool?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
                          .ReturnsAsync(pagedData);
                          
             var dic = new Dictionary<string, AccountBasicInfoDTO>
@@ -114,7 +114,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs.Queries
             QACollector.LogTestCase("Blog - Get Paged", new TestCaseDetail
             {
                 FunctionGroup = "GetPagedBlogsQueryHandler",
-                TestCaseID = "TC-BLG-GPB-03",
+                TestCaseID = "GetPagedBlogsQueryHandler_03",
                 Description = "Exact AccountInfo mapped properly",
                 ExpectedResult = "'Nguyễn A' mapping",
                 StatusRound1 = "Passed",
@@ -124,7 +124,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs.Queries
             });
         }
 
-        // TC-BLG-GPB-04 | N | Category name defaults correctly
+        // GetPagedBlogsQueryHandler_04 | N | Category name defaults correctly
         [Fact]
         public async Task Handle_MissingCategoryName_ShouldMapToDefaultString()
         {
@@ -132,7 +132,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs.Queries
             var blogs = new List<Blog> { new Blog { Id = "b1", Category = null, Tags = new List<Tag>() } };
             var pagedData = new PagedResult<Blog>(blogs, 1, 1, 10);
             
-            _blogRepoMock.Setup(x => x.GetPagedAsync(1, 10, null, null, null, null, It.IsAny<CancellationToken>()))
+            _blogRepoMock.Setup(x => x.GetPagedAsync(1, 10, null, null, null, null, It.IsAny<bool?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
                          .ReturnsAsync(pagedData);
             _accountRepoMock.Setup(x => x.GetBasicInfosAsync(It.IsAny<List<string>>()))
                             .ReturnsAsync(new Dictionary<string, AccountBasicInfoDTO>());
@@ -145,7 +145,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs.Queries
             QACollector.LogTestCase("Blog - Get Paged", new TestCaseDetail
             {
                 FunctionGroup = "GetPagedBlogsQueryHandler",
-                TestCaseID = "TC-BLG-GPB-04",
+                TestCaseID = "GetPagedBlogsQueryHandler_04",
                 Description = "Null reference on Category navigation property fallback verified",
                 ExpectedResult = "'Không xác định'",
                 StatusRound1 = "Passed",
@@ -155,7 +155,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs.Queries
             });
         }
 
-        // TC-BLG-GPB-05 | N | Tag Projection mapped cleanly
+        // GetPagedBlogsQueryHandler_05 | N | Tag Projection mapped cleanly
         [Fact]
         public async Task Handle_ProperTagsData_ShouldMapListStrictly()
         {
@@ -163,7 +163,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs.Queries
             var blogs = new List<Blog> { new Blog { Id = "b1", Category = new Category { Name = "Tech" }, Tags = tags } };
             var pagedData = new PagedResult<Blog>(blogs, 1, 1, 10);
             
-            _blogRepoMock.Setup(x => x.GetPagedAsync(1, 10, null, null, null, null, It.IsAny<CancellationToken>()))
+            _blogRepoMock.Setup(x => x.GetPagedAsync(1, 10, null, null, null, null, It.IsAny<bool?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
                          .ReturnsAsync(pagedData);
             _accountRepoMock.Setup(x => x.GetBasicInfosAsync(It.IsAny<List<string>>()))
                             .ReturnsAsync(new Dictionary<string, AccountBasicInfoDTO>());
@@ -177,7 +177,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs.Queries
             QACollector.LogTestCase("Blog - Get Paged", new TestCaseDetail
             {
                 FunctionGroup = "GetPagedBlogsQueryHandler",
-                TestCaseID = "TC-BLG-GPB-05",
+                TestCaseID = "GetPagedBlogsQueryHandler_05",
                 Description = "Tags relation cleanly flattened into string List using LINQ",
                 ExpectedResult = "List matches { 'C#', '.NET' }",
                 StatusRound1 = "Passed",
@@ -187,12 +187,12 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs.Queries
             });
         }
 
-        // TC-BLG-GPB-06 | B | Pagination Propagation validated
+        // GetPagedBlogsQueryHandler_06 | B | Pagination Propagation validated
         [Fact]
         public async Task Handle_PaginationProps_ShouldMapAccuratelyToResult()
         {
             var pagedData = new PagedResult<Blog>(new List<Blog>(), 99, 5, 20); // Extracted properties
-            _blogRepoMock.Setup(x => x.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<BlogStatus?>(), It.IsAny<CancellationToken>()))
+            _blogRepoMock.Setup(x => x.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<BlogStatus?>(), It.IsAny<bool?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
                          .ReturnsAsync(pagedData);
             _accountRepoMock.Setup(x => x.GetBasicInfosAsync(It.IsAny<List<string>>()))
                             .ReturnsAsync(new Dictionary<string, AccountBasicInfoDTO>());
@@ -207,7 +207,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs.Queries
             QACollector.LogTestCase("Blog - Get Paged", new TestCaseDetail
             {
                 FunctionGroup = "GetPagedBlogsQueryHandler",
-                TestCaseID = "TC-BLG-GPB-06",
+                TestCaseID = "GetPagedBlogsQueryHandler_06",
                 Description = "DTO properties initialized properly bridging metadata",
                 ExpectedResult = "Metadata fully matches constructor injection",
                 StatusRound1 = "Passed",

@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -100,7 +100,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             FacebookLoginCommandHandler._httpClient = new HttpClient(handlerMock.Object);
         }
 
-        // TC-ACC-FBL-01 | A | Invalid Token -> 401
+        // FacebookLoginCommandHandler_01 | A | Invalid Token -> 401
         [Fact]
         public async Task Handle_InvalidToken_ShouldReturnUnauthorized()
         {
@@ -115,7 +115,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
                 FunctionGroup = "FacebookLoginCommandHandler",
-                TestCaseID = "TC-ACC-FBL-01",
+                TestCaseID = "FacebookLoginCommandHandler_01",
                 Description = "Validation failure via FB API returns 401",
                 ExpectedResult = "401 InvalidFacebookToken",
                 StatusRound1 = "Passed",
@@ -125,7 +125,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-FBL-02 | N | Success Login (Existing Social Login) -> 200
+        // FacebookLoginCommandHandler_02 | N | Success Login (Existing Social Login) -> 200
         [Fact]
         public async Task Handle_ExistingSocialLogin_ShouldReturnSuccess()
         {
@@ -147,7 +147,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
                 FunctionGroup = "FacebookLoginCommandHandler",
-                TestCaseID = "TC-ACC-FBL-02",
+                TestCaseID = "FacebookLoginCommandHandler_02",
                 Description = "Existing social login logs in successfully",
                 ExpectedResult = "200 Success + Generates Token",
                 StatusRound1 = "Passed",
@@ -157,7 +157,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-FBL-03 | A | Missing Email in FB Payload -> 200 (Require FB Register)
+        // FacebookLoginCommandHandler_03 | A | Missing Email in FB Payload -> 200 (Require FB Register)
         [Fact]
         public async Task Handle_MissingEmail_ShouldRequireFacebookRegister()
         {
@@ -174,7 +174,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
                 FunctionGroup = "FacebookLoginCommandHandler",
-                TestCaseID = "TC-ACC-FBL-03",
+                TestCaseID = "FacebookLoginCommandHandler_03",
                 Description = "FB payload missing email redirects to Register Registration wrapper",
                 ExpectedResult = "RequireFacebookRegister = true",
                 StatusRound1 = "Passed",
@@ -184,7 +184,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-FBL-04 | N | Account Exists By Email (Merge) - Confirmed -> 200
+        // FacebookLoginCommandHandler_04 | N | Account Exists By Email (Merge) - Confirmed -> 200
         [Fact]
         public async Task Handle_EmailExistsMerge_Confirmed_ShouldLinkAndSuccess()
         {
@@ -204,7 +204,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
                 FunctionGroup = "FacebookLoginCommandHandler",
-                TestCaseID = "TC-ACC-FBL-04",
+                TestCaseID = "FacebookLoginCommandHandler_04",
                 Description = "Links Facebook to existing Account by Email",
                 ExpectedResult = "Success, Links Account",
                 StatusRound1 = "Passed",
@@ -214,7 +214,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-FBL-05 | A | Account Exists By Email (Merge) - Not Confirmed -> 409
+        // FacebookLoginCommandHandler_05 | A | Account Exists By Email (Merge) - Not Confirmed -> 409
         [Fact]
         public async Task Handle_EmailExistsMerge_NotConfirmed_ShouldReturn409()
         {
@@ -233,7 +233,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
                 FunctionGroup = "FacebookLoginCommandHandler",
-                TestCaseID = "TC-ACC-FBL-05",
+                TestCaseID = "FacebookLoginCommandHandler_05",
                 Description = "Requires merge confirmation if email matches existing",
                 ExpectedResult = "409 MergeAccountRequered",
                 StatusRound1 = "Passed",
@@ -243,7 +243,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-FBL-06 | N | Account Does Not Exist -> Creates New Account -> 200
+        // FacebookLoginCommandHandler_06 | N | Account Does Not Exist -> Creates New Account -> 200
         [Fact]
         public async Task Handle_BrandNewAccount_ShouldCreateAndSendEmail()
         {
@@ -262,7 +262,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
                 FunctionGroup = "FacebookLoginCommandHandler",
-                TestCaseID = "TC-ACC-FBL-06",
+                TestCaseID = "FacebookLoginCommandHandler_06",
                 Description = "Fully creates a new user when no matching email/fb id",
                 ExpectedResult = "AddAccount + SendEmail + Generates Token",
                 StatusRound1 = "Passed",
@@ -272,7 +272,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-FBL-07 | A | Existed Account but Banned -> 403
+        // FacebookLoginCommandHandler_07 | A | Existed Account but Banned -> 403
         [Fact]
         public async Task Handle_ExistingBannedAccount_ShouldReturn403()
         {
@@ -303,7 +303,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
                 FunctionGroup = "FacebookLoginCommandHandler",
-                TestCaseID = "TC-ACC-FBL-07",
+                TestCaseID = "FacebookLoginCommandHandler_07",
                 Description = "Email merge target is Banned -> returns 403 AccountBanned",
                 ExpectedResult = "403 AccountBanned",
                 StatusRound1 = "Passed",

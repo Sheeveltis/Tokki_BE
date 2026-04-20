@@ -18,8 +18,8 @@ namespace Tokki.UnitTest.Mocks.Repositories
             var mockRepo = new Mock<IBlogRepository>();
             var blogs = predefinedBlogs ?? new List<Blog>();
 
-            mockRepo.Setup(x => x.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<BlogStatus?>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((int pageNumber, int pageSize, string? categoryId, string? tag, string? keyword, BlogStatus? status, CancellationToken token) =>
+            mockRepo.Setup(x => x.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<BlogStatus?>(), It.IsAny<bool?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((int pageNumber, int pageSize, string? categoryId, string? tag, string? keyword, BlogStatus? status, bool? isOfficial, string? authorId, CancellationToken token) =>
                 {
                     var query = blogs.AsQueryable();
 
@@ -44,8 +44,8 @@ namespace Tokki.UnitTest.Mocks.Repositories
             mockRepo.Setup(x => x.CategoryExistsAsync(It.IsAny<string>()))
                 .ReturnsAsync((string categoryId) => categoryId == "VALID-CAT");
 
-            mockRepo.Setup(x => x.GetOrCreateTagsAsync(It.IsAny<List<string>>()))
-                .ReturnsAsync((List<string> tagNames) => 
+            mockRepo.Setup(x => x.GetOrCreateTagsAsync(It.IsAny<List<string>>(), It.IsAny<bool>()))
+                .ReturnsAsync((List<string> tagNames, bool isVerified) => 
                 {
                     return tagNames.Select(t => new Tag { Id = Guid.NewGuid().ToString(), Name = t }).ToList();
                 });

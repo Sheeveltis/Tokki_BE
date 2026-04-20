@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -73,7 +73,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-ACC-GGL-01 | A | Handle: Invalid Format Token -> InvalidJwtException -> 401
+        // GoogleLoginCommandHandler_01 | A | Handle: Invalid Format Token -> InvalidJwtException -> 401
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_InvalidGoogleToken_ShouldReturn401()
@@ -88,7 +88,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
                 FunctionGroup = "GoogleLoginCommandHandler",
-                TestCaseID = "TC-ACC-GGL-01",
+                TestCaseID = "GoogleLoginCommandHandler_01",
                 Description = "Verify that an invalid Google ID token format causes the handler to catch an InvalidJwtException and return 401 Unauthorized",
                 ExpectedResult = "Returns OperationResult with IsSuccess=false and StatusCode=401",
                 StatusRound1 = "Passed",
@@ -99,7 +99,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-ACC-GGL-02 | A | Handle: Null Token -> ArgumentNullException -> 401
+        // GoogleLoginCommandHandler_02 | A | Handle: Null Token -> ArgumentNullException -> 401
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NullToken_ShouldCatchExceptionReturn401()
@@ -113,7 +113,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
                 FunctionGroup = "GoogleLoginCommandHandler",
-                TestCaseID = "TC-ACC-GGL-02",
+                TestCaseID = "GoogleLoginCommandHandler_02",
                 Description = "Verify that a null Google ID token causes the handler to catch an exception and return 401 Unauthorized",
                 ExpectedResult = "Returns OperationResult with IsSuccess=false and StatusCode=401",
                 StatusRound1 = "Passed",
@@ -124,7 +124,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-ACC-GGL-03 | A | CheckAccountStatus: Inactive User
+        // GoogleLoginCommandHandler_03 | A | CheckAccountStatus: Inactive User
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public void CheckAccountStatus_Inactive_Returns403()
@@ -142,7 +142,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
                 FunctionGroup = "GoogleLoginCommandHandler",
-                TestCaseID = "TC-ACC-GGL-03",
+                TestCaseID = "GoogleLoginCommandHandler_03",
                 Description = "Verify that CheckAccountStatus returns 403 Forbidden when the account status is Inactive",
                 ExpectedResult = "Returns OperationResult with StatusCode=403 and error code 'Account.InActive'",
                 StatusRound1 = "Passed",
@@ -153,7 +153,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-ACC-GGL-04 | A | CheckAccountStatus: Banned User
+        // GoogleLoginCommandHandler_04 | A | CheckAccountStatus: Banned User
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public void CheckAccountStatus_Banned_Returns403()
@@ -171,7 +171,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
                 FunctionGroup = "GoogleLoginCommandHandler",
-                TestCaseID = "TC-ACC-GGL-04",
+                TestCaseID = "GoogleLoginCommandHandler_04",
                 Description = "Verify that CheckAccountStatus returns 403 Forbidden when the account status is Banned",
                 ExpectedResult = "Returns OperationResult with StatusCode=403 and error code 'Account.Banned'",
                 StatusRound1 = "Passed",
@@ -182,7 +182,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-ACC-GGL-05 | A | CheckAccountStatus: Locked User
+        // GoogleLoginCommandHandler_05 | A | CheckAccountStatus: Locked User
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public void CheckAccountStatus_Locked_Returns403()
@@ -202,7 +202,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
                 FunctionGroup = "GoogleLoginCommandHandler",
-                TestCaseID = "TC-ACC-GGL-05",
+                TestCaseID = "GoogleLoginCommandHandler_05",
                 Description = "Verify that CheckAccountStatus returns 403 when the account is temporarily locked (LockedUntil > current time)",
                 ExpectedResult = "Returns OperationResult with StatusCode=403, error code 'Account.Locked', and message containing remaining lock time '10 phút'",
                 StatusRound1 = "Passed",
@@ -213,7 +213,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-ACC-GGL-06 | N | CheckAccountStatus: Active and Not Locked
+        // GoogleLoginCommandHandler_06 | N | CheckAccountStatus: Active and Not Locked
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public void CheckAccountStatus_Active_ReturnsNull()
@@ -229,7 +229,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
                 FunctionGroup = "GoogleLoginCommandHandler",
-                TestCaseID = "TC-ACC-GGL-06",
+                TestCaseID = "GoogleLoginCommandHandler_06",
                 Description = "Verify that CheckAccountStatus returns null (no blocking result) when the account is Active and the lock has expired",
                 ExpectedResult = "Returns null, indicating the account status check passed successfully",
                 StatusRound1 = "Passed",
@@ -240,7 +240,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
         }
         
         // ═══════════════════════════════════════════════════════════
-        // TC-ACC-GGL-07 | N | GetIntConfigAsync: Falls back to default cleanly
+        // GoogleLoginCommandHandler_07 | N | GetIntConfigAsync: Falls back to default cleanly
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task GetIntConfigAsync_InvalidValue_ReturnsDefault()
@@ -254,7 +254,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Login", new TestCaseDetail
             {
                 FunctionGroup = "GoogleLoginCommandHandler",
-                TestCaseID = "TC-ACC-GGL-07",
+                TestCaseID = "GoogleLoginCommandHandler_07",
                 Description = "Verify that GetIntConfigAsync returns the default value when the system config value is not a valid integer",
                 ExpectedResult = "Returns default value 99 when config value 'abc' cannot be parsed to int",
                 StatusRound1 = "Passed",
