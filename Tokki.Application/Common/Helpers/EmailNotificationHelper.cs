@@ -19,11 +19,6 @@ namespace Tokki.Application.Common.Helpers
         /// <summary>
         /// Kho - Mẫu gửi mail Phê duyệt (Approve)
         /// </summary>
-        /// <param name="toEmail"></param>
-        /// <param name="fullName"></param>
-        /// <param name="contentTitle"></param>
-        /// <param name="contentType"></param>
-        /// <returns></returns>
         public async Task SendContentApprovedAsync(string toEmail, string fullName, string contentTitle, string contentType)
         {
             var subject = $"[Tokki] {contentType} của bạn đã được phê duyệt";
@@ -45,12 +40,6 @@ namespace Tokki.Application.Common.Helpers
         /// <summary>
         /// Kho - Mẫu gửi mail Từ chối (Reject)
         /// </summary>
-        /// <param name="toEmail"></param>
-        /// <param name="fullName"></param>
-        /// <param name="contentTitle"></param>
-        /// <param name="contentType"></param>
-        /// <param name="reason"></param>
-        /// <returns></returns>
         public async Task SendContentRejectedAsync(string toEmail, string fullName, string contentTitle, string contentType, string reason)
         {
             var subject = $"[Tokki] {contentType} của bạn chưa được phê duyệt";
@@ -69,14 +58,14 @@ namespace Tokki.Application.Common.Helpers
             var fullHtml = BuildHtmlTemplate(fullName, bodyContent);
             await _emailService.SendEmailAsync(toEmail, subject, fullHtml);
         }
- 
+
         /// <summary>
         /// Mẫu gửi mail từ chối tự động bởi A.I
         /// </summary>
         public async Task SendBlogAIRejectedAsync(string toEmail, string fullName, string contentTitle, string reason, string adminEmail)
         {
             var subject = $"[Tokki AI] Thông báo về nội dung bài viết: {contentTitle}";
- 
+
             var bodyContent = $@"
                 <p>Hệ thống kiểm duyệt tự động của Tokki nhận thấy bài viết <strong>""{contentTitle}""</strong> của bạn có chứa nội dung chưa phù hợp.</p>
                 
@@ -84,7 +73,7 @@ namespace Tokki.Application.Common.Helpers
                     <p><strong>Kết quả từ A.I:</strong> Nội dung không vượt qua bộ lọc tự động.</p>
                     <p><strong>Chi tiết:</strong> {reason}</p>
                 </div>
- 
+
                 <p style='color: #721c24; font-weight: bold;'>Lưu ý: Đây là quyết định tự động từ hệ thống trí tuệ nhân tạo (A.I).</p>
                 
                 <p>Nếu bạn cho rằng có sự nhầm lẫn hoặc cần hỗ trợ thêm, vui lòng liên hệ trực tiếp với chúng tôi qua email: 
@@ -92,7 +81,7 @@ namespace Tokki.Application.Common.Helpers
                 </p>
                 
                 <p>Trân trọng,<br/>Đội ngũ Tokki</p>";
- 
+
             var fullHtml = BuildHtmlTemplate(fullName, bodyContent);
             await _emailService.SendEmailAsync(toEmail, subject, fullHtml);
         }
@@ -103,7 +92,7 @@ namespace Tokki.Application.Common.Helpers
         public async Task SendAIServiceFailureToAdminAsync(string adminEmail, string blogTitle, string errorCode)
         {
             var subject = $"[SYSTEM ALERT] AI Moderation Service Failed - {blogTitle}";
- 
+
             var bodyContent = $@"
                 <p>Hệ thống AI vừa gặp lỗi khi đang kiểm duyệt bài viết: <strong>""{blogTitle}""</strong>.</p>
                 <div style='background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px; margin: 20px 0;'>
@@ -111,13 +100,82 @@ namespace Tokki.Application.Common.Helpers
                     <p><strong>Trạng thái:</strong> Bài viết đã được chuyển sang hàng đợi duyệt thủ công.</p>
                 </div>
                 <p>Vui lòng kiểm tra lại cấu hình API hoặc hạn mức (quota) của Gemini.</p>";
- 
+
             var fullHtml = BuildHtmlTemplate("Administrator", bodyContent);
             await _emailService.SendEmailAsync(adminEmail, subject, fullHtml);
         }
-        /// <param name="fullName"></param>
-        /// <param name="bodyContent"></param>
-        /// <returns></returns>
+
+        /// <summary>
+        /// Mẫu gửi mail thông báo bài viết đã vượt qua AI, chờ Admin duyệt
+        /// </summary>
+        public async Task SendBlogAIPassedAsync(string toEmail, string fullName, string contentTitle)
+        {
+            var subject = $"[Tokki AI] Bài viết của bạn đã vượt qua vòng kiểm tra tự động";
+
+            var bodyContent = $@"
+                <p>Tin tốt! Bài viết <strong>""{contentTitle}""</strong> của bạn đã vượt qua hệ thống kiểm duyệt tự động (A.I) của Tokki.</p>
+                
+                <div style='background-color: #e7f3ff; border: 1px solid #b3d7ff; color: #004085; padding: 15px; border-radius: 5px; margin: 20px 0;'>
+                    <p><strong>Trạng thái:</strong> Chờ quản trị viên phê duyệt cuối cùng.</p>
+                    <p>Bài viết hiện đang nằm trong danh sách chờ để đội ngũ Admin kiểm tra thủ công trước khi chính thức công khai.</p>
+                </div>
+
+                <p>Chúng tôi sẽ thông báo cho bạn ngay khi có kết quả phê duyệt cuối cùng.</p>
+                <p>Cảm ơn bạn đã đóng góp nội dung cho Tokki!</p>";
+
+            var fullHtml = BuildHtmlTemplate(fullName, bodyContent);
+            await _emailService.SendEmailAsync(toEmail, subject, fullHtml);
+        }
+
+        /// <summary>
+        /// Mẫu gửi mail thông báo bài viết thông qua AI nhưng có tag bị xóa
+        /// </summary>
+        public async Task SendBlogAIPassedWithWarningsAsync(string toEmail, string fullName, string contentTitle, string reason)
+        {
+            var subject = $"[Tokki AI] Bài viết của bạn đã được xử lý tự động (có điều chỉnh)";
+
+            var bodyContent = $@"
+                <p>Bài viết <strong>""{contentTitle}""</strong> của bạn đã vượt qua vòng kiểm duyệt nội dung tự động.</p>
+                
+                <div style='background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 15px; border-radius: 5px; margin: 20px 0;'>
+                    <p><strong>Lưu ý:</strong> Một số thẻ (tag) của bạn đã bị loại bỏ do vi phạm tiêu chuẩn:</p>
+                    <p><em>{reason}</em></p>
+                    <p><strong>Trạng thái hiện tại:</strong> Chờ quản trị viên phê duyệt cuối cùng.</p>
+                </div>
+
+                <p>Nội dung chính của bài viết đã được xác nhận là phù hợp và đã được chuyển đến hàng đợi của Admin để kiểm tra lần cuối.</p>
+                <p>Trân trọng,<br/>Đội ngũ Tokki</p>";
+
+            var fullHtml = BuildHtmlTemplate(fullName, bodyContent);
+            await _emailService.SendEmailAsync(toEmail, subject, fullHtml);
+        }
+
+        /// <summary>
+        /// Mẫu gửi mail thông báo bài viết của Admin/Staff đã được đăng (sau khi qua AI)
+        /// </summary>
+        public async Task SendAdminBlogPublishedAsync(string toEmail, string fullName, string contentTitle, string? warning = null)
+        {
+            var subject = $"[Tokki Admin] Bài viết của bạn đã được đăng tải thành công";
+
+            string statusBox = string.IsNullOrEmpty(warning) 
+                ? @"<div style='background-color: #d4edda; color: #155724; padding: 15px; border-radius: 5px; margin: 20px 0;'>
+                        <strong>Trạng thái: Đã đăng (Published)</strong>
+                    </div>"
+                : $@"<div style='background-color: #fff3cd; color: #856404; padding: 15px; border-radius: 5px; margin: 20px 0;'>
+                        <p><strong>Trạng thái: Đã đăng (Published)</strong></p>
+                        <p><em>Lưu ý: {warning}</em></p>
+                    </div>";
+
+            var bodyContent = $@"
+                <p>Xin chào,</p>
+                <p>Bài viết chính thức <strong>""{contentTitle}""</strong> của bạn đã vượt qua hệ thống kiểm tra tự động và hiện đã được công khai trên Tokki.</p>
+                {statusBox}
+                <p>Cảm ơn sự đóng góp của bạn cho hệ thống.</p>";
+
+            var fullHtml = BuildHtmlTemplate(fullName, bodyContent);
+            await _emailService.SendEmailAsync(toEmail, subject, fullHtml);
+        }
+
         private string BuildHtmlTemplate(string fullName, string bodyContent)
         {
             var safeName = string.IsNullOrWhiteSpace(fullName) ? "Bạn" : fullName;

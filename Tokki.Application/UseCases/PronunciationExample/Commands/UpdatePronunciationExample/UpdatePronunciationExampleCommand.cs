@@ -1,5 +1,6 @@
 using MediatR;
 using Tokki.Application.Common.Models;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.PronunciationExample.Commands.UpdatePronunciationExample
 {
@@ -12,6 +13,7 @@ namespace Tokki.Application.UseCases.PronunciationExample.Commands.UpdatePronunc
         public string? Meaning { get; set; }
         public string? AudioUrl { get; set; }
         public int SortOrder { get; set; }
+        public PronunciationDifficulty Difficulty { get; set; }
         public string? UserId { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,10 +28,6 @@ namespace Tokki.Application.UseCases.Blogs.Commands.CreateBlog
             RuleFor(x => x.CategoryId)
                 .NotEmpty()
                 .WithName("Danh mục");
-
-            RuleFor(x => x.Status)
-                .IsInEnum()
-                .WithName("Trạng thái");
 
             RuleFor(x => x.ThumbnailUrl)
                 .Must(uri => Uri.TryCreate(uri, UriKind.Absolute, out _))

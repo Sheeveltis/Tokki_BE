@@ -27,21 +27,40 @@ namespace Tokki.Application.Common.Helpers
         {
             string titleKey = isApproved ? "NOTI_APPROVE_BLOG_TITLE" : "NOTI_REJECT_BLOG_TITLE";
             string contentKey = isApproved ? "NOTI_APPROVE_BLOG_CONTENT" : "NOTI_REJECT_BLOG_CONTENT";
-
+ 
             string titleTemplate = await GetConfigValueAsync(titleKey, isApproved ? "Bài viết đã được duyệt" : "Bài viết bị từ chối");
             string contentTemplate = await GetConfigValueAsync(contentKey, isApproved 
                 ? "Chúc mừng! Bài viết '{BlogTitle}' của bạn đã vượt qua vòng kiểm duyệt tự động."
                 : "Rất tiếc! Bài viết '{BlogTitle}' của bạn không vượt qua bộ lọc nội dung. Lý do: {Reason}.");
-
+ 
             string finalContent = contentTemplate
                 .Replace("{BlogTitle}", blogTitle)
                 .Replace("{Reason}", reason ?? "Vi phạm tiêu chuẩn cộng đồng");
-
+ 
             await _notificationService.SendNotificationAsync(
                 userId,
                 titleTemplate,
                 finalContent,
                 isApproved ? NotificationType.BlogApproval : NotificationType.ModerationWarning,
+                blogId
+            );
+        }
+
+        public async Task SendBlogModerationWithWarningAsync(string userId, string blogTitle, string reason, string? blogId = null)
+        {
+            string titleTemplate = await GetConfigValueAsync("NOTI_APPROVE_BLOG_WARNING_TITLE", "Bài viết đã được xử lý (có điều chỉnh)");
+            string contentTemplate = await GetConfigValueAsync("NOTI_APPROVE_BLOG_WARNING_CONTENT", 
+                "Bài viết '{BlogTitle}' đã qua vòng AI, nhưng một số thẻ (tag) không phù hợp đã bị xóa: {Reason}. Hiện đang chờ Admin duyệt.");
+
+            string finalContent = contentTemplate
+                .Replace("{BlogTitle}", blogTitle)
+                .Replace("{Reason}", reason);
+
+            await _notificationService.SendNotificationAsync(
+                userId,
+                titleTemplate,
+                finalContent,
+                NotificationType.ModerationWarning,
                 blogId
             );
         }
@@ -62,7 +81,6 @@ namespace Tokki.Application.Common.Helpers
             );
         }
 
-        // Linh hoạt cho các trường hợp khác sau này
         public async Task SendGenericNotificationAsync(string userId, string configKeyPrefix, Dictionary<string, string> placeholders, NotificationType type, string? referenceId = null)
         {
             string titleTemplate = await GetConfigValueAsync($"{configKeyPrefix}_TITLE", "Thông báo mới");

@@ -89,8 +89,16 @@ namespace Tokki.Application.UseCases.Blogs.Commands.SubmitBlogForApproval
             await _blogRepository.SaveChangesAsync(cancellationToken);
 
             // Đưa vào hàng đợi Hangfire để AI duyệt ngầm
-            _backgroundJobs.Enqueue<IBlogModerationBackgroundService>(
-                service => service.ModerateBlogAsync(blog.Id));
+            if (blog.IsOfficial)
+            {
+                _backgroundJobs.Enqueue<IBlogModerationBackgroundService>(
+                    service => service.ModerateAdminBlogAsync(blog.Id));
+            }
+            else
+            {
+                _backgroundJobs.Enqueue<IBlogModerationBackgroundService>(
+                    service => service.ModerateBlogAsync(blog.Id));
+            }
 
             return OperationResult<bool>.Success(
                 true,
