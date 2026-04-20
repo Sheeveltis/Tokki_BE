@@ -30,6 +30,8 @@ namespace Tokki.Application.UseCases.PronunciationExample.Commands.CreatePronunc
                 return OperationResult<string>.Failure(new Error("Rule.NotFound", "Quy tắc phát âm không tồn tại."), 404);
             }
 
+            var maxSortOrder = await _exampleRepo.GetMaxSortOrderAsync(request.PronunciationRuleId, cancellationToken);
+
             var entity = new Domain.Entities.PronunciationExample
             {
                 ExampleId = _idGenerator.Generate(10),
@@ -39,7 +41,7 @@ namespace Tokki.Application.UseCases.PronunciationExample.Commands.CreatePronunc
                 PhoneticScript = request.PhoneticScript,
                 Meaning = request.Meaning,
                 AudioUrl = request.AudioUrl,
-                SortOrder = request.SortOrder,
+                SortOrder = maxSortOrder + 1,
                 Difficulty = request.Difficulty,
                 CreateBy = request.UserId,
                 CreateDate = DateTime.UtcNow

@@ -12,6 +12,7 @@ using Tokki.Application.UseCases.PronunciationExample.Queries.GetExamplesByRuleI
 using Tokki.Application.UseCases.PronunciationExample.Queries.GetPagedPronunciationExamples;
 using Tokki.Application.UseCases.Excel.Commands.ImportPronunciationExample;
 using Tokki.Application.UseCases.Excel.Queries.ExportPronunciationExamples;
+using Tokki.Application.UseCases.PronunciationExample.Commands.ChangeSortOrder;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -88,6 +89,14 @@ namespace Tokki.WebAPI.Controllers
         public async Task<IActionResult> Delete(string id)
         {
             var result = await _sender.Send(new DeletePronunciationExampleCommand { ExampleId = id });
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpPost("reorder")]
+        [Authorize(Roles = "Admin, Staff")]
+        public async Task<IActionResult> Reorder([FromBody] ChangePronunciationExampleSortOrderCommand command)
+        {
+            var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
         }
  

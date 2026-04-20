@@ -29,7 +29,6 @@ namespace Tokki.Application.UseCases.PronunciationExample.Commands.UpdatePronunc
             {
                 entity.AudioUrl = request.AudioUrl;
             }
-            entity.SortOrder = request.SortOrder;
             entity.Difficulty = request.Difficulty;
             entity.UpdateBy = request.UserId;
             entity.UpdateDate = DateTime.UtcNow;

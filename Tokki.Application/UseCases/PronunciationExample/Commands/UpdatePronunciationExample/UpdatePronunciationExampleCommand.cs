@@ -1,4 +1,5 @@
 using MediatR;
+using System.Text.Json.Serialization;
 using Tokki.Application.Common.Models;
 using Tokki.Domain.Enums;
 
@@ -12,8 +13,8 @@ namespace Tokki.Application.UseCases.PronunciationExample.Commands.UpdatePronunc
         public string PhoneticScript { get; set; } = string.Empty;
         public string? Meaning { get; set; }
         public string? AudioUrl { get; set; }
-        public int SortOrder { get; set; }
         public PronunciationDifficulty Difficulty { get; set; }
+        [JsonIgnore]
         public string? UserId { get; set; }
     }
 }

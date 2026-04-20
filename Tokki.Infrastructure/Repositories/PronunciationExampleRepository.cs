@@ -112,5 +112,13 @@ namespace Tokki.Infrastructure.Repositories
 
             return (items, totalCount);
         }
+
+        public async Task<int> GetMaxSortOrderAsync(string ruleId, CancellationToken cancellationToken = default)
+        {
+            var max = await _context.PronunciationExamples
+                .Where(x => x.PronunciationRuleId == ruleId && !x.IsDeleted)
+                .MaxAsync(x => (int?)x.SortOrder, cancellationToken);
+            return max ?? 0;
+        }
     }
 }

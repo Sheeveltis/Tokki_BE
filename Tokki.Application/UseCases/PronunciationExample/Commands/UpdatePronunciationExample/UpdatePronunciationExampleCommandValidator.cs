@@ -24,9 +24,6 @@ namespace Tokki.Application.UseCases.PronunciationExample.Commands.UpdatePronunc
             RuleFor(x => x.Meaning)
                 .MaximumLength(500).WithMessage("Nghĩa không vượt quá 500 ký tự.");
 
-            RuleFor(x => x.SortOrder)
-                .GreaterThanOrEqualTo(0).WithMessage("Thứ tự sắp xếp phải >= 0.");
-
             RuleFor(x => x.Difficulty)
                 .IsInEnum()
                 .WithMessage("Độ khó không hợp lệ.");
