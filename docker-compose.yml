@@ -31,60 +31,46 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:8080
+- SepaySettings__BankName=OCB
+- SepaySettings__AccountNumber=0037100025583005
+- SepaySettings__AccountName=Tang Ngoc Trang Anh
+- SepaySettings__SubAccount=SEPEIC2025
+- SepaySettings__WebhookEndpoint=/api/webhooks/payment
 
-      - ConnectionStrings__DefaultConnection=Server=tcp:capstone-fpt.database.windows.net,1433;Initial Catalog=Capstone;Persist Security Info=False;User ID=gum;Password=Capstone123!;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;    
-      - JwtSettings__Secret=${JWT_SECRET}
-      - JwtSettings__Issuer=${JWT_ISSUER}
-      - JwtSettings__Audience=${JWT_AUDIENCE}
-      - JwtSettings__ExpiryMinutes=60
+- AzureSpeech__Key=${AZURE_SPEECH_KEY}
+- AzureSpeech__Region=southeastasia
 
-      - EmailSettings__SmtpHost=smtp.gmail.com
-      - EmailSettings__SmtpPort=587
-      - EmailSettings__FromEmail=${EMAIL_FROM}
-      - EmailSettings__FromName=tokkiLearning
-      - EmailSettings__Password=${EMAIL_PASSWORD}
-      - EmailSettings__EnableSsl=true
+- Gemini__Writing__BaseUrl=https://generativelanguage.googleapis.com/v1beta/
+- Gemini__Writing__Model=gemini-2.5-pro
+- Gemini__Writing__ApiKey=${GEMINI_API_KEY_1}
+- Gemini__Wordle__BaseUrl=https://generativelanguage.googleapis.com/v1beta/
+- Gemini__Wordle__Model=gemini-3-flash-preview
+- Gemini__Wordle__ApiKey=${GEMINI_API_KEY_2}
+- Gemini__Pronunciation__BaseUrl=https://generativelanguage.googleapis.com/v1beta/
+- Gemini__Pronunciation__Model=gemini-3-flash-preview
+- Gemini__Pronunciation__ApiKey=${GEMINI_API_KEY_2}
+- Gemini__Roadmap__BaseUrl=https://generativelanguage.googleapis.com/v1beta/
+- Gemini__Roadmap__Model=gemini-3-flash-preview
+- Gemini__Roadmap__ApiKey=${GEMINI_API_KEY_1}
+- Gemini__Blog__BaseUrl=https://generativelanguage.googleapis.com/v1beta/
+- Gemini__Blog__Model=gemini-3-flash-preview
+- Gemini__Blog__ApiKey=${GEMINI_API_KEY_1}
+- Gemini__GenCoverBlog__BaseUrl=https://generativelanguage.googleapis.com/v1beta/
+- Gemini__GenCoverBlog__Model=gemini-3.1-flash-image-preview
+- Gemini__GenCoverBlog__ApiKey=${GEMINI_API_KEY_1}
 
-      - CloudinarySettings__CloudName=${CLOUDINARY_CLOUD_NAME}
-      - CloudinarySettings__ApiKey=${CLOUDINARY_API_KEY}
-      - CloudinarySettings__ApiSecret=${CLOUDINARY_API_SECRET}
+- PixabaySettings__ApiKey=${PIXABAY_API_KEY}
 
-      - AzureSpeech__Key=${AZURE_SPEECH_KEY}
-      - AzureSpeech__Region=southeastasia
+- RedisSettings__Host=${REDIS_HOST}
+- RedisSettings__Port=${REDIS_PORT}
+- RedisSettings__Password=${REDIS_PASSWORD}
 
-      - Authentication__Google__ClientIds__0=${GOOGLE_CLIENT_ID}
+- AiSettings__ApiKey=${AI_SETTINGS_API_KEY}
 
-      - FacebookAuth__AppId=${FACEBOOK_APP_ID}
-      - FacebookAuth__AppSecret=${FACEBOOK_APP_SECRET}
+- FacebookAuth__AppId=${FACEBOOK_APP_ID}
+- FacebookAuth__AppSecret=${FACEBOOK_APP_SECRET}
 
-      - Gemini__Writing__BaseUrl=https://generativelanguage.googleapis.com/v1beta/
-      - Gemini__Writing__Model=gemini-2.5-pro
-      - Gemini__Writing__ApiKey=${GEMINI_WRITING_API_KEY}
-
-      - Gemini__Wordle__BaseUrl=https://generativelanguage.googleapis.com/v1beta/
-      - Gemini__Wordle__Model=gemini-3-flash-preview
-      - Gemini__Wordle__ApiKey=${GEMINI_WORDLE_API_KEY}
-
-      - Gemini__Pronunciation__BaseUrl=https://generativelanguage.googleapis.com/v1beta/
-      - Gemini__Pronunciation__Model=gemini-2.5-flash
-      - Gemini__Pronunciation__ApiKey=${GEMINI_PRONUNCIATION_API_KEY}
-
-      - Gemini__Roadmap__BaseUrl=https://generativelanguage.googleapis.com/v1beta/
-      - Gemini__Roadmap__Model=gemini-2.5-pro
-      - Gemini__Roadmap__ApiKey=${GEMINI_ROADMAP_API_KEY}
-
-      - AiSettings__UseVertex=true
-      - AiSettings__VertexProjectId=gen-lang-client-0529410409
-      - AiSettings__VertexLocation=us-central1
-      - AiSettings__VertexCredentialsPath=/app/credentials/vertex-credentials.json
-
-      - SepaySettings__BankName=OCB
-      - SepaySettings__AccountNumber=0037100025583005
-      - SepaySettings__AccountName=Tang Ngoc Trang Anh
-      - SepaySettings__SubAccount=SEPEIC2025
-      - SepaySettings__WebhookEndpoint=/api/webhooks/payment
+- Authentication__Google__ClientIds__0=${GOOGLE_CLIENT_ID}
 
     volumes:
       - ${VERTEX_CREDENTIALS_PATH}:/app/credentials/vertex-credentials.json:ro
