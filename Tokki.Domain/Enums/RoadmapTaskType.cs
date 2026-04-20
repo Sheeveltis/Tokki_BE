@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 
 namespace Tokki.Domain.Enums
 {
@@ -10,6 +10,8 @@ namespace Tokki.Domain.Enums
         [Description("Quiz")]
         VirtualQuiz = 1, 
         [Description("Bài thi cuối tuần")]
-        WeeklyExam = 2     
+        WeeklyExam = 2,
+        [Description("Tài liệu ôn tập")]
+        Document = 3
     }
 }

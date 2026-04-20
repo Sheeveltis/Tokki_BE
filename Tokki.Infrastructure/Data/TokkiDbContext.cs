@@ -59,6 +59,7 @@ namespace Tokki.Infrastructure.Data
         //Pronunciation
         public DbSet<PronunciationRule> PronunciationRules { get; set; }
         public DbSet<PronunciationExample> PronunciationExamples { get; set; }
+        public DbSet<UserPronunciationExampleProgress> UserPronunciationExampleProgresses { get; set; }
         //User take exam
         public DbSet<UserExamAnswer> UserExamAnswers { get; set; }
         public DbSet<UserExamWritingAnswer> UserExamWritingAnswers { get; set; }
@@ -728,6 +729,13 @@ namespace Tokki.Infrastructure.Data
                       .WithMany()
                       .HasForeignKey(n => n.UserId)
                       .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Pronunciation Example
+            modelBuilder.Entity<PronunciationExample>(entity =>
+            {
+                entity.Property(e => e.Difficulty)
+                      .HasConversion<int>();
             });
         }
     }

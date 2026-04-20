@@ -63,7 +63,8 @@ namespace Tokki.Infrastructure.Repositories
         {
             return await _context.PronunciationExamples
                 .Where(e => e.PronunciationRuleId == ruleId && !e.IsDeleted)
-                .OrderBy(e => e.SortOrder)
+                .OrderBy(e => e.Difficulty) // Ưu tiên bài dễ trước
+                .ThenBy(e => e.SortOrder)
                 .ToListAsync(cancellationToken);
         }
 
@@ -79,6 +80,7 @@ namespace Tokki.Infrastructure.Repositories
             int pageNumber,
             int pageSize,
             string? searchTerm,
+            Tokki.Domain.Enums.PronunciationDifficulty? difficulty,
             CancellationToken cancellationToken = default)
         {
             var query = _context.PronunciationExamples
@@ -92,10 +94,17 @@ namespace Tokki.Infrastructure.Repositories
                     || (e.Meaning != null && e.Meaning.Contains(searchTerm)));
             }
 
+            // Lọc theo độ khó
+            if (difficulty.HasValue)
+            {
+                query = query.Where(e => e.Difficulty == difficulty.Value);
+            }
+
             int totalCount = await query.CountAsync(cancellationToken);
 
             var items = await query
-                .OrderBy(e => e.SortOrder) // Always sort by SortOrder as requested
+                .OrderBy(e => e.Difficulty) // Sắp xếp theo độ khó (Dễ -> Khó)
+                .ThenBy(e => e.SortOrder)
                 .ThenByDescending(e => e.CreateDate)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)

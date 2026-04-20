@@ -23,6 +23,7 @@ namespace Tokki.Application.IRepositories
             int pageNumber,
             int pageSize,
             string? searchTerm,
+            Tokki.Domain.Enums.PronunciationDifficulty? difficulty,
             CancellationToken cancellationToken = default);
     }
 }

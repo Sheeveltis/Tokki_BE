@@ -49,6 +49,15 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.UpdateVocabulary
                 );
             }
 
+            if (request.UpdateData == null)
+            {
+                return OperationResult<VocabularyResponseDto>.Failure(
+                    AppErrors.BadRequest,
+                    400,
+                    "Thông tin cập nhật không được để trống."
+                );
+            }
+
             // Bắt buộc: load kèm children để cascade
             var vocabulary = await _vocabularyRepository.GetByIdWithChildrenAsync(request.VocabularyId);
             if (vocabulary == null)
@@ -131,6 +140,26 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.UpdateVocabulary
                 }
             }
 
+            // Update Topics (Replace existing topics with new list)
+            if (request.UpdateData.TopicIds != null)
+            {
+                vocabulary.VocabularyTopics.Clear();
+
+                foreach (var topicId in request.UpdateData.TopicIds)
+                {
+                    vocabulary.VocabularyTopics.Add(new Tokki.Domain.Entities.VocabularyTopic
+                    {
+                        VocabularyId = vocabulary.VocabularyId,
+                        TopicId = topicId,
+                        Status = VocabularyTopicStatus.Active,
+                        CreateBy = currentUserId,
+                        CreateDate = DateTime.UtcNow.AddHours(7),
+                        UpdateBy = currentUserId,
+                        UpdateDate = DateTime.UtcNow.AddHours(7)
+                    });
+                }
+            }
+
             // Regenerate audio nếu Text đổi
             if (textChanged)
             {
@@ -161,9 +190,9 @@ namespace Tokki.Application.UseCases.Vocabulary.Commands.UpdateVocabulary
             {
                 _logger.LogError(ex, "Error updating vocabulary: {VocabularyId}", request.VocabularyId);
                 return OperationResult<VocabularyResponseDto>.Failure(
-                    new List<Error> { AppErrors.ServerError },
+                    new List<Error> { new Error("App.ServerError", ex.Message) },
                     500,
-                    AppErrors.ServerError.Description
+                    ex.Message
                 );
             }
 

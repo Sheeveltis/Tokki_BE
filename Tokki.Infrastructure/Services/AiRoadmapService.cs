@@ -1,7 +1,8 @@
-﻿using System.Net.Http.Json;
+using System.Net.Http.Json;
 using System.Text.Json;
 using Google.Apis.Auth.OAuth2;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using Tokki.Infrastructure.Configurations;
 using Microsoft.Extensions.Logging;
 using Tokki.Application.IServices;
 using Tokki.Application.UseCases.Roadmap.DTOs;
@@ -14,56 +15,53 @@ namespace Tokki.Infrastructure.Services
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<AiRoadmapService> _logger;
-        private readonly string _apiKey;
-        private readonly bool _useVertex;
-        private readonly string _projectId;
-        private readonly string _location;
-        private readonly string _credentialsPath;
-        private readonly string _modelName;
+        private readonly GeminiOptions _geminiOptions;
 
         public AiRoadmapService(
             HttpClient httpClient,
             ILogger<AiRoadmapService> logger,
-            IConfiguration configuration)
+            IOptions<GeminiOptions> geminiOptions)
         {
             _httpClient = httpClient;
             _logger = logger;
-            _apiKey = configuration["AiSettings:ApiKey"] ?? "";
-            _useVertex = bool.TryParse(configuration["AiSettings:UseVertex"], out var uv) && uv;
-            _projectId = configuration["AiSettings:VertexProjectId"] ?? "";
-            _location = configuration["AiSettings:VertexLocation"] ?? "us-central1";
-            _credentialsPath = configuration["AiSettings:VertexCredentialsPath"] ?? "";
-            _modelName = configuration["AiSettings:ModelName"] ?? "gemini-2.5-flash";
+            _geminiOptions = geminiOptions.Value;
         }
+
         private string GetApiUrl()
         {
-            if (_useVertex)
-                return $"https://{_location}-aiplatform.googleapis.com/v1/projects/{_projectId}" +
-                       $"/locations/{_location}/publishers/google/models/{_modelName}:generateContent";
+            var config = _geminiOptions.Roadmap;
+            string baseUrl = config.BaseUrl?.TrimEnd('/') ?? string.Empty;
+            
+            if (_geminiOptions.UseVertex)
+            {
+                return $"{baseUrl}/projects/{_geminiOptions.VertexProjectId}" +
+                       $"/locations/{_geminiOptions.VertexLocation}/publishers/google/models/{config.Model}:generateContent";
+            }
 
-            return $"https://generativelanguage.googleapis.com/v1/models/{_modelName}:generateContent?key={_apiKey}";
+            return $"{baseUrl}/{config.Model}:generateContent?key={config.ApiKey}";
         }
 
         private bool IsConfigValid()
         {
-            if (_useVertex)
+            if (_geminiOptions.UseVertex)
             {
-                if (string.IsNullOrEmpty(_credentialsPath))
+                if (string.IsNullOrEmpty(_geminiOptions.VertexCredentialsPath))
                 {
                     _logger.LogError("Vertex AI: VertexCredentialsPath chưa được cấu hình.");
                     return false;
                 }
-                if (!File.Exists(_credentialsPath))
+                if (!File.Exists(_geminiOptions.VertexCredentialsPath))
                 {
-                    _logger.LogError($"Vertex AI: Không tìm thấy file credentials tại '{_credentialsPath}'.");
+                    _logger.LogError($"Vertex AI: Không tìm thấy file credentials tại '{_geminiOptions.VertexCredentialsPath}'.");
                     return false;
                 }
                 return true;
             }
 
-            if (string.IsNullOrEmpty(_apiKey))
+            var config = _geminiOptions.Roadmap;
+            if (string.IsNullOrEmpty(config.ApiKey) || string.IsNullOrEmpty(config.BaseUrl) || string.IsNullOrEmpty(config.Model))
             {
-                _logger.LogError("Gemini API: ApiKey chưa được cấu hình.");
+                _logger.LogError("Gemini API: Thiếu cấu hình Roadmap (ApiKey, BaseUrl hoặc Model).");
                 return false;
             }
             return true;
@@ -74,7 +72,7 @@ namespace Tokki.Infrastructure.Services
             try
             {
                 var credential = GoogleCredential
-                    .FromFile(_credentialsPath)
+                    .FromFile(_geminiOptions.VertexCredentialsPath)
                     .CreateScoped("https://www.googleapis.com/auth/cloud-platform");
 
                 return await credential.UnderlyingCredential
@@ -91,7 +89,7 @@ namespace Tokki.Infrastructure.Services
         {
             _httpClient.DefaultRequestHeaders.Authorization = null;
 
-            if (!_useVertex) return true;
+            if (!_geminiOptions.UseVertex) return true;
 
             var token = await GetAccessTokenAsync();
             if (string.IsNullOrEmpty(token)) return false;

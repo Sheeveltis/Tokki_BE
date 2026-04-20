@@ -1,10 +1,12 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Tokki.Application.UseCases.UserTopicProgress.Commands.CompleteTopic;
 using Tokki.Application.UseCases.VocabSpacedRepetition.Commands.SubmitReview;
 using Tokki.Application.UseCases.VocabSpacedRepetition.DTOs;
+using Tokki.Application.UseCases.VocabSpacedRepetition.Queries.GetDueReviews;
+using Tokki.Application.UseCases.VocabSpacedRepetition.Queries.GetPaginatedDueReviews;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -61,6 +63,24 @@ namespace Tokki.WebAPI.Controllers
 
         //    return StatusCode(result.StatusCode, result);
         //}
+          [HttpGet("vocab-for-review-paginated")]
+        public async Task<IActionResult> GetPaginatedVocabularyForReview([FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
+        {
+            var userId = User.FindFirst("UserId")?.Value
+                         ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("Không xác định được người dùng.");
+            }
+            var query = new GetPaginatedDueReviewsQuery
+            {
+                UserId = userId,
+                PageIndex = pageIndex,
+                PageSize = pageSize
+            };
+            var result = await _sender.Send(query);
+            return StatusCode(result.StatusCode, result);
+        }
         [HttpGet("vocab-for-review")]
         public async Task<IActionResult> GetNextVocabularyForReview(int limit = 100)
         {
@@ -78,5 +98,7 @@ namespace Tokki.WebAPI.Controllers
             var result = await _sender.Send(query);
             return StatusCode(result.StatusCode, result);
         }
+
+      
     }
 }

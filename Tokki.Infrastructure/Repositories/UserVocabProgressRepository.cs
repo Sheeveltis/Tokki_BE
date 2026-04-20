@@ -1,9 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.VocabSpacedRepetition.DTOs;
 using Tokki.Domain.Entities;
@@ -69,6 +70,39 @@ namespace Tokki.Infrastructure.Repositories
 
             var resultList = await query.ToListAsync(cancellationToken);
             return resultList.OrderBy(x => Guid.NewGuid()).ToList();
+        }
+
+        public async Task<PagedResult<ReviewItemDTO>> GetPaginatedDueReviewsAsync(string userId, DateTime compareTime, int pageIndex, int pageSize, CancellationToken cancellationToken = default)
+        {
+            var baseQuery = _context.UserVocabProgresses
+                .AsNoTracking()
+                .Include(x => x.Vocabulary)
+                .Where(x => x.UserId == userId
+                        && x.Vocabulary.Status == VocabularyStatus.Active
+                        && x.NextReviewAt <= compareTime);
+
+            var totalCount = await baseQuery.CountAsync(cancellationToken);
+
+            var items = await baseQuery
+                .OrderBy(x => x.NextReviewAt)
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new ReviewItemDTO
+                {
+                    UserVocabProgressId = x.UserVocabProgressId,
+                    VocabularyId = x.VocabularyId,
+                    BoxLevel = x.BoxLevel,
+                    NextReviewAt = x.NextReviewAt,
+                    Streak = x.Streak,
+                    Text = x.Vocabulary.Text,
+                    Definition = x.Vocabulary.Definition,
+                    Pronunciation = x.Vocabulary.Pronunciation,
+                    ImageUrl = x.Vocabulary.ImgURL,
+                    AudioUrl = x.Vocabulary.AudioURL
+                })
+                .ToListAsync(cancellationToken);
+
+            return new PagedResult<ReviewItemDTO>(items, totalCount, pageIndex, pageSize);
         }
     }
 }

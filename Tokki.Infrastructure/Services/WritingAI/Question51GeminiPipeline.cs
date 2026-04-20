@@ -1,6 +1,7 @@
-﻿// Infrastructure/Services/Gemini/Question51GeminiPipeline.cs
+// Infrastructure/Services/Gemini/Question51GeminiPipeline.cs
 using Microsoft.Extensions.Options;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Application.UseCases.TopikWriting.Question51.DTOs;
@@ -50,17 +51,36 @@ namespace Tokki.Infrastructure.Services.WritingAi
             var explanation = question.Explanation?.Trim() ?? "";
 
             // ── 4. Parse AnswerContent thành 2 câu trả lời ────────────────
-            // Format: "㉠: câu 1\n㉡: câu 2"
-            var lines = writingAnswer.AnswerContent
-                .Split('\n', StringSplitOptions.RemoveEmptyEntries);
-
+            // Format: "㉠: câu 1\n㉡: câu 2" hoặc "㉠: câu 1 ㉡: câu 2"
+            string content = writingAnswer.AnswerContent ?? "";
             string answer1 = "", answer2 = "";
-            foreach (var line in lines)
+
+            // Tách chuỗi dựa trên các ký hiệu marker, giữ lại marker trong mảng kết quả
+            // Bao gồm: ㉠, ㉡ (Chuẩn), ᄀ, ᄂ (Choseong), ㄱ, ㄴ (Jamo)
+            string[] parts = Regex.Split(content, @"([㉠㉡ᄀᄂㄱㄴ])");
+            string currentMarker = "";
+
+            foreach (var part in parts)
             {
-                if (line.StartsWith("㉠:") || line.StartsWith("ᄀ:"))
-                    answer1 = line.Substring(line.IndexOf(':') + 1).Trim();
-                else if (line.StartsWith("㉡:") || line.StartsWith("ᄂ:"))
-                    answer2 = line.Substring(line.IndexOf(':') + 1).Trim();
+                if (string.IsNullOrEmpty(part)) continue;
+
+                if (part == "㉠" || part == "ᄀ" || part == "ㄱ")
+                {
+                    currentMarker = "㉠";
+                }
+                else if (part == "㉡" || part == "ᄂ" || part == "ㄴ")
+                {
+                    currentMarker = "㉡";
+                }
+                else
+                {
+                    // Phần này là nội dung sau marker
+                    // Loại bỏ dấu hai chấm (cả chuẩn : và full-width ：) và khoảng trắng/xuống dòng
+                    string cleanedText = part.Trim().TrimStart(':', '：').Trim();
+                    
+                    if (currentMarker == "㉠") answer1 = cleanedText;
+                    else if (currentMarker == "㉡") answer2 = cleanedText;
+                }
             }
 
             // ── 4b. Kiểm tra bài nộp trống — KHÔNG gọi Gemini ─────────────

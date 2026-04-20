@@ -24,7 +24,8 @@ namespace Tokki.Infrastructure
         {
             // 1. Đăng ký DbContext-
             services.AddDbContext<TokkiDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"),
+                    sqlOptions => sqlOptions.EnableRetryOnFailure()));
 
             // Đăng ký Redis
             services.AddSingleton<IConnectionMultiplexer>(sp => 
@@ -54,6 +55,7 @@ namespace Tokki.Infrastructure
             services.AddScoped<IReportRepository, ReportRepository>();
             services.AddScoped<IVipPackageRepository, VipPackageRepository>();
             services.AddScoped<IStatisticsRepository, StatisticsRepository>();
+            services.AddScoped<IStatisticPaymentRepository, StatisticPaymentRepository>();
             services.AddScoped<IStatisticBlogRepository, StatisticBlogRepository>();
             services.AddScoped<ITitleRepository, TitleRepository>();
             services.AddScoped<IUserTitleService, UserTitleService>();
@@ -115,6 +117,7 @@ namespace Tokki.Infrastructure
             services.AddScoped<IExcelService, ExcelService>();
             //User topic progress
             services.AddScoped<IUserTopicProgressRepository, UserTopicProgressRepository>();
+            services.AddScoped<IUserPronunciationExampleProgressRepository, UserPronunciationExampleProgressRepository>();
             // ===== Gemini TOPIK Writing =====
             services.Configure<Tokki.Infrastructure.Configurations.GeminiOptions>(
                 configuration.GetSection("Gemini"));
@@ -141,6 +144,7 @@ namespace Tokki.Infrastructure
             services.AddScoped<IPronunciationRuleRepository, PronunciationRuleRepository>();
             services.AddScoped<IAIPronunciationService, AIPronunciationService>();
             services.AddScoped<IPronunciationExampleRepository, PronunciationExampleRepository>();
+            services.AddScoped<IPronunciationProgressService, PronunciationProgressService>();
             //User take exam
             services.AddScoped<IUserExamRepository, UserExamRepository>();
             services.AddScoped<IExcelBaseService, ExcelBaseService>();

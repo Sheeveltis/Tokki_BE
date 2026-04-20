@@ -97,6 +97,7 @@ namespace Tokki.Infrastructure.Repositories
             var now = DateTime.UtcNow;
             return await _context.UserExams
                 .Include(ue => ue.Exam)
+                .AsNoTracking() // Không cần tracking vì chỉ lấy ID để submit
                 .Where(ue => ue.Status == UserExamStatus.InProgress &&
                              ue.StartTime.AddMinutes(ue.Exam.Duration + 2) < now) 
                 .ToListAsync(token);

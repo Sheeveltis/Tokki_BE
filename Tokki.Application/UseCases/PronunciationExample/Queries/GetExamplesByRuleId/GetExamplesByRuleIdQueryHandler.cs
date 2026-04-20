@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,7 +27,8 @@ namespace Tokki.Application.UseCases.PronunciationExample.Queries.GetExamplesByR
             {
                 ExampleId = e.ExampleId,
                 RawScript = e.RawScript,
-                SortOrder = e.SortOrder
+                SortOrder = e.SortOrder,
+                Difficulty = e.Difficulty.ToString()
             }).ToList();
 
             return OperationResult<List<ExampleSimpleDTO>>.Success(dtoList, 200, "Lấy danh sách bài tập thành công.");

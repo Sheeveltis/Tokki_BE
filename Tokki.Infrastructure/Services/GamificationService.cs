@@ -44,19 +44,18 @@ namespace Tokki.Infrastructure.Services
         {
             if (user == null) return;
 
-            var vietnamNow = DateTime.UtcNow.AddHours(7);
-            var today = vietnamNow.Date;
+            var now = DateTime.Now;
+            var today = now.Date;
             var yesterday = today.AddDays(-1);
 
             HandleLazyReset(user, today, yesterday);
 
             if (user.LastLoginAt.HasValue)
             {
-                var daysInactive = (DateTime.UtcNow.AddHours(7) - user.LastLoginAt.Value).TotalDays;
-
-                if (daysInactive > 3)
+                int inactiveDays = (today - user.LastLoginAt.Value.Date).Days;
+                if (inactiveDays > 0)
                 {
-                    await _userTitleService.CheckAndUnlockTitlesAsync(user.UserId, TitleRequirementType.InactivityDays, (long)daysInactive);
+                    await _userTitleService.CheckAndUnlockTitlesAsync(user.UserId, TitleRequirementType.InactivityDays, (long)inactiveDays);
                 }
             }
         }
@@ -66,8 +65,8 @@ namespace Tokki.Infrastructure.Services
             var user = await _accountRepository.GetByIdAsync(userId);
             if (user == null) return false;
 
-            var vietnamNow = DateTime.UtcNow.AddHours(7);
-            var today = vietnamNow.Date;
+            var now = DateTime.Now;
+            var today = now.Date;
             var yesterday = today.AddDays(-1);
             int targetSeconds = await GetTargetSecondsAsync();
 
@@ -110,7 +109,7 @@ namespace Tokki.Infrastructure.Services
                     UserId = user.UserId,
                     Amount = bonusXP,
                     Action = XpSource.DailyStreak,
-                    CreatedAt = vietnamNow
+                    CreatedAt = now
                 });
 
                 await _userTitleService.CheckAndUnlockTitlesAsync(user.UserId, TitleRequirementType.Streak, user.AchievedGoalStreak);
@@ -122,7 +121,7 @@ namespace Tokki.Infrastructure.Services
                 }
             }
 
-            user.UpdatedAt = vietnamNow;
+            user.UpdatedAt = now;
 
             await _accountRepository.UpdateUserAsync(user);
             await _accountRepository.SaveChangesAsync(default);
@@ -135,8 +134,8 @@ namespace Tokki.Infrastructure.Services
             var user = await _accountRepository.GetByIdAsync(userId);
             if (user == null) return new StreakStatusDto();
 
-            var vietnamNow = DateTime.UtcNow.AddHours(7);
-            var today = vietnamNow.Date;
+            var now = DateTime.Now;
+            var today = now.Date;
             var yesterday = today.AddDays(-1);
             int targetSeconds = await GetTargetSecondsAsync();
 

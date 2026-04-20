@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -40,8 +40,8 @@ namespace Tokki.Application.UseCases.Excel.Commands.ImportPronunciationExample
 
         public async Task<OperationResult<ImportExampleResponse>> Handle(ImportPronunciationExampleCommand request, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Bắt đầu ImportPronunciationExample. UserId: {UserId}, File: {FileName}",
-                request.UserId, request.File.FileName);
+            _logger.LogInformation("Bắt đầu ImportPronunciationExample. UserId: {UserId}, RuleId: {RuleId}, File: {FileName}",
+                request.UserId, request.PronunciationRuleId, request.File.FileName);
 
             var response = new ImportExampleResponse();
             const string AUDIO_FOLDER = "tokki/audio/pronunciation-example";
@@ -53,12 +53,26 @@ namespace Tokki.Application.UseCases.Excel.Commands.ImportPronunciationExample
                 return OperationResult<ImportExampleResponse>.Failure(new Error("EXCEL_EMPTY", "Không tìm thấy dữ liệu hợp lệ trong file Excel."));
             }
 
+            // Kiểm tra RuleId có tồn tại không
+            var ruleExists = await _exampleRepo.GetExamplesByRuleIdAsync(request.PronunciationRuleId, cancellationToken);
+            int currentMaxSortOrder = ruleExists.Any() ? ruleExists.Max(x => x.SortOrder) : 0;
+
             var newEntities = new List<Domain.Entities.PronunciationExample>();
 
             foreach (var item in extractedData)
             {
                 try
                 {
+                    // Map Độ khó
+                    var difficulty = Tokki.Domain.Enums.PronunciationDifficulty.Medium;
+                    if (!string.IsNullOrEmpty(item.Difficulty))
+                    {
+                        if (Enum.TryParse<Tokki.Domain.Enums.PronunciationDifficulty>(item.Difficulty, true, out var parsedDiff))
+                        {
+                            difficulty = parsedDiff;
+                        }
+                    }
+
                     string? audioUrl = null;
                     try
                     {
@@ -67,18 +81,21 @@ namespace Tokki.Application.UseCases.Excel.Commands.ImportPronunciationExample
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogWarning(ex, "Lỗi TTS hoặc Cloudinary cho nội dung: {Text}", item.RawScript);
+                        _logger.LogWarning(ex, "Lỗi TTS cho nội dung: {Text}", item.RawScript);
                     }
+
+                    currentMaxSortOrder++;
 
                     var entity = new Domain.Entities.PronunciationExample
                     {
                         ExampleId = _idGenerator.Generate(10),
-                        PronunciationRuleId = item.PronunciationRuleId,
+                        PronunciationRuleId = request.PronunciationRuleId,
                         TargetScript = item.TargetScript,
                         RawScript = item.RawScript,
                         PhoneticScript = item.PhoneticScript,
                         Meaning = item.Meaning,
-                        SortOrder = item.SortOrder,
+                        SortOrder = currentMaxSortOrder,
+                        Difficulty = difficulty,
                         AudioUrl = audioUrl,
                         IsDeleted = false,
                         CreateBy = request.UserId,
@@ -96,7 +113,7 @@ namespace Tokki.Application.UseCases.Excel.Commands.ImportPronunciationExample
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Lỗi xử lý dòng dữ liệu: {Target}", item.TargetScript);
+                    _logger.LogError(ex, "Lỗi xử lý bài tập: {Target}", item.TargetScript);
                     response.FailureList.Add(new ExamplePreviewDTO
                     {
                         TargetScript = item.TargetScript,
@@ -111,9 +128,11 @@ namespace Tokki.Application.UseCases.Excel.Commands.ImportPronunciationExample
                 try
                 {
                     await _exampleRepo.AddRangeAsync(newEntities);
+                    await _exampleRepo.SaveChangesAsync(cancellationToken);
                 }
                 catch (Exception ex)
                 {
+                    _logger.LogError(ex, "Lỗi lưu DB Import Example");
                     return OperationResult<ImportExampleResponse>.Failure(AppErrors.DatabaseError);
                 }
             }
