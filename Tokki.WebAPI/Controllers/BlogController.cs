@@ -162,7 +162,7 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
-        [HttpPost("staff/submit-approval/{id}")]
+        [HttpPost("admin/submit-approval/{id}")]
         [Authorize(Roles = "Admin, Staff")] 
         public async Task<IActionResult> SubmitForApprovalStaff(string id)
         {
