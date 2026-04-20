@@ -26,5 +26,6 @@ namespace Tokki.Application.IRepositories
             int pageSize,
             string? searchTerm,
             CancellationToken cancellationToken = default);
+        Task<int> GetMaxSortOrderAsync(CancellationToken cancellationToken = default);
     }
 }

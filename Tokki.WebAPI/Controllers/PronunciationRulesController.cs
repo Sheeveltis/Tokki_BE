@@ -11,6 +11,7 @@ using Tokki.Application.UseCases.PronunciationRule.Queries.GetPronunciationRules
 using Tokki.Application.UseCases.Excel.Commands.ImportPronunciationRules;
 using Tokki.Application.UseCases.Excel.Queries.ExportPronunciationRules;
 using Tokki.Application.UseCases.Excel.Queries.GetPronunciationRuleTemplate;
+using Tokki.Application.UseCases.PronunciationRule.Commands.Reorder;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -111,6 +112,14 @@ namespace Tokki.WebAPI.Controllers
                 return result.StatusCode == 404 ? NotFound(result) : BadRequest(result);
             }
             return Ok(result);
+        }
+
+        [HttpPost("reorder")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> Reorder([FromBody] ChangePronunciationRuleSortOrderCommand command)
+        {
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
         }
  
         [HttpPost("import-excel")]

@@ -1,4 +1,5 @@
 using MediatR;
+using System.Text.Json.Serialization;
 using Tokki.Application.Common.Models;
 
 namespace Tokki.Application.UseCases.PronunciationRule.Commands.UpdatePronunciationRule
@@ -9,7 +10,7 @@ namespace Tokki.Application.UseCases.PronunciationRule.Commands.UpdatePronunciat
         public string RuleName { get; set; } = string.Empty;
         public string? Description { get; set; }
         public string? Content { get; set; }
-        public int SortOrder { get; set; }
+        [JsonIgnore]
         public string? UpdateBy { get; set; }
     }
 }
