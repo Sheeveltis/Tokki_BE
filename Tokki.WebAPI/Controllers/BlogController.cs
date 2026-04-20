@@ -16,6 +16,7 @@ using Tokki.Application.UseCases.Blogs.Queries;
 using Tokki.Application.UseCases.Blogs.Queries.ExportBlogs;
 using Tokki.Application.UseCases.Blogs.Queries.GetPagedBlogs;
 using Tokki.Application.UseCases.Blogs.Commands.SaveDraftBlog;
+using Tokki.Application.UseCases.Blogs.Commands.SaveOfficialBlog;
 using Tokki.Application.UseCases.Blogs.Queries.GetMyBlogs;
 using Tokki.Application.UseCases.Blogs.Commands.GenerateBlogCover;
 using Tokki.Domain.Enums;
@@ -86,17 +87,6 @@ namespace Tokki.WebAPI.Controllers
             var result = await _sender.Send(query);
             return StatusCode(result.StatusCode, result);
         }
-        [HttpPost("user")]
-        [Authorize]
-        public async Task<IActionResult> CreateUserBlog([FromBody] CreateUserBlogCommand command)
-        {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-            ?? User.FindFirst("sub")?.Value;
-            command.CreatedBy = userId!;
-            var result = await _sender.Send(command);
-            return StatusCode(result.StatusCode, result);
-        }
-
         [HttpPost("user/save")]
         [Authorize]
         public async Task<IActionResult> SaveDraft([FromBody] SaveDraftBlogCommand command)
@@ -127,14 +117,14 @@ namespace Tokki.WebAPI.Controllers
             var result = await _sender.Send(query);
             return StatusCode(result.StatusCode, result);
         }
-
-        [HttpPost()]
+ 
+        [HttpPost("admin/save")]
         [Authorize(Roles = "Admin, Staff")]
-        public async Task<IActionResult> Create([FromBody] CreateBlogCommand command)
+        public async Task<IActionResult> SaveOfficialDraft([FromBody] SaveOfficialBlogCommand command)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
             ?? User.FindFirst("sub")?.Value;
-            command.CreatedBy = userId!;
+            command.AdminId = userId!;
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
         }
@@ -173,7 +163,7 @@ namespace Tokki.WebAPI.Controllers
         }
 
         [HttpPost("staff/submit-approval/{id}")]
-        [Authorize(Roles ="Staff")] 
+        [Authorize(Roles = "Admin, Staff")] 
         public async Task<IActionResult> SubmitForApprovalStaff(string id)
         {
             var command = new SubmitBlogForApprovalCommand { BlogId = id };

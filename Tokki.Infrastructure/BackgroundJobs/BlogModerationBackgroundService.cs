@@ -132,7 +132,13 @@ namespace Tokki.Infrastructure.BackgroundJobs
                             blog.Tags.Remove(t);
                             await blogRepo.DeleteTagAsync(t); 
                         }
-                        await notificationHelper.SendBlogModerationResultAsync(blog.AuthorId, blog.Title, true, reason, blogId);
+                        await notificationHelper.SendBlogModerationWithWarningAsync(blog.AuthorId, blog.Title, reason, blogId);
+
+                        var user = await accountRepo.GetByIdAsync(blog.AuthorId);
+                        if (user != null && !string.IsNullOrEmpty(user.Email))
+                        {
+                            await emailHelper.SendBlogAIPassedWithWarningsAsync(user.Email, user.FullName ?? "Người dùng", blog.Title, reason);
+                        }
                     }
                 }
                 else
@@ -140,6 +146,12 @@ namespace Tokki.Infrastructure.BackgroundJobs
                     // Hoàn toàn sạch
                     blog.Status = BlogStatus.PendingApproval;
                     await notificationHelper.SendBlogModerationResultAsync(blog.AuthorId, blog.Title, true, null, blogId);
+
+                    var user = await accountRepo.GetByIdAsync(blog.AuthorId);
+                    if (user != null && !string.IsNullOrEmpty(user.Email))
+                    {
+                        await emailHelper.SendBlogAIPassedAsync(user.Email, user.FullName ?? "Người dùng", blog.Title);
+                    }
                 }
 
                 await blogRepo.SaveChangesAsync(CancellationToken.None);
@@ -149,6 +161,112 @@ namespace Tokki.Infrastructure.BackgroundJobs
                 _logger.LogError(ex, "Error during moderation for blog {BlogId}", blogId);
                 // Nếu AI lỗi, set trạng thái lỗi AI để Admin biết
                 blog.Status = BlogStatus.AIReviewFailed;
+                await blogRepo.SaveChangesAsync(CancellationToken.None);
+            }
+        }
+
+        public async Task ModerateAdminBlogAsync(string blogId)
+        {
+            _logger.LogInformation("Starting AI moderation for Admin/Staff blog: {BlogId}", blogId);
+            
+            using var scope = _scopeFactory.CreateScope();
+            var blogRepo = scope.ServiceProvider.GetRequiredService<IBlogRepository>();
+            var accountRepo = scope.ServiceProvider.GetRequiredService<IAccountRepository>();
+            var moderationService = scope.ServiceProvider.GetRequiredService<IContentModerationService>();
+            var notificationHelper = scope.ServiceProvider.GetRequiredService<AppNotificationHelper>();
+            var emailHelper = scope.ServiceProvider.GetRequiredService<EmailNotificationHelper>();
+
+            var blog = await blogRepo.GetByIdAsync(blogId);
+            if (blog == null) return;
+
+            // 1. Duyệt nội dung chính
+            string fullText = $"{blog.Title} {blog.ShortDescription} {blog.Content}";
+            var contentResult = await moderationService.CheckContentAsync(fullText);
+            
+            // Nếu AI bị lỗi, Admin/Staff thì ưu tiên cho đăng luôn
+            if (contentResult.IsError)
+            {
+                _logger.LogError("AI Moderation FAILED for Admin Blog {BlogId}: {Error}. Auto-publishing.", blogId, contentResult.ErrorMessage);
+                blog.Status = BlogStatus.Published;
+                blog.UpdatedAt = DateTimeOffset.UtcNow;
+                await blogRepo.SaveChangesAsync(CancellationToken.None);
+                return;
+            }
+
+            // 2. Duyệt từng Tag
+            var dirtyTagNames = new List<string>();
+            var tagsToRemove = new List<Tag>();
+            if (blog.Tags != null && blog.Tags.Any())
+            {
+                foreach (var tag in blog.Tags)
+                {
+                    if (!tag.IsVerified)
+                    {
+                        var tagResult = await moderationService.CheckContentAsync(tag.Name);
+                        if (!tagResult.IsError && !tagResult.IsClean)
+                        {
+                            dirtyTagNames.Add(tag.Name);
+                            tagsToRemove.Add(tag);
+                        }
+                        else if (!tagResult.IsError) tag.IsVerified = true;
+                    }
+                }
+            }
+
+            try
+            {
+                if (!contentResult.IsClean)
+                {
+                    // Nếu nội dung chính bẩn -> Vẫn từ chối để đảm bảo an toàn hệ thống
+                    blog.Status = BlogStatus.AIRejected;
+                    string reason = $"Nội dung bài viết chứa từ khóa không phù hợp: {string.Join(", ", contentResult.BadWordsFound)}";
+                    await notificationHelper.SendBlogModerationResultAsync(blog.AuthorId, blog.Title, false, reason, blogId);
+                    
+                    var user = await accountRepo.GetByIdAsync(blog.AuthorId);
+                    if (user != null && !string.IsNullOrEmpty(user.Email))
+                    {
+                        var sysConfigRepo = scope.ServiceProvider.GetRequiredService<ISystemConfigRepository>();
+                        var adminConfig = await sysConfigRepo.GetByKeyAsync("ADMIN_EMAIL");
+                        string adminEmail = adminConfig?.Value ?? "a.kiet098@gmail.com";
+                        await emailHelper.SendBlogAIRejectedAsync(user.Email, user.FullName ?? "Admin", blog.Title, reason, adminEmail);
+                    }
+                }
+                else
+                {
+                    // Nội dung sạch -> Duyệt luôn (Published)
+                    blog.Status = BlogStatus.Published;
+                    blog.UpdatedAt = DateTimeOffset.UtcNow;
+ 
+                    string? warningMessage = null;
+                    if (dirtyTagNames.Any())
+                    {
+                        foreach (var t in tagsToRemove)
+                        {
+                            blog.Tags.Remove(t);
+                            await blogRepo.DeleteTagAsync(t); 
+                        }
+                        warningMessage = $"Các thẻ (tag) vi phạm đã bị loại bỏ: {string.Join(", ", dirtyTagNames)}";
+                        await notificationHelper.SendBlogModerationWithWarningAsync(blog.AuthorId, blog.Title, warningMessage, blogId);
+                    }
+                    else
+                    {
+                        await notificationHelper.SendBlogModerationResultAsync(blog.AuthorId, blog.Title, true, null, blogId);
+                    }
+ 
+                    var user = await accountRepo.GetByIdAsync(blog.AuthorId);
+                    if (user != null && !string.IsNullOrEmpty(user.Email))
+                    {
+                        // Admin/Staff thì dùng mail chuyên biệt, gửi 1 mail duy nhất báo đăng thành công
+                        await emailHelper.SendAdminBlogPublishedAsync(user.Email, user.FullName ?? "Admin/Staff", blog.Title, warningMessage);
+                    }
+                }
+
+                await blogRepo.SaveChangesAsync(CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during moderation for admin blog {BlogId}", blogId);
+                blog.Status = BlogStatus.Published; // Dự phòng cho Admin: Cho đăng luôn
                 await blogRepo.SaveChangesAsync(CancellationToken.None);
             }
         }
