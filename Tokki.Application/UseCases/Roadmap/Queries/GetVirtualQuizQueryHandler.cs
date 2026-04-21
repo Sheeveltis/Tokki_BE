@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.Roadmap.DTOs;
@@ -38,6 +38,8 @@ namespace Tokki.Application.UseCases.Roadmap.Queries.GetVirtualQuiz
                 Content = q.Content,
                 MediaUrl = q.MediaUrl,
                 PassageContent = q.Passage?.Content,
+                Explain = q.Explanation,
+                MediaType = GetMediaType(q.MediaUrl),
                 Options = q.QuestionOptions.Select(o => new VirtualQuizOptionViewModel
                 {
                     OptionId = o.OptionId,
@@ -48,6 +50,23 @@ namespace Tokki.Application.UseCases.Roadmap.Queries.GetVirtualQuiz
             }).ToList();
 
             return OperationResult<List<VirtualQuizQuestionViewModel>>.Success(result);
+        }
+
+        private string? GetMediaType(string? mediaUrl)
+        {
+            if (string.IsNullOrWhiteSpace(mediaUrl)) return null;
+
+            var audioExtensions = new[] { ".mp3", ".wav", ".ogg", ".m4a" };
+            var imageExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+
+            // Handle potential query parameters
+            var path = mediaUrl.Split('?')[0];
+            var extension = System.IO.Path.GetExtension(path).ToLower();
+
+            if (audioExtensions.Contains(extension)) return "audio";
+            if (imageExtensions.Contains(extension)) return "image";
+
+            return null;
         }
     }
 }
