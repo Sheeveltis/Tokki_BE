@@ -119,33 +119,6 @@ namespace Tokki.Infrastructure.Services
                 _ => new Exception("Lỗi không xác định khi gọi Azure Speech.")
             };
         }
-        private byte[] ConvertAudioToPcm16Khz(Stream inputStream)
-        {
-            try
-            {
-                using var reader = new StreamMediaFoundationReader(inputStream);
-
-                var outFormat = new WaveFormat(16000, 16, 1);
-
-                using var resampler = new MediaFoundationResampler(reader, outFormat);
-                resampler.ResamplerQuality = 60; 
-                using var outStream = new MemoryStream();
-                WaveFileWriter.WriteWavFileToStream(outStream, resampler);
-
-                byte[] wavData = outStream.ToArray();
-
-                if (wavData.Length <= 44) return wavData;
-
-                return wavData.Skip(44).ToArray();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Audio Convert Error: {ex.Message}");
-                using var ms = new MemoryStream();
-                inputStream.CopyTo(ms);
-                return ms.ToArray();
-            }
-        }
 
         private class BinaryAudioStreamReader : PullAudioInputStreamCallback
         {
@@ -153,6 +126,57 @@ namespace Tokki.Infrastructure.Services
             public BinaryAudioStreamReader(Stream stream) { _stream = stream; }
             public override int Read(byte[] dataBuffer, uint size) { return _stream.Read(dataBuffer, 0, (int)size); }
             public override void Close() { _stream.Dispose(); }
+        }
+        private byte[] ConvertAudioToPcm16Khz(Stream inputStream)
+        {
+            try
+            {
+                var inputPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.tmp");
+                var outputPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.wav");
+
+                try
+                {
+                    using (var fs = File.Create(inputPath))
+                        inputStream.CopyTo(fs);
+
+                    var process = new System.Diagnostics.Process
+                    {
+                        StartInfo = new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = "ffmpeg",
+                            Arguments = $"-y -i \"{inputPath}\" -ar 16000 -ac 1 -sample_fmt s16 \"{outputPath}\"",
+                            RedirectStandardError = true,
+                            UseShellExecute = false,
+                            CreateNoWindow = true
+                        }
+                    };
+
+                    process.Start();
+                    process.WaitForExit(30000);
+
+                    if (process.ExitCode != 0)
+                    {
+                        var err = process.StandardError.ReadToEnd();
+                        throw new Exception($"ffmpeg error: {err}");
+                    }
+
+                    byte[] wavData = File.ReadAllBytes(outputPath);
+                    return wavData.Length > 44 ? wavData.Skip(44).ToArray() : wavData;
+                }
+                finally
+                {
+                    if (File.Exists(inputPath)) File.Delete(inputPath);
+                    if (File.Exists(outputPath)) File.Delete(outputPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Audio Convert Error: {ex.Message}");
+                using var ms = new MemoryStream();
+                inputStream.Position = 0;
+                inputStream.CopyTo(ms);
+                return ms.ToArray();
+            }
         }
     }
 }
