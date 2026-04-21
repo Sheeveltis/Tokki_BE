@@ -83,6 +83,9 @@ services:
 
       - Authentication__Google__ClientIds__0=${GOOGLE_CLIENT_ID}
 
+      - CloudinarySettings__CloudName=${CLOUDINARY_CLOUD_NAME}
+      - CloudinarySettings__ApiKey=${CLOUDINARY_API_KEY}
+      - CloudinarySettings__ApiSecret=${CLOUDINARY_API_SECRET}
 
     networks:
       - tokki_network
