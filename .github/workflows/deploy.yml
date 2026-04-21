@@ -22,8 +22,8 @@ jobs:
             git pull origin master
 
             echo "🐳 Rebuilding and restarting containers..."
-            docker-compose down
-            docker-compose up --build -d
+            docker compose down
+            docker compose up --build -d
 
             echo "🧹 Cleaning up unused images..."
             docker image prune -f
