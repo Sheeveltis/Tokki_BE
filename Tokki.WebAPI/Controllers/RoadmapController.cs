@@ -161,28 +161,18 @@ namespace Tokki.WebAPI.Controllers
 
             var command = new GenerateNextWeekCommand
             {
-                UserId = userId,
+                UserId         = userId,
                 FinishedWeekId = request.FinishedWeekId
             };
 
             var result = await _mediator.Send(command);
 
-            if (result.StatusCode == 200 && result.Message?.Contains("hoàn thành") == true)
-                return Ok(new { message = result.Message, isFinished = true });
-
             if (!result.IsSuccess)
-                return BadRequest(result);
+                return StatusCode(result.StatusCode, result);
 
-            return Ok(new
-            {
-                message = "Đã tạo lộ trình tuần mới thành công!",
-                isFinished = false,
-                hasWarning = result.Data?.HasWarning ?? false,
-                warningMessage = result.Data?.WarningMessage,
-                persistentWeakTypeIds = result.Data?.PersistentWeakTypeIds ?? new List<string>()
-            });
+            return StatusCode(202, result);
         }
-        
+      
         [HttpGet("virtual-quiz/{questionTypeId}")]
         public async Task<IActionResult> GetVirtualQuiz(
             string questionTypeId,

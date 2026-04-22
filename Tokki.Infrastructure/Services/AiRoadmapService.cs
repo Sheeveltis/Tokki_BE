@@ -34,15 +34,27 @@ namespace Tokki.Infrastructure.Services
 
             if (_geminiOptions.UseVertex)
             {
-                return $"{baseUrl}/projects/{_geminiOptions.VertexProjectId}" +
-                       $"/locations/{_geminiOptions.VertexLocation}/publishers/google/models/{config.Model}:generateContent";
+                if (!string.IsNullOrEmpty(_geminiOptions.VertexProjectId))
+                {
+                    return $"{baseUrl}/projects/{_geminiOptions.VertexProjectId}" +
+                           $"/locations/{_geminiOptions.VertexLocation}/publishers/google/models/{config.Model}:generateContent";
+                }
+                return $"{baseUrl}/models/{config.Model}:generateContent";
             }
 
-            return $"{baseUrl}/{config.Model}:generateContent?key={config.ApiKey}";
+            return $"{baseUrl}/models/{config.Model}:generateContent?key={config.ApiKey}";
         }
 
         private bool IsConfigValid()
         {
+            var config = _geminiOptions.Roadmap;
+
+            if (string.IsNullOrEmpty(config.BaseUrl) || string.IsNullOrEmpty(config.Model))
+            {
+                _logger.LogError("Gemini: Thiếu cấu hình Roadmap (BaseUrl hoặc Model).");
+                return false;
+            }
+
             if (_geminiOptions.UseVertex)
             {
                 if (string.IsNullOrEmpty(_geminiOptions.VertexCredentialsPath))
@@ -58,10 +70,9 @@ namespace Tokki.Infrastructure.Services
                 return true;
             }
 
-            var config = _geminiOptions.Roadmap;
-            if (string.IsNullOrEmpty(config.ApiKey) || string.IsNullOrEmpty(config.BaseUrl) || string.IsNullOrEmpty(config.Model))
+            if (string.IsNullOrEmpty(config.ApiKey))
             {
-                _logger.LogError("Gemini API: Thiếu cấu hình Roadmap (ApiKey, BaseUrl hoặc Model).");
+                _logger.LogError("Gemini API: Thiếu ApiKey cho Roadmap.");
                 return false;
             }
             return true;
