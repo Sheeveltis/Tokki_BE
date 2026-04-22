@@ -31,7 +31,7 @@ namespace Tokki.Infrastructure.Services
         {
             var config = _geminiOptions.Roadmap;
             string baseUrl = config.BaseUrl?.TrimEnd('/') ?? string.Empty;
-            
+
             if (_geminiOptions.UseVertex)
             {
                 return $"{baseUrl}/projects/{_geminiOptions.VertexProjectId}" +
@@ -106,14 +106,14 @@ namespace Tokki.Infrastructure.Services
             var requestBody = new
             {
                 contents = new[]
-            {
-            new
-            {
-                role = "user",
-            parts = new[] { new { text = promptText } }
-            }
-        }
-     };
+                {
+                    new
+                    {
+                        role = "user",
+                        parts = new[] { new { text = promptText } }
+                    }
+                }
+            };
 
             try
             {
@@ -170,13 +170,13 @@ namespace Tokki.Infrastructure.Services
             var requestBody = new
             {
                 contents = new[]
-        {
-            new
-        {
-            role = "user",
-            parts = new[] { new { text = promptText } }
-        }
-    }
+                {
+                    new
+                    {
+                        role = "user",
+                        parts = new[] { new { text = promptText } }
+                    }
+                }
             };
 
             try
@@ -210,6 +210,44 @@ namespace Tokki.Infrastructure.Services
                 return null;
             }
         }
+
+        public async Task<List<string>> SequenceWeaknessesAsync(
+            List<string> questionTypeIds,
+            CurrentTopikLevel currentLevel,
+            TargetAimLevel targetLevel,
+            List<QuestionTypeMenuItem> typeMenu,
+            CancellationToken token = default)
+        {
+            _logger.LogInformation("Sắp xếp trình tự cho {Count} điểm yếu.", questionTypeIds.Count);
+
+            var menuDetails = string.Join("\n", typeMenu.Select(m =>
+                $"- ID: {m.QuestionTypeId}, Mã: {m.Code}, Tên: {m.Name}, Kỹ năng: {m.Skill}"));
+
+            string prompt = $@"
+            Bạn là chuyên gia sư phạm TOPIK. Sắp xếp danh sách QuestionTypeIds sau đây thành một trình tự học tập khoa học nhất:
+            THÔNG TIN:
+            - Trình độ: {currentLevel}, Mục tiêu: {targetLevel}.
+            - Danh sách điểm yếu: {menuDetails}
+
+            QUY TẮC SẮP XẾP (ƯU TIÊN):
+            1. SKILL INTERLEAVING: Xen kẽ các kỹ năng (Nghe, Đọc, Viết). Không để học viên phải học quá 2 ngày liên tiếp cùng một kỹ năng để tránh gây nhàm chán và mệt mỏi cho não bộ.
+            2. COMPLEXITY: Đưa các dạng bài dễ hoặc nền tảng lên trước, các dạng bài phức tạp (như Viết đoạn văn) nên xen kẽ vào giữa.
+            3. FIFO BASE: Vẫn giữ nền tảng là các câu sai trước nhưng có thể điều chỉnh vị trí để thỏa mãn quy tắc xen kẽ kỹ năng.
+
+            KẾT QUẢ: Chỉ trả về danh sách ID phân cách bằng dấu phẩy.
+            Ví dụ: ID1, ID2, ID3...";
+
+            var result = await CallGeminiTextAsync(prompt);
+            if (string.IsNullOrEmpty(result)) return questionTypeIds;
+
+            var cleanedResult = result.Split(',')
+                .Select(s => s.Trim())
+                .Where(s => questionTypeIds.Contains(s))
+                .ToList();
+
+            return cleanedResult.Any() ? cleanedResult : questionTypeIds;
+        }
+
         public async Task<AiRoadmapResponse?> GenerateStudyPlanAsync(
             TargetAimLevel target,
             CurrentTopikLevel currentLevel,
