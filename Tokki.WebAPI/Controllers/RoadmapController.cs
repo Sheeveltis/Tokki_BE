@@ -18,7 +18,6 @@ using Tokki.Application.UseCases.Roadmap.Queries.GetEntranceFeedback;
 using Tokki.Application.UseCases.Roadmap.Queries.GetRoadmap;
 using Tokki.Application.UseCases.Roadmap.Queries.GetVirtualQuiz;
 using Tokki.Application.UseCases.Roadmap.Constants;
-using Tokki.Application.UseCases.Roadmap.Queries.GetTopikLevels;
 using Tokki.Domain.Enums;
 
 namespace Tokki.WebAPI.Controllers
