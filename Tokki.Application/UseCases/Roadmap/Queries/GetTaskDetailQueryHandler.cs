@@ -32,7 +32,7 @@ public class GetTaskDetailQueryHandler
             DayIndex = task.DayIndex,
             Content = task.AiGeneratedContent,
             ExamId = task.ExamId,
-            QuestionTypeId = task.QuestionTypeId
+            QuestionTypeId = task.QuestionTypeId ?? task.TargetQuestionTypeId
         };
 
         return OperationResult<TaskDetailResult>.Success(result);
