@@ -18,6 +18,7 @@ using Tokki.Application.UseCases.Roadmap.Queries.GetEntranceFeedback;
 using Tokki.Application.UseCases.Roadmap.Queries.GetRoadmap;
 using Tokki.Application.UseCases.Roadmap.Queries.GetVirtualQuiz;
 using Tokki.Application.UseCases.Roadmap.Constants;
+using Tokki.Application.UseCases.Roadmap.Queries.GetTopikLevels;
 using Tokki.Domain.Enums;
 
 namespace Tokki.WebAPI.Controllers
@@ -56,7 +57,11 @@ namespace Tokki.WebAPI.Controllers
                 DisplayName = x.DisplayName,
                 ExamGroup = x.ExamGroup,
                 PassScore = x.PassScore,
-                TotalScore = x.TotalScore
+                TotalScore = x.TotalScore,
+                Listening = x.Listening,
+                Reading = x.Reading,
+                Writing = x.Writing,
+                Strategy = x.Strategy
             }).ToList();
 
             return Ok(result);

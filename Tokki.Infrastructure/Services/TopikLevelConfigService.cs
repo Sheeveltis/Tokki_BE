@@ -23,7 +23,7 @@ namespace Tokki.Infrastructure.Services.Roadmap
             return all
                 .Where(x => x.IsActive
                          && x.Key.StartsWith(KeyPrefix)
-                         && x.ConfigType == SystemConfigType.Exam
+                         && x.ConfigType == SystemConfigType.RoadMap
                          && !string.IsNullOrEmpty(x.Value))
                 .Select(x => ParseSafe(x.Value!))
                 .Where(dto => dto != null)
@@ -36,7 +36,7 @@ namespace Tokki.Infrastructure.Services.Roadmap
         {
             var key = KeyPrefix + (int)level;
             var config = await _repo.FirstOrDefaultAsync(
-                x => x.Key == key && x.IsActive && x.ConfigType == SystemConfigType.Exam, ct);
+                x => x.Key == key && x.IsActive && x.ConfigType == SystemConfigType.RoadMap, ct);
 
             if (config?.Value == null) return null;
             return ParseSafe(config.Value);
@@ -49,10 +49,7 @@ namespace Tokki.Infrastructure.Services.Roadmap
                 return JsonSerializer.Deserialize<TopikLevelConfigDto>(json,
                     new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             }
-            catch
-            {
-                return null;
-            }
+            catch { return null; }
         }
     }
 }
