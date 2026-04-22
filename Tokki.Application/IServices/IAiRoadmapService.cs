@@ -37,5 +37,11 @@ namespace Tokki.Application.IServices
             List<string> listeningNames,
             List<string> writingNames,
             int recommendedDays);
+        Task<List<string>> SequenceWeaknessesAsync(
+            List<string> questionTypeIds,
+            CurrentTopikLevel currentLevel,
+            TargetAimLevel targetLevel,
+            List<QuestionTypeMenuItem> typeMenu,
+            CancellationToken token = default);
     }
 }
