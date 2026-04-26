@@ -1674,11 +1674,11 @@ namespace Tokki.UnitTest.Utilities
             {
                 ws.Cells["A7"].Formula = $"COUNTIF({sCol}{pfRow}:{eCol}{pfRow},\"P\")";
                 ws.Cells["C7"].Formula = $"COUNTIF({sCol}{pfRow}:{eCol}{pfRow},\"F\")";
+                ws.Cells["N7"].Value = feature.TestCases.Count;
                 ws.Cells["E7"].Formula = "N7-A7-C7";
                 ws.Cells["K7"].Formula = $"COUNTIF({sCol}{typeRow}:{eCol}{typeRow},\"N\")";
                 ws.Cells["L7"].Formula = $"COUNTIF({sCol}{typeRow}:{eCol}{typeRow},\"A\")";
                 ws.Cells["M7"].Formula = $"COUNTIF({sCol}{typeRow}:{eCol}{typeRow},\"B\")";
-                ws.Cells["N7"].Formula = "A7+C7+E7";
             }
             else
             {
