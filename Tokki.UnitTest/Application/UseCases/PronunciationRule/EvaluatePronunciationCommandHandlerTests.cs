@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -22,13 +22,15 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             Mock<ISpeechService>?                   speechService   = null,
             Mock<IAIPronunciationService>?           aiService       = null,
             Mock<IPronunciationRuleRepository>?      ruleRepo        = null,
-            Mock<IPronunciationExampleRepository>?   exampleRepo     = null)
+            Mock<IPronunciationExampleRepository>?   exampleRepo     = null,
+            Mock<Hangfire.IBackgroundJobClient>?     jobClient       = null)
         {
             return new EvaluatePronunciationCommandHandler(
                 (speechService  ?? new Mock<ISpeechService>()).Object,
                 (aiService      ?? new Mock<IAIPronunciationService>()).Object,
                 (ruleRepo       ?? MockPronunciationRuleRepository.GetMock()).Object,
-                (exampleRepo    ?? MockPronunciationExampleRepository.GetMock()).Object);
+                (exampleRepo    ?? MockPronunciationExampleRepository.GetMock()).Object,
+                (jobClient      ?? new Mock<Hangfire.IBackgroundJobClient>()).Object);
         }
 
         /// <summary>Creates a mock IFormFile that returns a given stream on OpenReadStream().</summary>

@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.UserExam.Commands.SubmitUserExam;
 
@@ -21,30 +21,37 @@ namespace Tokki.WebAPI.BackgroundServices
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                using (var scope = _serviceProvider.CreateScope())
+                try
                 {
-                    var repository = scope.ServiceProvider.GetRequiredService<IUserExamRepository>();
-                    var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
-
-                    var expiredSessions = await repository.GetExpiredSessionsAsync(stoppingToken);
-
-                    foreach (var session in expiredSessions)
+                    using (var scope = _serviceProvider.CreateScope())
                     {
-                        try
-                        {
-                            _logger.LogInformation($"Auto-submitting expired exam: {session.UserExamId}");
+                        var repository = scope.ServiceProvider.GetRequiredService<IUserExamRepository>();
+                        var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
 
-                            await mediator.Send(new SubmitUserExamCommand
-                            {
-                                UserExamId = session.UserExamId,
-                                UserId = session.UserId 
-                            }, stoppingToken);
-                        }
-                        catch (Exception ex)
+                        var expiredSessions = await repository.GetExpiredSessionsAsync(stoppingToken);
+
+                        foreach (var session in expiredSessions)
                         {
-                            _logger.LogError(ex, $"Error auto-submitting exam {session.UserExamId}");
+                            try
+                            {
+                                _logger.LogInformation($"Auto-submitting expired exam: {session.UserExamId}");
+
+                                await mediator.Send(new SubmitUserExamCommand
+                                {
+                                    UserExamId = session.UserExamId,
+                                    UserId = session.UserId 
+                                }, stoppingToken);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, $"Error auto-submitting exam {session.UserExamId}");
+                            }
                         }
                     }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error occurred in ExamDeadlineWorker while processing expired sessions.");
                 }
 
                 await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);

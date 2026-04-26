@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Tokki.Application.Common.Models;
 
 public class GetTaskDetailQueryHandler
@@ -32,7 +32,7 @@ public class GetTaskDetailQueryHandler
             DayIndex = task.DayIndex,
             Content = task.AiGeneratedContent,
             ExamId = task.ExamId,
-            QuestionTypeId = task.QuestionTypeId
+            QuestionTypeId = task.QuestionTypeId ?? task.TargetQuestionTypeId
         };
 
         return OperationResult<TaskDetailResult>.Success(result);

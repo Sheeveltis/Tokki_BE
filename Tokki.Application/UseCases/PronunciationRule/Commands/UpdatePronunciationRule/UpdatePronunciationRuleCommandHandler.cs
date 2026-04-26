@@ -29,7 +29,6 @@ namespace Tokki.Application.UseCases.PronunciationRule.Commands.UpdatePronunciat
             entity.RuleName = request.RuleName.Trim();
             entity.Description = request.Description?.Trim();
             entity.Content = request.Content;
-            entity.SortOrder = request.SortOrder;
             entity.UpdateBy = request.UpdateBy;
             entity.UpdateDate = DateTime.UtcNow;
 

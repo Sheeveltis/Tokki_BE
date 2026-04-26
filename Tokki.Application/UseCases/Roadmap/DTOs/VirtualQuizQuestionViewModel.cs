@@ -1,4 +1,4 @@
-﻿namespace Tokki.Application.UseCases.Roadmap.DTOs
+namespace Tokki.Application.UseCases.Roadmap.DTOs
 {
     public class VirtualQuizQuestionViewModel
     {
@@ -6,6 +6,8 @@
         public string? Content { get; set; }
         public string? MediaUrl { get; set; }
         public string? PassageContent { get; set; }
+        public string? Explain { get; set; }
+        public string? MediaType { get; set; } // "image" or "audio"
         public List<VirtualQuizOptionViewModel> Options { get; set; } = new();
     }
 

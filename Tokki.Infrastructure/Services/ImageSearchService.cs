@@ -4,12 +4,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using Microsoft.Extensions.Options;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Web;
 using Tokki.Application.IServices;
+using Tokki.Infrastructure.Configurations;
 
 namespace Tokki.Infrastructure.Services
 {
@@ -22,6 +24,7 @@ namespace Tokki.Infrastructure.Services
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<ImageSearchService> _logger;
+        private readonly IOptions<GeminiOptions> _options;
         private readonly string _pixabayApiKey;
         private readonly string _geminiApiKey;
         private readonly string _geminiBaseUrl;
@@ -29,10 +32,12 @@ namespace Tokki.Infrastructure.Services
         public ImageSearchService(
             IHttpClientFactory httpClientFactory,
             ILogger<ImageSearchService> logger,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IOptions<GeminiOptions> options)
         {
             _httpClientFactory = httpClientFactory;
             _logger = logger;
+            _options = options;
             _pixabayApiKey = configuration["PixabaySettings:ApiKey"]
                 ?? throw new InvalidOperationException("PixabaySettings:ApiKey chưa được cấu hình.");
             _geminiApiKey = configuration["Gemini:Writing:ApiKey"]
@@ -258,6 +263,119 @@ namespace Tokki.Infrastructure.Services
             {
                 Console.WriteLine($"  [Gemini Translate] ❌ Exception: {ex.Message}");
                 return viDefinition;
+            }
+        }
+
+        // ╔══════════════════════════════════════════════════════════════════╗
+        // ║  4. BLOG COVER GEN (Gemini Imagen)                             ║
+        // ╚══════════════════════════════════════════════════════════════════╝
+        public async Task<byte[]?> GenerateBlogCoverAsync(string title, string mascotBase64)
+        {
+            _logger.LogInformation("🎨 [Blog Cover Gen] Title='{Title}'", title);
+
+            var config = _options.Value.GenCoverBlog;
+            var apiKey = !string.IsNullOrEmpty(config.ApiKey) ? config.ApiKey : _options.Value.ApiKey;
+            var baseUrl = !string.IsNullOrEmpty(config.BaseUrl) ? config.BaseUrl.TrimEnd('/') : "https://generativelanguage.googleapis.com/v1beta";
+            var model = !string.IsNullOrEmpty(config.Model) ? config.Model : "gemini-2.0-flash";
+
+            _logger.LogInformation("  [Blog Cover] Sử dụng model: {Model} từ config GenCoverBlog", model);
+            
+            return await TryGenerateBlogCoverWithConfigAsync(baseUrl, model, apiKey, title, mascotBase64);
+        }
+
+        private async Task<byte[]?> TryGenerateBlogCoverWithConfigAsync(string baseUrl, string model, string apiKey, string title, string mascotBase64)
+        {
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                var url = $"{baseUrl}/models/{model}:generateContent?key={apiKey}";
+
+                var prompt =
+                    "You are a professional graphic designer specializing in Blog Cover art.\n" +
+                    $"TOPIC/TITLE: \"{title}\"\n\n" +
+                    "I have provided a Mascot image (Tokki). Your task is to generate a beautiful, modern blog cover image " +
+                    "that incorporates this mascot and represents the title visually.\n\n" +
+                    "STYLE REQUIREMENTS:\n" +
+                    "• High-quality, vibrant, and professional looking\n" +
+                    "• Clean composition with the mascot as a key character\n" +
+                    "• The mascot should be interacting with or placed in a scene related to the title\n" +
+                    "• Modern illustration style, smooth textures\n" +
+                    "• Professional typography/placement (DO NOT generate exact text, just leave space or use artistic representations)\n" +
+                    "• Landscape aspect ratio (16:9), but return 1:1 if 16:9 is not supported\n\n" +
+                    "Generate the blog cover image now.";
+
+                var requestBody = new
+                {
+                    contents = new[]
+                    {
+                        new
+                        {
+                            role = "user",
+                            parts = new object[]
+                            {
+                                new
+                                {
+                                    inlineData = new
+                                    {
+                                        mimeType = "image/png",
+                                        data = mascotBase64
+                                    }
+                                },
+                                new { text = prompt }
+                            }
+                        }
+                    },
+                    generationConfig = new
+                    {
+                        responseModalities = new[] { "IMAGE" },
+                        maxOutputTokens = 1024
+                    }
+                };
+
+                var json = JsonSerializer.Serialize(requestBody);
+                var resp = await client.PostAsync(url, new StringContent(json, Encoding.UTF8, "application/json"));
+                var body = await resp.Content.ReadAsStringAsync();
+
+                if (!resp.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning("  [Blog Cover] Model {Model} thất bại với Status {StatusCode}. Response: {Body}", model, resp.StatusCode, body);
+                    return null;
+                }
+
+                using var doc = JsonDocument.Parse(body);
+                var root = doc.RootElement;
+                if (!root.TryGetProperty("candidates", out var cands) || cands.GetArrayLength() == 0)
+                {
+                    _logger.LogWarning("  [Blog Cover] Model {Model} không trả về candidates.", model);
+                    return null;
+                }
+
+                // Sử dụng TryGetProperty để tránh KeyNotFoundException
+                var firstCand = cands[0];
+                if (firstCand.TryGetProperty("content", out var content) && 
+                    content.TryGetProperty("parts", out var parts))
+                {
+                    foreach (var part in parts.EnumerateArray())
+                    {
+                        if (part.TryGetProperty("inlineData", out var inline))
+                        {
+                            var b64 = inline.GetProperty("data").GetString();
+                            if (!string.IsNullOrEmpty(b64))
+                            {
+                                _logger.LogInformation("  [Blog Cover] ✅ Đã nhận được dữ liệu ảnh từ model {Model}", model);
+                                return Convert.FromBase64String(b64);
+                            }
+                        }
+                    }
+                }
+                
+                _logger.LogWarning("  [Blog Cover] API trả về thành công nhưng không tìm thấy 'inlineData' (dữ liệu ảnh). Có thể model {Model} không hỗ trợ tạo ảnh trực tiếp. Body: {Body}", model, body);
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi sinh ảnh bìa với model {Model}", model);
+                return null;
             }
         }
 

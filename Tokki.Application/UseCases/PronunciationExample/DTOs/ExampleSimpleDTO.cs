@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,5 +11,6 @@ namespace Tokki.Application.UseCases.PronunciationExample.DTOs
         public string ExampleId { get; set; } = string.Empty;
         public string RawScript { get; set; } = string.Empty;
         public int SortOrder { get; set; }
+        public string Difficulty { get; set; } = string.Empty;
     }
 }

@@ -4,6 +4,7 @@ using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 using Tokki.Application.Common.Helpers;
 using Tokki.Application.Common.Models;
+using Tokki.Application.UseCases.Gamification.DTOs;
 
 namespace Tokki.Infrastructure.Services
 {
@@ -14,7 +15,6 @@ namespace Tokki.Infrastructure.Services
         private readonly ISystemConfigRepository _systemConfigRepository;
         private readonly IUserXpHistoryRepository _userXpHistoryRepository;
         private readonly IIdGeneratorService _idGenerator;
-        private const int TARGET_STUDY_SECONDS = 900;
         private const string LAZY_TITLE_NAME = "Con Lười";
 
         public GamificationService(IAccountRepository accountRepository, 
@@ -30,20 +30,32 @@ namespace Tokki.Infrastructure.Services
             _idGenerator = idGenerator;
         }
 
+        private async Task<int> GetTargetSecondsAsync()
+        {
+            string? value = await _systemConfigRepository.GetValueByKeyAsync("TARGET_STUDY_SECONDS");
+            if (int.TryParse(value, out int result))
+            {
+                return result;
+            }
+            return 900; // Default fallback
+        }
+
         public async Task CheckLoginGamificationAsync(Account user)
         {
             if (user == null) return;
 
-            var vietnamNow = DateTime.UtcNow.AddHours(7);
-            HandleLazyReset(user, vietnamNow.Date, vietnamNow.Date.AddDays(-1));
+            var now = DateTime.Now;
+            var today = now.Date;
+            var yesterday = today.AddDays(-1);
+
+            HandleLazyReset(user, today, yesterday);
 
             if (user.LastLoginAt.HasValue)
             {
-                var daysInactive = (DateTime.UtcNow.AddHours(7) - user.LastLoginAt.Value).TotalDays;
-
-                if (daysInactive > 3)
+                int inactiveDays = (today - user.LastLoginAt.Value.Date).Days;
+                if (inactiveDays > 0)
                 {
-                    await _userTitleService.CheckAndUnlockTitlesAsync(user.UserId, TitleRequirementType.InactivityDays, (long)daysInactive);
+                    await _userTitleService.CheckAndUnlockTitlesAsync(user.UserId, TitleRequirementType.InactivityDays, (long)inactiveDays);
                 }
             }
         }
@@ -53,26 +65,22 @@ namespace Tokki.Infrastructure.Services
             var user = await _accountRepository.GetByIdAsync(userId);
             if (user == null) return false;
 
-            var vietnamNow = DateTime.UtcNow.AddHours(7);
-            var today = vietnamNow.Date;
+            var now = DateTime.Now;
+            var today = now.Date;
             var yesterday = today.AddDays(-1);
+            int targetSeconds = await GetTargetSecondsAsync();
 
-            if (user.UpdatedAt.HasValue && user.UpdatedAt.Value.Date < today)
-            {
-                user.DailyStudySeconds = 0;
+            // 1. Đồng bộ hóa logic reset (Stale Reset)
+            HandleLazyReset(user, today, yesterday);
 
-                if (user.LastStreakDate.HasValue && user.LastStreakDate.Value.Date < yesterday)
-                {
-                    user.AchievedGoalStreak = 0;
-                }
-            }
-
+            // 2. Cộng dồn thời gian học
             user.DailyStudySeconds += seconds;
             bool isStreakCompletedNow = false;
 
+            // 3. Kiểm tra mục tiêu streak
             bool completedToday = user.LastStreakDate.HasValue && user.LastStreakDate.Value.Date == today;
 
-            if (user.DailyStudySeconds >= TARGET_STUDY_SECONDS && !completedToday)
+            if (user.DailyStudySeconds >= targetSeconds && !completedToday)
             {
                 isStreakCompletedNow = true;
 
@@ -101,24 +109,19 @@ namespace Tokki.Infrastructure.Services
                     UserId = user.UserId,
                     Amount = bonusXP,
                     Action = XpSource.DailyStreak,
-                    CreatedAt = vietnamNow
+                    CreatedAt = now
                 });
 
-                // Check Streak-based Titles
                 await _userTitleService.CheckAndUnlockTitlesAsync(user.UserId, TitleRequirementType.Streak, user.AchievedGoalStreak);
-                
-                // Check XP-based Titles
                 var newlyUnlockedXp = await _userTitleService.CheckAndUnlockTitlesAsync(user.UserId, TitleRequirementType.XP, user.TotalXP);
                 
-                // If anything new unlocked and it's better than current, maybe auto-equip?
-                // For now, let's keep it manual except if they don't have current title
                 if (newlyUnlockedXp.Any() && string.IsNullOrEmpty(user.CurrentTitleId))
                 {
                     user.CurrentTitleId = newlyUnlockedXp.Last().TitleId;
                 }
             }
 
-            user.UpdatedAt = vietnamNow;
+            user.UpdatedAt = now;
 
             await _accountRepository.UpdateUserAsync(user);
             await _accountRepository.SaveChangesAsync(default);
@@ -126,18 +129,53 @@ namespace Tokki.Infrastructure.Services
             return isStreakCompletedNow;
         }
 
-        private void HandleLazyReset(Account user, DateTime today, DateTime yesterday)
+        public async Task<StreakStatusDto> GetStreakStatusAsync(string userId)
         {
-            if (user.UpdatedAt.HasValue && user.UpdatedAt.Value.Date < today)
-            {
-                user.DailyStudySeconds = 0;
+            var user = await _accountRepository.GetByIdAsync(userId);
+            if (user == null) return new StreakStatusDto();
 
-                if (user.LastStreakDate.HasValue && user.LastStreakDate.Value.Date < yesterday)
-                {
-                    user.AchievedGoalStreak = 0;
-                }
-            }
+            var now = DateTime.Now;
+            var today = now.Date;
+            var yesterday = today.AddDays(-1);
+            int targetSeconds = await GetTargetSecondsAsync();
+
+            var (currentStreak, dailySeconds, isCompletedToday) = CalculateCurrentStatus(user, today, yesterday);
+
+            return new StreakStatusDto
+            {
+                CurrentStreak = currentStreak,
+                MaxStreak = user.MaxStreak,
+                IsCompletedToday = isCompletedToday,
+                DailyStudySeconds = dailySeconds,
+                TargetSeconds = targetSeconds
+            };
         }
 
+        private (int streak, double seconds, bool isCompletedToday) CalculateCurrentStatus(Account user, DateTime today, DateTime yesterday)
+        {
+            int currentStreak = user.AchievedGoalStreak;
+            double dailySeconds = user.DailyStudySeconds;
+
+            if (user.UpdatedAt.HasValue && user.UpdatedAt.Value.Date < today)
+            {
+                dailySeconds = 0;
+            }
+
+            if (user.LastStreakDate.HasValue && user.LastStreakDate.Value.Date < yesterday)
+            {
+                currentStreak = 0;
+            }
+
+            bool isCompletedToday = user.LastStreakDate.HasValue && user.LastStreakDate.Value.Date == today;
+
+            return (currentStreak, dailySeconds, isCompletedToday);
+        }
+
+        private void HandleLazyReset(Account user, DateTime today, DateTime yesterday)
+        {
+            var (streak, seconds, _) = CalculateCurrentStatus(user, today, yesterday);
+            user.AchievedGoalStreak = streak;
+            user.DailyStudySeconds = seconds;
+        }
     }
 }

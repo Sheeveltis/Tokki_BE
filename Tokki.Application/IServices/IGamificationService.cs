@@ -1,4 +1,6 @@
 using Tokki.Domain.Entities;
+using System.Threading.Tasks;
+using Tokki.Application.UseCases.Gamification.DTOs;
 
 namespace Tokki.Application.IServices
 {
@@ -6,5 +8,6 @@ namespace Tokki.Application.IServices
     {
         Task CheckLoginGamificationAsync(Account user);
         Task<bool> TrackStudyTimeAsync(string userId, double seconds);
+        Task<StreakStatusDto> GetStreakStatusAsync(string userId);
     }
 }

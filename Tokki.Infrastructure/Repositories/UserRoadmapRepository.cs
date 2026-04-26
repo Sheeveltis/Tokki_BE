@@ -1,10 +1,10 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.Roadmap.DTOs;
 using Tokki.Domain.Entities;
-using Tokki.Domain.Enums; 
+using Tokki.Domain.Enums;
 using Tokki.Infrastructure.Data;
 
 namespace Tokki.Infrastructure.Repositories
@@ -41,7 +41,7 @@ namespace Tokki.Infrastructure.Repositories
                 {
                     week.DailyTasks = week.DailyTasks
                         .OrderBy(t => t.DayIndex)
-                        .ThenBy(t => (int)t.TaskType) 
+                        .ThenBy(t => (int)t.TaskType)
                         .ToList();
                 }
             }
@@ -75,11 +75,11 @@ namespace Tokki.Infrastructure.Repositories
         {
             var score = await _context.UserExams
                 .Where(ue => ue.ExamId == examId && ue.UserId == userId && ue.Status == UserExamStatus.Completed)
-                .OrderByDescending(ue => ue.SubmitTime) 
+                .OrderByDescending(ue => ue.SubmitTime)
                 .Select(ue => ue.Score)
                 .FirstOrDefaultAsync(cancellationToken);
 
-            return score; 
+            return score;
         }
         public async Task<List<string>> GetWeakQuestionTypesFromExamAsync(string userExamId, CancellationToken cancellationToken = default)
         {
@@ -88,8 +88,8 @@ namespace Tokki.Infrastructure.Repositories
                 .Include(d => d.Question)
                 .GroupBy(d => d.Question.QuestionTypeId)
                 .Select(g => new { TypeId = g.Key, Count = g.Count() })
-                .OrderByDescending(x => x.Count) 
-                .Take(3) 
+                .OrderByDescending(x => x.Count)
+                .Take(3)
                 .Select(x => x.TypeId)
                 .ToListAsync(cancellationToken);
 
@@ -99,7 +99,7 @@ namespace Tokki.Infrastructure.Repositories
         {
             return await _context.UserExams
                 .Where(ue => ue.ExamId == examId && ue.UserId == userId && ue.Status == UserExamStatus.Completed)
-                .OrderByDescending(ue => ue.SubmitTime) 
+                .OrderByDescending(ue => ue.SubmitTime)
                 .FirstOrDefaultAsync(cancellationToken);
         }
         public async Task<List<ExamQuestion>> GetExamQuestionsForGradingAsync(string examId, CancellationToken cancellationToken = default)
@@ -143,7 +143,7 @@ namespace Tokki.Infrastructure.Repositories
                 .Select(qt => qt.QuestionTypeId)
                 .ToListAsync(cancellationToken);
         }
-        
+
         public async Task<List<QuestionTypeMenuItem>> GetQuestionTypeMenuAsync(
             List<string> questionTypeIds,
             CancellationToken cancellationToken = default)
@@ -177,7 +177,7 @@ namespace Tokki.Infrastructure.Repositories
             }
 
             return await query
-                .OrderBy(g => g.RelatedQuestionTypeId == null) 
+                .OrderBy(g => g.RelatedQuestionTypeId == null)
                 .Take(20)
                 .Select(g => new GrammarMenuItem
                 {
@@ -193,12 +193,16 @@ namespace Tokki.Infrastructure.Repositories
             CurrentTopikLevel level,
             CancellationToken cancellationToken = default)
         {
+            var examType = (level == CurrentTopikLevel.Pre_Topik
+                         || level == CurrentTopikLevel.Level_1
+                         || level == CurrentTopikLevel.Level_2)
+                ? ExamType.TopikI
+                : ExamType.TopikII;
+
             return await _context.QuestionTypes
-                .Where(qt => qt.IsActive
-                    && (qt.ExamType == ExamType.TopikI || qt.ExamType == ExamType.TopikII))
+                .Where(qt => qt.IsActive && qt.ExamType == examType)
+                .OrderBy(qt => qt.OrderIndex)
                 .Select(qt => qt.QuestionTypeId)
-                .Where(id => id != null)         
-                .Select(id => id!)
                 .ToListAsync(cancellationToken);
         }
         public async Task<Exam?> GetEntranceExamByConfigKeyAsync(

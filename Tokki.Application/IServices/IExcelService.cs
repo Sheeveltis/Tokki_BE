@@ -27,5 +27,7 @@ namespace Tokki.Application.IServices
         Task<byte[]> ExportBlogsToExcelAsync(List<BlogExcelDTO> data, string sheetName);
         Task<List<SystemConfigExcelDTO>> ExtractSystemConfigDataAsync(IFormFile file);
         Task<byte[]> ExportSystemConfigsToExcelAsync(List<SystemConfigExcelDTO> data, string sheetName);
+        Task<byte[]> GetPronunciationExampleTemplateAsync();
+        Task<byte[]> GetPronunciationRuleTemplateAsync();
     }
 }

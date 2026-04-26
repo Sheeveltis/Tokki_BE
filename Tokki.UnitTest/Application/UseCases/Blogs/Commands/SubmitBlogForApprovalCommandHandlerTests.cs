@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -43,8 +43,9 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             }
 
             var logger = new Mock<ILogger<SubmitBlogForApprovalCommandHandler>>();
+            var bgJobClient = new Mock<Hangfire.IBackgroundJobClient>();
 
-            return new SubmitBlogForApprovalCommandHandler(repo.Object, mockHttpContextAccessor.Object, logger.Object);
+            return new SubmitBlogForApprovalCommandHandler(repo.Object, mockHttpContextAccessor.Object, bgJobClient.Object, logger.Object);
         }
 
         // ═══════════════════════════════════════════════════════════

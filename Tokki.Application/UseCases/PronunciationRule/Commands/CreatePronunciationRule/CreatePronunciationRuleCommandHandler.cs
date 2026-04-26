@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,6 +33,7 @@ namespace Tokki.Application.UseCases.PronunciationRule.Commands.CreatePronunciat
             }
 
             var ruleId = _idGenerator.GenerateCustom(10);
+            var maxSortOrder = await _repository.GetMaxSortOrderAsync(cancellationToken);
             var entity = new Domain.Entities.PronunciationRule
             {
                 PronunciationRuleId = ruleId,
@@ -40,6 +41,7 @@ namespace Tokki.Application.UseCases.PronunciationRule.Commands.CreatePronunciat
                 Description = request.Description?.Trim(),
                 Content = request.Content,
                 IsDeleted = false,
+                SortOrder = maxSortOrder + 1,
                 CreateBy = request.CreateBy,
                 CreateDate = DateTime.UtcNow
             };

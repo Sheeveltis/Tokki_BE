@@ -219,6 +219,22 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
+        [HttpGet("current-role")]
+        [Authorize]
+        public IActionResult GetCurrentRole()
+        {
+            var roleString = User.FindFirstValue("role") ?? User.FindFirstValue(ClaimTypes.Role);
+            if (string.IsNullOrEmpty(roleString))
+                return NotFound(new { message = "Không tìm thấy thông tin quyền trong Token." });
+
+            if (Enum.TryParse<AccountRole>(roleString, out var roleEnum))
+            {
+                return Ok(new { role = (int)roleEnum });
+            }
+
+            return BadRequest(new { message = "Quyền trong Token không hợp lệ." });
+        }
+
         [HttpGet("me/aim-level")]
         [Authorize]
         public async Task<IActionResult> GetAimLevel(CancellationToken cancellationToken)

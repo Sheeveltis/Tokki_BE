@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,5 +14,6 @@ namespace Tokki.Application.UseCases.Excel.DTOs
         public string PhoneticScript { get; set; } = string.Empty;
         public string? Meaning { get; set; }
         public int SortOrder { get; set; }
+        public string? Difficulty { get; set; } // Thêm cột độ khó
     }
 }

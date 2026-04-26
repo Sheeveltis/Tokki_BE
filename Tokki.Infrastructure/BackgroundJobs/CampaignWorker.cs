@@ -1,4 +1,4 @@
-﻿// Tokki.Infrastructure/BackgroundJobs/CampaignWorker.cs
+// Tokki.Infrastructure/BackgroundJobs/CampaignWorker.cs
 
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
@@ -66,7 +66,6 @@ namespace Tokki.Infrastructure.BackgroundJobs
 
             if (!jobs.Any())
             {
-                _logger.LogInformation("Không có job nào cần gửi");
                 return;
             }
 

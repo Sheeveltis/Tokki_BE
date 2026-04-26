@@ -14,5 +14,10 @@ namespace Tokki.Application.IServices
         /// Trả về byte[] của ảnh PNG do AI tạo ra.
         /// </summary>
         Task<byte[]?> GenerateImageForVocabAsync(string viDefinition, string koText);
+
+        /// <summary>
+        /// Dùng Gemini AI sinh ảnh bìa cho Blog dựa trên Title và Mascot.
+        /// </summary>
+        Task<byte[]?> GenerateBlogCoverAsync(string title, string mascotBase64);
     }
 }

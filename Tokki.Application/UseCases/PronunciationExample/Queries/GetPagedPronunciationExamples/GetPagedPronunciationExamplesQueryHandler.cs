@@ -8,10 +8,14 @@ namespace Tokki.Application.UseCases.PronunciationExample.Queries.GetPagedPronun
     public class GetPagedPronunciationExamplesQueryHandler : IRequestHandler<GetPagedPronunciationExamplesQuery, OperationResult<PagedResult<PronunciationExampleDTO>>>
     {
         private readonly IPronunciationExampleRepository _exampleRepo;
+        private readonly IUserPronunciationExampleProgressRepository _progressRepo;
 
-        public GetPagedPronunciationExamplesQueryHandler(IPronunciationExampleRepository exampleRepo)
+        public GetPagedPronunciationExamplesQueryHandler(
+            IPronunciationExampleRepository exampleRepo,
+            IUserPronunciationExampleProgressRepository progressRepo)
         {
             _exampleRepo = exampleRepo;
+            _progressRepo = progressRepo;
         }
 
         public async Task<OperationResult<PagedResult<PronunciationExampleDTO>>> Handle(GetPagedPronunciationExamplesQuery request, CancellationToken cancellationToken)
@@ -26,7 +30,15 @@ namespace Tokki.Application.UseCases.PronunciationExample.Queries.GetPagedPronun
                 request.PageNumber,
                 request.PageSize,
                 request.SearchTerm,
+                request.Difficulty,
                 cancellationToken);
+
+            var practicedIds = new List<string>();
+            if (!string.IsNullOrEmpty(request.UserId))
+            {
+                var progress = await _progressRepo.GetByUserIdAndRuleIdAsync(request.UserId, request.PronunciationRuleId);
+                practicedIds = progress.Where(p => p.IsPracticed).Select(p => p.PronunciationExampleId).ToList();
+            }
 
             var dtos = items.Select(e => new PronunciationExampleDTO
             {
@@ -37,7 +49,9 @@ namespace Tokki.Application.UseCases.PronunciationExample.Queries.GetPagedPronun
                 PhoneticScript = e.PhoneticScript,
                 Meaning = e.Meaning,
                 AudioUrl = e.AudioUrl,
-                SortOrder = e.SortOrder
+                SortOrder = e.SortOrder,
+                Difficulty = e.Difficulty.ToString(),
+                IsLearned = practicedIds.Contains(e.ExampleId)
             }).ToList();
 
             var pagedResult = new PagedResult<PronunciationExampleDTO>(dtos, totalCount, request.PageNumber, request.PageSize);

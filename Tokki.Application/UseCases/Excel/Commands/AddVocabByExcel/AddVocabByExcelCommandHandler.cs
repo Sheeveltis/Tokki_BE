@@ -142,17 +142,6 @@ namespace Tokki.Application.UseCases.Excel.Commands.AddVocabByExcel
                     }
                 }
 
-                if (response.FailureList.Any())
-                {
-                    // Trộn các list khác về rỗng vì chúng ta dừng hoàn toàn
-                    response.AddedNewVocabList.Clear();
-                    response.LinkedExistingVocabList.Clear();
-                    var errorMsg = $"Phát hiện {response.FailureList.Count} dòng lỗi. Quá trình import bị dừng để đảm bảo tính hoàn vẹn, hãy sửa file Excel và thử lại.";
-                    
-                    // Trả về Success nhưng kèm Data là response (có FailureList) để FE hiển thị lỗi
-                    // Sử dụng status 200 để FE lấy được data dể dàng, nhưng message sẽ báo lỗi
-                    return OperationResult<ImportVocabularyResponse>.Success(response, 200, errorMsg);
-                }
 
                 if (!newItemsToProcess.Any() && !finalVocabsForTopic.Any())
                 {
@@ -219,30 +208,35 @@ namespace Tokki.Application.UseCases.Excel.Commands.AddVocabByExcel
                     finalVocabsForTopic.AddRange(entitiesList);
                 }
 
+                int actualLinked = 0;
                 if (!string.IsNullOrEmpty(request.TopicId) && finalVocabsForTopic.Any())
                 {
-                    var topicResult = await _vocabTopicRepo.AddVocabulariesToTopicWithTransactionAsync(
+                    // Đảm bảo không có ID trùng lặp 
+                    var uniqueVocabs = finalVocabsForTopic
+                        .GroupBy(v => v.VocabularyId)
+                        .Select(g => g.First())
+                        .ToList();
+
+                    var topicResult = await _vocabTopicRepo.AddOrReactivateVocabulariesToTopicAsync(
                         request.TopicId,
-                        finalVocabsForTopic,
+                        uniqueVocabs,
                         request.StaffId,
                         cancellationToken
                     );
 
-                    if (!topicResult.Success)
-                    {
-                        throw new Exception($"Không thể liên kết từ vựng vào Topic. Lỗi: {string.Join(", ", topicResult.FailedItems)}");
-                    }
+                    // Lấy số lượng thực tế mà Repo đã xử lý thành công
+                    actualLinked = topicResult.AddedOrReactivated + topicResult.SkippedAlreadyActive;
                 }
 
-                var msg = $"Xử lý xong. Thêm mới: {response.AddedNewVocabList.Count}. Link vào Topic: {response.LinkedExistingVocabList.Count}. Lỗi: {response.FailureList.Count}";
+                // Câu thông báo dựa trên số lượng THỰC TẾ từ Database trả về
+                var msg = $"Xử lý xong. Thêm mới vào hệ thống: {response.AddedNewCount}. Đã vào Topic: {actualLinked}. Lỗi: {response.FailureCount}";
+                
                 return OperationResult<ImportVocabularyResponse>.Success(response, 200, msg);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "ImportVocabulary Error Rollback.");
-                // Thay vì trả về data null, ta trả về response hiện tại (có thể chứa thông tin parse dở dang)
-                // để FE dễ dàng hiển thị hoặc debug, nhưng statusCode báo 400 (Bad Request)
-                var errorMsg = $"Đã có lỗi hệ thống hoặc lỗi dữ liệu (Lỗi: {ex.Message}). Quá trình đã dừng lại.";
+                _logger.LogError(ex, "ImportVocabulary Error.");
+                var errorMsg = $"Đã có lỗi (Lỗi: {ex.Message}). Quá trình đã dừng lại.";
                 return OperationResult<ImportVocabularyResponse>.Success(response, 400, errorMsg);
             }
         }

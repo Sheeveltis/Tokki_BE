@@ -13,7 +13,7 @@ namespace Tokki.Application.IRepositories
     {
         Task<bool> IsEmailExistsAsync(string email);
         Task AddAsync(Account user);
-        Task SaveChangesAsync(CancellationToken cancellationToken);
+        Task SaveChangesAsync(CancellationToken cancellationToken = default);
         Task<Account?> GetByEmailAsync(string email);
         Task UpdateUserAsync(Account user);
         Task<Account?> GetByIdAsync(string userId);
@@ -44,6 +44,7 @@ namespace Tokki.Application.IRepositories
         Task AddRangeAsync(IEnumerable<Account> accounts, CancellationToken cancellationToken = default);
         Task<IEnumerable<Account>> GetAllAsync(CancellationToken cancellationToken = default);
         Task<List<Title>> GetUnlockedTitlesForUserAsync(string userId);
+        Task<List<Title>> GetUnlockedTitlesEarnedOnDateAsync(string userId, TitleRequirementType type, DateTime date);
         Task<(List<(Title title, DateTime earnedAt)> items, int totalCount)> GetUnlockedTitlesWithPagingAsync(string userId, int pageNumber, int pageSize);
     }
 }

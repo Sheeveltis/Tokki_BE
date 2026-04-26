@@ -59,7 +59,8 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             {
                 QuestionBankId  = "QB-MAP-01",
                 Content         = "What is 안녕?",
-                MediaUrl        = null,
+                MediaUrl        = "https://example.com/image.png",
+                Explanation     = "Greeting in Korean",
                 QuestionOptions = new List<QuestionOption>
                 {
                     new QuestionOption { OptionId = "OPT-1", KeyOption = "A", Content = "Hello" },
@@ -71,9 +72,11 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             var vm = result.Data![0];
             vm.QuestionId.Should().Be("QB-MAP-01");
             vm.Content.Should().Be("What is 안녕?");
+            vm.Explain.Should().Be("Greeting in Korean");
+            vm.MediaType.Should().Be("image");
             vm.Options.Should().HaveCount(2);
             vm.Options[0].KeyOption.Should().Be("A");
-            QACollector.LogTestCase("Roadmap - Get Virtual Quiz", new TestCaseDetail { FunctionGroup = "GetVirtualQuiz", TestCaseID = "GetVirtualQuiz_04", Description = "DTO fields mapped: QuestionId, Content, Options", ExpectedResult = "All fields verified", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "QB fields mapped to ViewModel" } });
+            QACollector.LogTestCase("Roadmap - Get Virtual Quiz", new TestCaseDetail { FunctionGroup = "GetVirtualQuiz", TestCaseID = "TC-RM-GVQ-04", Description = "DTO fields mapped: QuestionId, Content, Explain, MediaType, Options", ExpectedResult = "All fields verified", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "QB fields mapped to ViewModel" } });
         }
 
         // GetVirtualQuiz_05 | B | GetRandomQuestionsByTypeAsync called with correct params
@@ -102,6 +105,21 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             var result = await CreateHandler(repo).Handle(new GetVirtualQuizQuery("QT-001", 1), CancellationToken.None);
             result.Data![0].PassageContent.Should().Be("Passage text");
             QACollector.LogTestCase("Roadmap - Get Virtual Quiz", new TestCaseDetail { FunctionGroup = "GetVirtualQuiz", TestCaseID = "GetVirtualQuiz_06", Description = "Question with Passage → PassageContent mapped correctly", ExpectedResult = "PassageContent='Passage text'", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "QB.Passage.Content mapped" } });
+        }
+        [Fact]
+        public async Task Handle_QuestionWithAudio_ShouldMapAudioMediaType()
+        {
+            var qb = new QuestionBank
+            {
+                QuestionBankId = "QB-AUD-01",
+                Content = "Listen and choose",
+                MediaUrl = "https://example.com/audio.mp3",
+                QuestionOptions = new List<QuestionOption>()
+            };
+            var repo = MockUserRoadmapRepository.GetMock(questionTypeExists: true, randomQuestions: new List<QuestionBank> { qb });
+            var result = await CreateHandler(repo).Handle(new GetVirtualQuizQuery("QT-001", 1), CancellationToken.None);
+            result.Data![0].MediaType.Should().Be("audio");
+            QACollector.LogTestCase("Roadmap - Get Virtual Quiz", new TestCaseDetail { FunctionGroup = "GetVirtualQuiz", TestCaseID = "TC-RM-GVQ-07", Description = "Question with Audio → MediaType='audio'", ExpectedResult = "MediaType='audio'", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "MediaUrl ends with .mp3" } });
         }
     }
 }

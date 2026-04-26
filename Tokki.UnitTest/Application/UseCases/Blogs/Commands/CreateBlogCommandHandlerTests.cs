@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -39,7 +39,12 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
                 logger = new Mock<ILogger<CreateBlogCommandHandler>>();
             }
 
-            return new CreateBlogCommandHandler(repo.Object, idGen.Object, logger.Object);
+            var mockNotifService = new Mock<Tokki.Application.IServices.INotificationService>();
+            var mockSysConfig = new Mock<ISystemConfigRepository>();
+            var mockNotifHelper = new Tokki.Application.Common.Helpers.AppNotificationHelper(mockNotifService.Object, mockSysConfig.Object);
+            var bgJobClient = new Mock<Hangfire.IBackgroundJobClient>();
+
+            return new CreateBlogCommandHandler(repo.Object, idGen.Object, bgJobClient.Object, mockNotifHelper, logger.Object);
         }
 
         // ═══════════════════════════════════════════════════════════
@@ -81,7 +86,6 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
                 CategoryId = "VALID-CAT",
                 Content = "Content",
                 ShortDescription = "Desc",
-                Status = BlogStatus.Draft,
                 CreatedBy = "U1"
             };
             

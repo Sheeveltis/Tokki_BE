@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -148,7 +148,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Commands
             var command = new CreatePronunciationExampleCommand 
             { 
                 PronunciationRuleId = "R1", TargetScript = "A", RawScript = "A_row", AudioUrl = "mp3", 
-                PhoneticScript = "Aa", Meaning = "Mnn", SortOrder = 1
+                PhoneticScript = "Aa", Meaning = "Mnn"
             };
             var result = await _handler.Handle(command, CancellationToken.None);
 

@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Tokki.Application.IServices;
 using Tokki.Application.UseCases.Blogs.Commands.ApproveBlog;
 using Tokki.Application.UseCases.Blogs.Commands.CreateBlog;
 using Tokki.Application.UseCases.Blogs.Commands.CreateUserBlog;
@@ -15,7 +16,9 @@ using Tokki.Application.UseCases.Blogs.Queries;
 using Tokki.Application.UseCases.Blogs.Queries.ExportBlogs;
 using Tokki.Application.UseCases.Blogs.Queries.GetPagedBlogs;
 using Tokki.Application.UseCases.Blogs.Commands.SaveDraftBlog;
+using Tokki.Application.UseCases.Blogs.Commands.SaveOfficialBlog;
 using Tokki.Application.UseCases.Blogs.Queries.GetMyBlogs;
+using Tokki.Application.UseCases.Blogs.Commands.GenerateBlogCover;
 using Tokki.Domain.Enums;
 
 namespace Tokki.WebAPI.Controllers
@@ -24,7 +27,8 @@ namespace Tokki.WebAPI.Controllers
     [ApiController]
     public class BlogController : ControllerBase
     {
-        private readonly ISender _sender; 
+        private readonly ISender _sender;
+
         public BlogController(ISender sender)
         {
             _sender = sender;
@@ -66,17 +70,23 @@ namespace Tokki.WebAPI.Controllers
             var result = await _sender.Send(query);
             return StatusCode(result.StatusCode, result);
         }
-        [HttpPost("user")]
+
+        [HttpGet("user/{blogId}")]
         [Authorize]
-        public async Task<IActionResult> CreateUserBlog([FromBody] CreateUserBlogCommand command)
+        public async Task<IActionResult> GetByUser(string blogId)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
             ?? User.FindFirst("sub")?.Value;
-            command.CreatedBy = userId!;
-            var result = await _sender.Send(command);
+
+            var query = new GetBlogByIdQuery 
+            { 
+                Id = blogId, 
+                IsAdminView = false,
+                RequesterUserId = userId
+            };
+            var result = await _sender.Send(query);
             return StatusCode(result.StatusCode, result);
         }
-
         [HttpPost("user/save")]
         [Authorize]
         public async Task<IActionResult> SaveDraft([FromBody] SaveDraftBlogCommand command)
@@ -107,14 +117,14 @@ namespace Tokki.WebAPI.Controllers
             var result = await _sender.Send(query);
             return StatusCode(result.StatusCode, result);
         }
-
-        [HttpPost()]
+ 
+        [HttpPost("admin/save")]
         [Authorize(Roles = "Admin, Staff")]
-        public async Task<IActionResult> Create([FromBody] CreateBlogCommand command)
+        public async Task<IActionResult> SaveOfficialDraft([FromBody] SaveOfficialBlogCommand command)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
             ?? User.FindFirst("sub")?.Value;
-            command.CreatedBy = userId!;
+            command.AdminId = userId!;
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
         }
@@ -143,9 +153,18 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
-        [HttpPost("staff/submit-approval/{id}")]
-        [Authorize(Roles ="Staff")] 
+        [HttpPost("user/submit-approval/{id}")]
+        [Authorize]
         public async Task<IActionResult> SubmitForApproval(string id)
+        {
+            var command = new SubmitBlogForApprovalCommand { BlogId = id };
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpPost("admin/submit-approval/{id}")]
+        [Authorize(Roles = "Admin, Staff")] 
+        public async Task<IActionResult> SubmitForApprovalStaff(string id)
         {
             var command = new SubmitBlogForApprovalCommand { BlogId = id };
             var result = await _sender.Send(command);
@@ -198,5 +217,20 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
+        [HttpPost("generate-cover")]
+        [Authorize]
+        public async Task<IActionResult> GenerateCover([FromBody] GenerateBlogCoverCommand command)
+        {
+            if (command == null) return BadRequest("Dữ liệu yêu cầu không hợp lệ.");
+            
+            var result = await _sender.Send(command);
+            
+            if (result.IsSuccess && result.Data != null)
+            {
+                return File(result.Data, "image/png", $"cover_{Guid.NewGuid():N}.png");
+            }
+            
+            return StatusCode(result.StatusCode, result);
+        }
     }
 }

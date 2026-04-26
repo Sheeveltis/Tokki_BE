@@ -13,5 +13,6 @@ namespace Tokki.Application.UseCases.Blogs.Queries
     {
         public string Id { get; set; } = string.Empty;
         public bool IsAdminView { get; set; } = false;
+        public string? RequesterUserId { get; set; }
     }
 }

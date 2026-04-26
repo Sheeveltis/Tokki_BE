@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -17,14 +17,31 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
     public class GetEntranceExamQueryHandlerTests
     {
         private static GetEntranceExamQueryHandler CreateHandler(
-            Mock<IUserRoadmapRepository>? repo = null)
+            Mock<IUserRoadmapRepository>? repo = null,
+            Mock<Tokki.Application.UseCases.Roadmap.Constants.ITopikLevelConfigService>? configService = null)
         {
-            // ExamRepository is second param but handler in code uses _examRepository (unused directly)
-            // The handler uses _userRoadmapRepository for GetEntranceExamByConfigKeyAsync
             var examRepo = new Mock<IExamRepository>();
+            var mockConfig = configService ?? new Mock<Tokki.Application.UseCases.Roadmap.Constants.ITopikLevelConfigService>();
+            
+            if (configService == null)
+            {
+                mockConfig.Setup(x => x.GetByLevelAsync(TargetAimLevel.Topik_I_Level1, It.IsAny<CancellationToken>()))
+                          .ReturnsAsync(new Tokki.Application.UseCases.Roadmap.DTOs.TopikLevelConfigDto { ConfigKey = "ENTRANCE_EXAM_TOPIK_1", ExamGroup = "TOPIK_I", PassScore = 80, TotalScore = 200 });
+
+                mockConfig.Setup(x => x.GetByLevelAsync(TargetAimLevel.Topik_I_Level2, It.IsAny<CancellationToken>()))
+                          .ReturnsAsync(new Tokki.Application.UseCases.Roadmap.DTOs.TopikLevelConfigDto { ConfigKey = "ENTRANCE_EXAM_TOPIK_1", ExamGroup = "TOPIK_I", PassScore = 140, TotalScore = 200 });
+                          
+                mockConfig.Setup(x => x.GetByLevelAsync(TargetAimLevel.Topik_II_Level3, It.IsAny<CancellationToken>()))
+                          .ReturnsAsync(new Tokki.Application.UseCases.Roadmap.DTOs.TopikLevelConfigDto { ConfigKey = "ENTRANCE_EXAM_TOPIK_2", ExamGroup = "TOPIK_II", PassScore = 120, TotalScore = 300 });
+
+                mockConfig.Setup(x => x.GetByLevelAsync((TargetAimLevel)99, It.IsAny<CancellationToken>()))
+                          .ReturnsAsync((Tokki.Application.UseCases.Roadmap.DTOs.TopikLevelConfigDto?)null);
+            }
+
             return new GetEntranceExamQueryHandler(
                 examRepo.Object,
-                (repo ?? MockUserRoadmapRepository.GetMock()).Object);
+                (repo ?? MockUserRoadmapRepository.GetMock()).Object,
+                mockConfig.Object);
         }
 
         // GetEntranceExam_01 | A | Invalid TargetAim (not in TopikLevelConfig) → 400

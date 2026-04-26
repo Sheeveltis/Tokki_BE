@@ -33,8 +33,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             var command = new UpdatePronunciationRuleCommand
             {
                 PronunciationRuleId = "RULE-NOTEXIST",
-                RuleName            = "New Name",
-                SortOrder           = 1
+                RuleName            = "New Name"
             };
 
             // Act
@@ -73,8 +72,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             var command = new UpdatePronunciationRuleCommand
             {
                 PronunciationRuleId = "RULE-001",
-                RuleName            = "?? ??", // name already taken by another rule
-                SortOrder           = 1
+                RuleName            = "?? ??" // name already taken by another rule
             };
 
             // Act
@@ -116,7 +114,6 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
                 RuleName            = "Updated Rule Name",
                 Description         = "Updated description",
                 Content             = "Updated content",
-                SortOrder           = 5,
                 UpdateBy            = "ADMIN-001"
             };
 
@@ -157,8 +154,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             var command = new UpdatePronunciationRuleCommand
             {
                 PronunciationRuleId = existingRule.PronunciationRuleId,
-                RuleName            = "Unique New Name",
-                SortOrder           = 2
+                RuleName            = "Unique New Name"
             };
 
             // Act
@@ -196,8 +192,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             var command = new UpdatePronunciationRuleCommand
             {
                 PronunciationRuleId = "RULE-001",
-                RuleName            = "Test",
-                SortOrder           = 1
+                RuleName            = "Test"
             };
 
             // Act
@@ -235,8 +230,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             var command = new UpdatePronunciationRuleCommand
             {
                 PronunciationRuleId = "RULE-001",
-                RuleName            = "  ???",
-                SortOrder           = 1
+                RuleName            = "  ???"
             };
 
             // Act

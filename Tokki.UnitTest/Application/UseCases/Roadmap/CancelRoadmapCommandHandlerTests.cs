@@ -1,9 +1,10 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.Roadmap.Commands.CancelRoadmap;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
@@ -15,8 +16,10 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
 {
     public class CancelRoadmapCommandHandlerTests
     {
-        private static CancelRoadmapCommandHandler CreateHandler(Mock<IUserRoadmapRepository>? repo = null)
-            => new CancelRoadmapCommandHandler((repo ?? MockUserRoadmapRepository.GetMock()).Object);
+        private static CancelRoadmapCommandHandler CreateHandler(Mock<IUserRoadmapRepository>? repo = null, Mock<IUserWeaknessRepository>? weaknessRepo = null)
+            => new CancelRoadmapCommandHandler(
+                (repo ?? MockUserRoadmapRepository.GetMock()).Object, 
+                (weaknessRepo ?? new Mock<IUserWeaknessRepository>()).Object);
 
         // CancelRoadmap_01 | A | No active roadmap → 404
         [Fact]

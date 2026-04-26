@@ -13,6 +13,7 @@ namespace Tokki.Infrastructure.Configurations
         public GeminiConfig Writing { get; set; } = new();
         public GeminiConfig Roadmap { get; set; } = new();
         public GeminiConfig Blog { get; set; } = new();
+        public GeminiConfig GenCoverBlog { get; set; } = new();
         public string ApiKey { get; set; } = string.Empty;
         public bool UseVertex { get; set; } = false;
         public string VertexProjectId { get; set; } = string.Empty;

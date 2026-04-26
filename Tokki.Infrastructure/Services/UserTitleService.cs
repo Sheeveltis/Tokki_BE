@@ -13,11 +13,15 @@ namespace Tokki.Infrastructure.Services
     {
         private readonly IAccountRepository _accountRepository;
         private readonly ITitleRepository _titleRepository;
+        private readonly IUserXpHistoryRepository _userXpHistoryRepository;
 
-        public UserTitleService(IAccountRepository accountRepository, ITitleRepository titleRepository)
+        public UserTitleService(IAccountRepository accountRepository, 
+                               ITitleRepository titleRepository,
+                               IUserXpHistoryRepository userXpHistoryRepository)
         {
             _accountRepository = accountRepository;
             _titleRepository = titleRepository;
+            _userXpHistoryRepository = userXpHistoryRepository;
         }
 
         public async Task<List<Title>> CheckAndUnlockLevelTitlesAsync(string userId)
@@ -76,7 +80,6 @@ namespace Tokki.Infrastructure.Services
             allNewlyUnlocked.AddRange(streakResults);
 
             // 2. Kiểm tra InactivityDays (Số ngày user không online)
-            // Tính số ngày kể từ lần login cuối cùng cho đến nay
             if (user.LastLoginAt.HasValue)
             {
                 int inactiveDays = (now.Date - user.LastLoginAt.Value.Date).Days;
@@ -85,11 +88,18 @@ namespace Tokki.Infrastructure.Services
                     var inactiveResults = await CheckAndUnlockTitlesAsync(userId, TitleRequirementType.InactivityDays, (long)inactiveDays);
                     allNewlyUnlocked.AddRange(inactiveResults);
                 }
+                else
+                {
+                    // Fallback: Nếu đã login rồi (inactiveDays = 0) 
+                    // thì lấy các title Inactivity được nhận trong ngày hôm nay trả về luôn
+                    var earnedToday = await _accountRepository.GetUnlockedTitlesEarnedOnDateAsync(userId, TitleRequirementType.InactivityDays, now.Date);
+                    allNewlyUnlocked.AddRange(earnedToday);
+                }
             }
 
-            // 3. Kiểm tra StudyDaysTotal (Tổng số ngày kể từ khi tạo acc)
-            int totalDays = (now.Date - user.CreatedAt.Date).Days + 1; // +1 cho ngày đầu tiên
-            var totalDaysResults = await CheckAndUnlockTitlesAsync(userId, TitleRequirementType.StudyDaysTotal, (long)totalDays);
+            // 3. Kiểm tra StudyDaysTotal (Tổng số ngày THỰC TẾ user có hoạt động học)
+            int studyDays = await _userXpHistoryRepository.CountActiveDaysAsync(userId);
+            var totalDaysResults = await CheckAndUnlockTitlesAsync(userId, TitleRequirementType.StudyDaysTotal, (long)studyDays);
             allNewlyUnlocked.AddRange(totalDaysResults);
 
             return allNewlyUnlocked.DistinctBy(t => t.TitleId).ToList();
