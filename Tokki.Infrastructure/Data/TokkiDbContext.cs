@@ -74,6 +74,7 @@ namespace Tokki.Infrastructure.Data
         public DbSet<UserWeakness> UserWeaknesses { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<EnumConfig> EnumConfigs { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -736,6 +737,30 @@ namespace Tokki.Infrastructure.Data
             {
                 entity.Property(e => e.Difficulty)
                       .HasConversion<int>();
+            });
+
+            // =========================================================
+            // 12. CONFIG ENUM CONFIG
+            // =========================================================
+            modelBuilder.Entity<EnumConfig>(entity =>
+            {
+                entity.ToTable("EnumConfigs");
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.GroupCode)
+                      .HasConversion<int>()
+                      .IsRequired();
+
+                entity.Property(e => e.Key)
+                      .IsRequired()
+                      .HasMaxLength(100);
+
+                entity.Property(e => e.Label)
+                      .IsRequired()
+                      .HasMaxLength(255);
+
+                entity.HasIndex(e => new { e.GroupCode, e.Key }).IsUnique();
+                entity.HasIndex(e => new { e.GroupCode, e.Value }).IsUnique();
             });
         }
     }
