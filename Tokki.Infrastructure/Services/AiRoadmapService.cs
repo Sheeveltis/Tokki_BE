@@ -523,6 +523,114 @@ namespace Tokki.Infrastructure.Services
 
             return await CallGeminiTextAsync(promptText);
         }
+        public async Task<AiRoadmapResponse?> GenerateExpansionWeekPlanAsync(
+            TargetAimLevel target,
+            CurrentTopikLevel currentLevel,
+            int nextWeekIndex,
+            List<string> expansionTypes,
+            List<string> originalWeaknessTypeIds,
+            List<QuestionTypeMenuItem> expansionTypeInfos,
+            List<QuestionTypeMenuItem> fullMenu)
+        {
+            int maxTasksPerDay = await GetIntConfigAsync(PromptConfigKeys.MaxTasksPerDay, fallback: 4);
+            int studyDays = await GetIntConfigAsync(PromptConfigKeys.StudyDaysPerWeek, fallback: 6);
+            int weeklyExamDay = await GetIntConfigAsync(PromptConfigKeys.WeeklyExamDay, fallback: 7);
+
+            var expansionSection = expansionTypeInfos.Any()
+                ? string.Join("\n", expansionTypeInfos.Select(w =>
+                    $"  - [{w.Skill}] {w.Name} (QuestionTypeId: {w.QuestionTypeId})" +
+                    (string.IsNullOrEmpty(w.Description) ? "" : $" — {w.Description}")))
+                : "  - Không có dạng bài mới.";
+
+            var originalWeaknessSection = originalWeaknessTypeIds.Any()
+                ? string.Join(", ", fullMenu
+                    .Where(q => originalWeaknessTypeIds.Contains(q.QuestionTypeId))
+                    .Select(q => q.Name))
+                : "Không có";
+
+            var quizMenuJson = JsonSerializer.Serialize(
+                expansionTypeInfos.Select(q => new
+                {
+                    QuestionTypeId = q.QuestionTypeId,
+                    Code = q.Code,
+                    Name = q.Name,
+                    Skill = q.Skill,
+                    Description = q.Description ?? ""
+                })
+            );
+
+            var promptText = $@"
+            Bạn là chuyên gia lập lộ trình TOPIK. Học viên bước vào TUẦN MỞ RỘNG {nextWeekIndex}.
+
+            THÔNG TIN HỌC VIÊN:
+            - Mục tiêu: {target}
+            - Trình độ hiện tại: {GetLevelDescription(currentLevel)}
+            - Học viên đã HOÀN THÀNH và PASS toàn bộ các dạng yếu ban đầu gồm: {originalWeaknessSection}
+            - Tuần này sẽ GIỚI THIỆU thêm các dạng bài mới để mở rộng kiến thức toàn diện cho kỳ thi TOPIK
+
+            *** DẠNG BÀI MỚI CẦN GIỚI THIỆU TUẦN NÀY ***
+            {expansionSection}
+
+            *** PHÂN BỔ NỘI DUNG ***
+            - Mỗi ngày học 1 dạng bài mới (LearnTheory + VirtualQuiz)
+            - Phân bổ đều vào {studyDays} ngày đầu, mỗi ngày tối đa {maxTasksPerDay} task
+            - Ngày {weeklyExamDay} KHÔNG có WeeklyExam (đề thi cuối tuần mở rộng sẽ được tạo tự động từ danh sách dạng yếu ban đầu)
+
+            *** QUY TẮC BẮT BUỘC ***
+            1. CHỈ CHỌN QuestionTypeId từ MENU bên dưới. KHÔNG tự bịa.
+            2. Task 'LearnTheory':
+               - Điền 'QuestionTypeId' của dạng đang giới thiệu (lấy từ MENU)
+               - Điền 'Content' là HTML lý thuyết đầy đủ:
+                 + Mô tả dạng câu hỏi, yêu cầu kỹ năng
+                 + Các pattern/cấu trúc ngữ pháp thường gặp
+                 + 2-3 ví dụ minh họa bằng tiếng Hàn (có dịch)
+                 + Mẹo làm bài nhanh
+               - Format HTML: <h3>...</h3><p>...</p><ul><li>...</li></ul>
+               - Tone: giới thiệu lần đầu, thân thiện, khuyến khích khám phá
+            3. Task 'VirtualQuiz':
+               - Điền 'QuestionTypeId' của dạng cần luyện tập (lấy từ MENU)
+               - Điền 'Content' là lời khuyên ngắn gọn về cách tiếp cận dạng bài này
+            4. KHÔNG tạo task WeeklyExam — bài kiểm tra sẽ được tạo tự động
+            5. Assessment: Viết lời động viên vì học viên đã hoàn thành giai đoạn ôn luyện điểm yếu
+
+            *** QUIZ MENU ***
+            {quizMenuJson}
+
+            *** OUTPUT JSON (WeekIndex = {nextWeekIndex}) ***
+            {{
+              ""Assessment"": ""Chúc mừng! Bạn đã hoàn thành giai đoạn ôn luyện. Tuần này chúng ta sẽ khám phá thêm..."",
+              ""Weeks"": [
+                {{
+                  ""WeekIndex"": {nextWeekIndex},
+                  ""WeekGoal"": ""Mục tiêu mở rộng tuần này"",
+                  ""Days"": [
+                    {{
+                      ""DayIndex"": 1,
+                      ""Tasks"": [
+                        {{
+                          ""Title"": ""Khám phá: Tên dạng bài"",
+                          ""TaskType"": ""LearnTheory"",
+                          ""Content"": ""<h3>...</h3><p>...</p>"",
+                          ""QuestionTypeId"": ""ID_TU_MENU"",
+                          ""GrammarId"": null
+                        }},
+                        {{
+                          ""Title"": ""Thử sức: Tên dạng bài"",
+                          ""TaskType"": ""VirtualQuiz"",
+                          ""Content"": ""Lời khuyên ngắn"",
+                          ""QuestionTypeId"": ""ID_TU_MENU"",
+                          ""GrammarId"": null
+                        }}
+                      ]
+                    }}
+                  ]
+                }}
+              ]
+            }}
+        ";
+            return await CallGeminiApiAsync(promptText);
+        }
+
         private static string GetLevelDescription(CurrentTopikLevel level) => level switch
         {
             CurrentTopikLevel.Pre_Topik => "Chưa có nền tảng TOPIK, cần học từ cơ bản",
