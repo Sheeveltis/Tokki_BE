@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Tokki.Application.Common.Models;
@@ -28,28 +28,28 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
             IServiceScopeFactory scopeFactory,
             ILogger<GenerateNextWeekCommandHandler> logger)
         {
-            _repository           = repository;
-            _idGeneratorService   = idGeneratorService;
-            _progressService      = progressService;
-            _scopeFactory         = scopeFactory;
-            _logger               = logger;
+            _repository = repository;
+            _idGeneratorService = idGeneratorService;
+            _progressService = progressService;
+            _scopeFactory = scopeFactory;
+            _logger = logger;
         }
 
         public async Task<OperationResult<string>> Handle(
             GenerateNextWeekCommand request,
             CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Chuyen tuan cho User: {UserId}, Tuan hien tai: {WeekId}",
+            _logger.LogInformation("Chuyển tuần cho người dùng: {UserId}, Tuần hiện tại: {WeekId}",
                 request.UserId, request.FinishedWeekId);
 
             var initialCheckWeek = await _repository
                 .GetWeekByIdAsync(request.FinishedWeekId, cancellationToken);
 
             if (initialCheckWeek == null)
-                return OperationResult<string>.Failure("Khong tim thay du lieu tuan hoc.", 404);
+                return OperationResult<string>.Failure("Không tìm thấy dữ liệu học", 404);
 
             if (initialCheckWeek.UserRoadmap.UserId != request.UserId)
-                return OperationResult<string>.Failure("Khong co quyen truy cap.", 403);
+                return OperationResult<string>.Failure("Không có quyền truy cập.", 403);
 
             if (!string.IsNullOrEmpty(initialCheckWeek.WeeklyExamId))
             {
@@ -58,15 +58,15 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
 
                 if (examSubmitted == null)
                     return OperationResult<string>.Failure(
-                        "Ban can hoan thanh bai kiem tra cuoi tuan truoc khi mo tuan moi.", 400);
+                        "Bạn cần hoàn thành bài kiểm tra cuối tuần trước khi qua tuần mới.", 400);
             }
 
             var jobId = _idGeneratorService.GenerateCustom(15);
             _progressService.Set(jobId, new RoadmapProgressState
             {
-                JobId   = jobId,
+                JobId = jobId,
                 Percent = 5,
-                Step    = "Khoi tao tien trinh chuyen tuan va toi uu hoa lo trinh..."
+                Step = "Khởi tạo tiến trình chuyển tuần và tối ưu hóa lộ trình..."
             });
 
             _ = Task.Run(async () =>
@@ -74,14 +74,14 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
                 using var scope = _scopeFactory.CreateScope();
                 var sp = scope.ServiceProvider;
 
-                var roadmapRepo  = sp.GetRequiredService<IUserRoadmapRepository>();
+                var roadmapRepo = sp.GetRequiredService<IUserRoadmapRepository>();
                 var weaknessRepo = sp.GetRequiredService<IUserWeaknessRepository>();
-                var aiService    = sp.GetRequiredService<IAiRoadmapService>();
+                var aiService = sp.GetRequiredService<IAiRoadmapService>();
                 var assemblyService = sp.GetRequiredService<IExamAssemblyService>();
-                var knowledgeRepo   = sp.GetRequiredService<IRoadmapKnowledgeProfileRepository>();
-                var idGen        = sp.GetRequiredService<IIdGeneratorService>();
-                var med          = sp.GetRequiredService<IMediator>();
-                var progress     = sp.GetRequiredService<IRoadmapProgressService>();
+                var knowledgeRepo = sp.GetRequiredService<IRoadmapKnowledgeProfileRepository>();
+                var idGen = sp.GetRequiredService<IIdGeneratorService>();
+                var med = sp.GetRequiredService<IMediator>();
+                var progress = sp.GetRequiredService<IRoadmapProgressService>();
 
                 try
                 {
@@ -93,8 +93,9 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
 
                     progress.Set(jobId, new RoadmapProgressState
                     {
-                        JobId = jobId, Percent = 20,
-                        Step = "Dang danh gia ket qua hoc tap tuan truoc de dieu chinh lo trinh..."
+                        JobId = jobId,
+                        Percent = 20,
+                        Step = "Đang đánh giá kết quả học tập tuần trước để điều chỉnh lộ trình..."
                     });
 
                     var deferredTypes = await EvaluateLastWeekPerformanceAsync(
@@ -110,18 +111,125 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
                         await roadmapRepo.SaveChangesAsync(CancellationToken.None);
                         progress.Set(jobId, new RoadmapProgressState
                         {
-                            JobId       = jobId,
-                            Percent     = 100,
+                            JobId = jobId,
+                            Percent = 100,
                             IsCompleted = true,
-                            Step        = "Chuc mung! Ban da hoan thanh toan bo lo trinh hoc tap cua minh."
+                            Step = "Chúc mừng! Bạn đã hoàn thành toàn bộ lộ trình học tập của mình."
+                        });
+                        return;
+                    }
+
+                    var allRoadmapWeaknesses = (await weaknessRepo.GetByUserIdAsync(request.UserId, CancellationToken.None))
+                        .Where(w => w.RoadmapId == roadmap.UserRoadmapId)
+                        .ToList();
+
+                    bool isExpansionPhase = allRoadmapWeaknesses.Any()
+                        && allRoadmapWeaknesses.All(w => w.Status == 2);
+
+                    if (isExpansionPhase)
+                    {
+                        progress.Set(jobId, new RoadmapProgressState
+                        {
+                            JobId = jobId,
+                            Percent = 40,
+                            Step = "Hoàn thành hết điểm yếu! Đang chuẩn bị giai đoạn mở rộng kiến thức..."
+                        });
+
+                        var examType = (roadmap.TargetAim == TargetAimLevel.Topik_I_Level1
+                            || roadmap.TargetAim == TargetAimLevel.Topik_I_Level2)
+                            ? ExamType.TopikI : ExamType.TopikII;
+
+                        var originalWeaknessTypeIds = allRoadmapWeaknesses
+                            .Select(w => w.QuestionTypeId).ToList();
+
+                        var expansionResults = await roadmapRepo.GetExpansionQuestionTypeIdsAsync(
+                            examType,
+                            originalWeaknessTypeIds,
+                            roadmap.LastCoveredTypeOrderIndex,
+                            MaxQuestionTypesPerWeek,
+                            CancellationToken.None);
+
+                        if (!expansionResults.Any())
+                        {
+                            await roadmapRepo.SaveChangesAsync(CancellationToken.None);
+                            progress.Set(jobId, new RoadmapProgressState
+                            {
+                                JobId = jobId,
+                                Percent = 100,
+                                IsCompleted = true,
+                                Step = "Chúc mừng! Bạn đã khám phá toàn bộ kiến thức TOPIK trong lộ trình này!"
+                            });
+                            return;
+                        }
+
+                        var expansionTypeIds = expansionResults.Select(r => r.QuestionTypeId).ToList();
+                        int newLastCoveredIndex = expansionResults.Max(r => r.OrderIndex);
+
+                        progress.Set(jobId, new RoadmapProgressState
+                        {
+                            JobId = jobId,
+                            Percent = 60,
+                            Step = "AI đang thiết kế nội dung giai đoạn mở rộng..."
+                        });
+
+                        var expansionTypeInfos = await roadmapRepo.GetQuestionTypeMenuAsync(expansionTypeIds, CancellationToken.None);
+                        var expansionallValidTypeIds = await roadmapRepo.GetValidQuestionTypeIdsByLevelAsync(roadmap.CurrentLevel, CancellationToken.None);
+                        var expansionfullMenu = await roadmapRepo.GetQuestionTypeMenuAsync(expansionallValidTypeIds, CancellationToken.None);
+
+                        var expansionaiPlan = await aiService.GenerateExpansionWeekPlanAsync(
+                            roadmap.TargetAim,
+                            roadmap.CurrentLevel,
+                            nextWeekIndex,
+                            expansionTypeIds,
+                            originalWeaknessTypeIds,
+                            expansionTypeInfos,
+                            expansionfullMenu);
+
+                        if (expansionaiPlan == null || !expansionaiPlan.Weeks.Any())
+                        {
+                            progress.Set(jobId, new RoadmapProgressState
+                            {
+                                JobId = jobId,
+                                IsError = true,
+                                ErrorMessage = "AI không thể thiết kế nội dung mở rộng lúc này."
+                            });
+                            return;
+                        }
+
+                        progress.Set(jobId, new RoadmapProgressState
+                        {
+                            JobId = jobId,
+                            Percent = 80,
+                            Step = "Đang tạo đề thi tổng hợp và lưu trữ tuần mở rộng..."
+                        });
+
+                        var expansionExamResult = await assemblyService.GenerateTopikStyleExamAsync(
+                            request.UserId, nextWeekIndex, originalWeaknessTypeIds, examType, CancellationToken.None);
+
+                        string? expansionExamId = expansionExamResult.IsSuccess ? expansionExamResult.Data : null;
+
+                        await SaveExpansionWeekTasksAsync(
+                            nextWeek, expansionaiPlan.Weeks.First(), expansionTypeIds, expansionExamId,
+                            request.UserId, roadmapRepo, idGen, expansionallValidTypeIds, CancellationToken.None);
+
+                        roadmap.LastCoveredTypeOrderIndex = newLastCoveredIndex;
+                        await roadmapRepo.SaveChangesAsync(CancellationToken.None);
+
+                        progress.Set(jobId, new RoadmapProgressState
+                        {
+                            JobId = jobId,
+                            Percent = 100,
+                            IsCompleted = true,
+                            Step = "Tuần mở rộng đã sẵn sàng! Hãy khám phá các dạng bài mới nhé!"
                         });
                         return;
                     }
 
                     progress.Set(jobId, new RoadmapProgressState
                     {
-                        JobId = jobId, Percent = 40,
-                        Step = "Dang lua chon cac dang bai trong tam phu hop voi nang luc hien tai..."
+                        JobId = jobId,
+                        Percent = 40,
+                        Step = "Đang lựa chọn các dạng bài trong tầm phù hợp với năng lực hiện tại..."
                     });
 
                     var nextTypes = await SelectTypesForNextWeekAsync(
@@ -135,19 +243,20 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
 
                     progress.Set(jobId, new RoadmapProgressState
                     {
-                        JobId = jobId, Percent = 60,
-                        Step = "AI dang thiet ke noi dung bai hoc chi tiet cho tuan tiep theo..."
+                        JobId = jobId,
+                        Percent = 60,
+                        Step = "AI đang thiết kế nội dung bài học chi tiết cho tuần tiếp theo..."
                     });
 
-                    var weakTypeInfos    = await roadmapRepo.GetQuestionTypeMenuAsync(nextTypes, CancellationToken.None);
-                    var allValidTypeIds  = await roadmapRepo.GetValidQuestionTypeIdsByLevelAsync(roadmap.CurrentLevel, CancellationToken.None);
-                    var fullMenu         = await roadmapRepo.GetQuestionTypeMenuAsync(allValidTypeIds, CancellationToken.None);
+                    var weakTypeInfos = await roadmapRepo.GetQuestionTypeMenuAsync(nextTypes, CancellationToken.None);
+                    var allValidTypeIds = await roadmapRepo.GetValidQuestionTypeIdsByLevelAsync(roadmap.CurrentLevel, CancellationToken.None);
+                    var fullMenu = await roadmapRepo.GetQuestionTypeMenuAsync(allValidTypeIds, CancellationToken.None);
 
                     int totalWeeks = (int)Math.Ceiling((roadmap.EndDate - roadmap.StartDate).TotalDays / 7);
 
                     int examScorePercent = deferredTypes.Any()
-                        ? Math.Max(0, 70 - deferredTypes.Count * 15) 
-                        : 75; 
+                        ? Math.Max(0, 70 - deferredTypes.Count * 15)
+                        : 75;
 
                     var reviewTypes = nextTypes.Where(t => !deferredTypes.Contains(t)).ToList();
 
@@ -170,16 +279,18 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
                     {
                         progress.Set(jobId, new RoadmapProgressState
                         {
-                            JobId = jobId, IsError = true,
-                            ErrorMessage = "AI khong the thiet ke noi dung cho tuan moi luc nay."
+                            JobId = jobId,
+                            IsError = true,
+                            ErrorMessage = "AI không thể thiết kế nội dung cho tuần mới lúc này."
                         });
                         return;
                     }
 
                     progress.Set(jobId, new RoadmapProgressState
                     {
-                        JobId = jobId, Percent = 85,
-                        Step = "Dang chuan bi bai thi tong hop va luu tru du lieu tuan moi..."
+                        JobId = jobId,
+                        Percent = 85,
+                        Step = "Đang chuẩn bị bài thi tổng hợp và lưu trữ dữ liệu tuần mới..."
                     });
 
                     await SaveNextWeekTasksAsync(
@@ -189,26 +300,26 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
 
                     progress.Set(jobId, new RoadmapProgressState
                     {
-                        JobId       = jobId,
-                        Percent     = 100,
+                        JobId = jobId,
+                        Percent = 100,
                         IsCompleted = true,
-                        Step        = "Tien trinh toi uu lo trinh hoan tat. Tuan hoc moi da san sang!"
+                        Step = "Tiến trình tối ưu lộ trình hoàn tất. Tuần học mới đã sẵn sàng!"
                     });
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Loi khi chuyen tuan cho User {UserId}", request.UserId);
+                    _logger.LogError(ex, "Lỗi khi chuyển tuần cho User {UserId}", request.UserId);
                     progress.Set(jobId, new RoadmapProgressState
                     {
-                        JobId        = jobId,
-                        IsError      = true,
-                        ErrorMessage = "Da xay ra loi trong qua trinh xu ly tuan hoc moi."
+                        JobId = jobId,
+                        IsError = true,
+                        ErrorMessage = "Đã xảy ra lỗi trong quá trình xử lý tuần học mới."
                     });
                 }
             });
 
             return OperationResult<string>.Success(jobId, 202,
-                "Dang bat dau phan tich du lieu va thiet ke tuan hoc moi...");
+                "Đang bắt đầu phân tích dữ liệu và thiết kế tuần học mới...");
         }
 
         private async Task<List<string>> EvaluateLastWeekPerformanceAsync(
@@ -245,7 +356,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
 
             foreach (var typeId in weekTypeIds)
             {
-                var stat     = allAnalysis.FirstOrDefault(a => a.QuestionTypeId == typeId);
+                var stat = allAnalysis.FirstOrDefault(a => a.QuestionTypeId == typeId);
                 bool isPassed = stat != null && !stat.IsWeakness;
 
                 var profile = await knowledgeRepo.GetAsync(currentWeek.UserRoadmapId, typeId, token);
@@ -253,19 +364,19 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
                 {
                     profile = new RoadmapKnowledgeProfile
                     {
-                        ProfileId              = idGen.GenerateCustom(15),
-                        UserRoadmapId          = currentWeek.UserRoadmapId,
-                        QuestionTypeId         = typeId,
-                        IsWeakness             = !isPassed,
-                        ConsecutiveFailWeeks   = isPassed ? 0 : 1,
+                        ProfileId = idGen.GenerateCustom(15),
+                        UserRoadmapId = currentWeek.UserRoadmapId,
+                        QuestionTypeId = typeId,
+                        IsWeakness = !isPassed,
+                        ConsecutiveFailWeeks = isPassed ? 0 : 1,
                         LastEvaluatedWeekIndex = currentWeek.WeekIndex
                     };
                     await knowledgeRepo.AddAsync(profile, token);
                 }
                 else
                 {
-                    profile.IsWeakness             = !isPassed;
-                    profile.ConsecutiveFailWeeks   = isPassed ? 0 : profile.ConsecutiveFailWeeks + 1;
+                    profile.IsWeakness = !isPassed;
+                    profile.ConsecutiveFailWeeks = isPassed ? 0 : profile.ConsecutiveFailWeeks + 1;
                     profile.LastEvaluatedWeekIndex = currentWeek.WeekIndex;
                 }
 
@@ -274,20 +385,22 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
                 {
                     userWeakness = new UserWeakness
                     {
-                        Id             = idGen.GenerateCustom(15),
-                        UserId         = currentWeek.UserRoadmap.UserId,
-                        RoadmapId      = currentWeek.UserRoadmapId,
+                        Id = idGen.GenerateCustom(15),
+                        UserId = currentWeek.UserRoadmap.UserId,
+                        RoadmapId = currentWeek.UserRoadmapId,
                         QuestionTypeId = typeId,
-                        Status         = 0,
-                        Priority       = ++maxPriority,
-                        CreatedAt      = DateTime.UtcNow
+                        Status = 0,
+                        Priority = ++maxPriority,
+                        CreatedAt = DateTime.UtcNow
                     };
                     await weaknessRepo.AddAsync(userWeakness, token);
                     currentRoadmapWeaknesses.Add(userWeakness);
                 }
 
-                if (isPassed) userWeakness.Status = 2; 
-                else          userWeakness.Status = 1; 
+                if (isPassed)
+                    userWeakness.Status = 2;
+                else if (userWeakness.Status != 2) 
+                    userWeakness.Status = 1;
 
                 if (profile.ConsecutiveFailWeeks >= 2)
                 {
@@ -327,6 +440,74 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
             types.AddRange(extras);
         }
 
+        private async Task SaveExpansionWeekTasksAsync(
+            RoadmapWeek nextWeek,
+            AiWeekPlan weekData,
+            List<string> expansionTypeIds,
+            string? expansionExamId,
+            string userId,
+            IUserRoadmapRepository roadmapRepo,
+            IIdGeneratorService idGen,
+            List<string> allValidTypeIds,
+            CancellationToken token)
+        {
+            nextWeek.WeekFocusGoal = weekData.WeekGoal;
+            nextWeek.Status = RoadmapWeekStatus.InProgress;
+            nextWeek.WeeklyExamId = expansionExamId;
+            nextWeek.DailyTasks.Clear();
+
+            foreach (var dayDto in weekData.Days)
+            {
+                foreach (var taskDto in dayDto.Tasks)
+                {
+                    var taskEnum = RoadmapTaskType.LearnTheory;
+                    Enum.TryParse(taskDto.TaskType, true, out taskEnum);
+                    if (taskEnum == RoadmapTaskType.WeeklyExam) continue;
+
+                    string? finalQTypeId = taskDto.QuestionTypeId;
+                    if (string.IsNullOrWhiteSpace(finalQTypeId) ||
+                        finalQTypeId.Equals("null", StringComparison.OrdinalIgnoreCase))
+                        finalQTypeId = null;
+
+                    if (finalQTypeId != null && !allValidTypeIds.Contains(finalQTypeId))
+                    {
+                        _logger.LogWarning(
+                            "Expansion AI returned invalid QuestionTypeId: {InvalidId} for User {UserId}. Setting to null.",
+                            finalQTypeId, userId);
+                        finalQTypeId = null;
+                    }
+
+                    nextWeek.DailyTasks.Add(new RoadmapDailyTask
+                    {
+                        TaskId = idGen.GenerateCustom(15),
+                        RoadmapWeekId = nextWeek.RoadmapWeekId,
+                        DayIndex = dayDto.DayIndex,
+                        Title = taskDto.Title,
+                        AiGeneratedContent = taskDto.Content,
+                        IsCompleted = false,
+                        QuestionTypeId = finalQTypeId,
+                        TaskType = taskEnum
+                    });
+                }
+            }
+
+            if (!string.IsNullOrEmpty(expansionExamId))
+            {
+                nextWeek.DailyTasks.Add(new RoadmapDailyTask
+                {
+                    TaskId = idGen.GenerateCustom(15),
+                    RoadmapWeekId = nextWeek.RoadmapWeekId,
+                    DayIndex = 7,
+                    Title = $"Kiểm tra tổng hợp toàn bộ kỹ năng (Tuần {nextWeek.WeekIndex})",
+                    TaskType = RoadmapTaskType.WeeklyExam,
+                    ExamId = expansionExamId,
+                    IsCompleted = false
+                });
+            }
+
+            await roadmapRepo.SaveChangesAsync(token);
+        }
+
         private async Task SaveNextWeekTasksAsync(
             RoadmapWeek nextWeek,
             AiWeekPlan weekData,
@@ -340,7 +521,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
             CancellationToken token)
         {
             nextWeek.WeekFocusGoal = weekData.WeekGoal;
-            nextWeek.Status        = RoadmapWeekStatus.InProgress;
+            nextWeek.Status = RoadmapWeekStatus.InProgress;
             nextWeek.DailyTasks.Clear();
 
             foreach (var dayDto in weekData.Days)
@@ -365,14 +546,14 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
 
                     var taskEntity = new RoadmapDailyTask
                     {
-                        TaskId             = idGen.GenerateCustom(15),
-                        RoadmapWeekId      = nextWeek.RoadmapWeekId,
-                        DayIndex           = dayDto.DayIndex,
-                        Title              = taskDto.Title,
+                        TaskId = idGen.GenerateCustom(15),
+                        RoadmapWeekId = nextWeek.RoadmapWeekId,
+                        DayIndex = dayDto.DayIndex,
+                        Title = taskDto.Title,
                         AiGeneratedContent = taskDto.Content,
-                        IsCompleted        = false,
-                        QuestionTypeId     = finalQTypeId,
-                        TaskType           = taskEnum
+                        IsCompleted = false,
+                        QuestionTypeId = finalQTypeId,
+                        TaskType = taskEnum
                     };
 
                     if (taskEnum == RoadmapTaskType.WeeklyExam)
@@ -386,8 +567,8 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
 
                         if (examResult.IsSuccess)
                         {
-                            taskEntity.ExamId      = examResult.Data;
-                            nextWeek.WeeklyExamId  = examResult.Data;
+                            taskEntity.ExamId = examResult.Data;
+                            nextWeek.WeeklyExamId = examResult.Data;
                         }
                     }
 
