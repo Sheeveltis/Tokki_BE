@@ -42,7 +42,7 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
                 NullLogger<UpdateTopicCommandHandler>.Instance);
 
         private static Topic SampleTopic(TopicStatus status = TopicStatus.Draft) =>
-            new Topic { TopicId = "T-001", TopicName = "Old Name", Description = "Old desc", Status = status, Level = TopicLevel.Level1 };
+            new Topic { TopicId = "T-001", TopicName = "Old Name", Description = "Old desc", Status = status, Level = (int)TopicLevel.Level1 };
 
         private static UpdateTopicCommand MakeCommand(string id = "T-001", string? name = "New Name") =>
             new UpdateTopicCommand { TopicId = id, TopicName = name, Description = "New desc", UpdatedBy = "U-001" };

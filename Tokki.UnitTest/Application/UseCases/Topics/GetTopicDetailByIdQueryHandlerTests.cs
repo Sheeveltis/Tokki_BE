@@ -41,7 +41,7 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
         private static Topic SampleTopic() => new Topic
         {
             TopicId   = "T-001", TopicName = "Korean Basics", Description = "Intro topic",
-            Level     = TopicLevel.Level1, Status = TopicStatus.Active, OrderIndex = 1
+            Level     = (int)TopicLevel.Level1, Status = TopicStatus.Active, OrderIndex = 1
         };
 
         private static List<VocabularyTopic> SampleVtWithActiveVocab() => new List<VocabularyTopic>
@@ -115,7 +115,7 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
             var result = await CreateHandler(GetTopicMock(SampleTopic()), GetVtMock())
                 .Handle(new GetTopicDetailByIdQuery { TopicId = "T-001" }, CancellationToken.None);
             result.Data!.TopicName.Should().Be("Korean Basics");
-            result.Data.Level.Should().Be(TopicLevel.Level1);
+            result.Data.Level.Should().Be((int)TopicLevel.Level1);
             result.Data.Status.Should().Be(TopicStatus.Active);
             result.Data.OrderIndex.Should().Be(1);
             QACollector.LogTestCase("Topic - Get Detail By Id", new TestCaseDetail { FunctionGroup = "GetTopicDetailById", TestCaseID = "TC-TOPIC-GDET-05", Description = "TopicName, Level, Status, OrderIndex mapped correctly", ExpectedResult = "All fields correct", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Topic entity mapped to TopicDetailDto" } });

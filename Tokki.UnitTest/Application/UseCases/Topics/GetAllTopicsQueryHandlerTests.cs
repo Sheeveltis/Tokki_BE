@@ -22,7 +22,7 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
         {
             var m = new Mock<ITopicRepository>();
             m.Setup(x => x.GetVocabTopicsPagedAsync(It.IsAny<int>(), It.IsAny<int>(),
-                It.IsAny<string?>(), It.IsAny<TopicStatus?>(), It.IsAny<TopicLevel?>()))
+                It.IsAny<string?>(), It.IsAny<TopicStatus?>(), It.IsAny<int?>()))
              .ReturnsAsync(((IEnumerable<Topic>)(items ?? new List<Topic>()), total));
             m.Setup(x => x.CountVocabulariesInTopicAsync(It.IsAny<string>())).ReturnsAsync(vocabCount);
             return m;
@@ -36,8 +36,8 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
 
         private static List<Topic> SampleTopics() => new List<Topic>
         {
-            new Topic { TopicId = "T-001", TopicName = "Korean Basics",   Level = TopicLevel.Level1,     Status = TopicStatus.Active,  OrderIndex = 1 },
-            new Topic { TopicId = "T-002", TopicName = "Korean Intermediate", Level = TopicLevel.Level3, Status = TopicStatus.Active,  OrderIndex = 2 },
+            new Topic { TopicId = "T-001", TopicName = "Korean Basics",   Level = (int)TopicLevel.Level1,     Status = TopicStatus.Active,  OrderIndex = 1 },
+            new Topic { TopicId = "T-002", TopicName = "Korean Intermediate", Level = (int)TopicLevel.Level3, Status = TopicStatus.Active,  OrderIndex = 2 },
         };
 
         // TC-TOPIC-GALL-01 | N | Happy path: 2 topics → 200 PagedResult Count=2
@@ -72,8 +72,8 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
         public async Task Handle_WithParams_RepoCalledWithCorrectParams()
         {
             var repo = GetRepoMock();
-            await CreateHandler(repo).Handle(new GetAllTopicsQuery { PageNumber = 2, PageSize = 5, Status = TopicStatus.Active, Level = TopicLevel.Level1 }, CancellationToken.None);
-            repo.Verify(x => x.GetVocabTopicsPagedAsync(2, 5, null, TopicStatus.Active, TopicLevel.Level1), Times.Once);
+            await CreateHandler(repo).Handle(new GetAllTopicsQuery { PageNumber = 2, PageSize = 5, Status = TopicStatus.Active, Level = (int)TopicLevel.Level1 }, CancellationToken.None);
+            repo.Verify(x => x.GetVocabTopicsPagedAsync(2, 5, null, TopicStatus.Active, (int)TopicLevel.Level1), Times.Once);
             QACollector.LogTestCase("Topic - Get All", new TestCaseDetail { FunctionGroup = "GetAllTopics", TestCaseID = "TC-TOPIC-GALL-03", Description = "GetVocabTopicsPagedAsync called with Page=2, Size=5, Status=Active, Level=Beginner", ExpectedResult = "Times.Once with correct params", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "All query params forwarded" } });
         }
 

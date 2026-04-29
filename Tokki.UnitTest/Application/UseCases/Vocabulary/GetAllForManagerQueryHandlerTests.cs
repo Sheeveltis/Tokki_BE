@@ -44,7 +44,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             var mockVocabRepo = MockVocabularyRepository.GetMock();
             mockVocabRepo.Setup(x => x.GetPagedVocabulariesForManagerAsync(
                     It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(),
-                    It.IsAny<VocabularyStatus?>(), It.IsAny<string?>(), It.IsAny<TopicLevel?>()))
+                    It.IsAny<VocabularyStatus?>(), It.IsAny<string?>(), It.IsAny<int?>()))
                 .ReturnsAsync((vocabs, 2));
 
             var handler = CreateHandler(vocabRepo: mockVocabRepo);
@@ -93,7 +93,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             var mockVocabRepo = MockVocabularyRepository.GetMock();
             mockVocabRepo.Setup(x => x.GetPagedVocabulariesForManagerAsync(
                     It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(),
-                    VocabularyStatus.PendingApproval, It.IsAny<string?>(), It.IsAny<TopicLevel?>()))
+                    VocabularyStatus.PendingApproval, It.IsAny<string?>(), It.IsAny<int?>()))
                 .ReturnsAsync((vocabs, 1));
 
             var handler = CreateHandler(vocabRepo: mockVocabRepo);
@@ -136,7 +136,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             var mockVocabRepo = MockVocabularyRepository.GetMock();
             mockVocabRepo.Setup(x => x.GetPagedVocabulariesForManagerAsync(
                     It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(),
-                    It.IsAny<VocabularyStatus?>(), "안녕", It.IsAny<TopicLevel?>()))
+                    It.IsAny<VocabularyStatus?>(), "안녕", It.IsAny<int?>()))
                 .ReturnsAsync((vocabs, 1));
 
             var handler = CreateHandler(vocabRepo: mockVocabRepo);
@@ -175,7 +175,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             var mockVocabRepo = MockVocabularyRepository.GetMock();
             mockVocabRepo.Setup(x => x.GetPagedVocabulariesForManagerAsync(
                     It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(),
-                    It.IsAny<VocabularyStatus?>(), It.IsAny<string?>(), It.IsAny<TopicLevel?>()))
+                    It.IsAny<VocabularyStatus?>(), It.IsAny<string?>(), It.IsAny<int?>()))
                 .ReturnsAsync((new List<Tokki.Domain.Entities.Vocabulary>(), 0));
 
             var handler = CreateHandler(vocabRepo: mockVocabRepo);
@@ -216,7 +216,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             var mockVocabRepo = MockVocabularyRepository.GetMock();
             mockVocabRepo.Setup(x => x.GetPagedVocabulariesForManagerAsync(
                     It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(),
-                    It.IsAny<VocabularyStatus?>(), It.IsAny<string?>(), It.IsAny<TopicLevel?>()))
+                    It.IsAny<VocabularyStatus?>(), It.IsAny<string?>(), It.IsAny<int?>()))
                 .ReturnsAsync((new List<Tokki.Domain.Entities.Vocabulary> { vocab }, 1));
 
             var vocabTopicMappings = MockVocabularyTopicRepository.GetSampleActiveTopicMappings("VOCAB-001", "TOPIC-001");
@@ -267,7 +267,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             var mockVocabRepo = MockVocabularyRepository.GetMock();
             mockVocabRepo.Setup(x => x.GetPagedVocabulariesForManagerAsync(
                     It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(),
-                    It.IsAny<VocabularyStatus?>(), It.IsAny<string?>(), TopicLevel.Level1))
+                    It.IsAny<VocabularyStatus?>(), It.IsAny<string?>(), (int)TopicLevel.Level1))
                 .ReturnsAsync((vocabs, 1));
 
             var handler = CreateHandler(vocabRepo: mockVocabRepo);
