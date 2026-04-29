@@ -27,6 +27,23 @@ namespace Tokki.Infrastructure.Repositories
                 .ToListAsync();
         }
 
+        public async Task<(List<EnumConfig> Items, int TotalCount)> GetByGroupPagedAsync(EnumGroup groupCode, int pageNumber, int pageSize)
+        {
+            var query = _context.EnumConfigs
+                .AsNoTracking()
+                .Where(x => x.GroupCode == groupCode && x.IsActive);
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderBy(x => x.SortOrder)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
+
         public async Task<EnumConfig?> GetByValueAsync(EnumGroup groupCode, int value)
         {
             return await _context.EnumConfigs

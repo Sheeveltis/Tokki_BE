@@ -11,6 +11,7 @@ namespace Tokki.Application.IRepositories
     public interface IEnumConfigRepository
     {
         Task<List<EnumConfig>> GetByGroupAsync(EnumGroup groupCode);
+        Task<(List<EnumConfig> Items, int TotalCount)> GetByGroupPagedAsync(EnumGroup groupCode, int pageNumber, int pageSize);
         Task<EnumConfig?> GetByValueAsync(EnumGroup groupCode, int value);
         Task<EnumConfig?> GetByKeyAsync(EnumGroup groupCode, string key);
         Task<List<EnumConfig>> GetAllAsync();

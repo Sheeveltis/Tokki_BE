@@ -7,7 +7,7 @@ using Tokki.Application.UseCases.EnumConfigs.DTOs;
 
 namespace Tokki.Application.UseCases.EnumConfigs.Queries.GetByGroup
 {
-    public class GetEnumConfigByGroupQueryHandler : IRequestHandler<GetEnumConfigByGroupQuery, OperationResult<List<EnumConfigDto>>>
+    public class GetEnumConfigByGroupQueryHandler : IRequestHandler<GetEnumConfigByGroupQuery, OperationResult<PagedResult<EnumConfigDto>>>
     {
         private readonly IEnumConfigRepository _enumConfigRepository;
 
@@ -16,9 +16,9 @@ namespace Tokki.Application.UseCases.EnumConfigs.Queries.GetByGroup
             _enumConfigRepository = enumConfigRepository;
         }
 
-        public async Task<OperationResult<List<EnumConfigDto>>> Handle(GetEnumConfigByGroupQuery request, CancellationToken cancellationToken)
+        public async Task<OperationResult<PagedResult<EnumConfigDto>>> Handle(GetEnumConfigByGroupQuery request, CancellationToken cancellationToken)
         {
-            var configs = await _enumConfigRepository.GetByGroupAsync(request.GroupCode);
+            var (configs, totalCount) = await _enumConfigRepository.GetByGroupPagedAsync(request.GroupCode, request.PageNumber, request.PageSize);
 
             var data = configs.Select(c => new EnumConfigDto
             {
@@ -29,7 +29,9 @@ namespace Tokki.Application.UseCases.EnumConfigs.Queries.GetByGroup
                 SortOrder = c.SortOrder
             }).ToList();
 
-            return OperationResult<List<EnumConfigDto>>.Success(data);
+            var pagedResult = PagedResult<EnumConfigDto>.Create(data, totalCount, request.PageNumber, request.PageSize);
+
+            return OperationResult<PagedResult<EnumConfigDto>>.Success(pagedResult);
         }
     }
 }
