@@ -17,5 +17,6 @@ namespace Tokki.Application.UseCases.Roadmap.DTOs
         public string KeyOption { get; set; }
         public string? Content { get; set; }
         public string? ImageUrl { get; set; }
+        public bool IsAnswer { get; set; }
     }
 }
