@@ -75,7 +75,7 @@
                 [FromQuery] VocabularyStatus? status = null,
                 [FromQuery] string? vocabId = null,
                 [FromQuery] string? searchText = null,
-                [FromQuery] TopicLevel? topicLevel =null)
+                [FromQuery] int? topicLevel = null)
             {
                 var query = new GetAllForManagerQuery
                 {

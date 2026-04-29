@@ -21,9 +21,9 @@ namespace Tokki.WebAPI.Controllers
         }
 
         [HttpGet("lookup/{groupCode}")]
-        public async Task<IActionResult> GetLookup(EnumGroup groupCode)
+        public async Task<IActionResult> GetLookup(EnumGroup groupCode, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var query = new GetEnumConfigByGroupQuery(groupCode);
+            var query = new GetEnumConfigByGroupQuery(groupCode, pageNumber, pageSize);
             var result = await _sender.Send(query);
             return StatusCode(result.StatusCode, result);
         }
