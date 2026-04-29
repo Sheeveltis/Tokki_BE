@@ -6,7 +6,7 @@ namespace Tokki.Application.UseCases.Vocabulary.DTOs
     {
         public string TopicId { get; set; } = string.Empty;
         public string TopicName { get; set; } = string.Empty;
-        public TopicLevel Level { get; set; }
+        public int Level { get; set; }
 
     }
 }
