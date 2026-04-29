@@ -19,7 +19,7 @@ namespace Tokki.Domain.Entities
         [MaxLength(50)]
         public TargetAimLevel TargetAim { get; set; }
         public CurrentTopikLevel CurrentLevel { get; set; }
-        public int DurationDays { get; set; } 
+        public int DurationDays { get; set; }
 
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
@@ -34,6 +34,8 @@ namespace Tokki.Domain.Entities
 
         [ForeignKey(nameof(UserId))]
         public virtual Account Account { get; set; } = null!;
+
+        public int LastCoveredTypeOrderIndex { get; set; } = 0;
 
         public virtual ICollection<RoadmapWeek> Weeks { get; set; } = new List<RoadmapWeek>();
         public virtual ICollection<RoadmapKnowledgeProfile> KnowledgeProfiles { get; set; } = new List<RoadmapKnowledgeProfile>();
