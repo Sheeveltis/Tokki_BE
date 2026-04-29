@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Tokki.Application.Common.Models;
@@ -337,7 +337,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                     var account = await accountRepo.GetByIdAsync(request.UserId);
                     if (account != null)
                     {
-                        if (!account.Level.HasValue || (int)mappedLevel.Value > (int)account.Level.Value)
+                        if (!account.Level.HasValue || mappedLevel.Value > account.Level.Value)
                         {
                             account.Level = mappedLevel;
                             account.UpdatedAt = DateTime.UtcNow;
@@ -376,16 +376,16 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
             });
             return OperationResult<string>.Success(jobId, 202, "Đang tạo lộ trình, vui lòng theo dõi tiến trình.");
         }
-        private static TopicLevel? MapToTopicLevel(CurrentTopikLevel level) => level switch
+        private static int? MapToTopicLevel(CurrentTopikLevel level) => level switch
         {
-            CurrentTopikLevel.Pre_Topik => TopicLevel.Level1,
-            CurrentTopikLevel.Level_1 => TopicLevel.Level1,
-            CurrentTopikLevel.Level_2 => TopicLevel.Level2,
-            CurrentTopikLevel.Pre_Topik_II => TopicLevel.Level3,
-            CurrentTopikLevel.Level_3 => TopicLevel.Level3,
-            CurrentTopikLevel.Level_4 => TopicLevel.Level4,
-            CurrentTopikLevel.Level_5 => TopicLevel.Level5,
-            _ => TopicLevel.Level1
+            CurrentTopikLevel.Pre_Topik => (int)TopicLevel.Level1,
+            CurrentTopikLevel.Level_1 => (int)TopicLevel.Level1,
+            CurrentTopikLevel.Level_2 => (int)TopicLevel.Level2,
+            CurrentTopikLevel.Pre_Topik_II => (int)TopicLevel.Level3,
+            CurrentTopikLevel.Level_3 => (int)TopicLevel.Level3,
+            CurrentTopikLevel.Level_4 => (int)TopicLevel.Level4,
+            CurrentTopikLevel.Level_5 => (int)TopicLevel.Level5,
+            _ => (int)TopicLevel.Level1
         };
 
         private static CurrentTopikLevel CalculateLevel(
