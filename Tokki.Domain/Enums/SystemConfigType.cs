@@ -44,6 +44,9 @@ namespace Tokki.Domain.Enums
         EmailService = 12,
 
         [Description("Cấu hình Giọng đọc và Phát âm (Speech/Audio)")]
-        AudioPronunciation = 13
+        AudioPronunciation = 13,
+
+        [Description("Cấu hình Prompt cho AI")]
+        AI_Prompt = 14
     }
 }

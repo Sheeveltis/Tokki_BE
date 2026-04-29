@@ -80,7 +80,7 @@ namespace Tokki.Application.IRepositories
            string? vocabId,
            VocabularyStatus? status,
            string? searchText,
-           TopicLevel? levelTopic);
+           int? levelTopic);
         Task<Tokki.Domain.Entities.Vocabulary?> GetByIdWithChildrenAsync(string vocabularyId);
 
 

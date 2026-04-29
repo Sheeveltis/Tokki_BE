@@ -163,7 +163,7 @@ namespace Tokki.Infrastructure.Repositories
             string? vocabId,
             VocabularyStatus? status,
             string? searchText,
-            TopicLevel? levelTopic)
+            int? levelTopic)
         {
             var query = _context.Vocabularies.AsNoTracking().AsQueryable();
 
