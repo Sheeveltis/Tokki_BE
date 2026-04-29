@@ -220,5 +220,25 @@ namespace Tokki.Infrastructure.Repositories
                                        && e.Status == ExamStatus.Published,
                     cancellationToken);
         }
+        public async Task<List<(string QuestionTypeId, int OrderIndex)>> GetExpansionQuestionTypeIdsAsync(
+            ExamType examType,
+            List<string> excludeQuestionTypeIds,
+            int lastCoveredOrderIndex,
+            int take,
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.QuestionTypes
+                .Where(qt => qt.IsActive
+                          && qt.ExamType == examType
+                          && !excludeQuestionTypeIds.Contains(qt.QuestionTypeId)
+                          && qt.OrderIndex > lastCoveredOrderIndex)
+                .OrderBy(qt => qt.OrderIndex)
+                .Take(take)
+                .Select(qt => new { qt.QuestionTypeId, qt.OrderIndex })
+                .ToListAsync(cancellationToken)
+                .ContinueWith(t => t.Result
+                    .Select(x => (x.QuestionTypeId, x.OrderIndex))
+                    .ToList());
+        }
     }
 }

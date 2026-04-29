@@ -5,7 +5,7 @@ using Tokki.Domain.Enums;
 public interface IUserRoadmapRepository
 {
     Task AddAsync(UserRoadmap roadmap);
-    Task <bool>SaveChangesAsync(CancellationToken cancellationToken = default);
+    Task<bool> SaveChangesAsync(CancellationToken cancellationToken = default);
     Task<UserRoadmap?> GetActiveRoadmapByUserIdAsync(string userId, CancellationToken cancellationToken = default);
     Task<RoadmapDailyTask?> GetTaskByIdAsync(string taskId, CancellationToken cancellationToken = default);
     Task<RoadmapWeek?> GetWeekByIdAsync(string weekId, CancellationToken cancellationToken = default);
@@ -33,4 +33,11 @@ public interface IUserRoadmapRepository
     Task<Exam?> GetEntranceExamByConfigKeyAsync(
     string configKey,
     CancellationToken cancellationToken = default);
+
+    Task<List<(string QuestionTypeId, int OrderIndex)>> GetExpansionQuestionTypeIdsAsync(
+        ExamType examType,
+        List<string> excludeTypeIds,
+        int lastCoveredOrderIndex,
+        int take,
+        CancellationToken cancellationToken = default);
 }
