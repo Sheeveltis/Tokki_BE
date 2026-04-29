@@ -75,6 +75,7 @@ namespace Tokki.Infrastructure.Data
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<EnumConfig> EnumConfigs { get; set; }
+        public DbSet<TopikLevelConfig> TopikLevelConfigs { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -761,6 +762,29 @@ namespace Tokki.Infrastructure.Data
 
                 entity.HasIndex(e => new { e.GroupCode, e.Key }).IsUnique();
                 entity.HasIndex(e => new { e.GroupCode, e.Value }).IsUnique();
+            });
+
+            // =========================================================
+            // 13. CONFIG TOPIK LEVEL CONFIG
+            // =========================================================
+            modelBuilder.Entity<TopikLevelConfig>(entity =>
+            {
+                entity.ToTable("TopikLevelConfigs");
+                entity.HasKey(e => e.TopikLevelConfigID);
+
+                entity.HasIndex(e => e.TargetAimLevel).IsUnique();
+                entity.HasIndex(e => e.ConfigKey).IsUnique();
+
+                entity.Property(e => e.DisplayName)
+                      .IsRequired()
+                      .HasMaxLength(100);
+
+                entity.Property(e => e.ConfigKey)
+                      .IsRequired()
+                      .HasMaxLength(100);
+
+                entity.Property(e => e.CreatedAt)
+                      .HasDefaultValueSql("DATEADD(HOUR, 7, SYSUTCDATETIME())");
             });
         }
     }
