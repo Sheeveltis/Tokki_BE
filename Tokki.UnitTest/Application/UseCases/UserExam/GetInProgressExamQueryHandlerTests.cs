@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -53,7 +53,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GIPR-01 | A | Session not found → 404
+        // GetInProgressExam_01 | A | Session not found → 404
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SessionNotFound_ShouldReturn404()
@@ -75,7 +75,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get In Progress", new TestCaseDetail
             {
                 FunctionGroup     = "GetInProgressExam",
-                TestCaseID        = "TC-GIPR-01",
+                TestCaseID        = "GetInProgressExam_01",
                 Description       = "UserExamId not found → 404",
                 ExpectedResult    = "IsSuccess=false, StatusCode=404",
                 StatusRound1      = "Passed",
@@ -86,7 +86,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GIPR-02 | N | Session found → 200 with UserExamId and Title
+        // GetInProgressExam_02 | N | Session found → 200 with UserExamId and Title
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SessionFound_ShouldReturn200WithSessionData()
@@ -110,7 +110,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get In Progress", new TestCaseDetail
             {
                 FunctionGroup     = "GetInProgressExam",
-                TestCaseID        = "TC-GIPR-02",
+                TestCaseID        = "GetInProgressExam_02",
                 Description       = "Valid session → 200 with UserExamId and Title mapped",
                 ExpectedResult    = "IsSuccess=true, UserExamId=UE-001, Title=TOPIK I",
                 StatusRound1      = "Passed",
@@ -121,7 +121,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GIPR-03 | N | ExamId forwarded correctly to repo
+        // GetInProgressExam_03 | N | ExamId forwarded correctly to repo
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ShouldCallGetByIdWithCorrectId()
@@ -143,7 +143,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get In Progress", new TestCaseDetail
             {
                 FunctionGroup     = "GetInProgressExam",
-                TestCaseID        = "TC-GIPR-03",
+                TestCaseID        = "GetInProgressExam_03",
                 Description       = "GetByIdAsync called once with correct UserExamId",
                 ExpectedResult    = "Times.Once with 'UE-999'",
                 StatusRound1      = "Passed",
@@ -154,7 +154,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GIPR-04 | N | Duration and TotalQuestions populated
+        // GetInProgressExam_04 | N | Duration and TotalQuestions populated
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidSession_ShouldMapDurationAndTotalQuestions()
@@ -177,7 +177,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get In Progress", new TestCaseDetail
             {
                 FunctionGroup     = "GetInProgressExam",
-                TestCaseID        = "TC-GIPR-04",
+                TestCaseID        = "GetInProgressExam_04",
                 Description       = "Duration and TotalQuestions mapped from session",
                 ExpectedResult    = "Duration=60, TotalQuestions=0",
                 StatusRound1      = "Passed",
@@ -188,7 +188,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GIPR-05 | N | CurrentSkill mapped to response
+        // GetInProgressExam_05 | N | CurrentSkill mapped to response
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidSession_ShouldMapCurrentSkill()
@@ -210,7 +210,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get In Progress", new TestCaseDetail
             {
                 FunctionGroup     = "GetInProgressExam",
-                TestCaseID        = "TC-GIPR-05",
+                TestCaseID        = "GetInProgressExam_05",
                 Description       = "CurrentSkill mapped correctly (Listening)",
                 ExpectedResult    = "CurrentSkill='Listening'",
                 StatusRound1      = "Passed",
@@ -221,7 +221,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GIPR-06 | E | Repository throws → exception propagates
+        // GetInProgressExam_06 | E | Repository throws → exception propagates
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
@@ -242,7 +242,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get In Progress", new TestCaseDetail
             {
                 FunctionGroup     = "GetInProgressExam",
-                TestCaseID        = "TC-GIPR-06",
+                TestCaseID        = "GetInProgressExam_06",
                 Description       = "Repository throws → exception propagates",
                 ExpectedResult    = "Exception with 'timeout'",
                 StatusRound1      = "Passed",
@@ -253,7 +253,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GIPR-07 | N | Branch: finished skill sets remaining to 0
+        // GetInProgressExam_07 | N | Branch: finished skill sets remaining to 0
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_FinishedSkillAndNotStartedSkill_ShouldCalculateSkillRemainingCorrectly()
@@ -282,7 +282,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get In Progress", new TestCaseDetail
             {
                 FunctionGroup     = "GetInProgressExam",
-                TestCaseID        = "TC-GIPR-07",
+                TestCaseID        = "GetInProgressExam_07",
                 Description       = "FinishedSkill has remaining 0, Not yet started skill has max remaining",
                 ExpectedResult    = "Listening=0, Writing=2400",
                 StatusRound1      = "Passed",
@@ -293,7 +293,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GIPR-08 | N | Branch: MediaType parsing and Writing Answers grouping
+        // GetInProgressExam_08 | N | Branch: MediaType parsing and Writing Answers grouping
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_WritingAnswersAndMediaUrl_ShouldCalculateMediaTypeAndGroups()
@@ -328,7 +328,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get In Progress", new TestCaseDetail
             {
                 FunctionGroup     = "GetInProgressExam",
-                TestCaseID        = "TC-GIPR-08",
+                TestCaseID        = "GetInProgressExam_08",
                 Description       = "Writing skill answers mapped and GetMediaType parses Audio/Image correctly",
                 ExpectedResult    = "SharedMediaType=Audio and Image, Writing group populated",
                 StatusRound1      = "Passed",

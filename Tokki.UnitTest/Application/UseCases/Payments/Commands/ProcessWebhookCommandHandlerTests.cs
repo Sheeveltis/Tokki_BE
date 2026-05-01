@@ -28,14 +28,14 @@ namespace Tokki.UnitTest.Application.UseCases.Payments.Commands
             return new ProcessWebhookCommandHandler(_payMock.Object, _accMock.Object, _vipMock.Object, _idMock.Object, _logMock.Object);
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-PAY-WH-01 | A | Unable To Extract PaymentId RegEx
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // ProcessWebhookCommandHandler_01 | A | Unable To Extract PaymentId RegEx
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_NoPaymentIdInContent_ShouldReturnSuccessWithMessage()
         {
             var handler = CreateHandler();
-            var cmd = new ProcessWebhookCommand(new SePayWebhookData { Content = "Transfer Random Text Valid", TransactionDate = DateTime.Now.ToString("O") });
+            var cmd = new ProcessWebhookCommand(new SePayWebhookData { Content ="Transfer Random Text Valid", TransactionDate = DateTime.Now.ToString("O") });
 
             var result = await handler.Handle(cmd, CancellationToken.None);
 
@@ -44,26 +44,26 @@ namespace Tokki.UnitTest.Application.UseCases.Payments.Commands
 
             QACollector.LogTestCase("Payments - Webhook", new TestCaseDetail
             {
-                FunctionGroup = "ProcessWebhookCommandHandler",
-                TestCaseID = "TC-PAY-WH-01",
-                Description = "Regex prevents invalid garbage descriptions continuing execution seamlessly",
-                ExpectedResult = "Success wrap 200 with Warning Invalid Content message smoothly",
-                StatusRound1 = "Passed",
-                TestCaseType = "A",
+                FunctionGroup ="ProcessWebhookCommandHandler",
+                TestCaseID ="ProcessWebhookCommandHandler_01",
+                Description ="Regex prevents invalid garbage",
+                ExpectedResult ="Success wrap 200 with Warning Invalid Content message smoothly",
+                StatusRound1 ="Passed",
+                TestCaseType ="A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "String misses valid Regex 10 chars limits" }
+                AppliedConditions = new List<string> {"String misses valid Regex 10 chars limits" }
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-PAY-WH-02 | A | Payment ID Extracted But Not Found -> 200
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // ProcessWebhookCommandHandler_02 | A | Payment ID Extracted But Not Found -> 200
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_PaymentNotFound_ShouldReturnSuccessWithWarning()
         {
             _payMock.Setup(x => x.GetByIdAsync("ABCDEFGHIJ")).ReturnsAsync((Payment?)null);
             var handler = CreateHandler();
-            var cmd = new ProcessWebhookCommand(new SePayWebhookData { Content = "CK cho ABCDEFGHIJ ok", TransactionDate = DateTime.Now.ToString("O") });
+            var cmd = new ProcessWebhookCommand(new SePayWebhookData { Content ="CK cho ABCDEFGHIJ ok", TransactionDate = DateTime.Now.ToString("O") });
 
             var result = await handler.Handle(cmd, CancellationToken.None);
 
@@ -72,27 +72,27 @@ namespace Tokki.UnitTest.Application.UseCases.Payments.Commands
 
             QACollector.LogTestCase("Payments - Webhook", new TestCaseDetail
             {
-                FunctionGroup = "ProcessWebhookCommandHandler",
-                TestCaseID = "TC-PAY-WH-02",
-                Description = "Safely captures IDs natively but blocks null Database entity responses",
-                ExpectedResult = "Success mapping Not Found Error object safely",
-                StatusRound1 = "Passed",
-                TestCaseType = "A",
+                FunctionGroup ="ProcessWebhookCommandHandler",
+                TestCaseID ="ProcessWebhookCommandHandler_02",
+                Description ="Safely captures IDs natively but blocks null Database entity responses",
+                ExpectedResult ="Success mapping Not Found Error object safely",
+                StatusRound1 ="Passed",
+                TestCaseType ="A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "Extracted Id is 10 valid chars but mapped missing" }
+                AppliedConditions = new List<string> {"Extracted Id is 10 valid chars but mapped missing" }
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-PAY-WH-03 | N | Payment Already Processed Status
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // ProcessWebhookCommandHandler_03 | N | Payment Already Processed Status
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_AlreadyProcessed_ShouldReturnAppropriateMessage()
         {
             var p = new Payment { Status = PaymentStatus.Paid };
             _payMock.Setup(x => x.GetByIdAsync("ABCDEFGHIJ")).ReturnsAsync(p);
             var handler = CreateHandler();
-            var cmd = new ProcessWebhookCommand(new SePayWebhookData { Content = "CK cho ABCDEFGHIJ ok", TransactionDate = DateTime.Now.ToString("O") });
+            var cmd = new ProcessWebhookCommand(new SePayWebhookData { Content ="CK cho ABCDEFGHIJ ok", TransactionDate = DateTime.Now.ToString("O") });
 
             var result = await handler.Handle(cmd, CancellationToken.None);
 
@@ -101,58 +101,58 @@ namespace Tokki.UnitTest.Application.UseCases.Payments.Commands
 
             QACollector.LogTestCase("Payments - Webhook", new TestCaseDetail
             {
-                FunctionGroup = "ProcessWebhookCommandHandler",
-                TestCaseID = "TC-PAY-WH-03",
-                Description = "Prevents multi webhook concurrent execution overwrites efficiently organically successfully",
-                ExpectedResult = "Already Processed safely checked natively",
-                StatusRound1 = "Passed",
-                TestCaseType = "N",
+                FunctionGroup ="ProcessWebhookCommandHandler",
+                TestCaseID ="ProcessWebhookCommandHandler_03",
+                Description ="Prevents multi webhook concurrent execution overwrites efficiently organically successfully",
+                ExpectedResult ="Already Processed safely checked natively",
+                StatusRound1 ="Passed",
+                TestCaseType ="N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "Status != Pending properly" }
+                AppliedConditions = new List<string> {"Status != Pending properly" }
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-PAY-WH-04 | A | Insufficient Transfer Amount
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // ProcessWebhookCommandHandler_04 | A | Insufficient Transfer Amount
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_InsufficientAmount_ShouldReturnMessage()
         {
             var p = new Payment { Status = PaymentStatus.Pending, Amount = 100000 };
             _payMock.Setup(x => x.GetByIdAsync("ABCDEFGHIJ")).ReturnsAsync(p);
             var handler = CreateHandler();
-            var cmd = new ProcessWebhookCommand(new SePayWebhookData { Content = "CK ABCDEFGHIJ", TransferAmount = 50000, TransactionDate = DateTime.Now.ToString("O") });
+            var cmd = new ProcessWebhookCommand(new SePayWebhookData { Content ="CK ABCDEFGHIJ", TransferAmount = 50000, TransactionDate = DateTime.Now.ToString("O") });
 
             var result = await handler.Handle(cmd, CancellationToken.None);
 
             result.IsSuccess.Should().BeTrue();
-            result.Data.Should().Contain("không đủ so với hóa đơn");
+            result.Data.Should().Contain("kh�ng d? so v?i h�a don");
 
             QACollector.LogTestCase("Payments - Webhook", new TestCaseDetail
             {
-                FunctionGroup = "ProcessWebhookCommandHandler",
-                TestCaseID = "TC-PAY-WH-04",
-                Description = "Accurately bounds logic ensuring transactions validate complete limits accurately securely securely",
-                ExpectedResult = "Insufficient Amount warning mapped securely",
-                StatusRound1 = "Passed",
-                TestCaseType = "A",
+                FunctionGroup ="ProcessWebhookCommandHandler",
+                TestCaseID ="ProcessWebhookCommandHandler_04",
+                Description ="Accurately bounds logic ensuring transactions validate complete limits accurately securely securely",
+                ExpectedResult ="Insufficient Amount warning mapped securely",
+                StatusRound1 ="Passed",
+                TestCaseType ="A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "TransferAmount < PaymentAmount" }
+                AppliedConditions = new List<string> {"TransferAmount < PaymentAmount" }
             });
         }
         
-        // ═══════════════════════════════════════════════════════════
-        // TC-PAY-WH-05 | A | Missing VIP Package Limits Setup
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // ProcessWebhookCommandHandler_05 | A | Missing VIP Package Limits Setup
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_MissingVipPackage_ShouldReturnFailure()
         {
-            var p = new Payment { Status = PaymentStatus.Pending, Amount = 100000, VipPackageId = "pkg" };
+            var p = new Payment { Status = PaymentStatus.Pending, Amount = 100000, VipPackageId ="pkg" };
             _payMock.Setup(x => x.GetByIdAsync("ABCDEFGHIJ")).ReturnsAsync(p);
             _vipMock.Setup(x => x.GetByIdAsync("pkg")).ReturnsAsync((VipPackage?)null);
             
             var handler = CreateHandler();
-            var cmd = new ProcessWebhookCommand(new SePayWebhookData { Content = "CK ABCDEFGHIJ", TransferAmount = 100000, TransactionDate = DateTime.Now.ToString("O") });
+            var cmd = new ProcessWebhookCommand(new SePayWebhookData { Content ="CK ABCDEFGHIJ", TransferAmount = 100000, TransactionDate = DateTime.Now.ToString("O") });
 
             var result = await handler.Handle(cmd, CancellationToken.None);
 
@@ -161,38 +161,38 @@ namespace Tokki.UnitTest.Application.UseCases.Payments.Commands
 
             QACollector.LogTestCase("Payments - Webhook", new TestCaseDetail
             {
-                FunctionGroup = "ProcessWebhookCommandHandler",
-                TestCaseID = "TC-PAY-WH-05",
-                Description = "Failures matching deleted Packages abort upgrade execution aggressively logging natively properly",
-                ExpectedResult = "Return Vip NotFound Error explicitly explicitly",
-                StatusRound1 = "Passed",
-                TestCaseType = "A",
+                FunctionGroup ="ProcessWebhookCommandHandler",
+                TestCaseID ="ProcessWebhookCommandHandler_05",
+                Description ="Failures matching deleted Packages abort upgrade",
+                ExpectedResult ="Return Vip NotFound Error explicitly explicitly",
+                StatusRound1 ="Passed",
+                TestCaseType ="A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "Valid Payment but bound VIP pkg missing mapped logic" }
+                AppliedConditions = new List<string> {"Valid Payment but bound VIP pkg missing mapped logic" }
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-PAY-WH-06 | N | Success Mapping Extends Expiration
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // ProcessWebhookCommandHandler_06 | N | Success Mapping Extends Expiration
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_SuccessValid_ShouldUpdateUserAndPayment()
         {
-            var p = new Payment { Status = PaymentStatus.Pending, Amount = 100000, VipPackageId = "pkg", UserId = "usr" };
+            var p = new Payment { Status = PaymentStatus.Pending, Amount = 100000, VipPackageId ="pkg", UserId ="usr" };
             var vip = new VipPackage { DurationDays = 30 };
-            var u = new Account { UserId = "usr", Role = AccountRole.User }; // Non Vip Upgrading
+            var u = new Account { UserId ="usr", Role = AccountRole.User }; // Non Vip Upgrading
 
             _payMock.Setup(x => x.GetByIdAsync("ABCDEFGHIJ")).ReturnsAsync(p);
             _vipMock.Setup(x => x.GetByIdAsync("pkg")).ReturnsAsync(vip);
             _accMock.Setup(x => x.GetByIdAsync("usr")).ReturnsAsync(u);
 
             var handler = CreateHandler();
-            var cmd = new ProcessWebhookCommand(new SePayWebhookData { Content = "CK ABCDEFGHIJ ok", TransferType = "in", TransferAmount = 150000, TransactionDate = DateTime.Now.ToString("O") });
+            var cmd = new ProcessWebhookCommand(new SePayWebhookData { Content ="CK ABCDEFGHIJ ok", TransferType ="in", TransferAmount = 150000, TransactionDate = DateTime.Now.ToString("O") });
 
             var result = await handler.Handle(cmd, CancellationToken.None);
 
             result.IsSuccess.Should().BeTrue();
-            result.Data.Should().Contain("Thanh toán thành công");
+            result.Data.Should().Contain("Thanh to�n th�nh c�ng");
 
             u.Role.Should().Be(AccountRole.Vip);
             u.VipExpirationDate.Should().HaveValue();
@@ -202,14 +202,14 @@ namespace Tokki.UnitTest.Application.UseCases.Payments.Commands
 
             QACollector.LogTestCase("Payments - Webhook", new TestCaseDetail
             {
-                FunctionGroup = "ProcessWebhookCommandHandler",
-                TestCaseID = "TC-PAY-WH-06",
-                Description = "Extends role successfully validating math boundaries cleanly efficiently optimally seamlessly flawlessly natively correctly perfectly smoothly thoroughly elegantly organically dynamically perfectly naturally properly successfully seamlessly",
-                ExpectedResult = "Status updated Paid Roles updated successfully natively perfectly effortlessly securely organically perfectly",
-                StatusRound1 = "Passed",
-                TestCaseType = "N",
+                FunctionGroup ="ProcessWebhookCommandHandler",
+                TestCaseID ="ProcessWebhookCommandHandler_06",
+                Description ="Extends role successfully validating math boundaries",
+                ExpectedResult ="Status updated Paid Roles updated",
+                StatusRound1 ="Passed",
+                TestCaseType ="N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "Successfully updates user expiration successfully securely fully accurately intelligently dynamically effectively naturally cleanly appropriately safely effectively correctly properly efficiently easily completely seamlessly successfully" }
+                AppliedConditions = new List<string> {"Successfully updates user" }
             });
         }
     }

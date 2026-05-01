@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -25,7 +25,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             var result  = await CreateHandler(repo).Handle(new GetAllReportsQuery { Status = null }, CancellationToken.None);
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().BeEmpty();
-            QACollector.LogTestCase("Report - Get All", new TestCaseDetail { FunctionGroup = "GetAllReports", TestCaseID = "TC-RPT-GAR-01", Description = "Empty repo → empty DTO list", ExpectedResult = "IsSuccess=true, Count=0", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetAllAsync returns []" } });
+            QACollector.LogTestCase("Report - Get All", new TestCaseDetail { FunctionGroup = "GetAllReports", TestCaseID = "GetAllReports_01", Description = "Empty repo → empty DTO list", ExpectedResult = "IsSuccess=true, Count=0", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetAllAsync returns []" } });
         }
 
         [Fact]
@@ -36,7 +36,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             var result  = await CreateHandler(repo).Handle(new GetAllReportsQuery(), CancellationToken.None);
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().HaveCount(3);
-            QACollector.LogTestCase("Report - Get All", new TestCaseDetail { FunctionGroup = "GetAllReports", TestCaseID = "TC-RPT-GAR-02", Description = "3 reports → 3 DTOs", ExpectedResult = "Count=3", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "3 reports in repo" } });
+            QACollector.LogTestCase("Report - Get All", new TestCaseDetail { FunctionGroup = "GetAllReports", TestCaseID = "GetAllReports_02", Description = "3 reports → 3 DTOs", ExpectedResult = "Count=3", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "3 reports in repo" } });
         }
 
         [Fact]
@@ -49,7 +49,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             dto.ReportId.Should().Be("RPT-MAP-01");
             dto.Status.Should().Be((int)ReportStatus.Fixed);
             dto.Description.Should().Be("Map test");
-            QACollector.LogTestCase("Report - Get All", new TestCaseDetail { FunctionGroup = "GetAllReports", TestCaseID = "TC-RPT-GAR-03", Description = "DTO fields mapped correctly", ExpectedResult = "All fields match", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "All entity fields verified" } });
+            QACollector.LogTestCase("Report - Get All", new TestCaseDetail { FunctionGroup = "GetAllReports", TestCaseID = "GetAllReports_03", Description = "DTO fields mapped correctly", ExpectedResult = "All fields match", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "All entity fields verified" } });
         }
 
         [Fact]
@@ -59,7 +59,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             var handler = CreateHandler(repo);
             await handler.Handle(new GetAllReportsQuery { Status = ReportStatus.Pending }, CancellationToken.None);
             repo.Verify(x => x.GetAllAsync(ReportStatus.Pending), Times.Once);
-            QACollector.LogTestCase("Report - Get All", new TestCaseDetail { FunctionGroup = "GetAllReports", TestCaseID = "TC-RPT-GAR-04", Description = "Status filter passed to GetAllAsync", ExpectedResult = "GetAllAsync(Pending) Once", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Status=Pending" } });
+            QACollector.LogTestCase("Report - Get All", new TestCaseDetail { FunctionGroup = "GetAllReports", TestCaseID = "GetAllReports_04", Description = "Status filter passed to GetAllAsync", ExpectedResult = "GetAllAsync(Pending) Once", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Status=Pending" } });
         }
 
         [Fact]
@@ -69,7 +69,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             var handler = CreateHandler(repo);
             await handler.Handle(new GetAllReportsQuery { Status = null }, CancellationToken.None);
             repo.Verify(x => x.GetAllAsync(null), Times.Once);
-            QACollector.LogTestCase("Report - Get All", new TestCaseDetail { FunctionGroup = "GetAllReports", TestCaseID = "TC-RPT-GAR-05", Description = "Null status filter → GetAllAsync(null)", ExpectedResult = "GetAllAsync(null) Once", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Status=null" } });
+            QACollector.LogTestCase("Report - Get All", new TestCaseDetail { FunctionGroup = "GetAllReports", TestCaseID = "GetAllReports_05", Description = "Null status filter → GetAllAsync(null)", ExpectedResult = "GetAllAsync(null) Once", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Status=null" } });
         }
 
         [Fact]
@@ -79,7 +79,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             var repo   = MockReportRepository.GetMock(returnedAll: new List<Report> { report });
             var result = await CreateHandler(repo).Handle(new GetAllReportsQuery(), CancellationToken.None);
             result.Data![0].Status.Should().Be(2);
-            QACollector.LogTestCase("Report - Get All", new TestCaseDetail { FunctionGroup = "GetAllReports", TestCaseID = "TC-RPT-GAR-06", Description = "ReportStatus.Fixed cast to int=2 in DTO", ExpectedResult = "DTO.Status=2", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Status=Fixed(2)" } });
+            QACollector.LogTestCase("Report - Get All", new TestCaseDetail { FunctionGroup = "GetAllReports", TestCaseID = "GetAllReports_06", Description = "ReportStatus.Fixed cast to int=2 in DTO", ExpectedResult = "DTO.Status=2", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Status=Fixed(2)" } });
         }
     }
 }

@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -47,7 +47,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Get Campaign By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetEmailCampaignById",
-                TestCaseID        = "TC-EMAIL-GCBI-01",
+                TestCaseID        = "GetEmailCampaignById_01",
                 Description       = "JobId does not exist → Return 404 'Không tìm thấy campaign!'",
                 ExpectedResult    = "Return 404 Failure",
                 StatusRound1      = "Passed",
@@ -75,7 +75,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Get Campaign By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetEmailCampaignById",
-                TestCaseID        = "TC-EMAIL-GCBI-02",
+                TestCaseID        = "GetEmailCampaignById_02",
                 Description       = "Pending job found → Return 200, Data = EmailJob entity",
                 ExpectedResult    = "Return 200, Data.JobId = 'JOB-001', Status = Pending",
                 StatusRound1      = "Passed",
@@ -101,7 +101,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Get Campaign By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetEmailCampaignById",
-                TestCaseID        = "TC-EMAIL-GCBI-03",
+                TestCaseID        = "GetEmailCampaignById_03",
                 Description       = "Sent job found → Return 200 (get works for all statuses)",
                 ExpectedResult    = "Return 200, Data.Status = Sent",
                 StatusRound1      = "Passed",
@@ -127,7 +127,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Get Campaign By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetEmailCampaignById",
-                TestCaseID        = "TC-EMAIL-GCBI-04",
+                TestCaseID        = "GetEmailCampaignById_04",
                 Description       = "Deleted job returned (no filtering by status in GetById) → Return 200",
                 ExpectedResult    = "Return 200, Data.Status = Deleted",
                 StatusRound1      = "Passed",
@@ -152,7 +152,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Get Campaign By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetEmailCampaignById",
-                TestCaseID        = "TC-EMAIL-GCBI-05",
+                TestCaseID        = "GetEmailCampaignById_05",
                 Description       = "JobId matches in result DTO",
                 ExpectedResult    = "Result.Data.JobId = 'JOB-MATCH'",
                 StatusRound1      = "Passed",
@@ -175,7 +175,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Get Campaign By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetEmailCampaignById",
-                TestCaseID        = "TC-EMAIL-GCBI-06",
+                TestCaseID        = "GetEmailCampaignById_06",
                 Description       = "Repository throws → exception propagates",
                 ExpectedResult    = "Throws Exception",
                 StatusRound1      = "Passed",

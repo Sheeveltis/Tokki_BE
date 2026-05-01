@@ -4,7 +4,9 @@ using Google.Apis.Auth.OAuth2;
 using Microsoft.Extensions.Options;
 using Tokki.Infrastructure.Configurations;
 using Microsoft.Extensions.Logging;
+using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
+using Tokki.Domain.Constants;
 using Tokki.Application.UseCases.Roadmap.DTOs;
 using Tokki.Domain.Enums;
 using Tokki.Domain.Entities;
@@ -16,33 +18,64 @@ namespace Tokki.Infrastructure.Services
         private readonly HttpClient _httpClient;
         private readonly ILogger<AiRoadmapService> _logger;
         private readonly GeminiOptions _geminiOptions;
+        private readonly ISystemConfigRepository _configRepo;
 
         public AiRoadmapService(
             HttpClient httpClient,
             ILogger<AiRoadmapService> logger,
-            IOptions<GeminiOptions> geminiOptions)
+            IOptions<GeminiOptions> geminiOptions,
+            ISystemConfigRepository configRepo)
         {
             _httpClient = httpClient;
             _logger = logger;
             _geminiOptions = geminiOptions.Value;
+            _configRepo = configRepo;
+        }
+
+        private async Task<int> GetIntConfigAsync(string key, int fallback)
+        {
+            try
+            {
+                var cfg = await _configRepo.GetByKeyAsync(key);
+                if (cfg is { IsActive: true, Value: not null }
+                    && int.TryParse(cfg.Value, out int parsed))
+                    return parsed;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Không đọc được config '{Key}', dùng fallback={Fallback}.", key, fallback);
+            }
+            return fallback;
         }
 
         private string GetApiUrl()
         {
             var config = _geminiOptions.Roadmap;
             string baseUrl = config.BaseUrl?.TrimEnd('/') ?? string.Empty;
-            
+
             if (_geminiOptions.UseVertex)
             {
-                return $"{baseUrl}/projects/{_geminiOptions.VertexProjectId}" +
-                       $"/locations/{_geminiOptions.VertexLocation}/publishers/google/models/{config.Model}:generateContent";
+                if (!string.IsNullOrEmpty(_geminiOptions.VertexProjectId))
+                {
+                    return $"{baseUrl}/projects/{_geminiOptions.VertexProjectId}" +
+                           $"/locations/{_geminiOptions.VertexLocation}/publishers/google/models/{config.Model}:generateContent";
+                }
+                return $"{baseUrl}/models/{config.Model}:generateContent";
             }
 
-            return $"{baseUrl}/{config.Model}:generateContent?key={config.ApiKey}";
+            return $"{baseUrl}/models/{config.Model}:generateContent?key={config.ApiKey}";
         }
 
         private bool IsConfigValid()
         {
+            var config = _geminiOptions.Roadmap;
+
+            if (string.IsNullOrEmpty(config.BaseUrl) || string.IsNullOrEmpty(config.Model))
+            {
+                _logger.LogError("Gemini: Thiếu cấu hình Roadmap (BaseUrl hoặc Model).");
+                return false;
+            }
+
             if (_geminiOptions.UseVertex)
             {
                 if (string.IsNullOrEmpty(_geminiOptions.VertexCredentialsPath))
@@ -58,10 +91,9 @@ namespace Tokki.Infrastructure.Services
                 return true;
             }
 
-            var config = _geminiOptions.Roadmap;
-            if (string.IsNullOrEmpty(config.ApiKey) || string.IsNullOrEmpty(config.BaseUrl) || string.IsNullOrEmpty(config.Model))
+            if (string.IsNullOrEmpty(config.ApiKey))
             {
-                _logger.LogError("Gemini API: Thiếu cấu hình Roadmap (ApiKey, BaseUrl hoặc Model).");
+                _logger.LogError("Gemini API: Thiếu ApiKey cho Roadmap.");
                 return false;
             }
             return true;
@@ -106,14 +138,14 @@ namespace Tokki.Infrastructure.Services
             var requestBody = new
             {
                 contents = new[]
-            {
-            new
-            {
-                role = "user",
-            parts = new[] { new { text = promptText } }
-            }
-        }
-     };
+                {
+                    new
+                    {
+                        role = "user",
+                        parts = new[] { new { text = promptText } }
+                    }
+                }
+            };
 
             try
             {
@@ -170,13 +202,13 @@ namespace Tokki.Infrastructure.Services
             var requestBody = new
             {
                 contents = new[]
-        {
-            new
-        {
-            role = "user",
-            parts = new[] { new { text = promptText } }
-        }
-    }
+                {
+                    new
+                    {
+                        role = "user",
+                        parts = new[] { new { text = promptText } }
+                    }
+                }
             };
 
             try
@@ -210,6 +242,44 @@ namespace Tokki.Infrastructure.Services
                 return null;
             }
         }
+
+        public async Task<List<string>> SequenceWeaknessesAsync(
+            List<string> questionTypeIds,
+            CurrentTopikLevel currentLevel,
+            TargetAimLevel targetLevel,
+            List<QuestionTypeMenuItem> typeMenu,
+            CancellationToken token = default)
+        {
+            _logger.LogInformation("Sắp xếp trình tự cho {Count} điểm yếu.", questionTypeIds.Count);
+
+            var menuDetails = string.Join("\n", typeMenu.Select(m =>
+                $"- ID: {m.QuestionTypeId}, Mã: {m.Code}, Tên: {m.Name}, Kỹ năng: {m.Skill}"));
+
+            string prompt = $@"
+            Bạn là chuyên gia sư phạm TOPIK. Sắp xếp danh sách QuestionTypeIds sau đây thành một trình tự học tập khoa học nhất:
+            THÔNG TIN:
+            - Trình độ: {currentLevel}, Mục tiêu: {targetLevel}.
+            - Danh sách điểm yếu: {menuDetails}
+
+            QUY TẮC SẮP XẾP (ƯU TIÊN):
+            1. SKILL INTERLEAVING: Xen kẽ các kỹ năng (Nghe, Đọc, Viết). Không để học viên phải học quá 2 ngày liên tiếp cùng một kỹ năng để tránh gây nhàm chán và mệt mỏi cho não bộ.
+            2. COMPLEXITY: Đưa các dạng bài dễ hoặc nền tảng lên trước, các dạng bài phức tạp (như Viết đoạn văn) nên xen kẽ vào giữa.
+            3. FIFO BASE: Vẫn giữ nền tảng là các câu sai trước nhưng có thể điều chỉnh vị trí để thỏa mãn quy tắc xen kẽ kỹ năng.
+
+            KẾT QUẢ: Chỉ trả về danh sách ID phân cách bằng dấu phẩy.
+            Ví dụ: ID1, ID2, ID3...";
+
+            var result = await CallGeminiTextAsync(prompt);
+            if (string.IsNullOrEmpty(result)) return questionTypeIds;
+
+            var cleanedResult = result.Split(',')
+                .Select(s => s.Trim())
+                .Where(s => questionTypeIds.Contains(s))
+                .ToList();
+
+            return cleanedResult.Any() ? cleanedResult : questionTypeIds;
+        }
+
         public async Task<AiRoadmapResponse?> GenerateStudyPlanAsync(
             TargetAimLevel target,
             CurrentTopikLevel currentLevel,
@@ -220,6 +290,10 @@ namespace Tokki.Infrastructure.Services
             int typesPerWeek,
             int totalWeeks)
         {
+            int maxTasksPerDay = await GetIntConfigAsync(PromptConfigKeys.MaxTasksPerDay, fallback: 4);
+            int studyDays = await GetIntConfigAsync(PromptConfigKeys.StudyDaysPerWeek, fallback: 6);
+            int weeklyExamDay = await GetIntConfigAsync(PromptConfigKeys.WeeklyExamDay, fallback: 7);
+
             var weaknessSection = weakTypeInfos.Any()
                 ? string.Join("\n", weakTypeInfos.Select(w =>
                     $"  - [{w.Skill}] {w.Name} (QuestionTypeId: {w.QuestionTypeId})" +
@@ -248,11 +322,11 @@ namespace Tokki.Infrastructure.Services
 
             *** PHÂN BỔ NỘI DUNG TUẦN NÀY ***
             - Tuần này chỉ học TỐI ĐA {typesPerWeek} dạng câu từ danh sách ĐIỂM YẾU ở trên
-            - Mỗi ngày tối đa 3-4 task, KHÔNG được nhồi nhét quá nhiều
+            - Mỗi ngày tối đa {maxTasksPerDay} task, KHÔNG được nhồi nhét quá nhiều
             - Mỗi dạng câu nên có CẢ LearnTheory lẫn VirtualQuiz:
             + LearnTheory: học lý thuyết về dạng đó trước
             + VirtualQuiz: luyện tập thực hành sau khi học lý thuyết
-            - Phân bổ đều vào 6 ngày đầu (ngày 7 là WeeklyExam)
+            - Phân bổ đều vào {studyDays} ngày đầu (ngày {weeklyExamDay} là WeeklyExam)
 
             *** QUY TẮC BẮT BUỘC ***
                 1. CHỈ CHỌN QuestionTypeId từ MENU bên dưới. KHÔNG tự bịa.
@@ -268,7 +342,7 @@ namespace Tokki.Infrastructure.Services
                 3. Task 'VirtualQuiz':
                 - Điền 'QuestionTypeId' của dạng cần luyện tập (lấy từ MENU)
                 - Điền 'Content' là lời khuyên ngắn gọn
-                4. Ngày thứ 7 BẮT BUỘC là 'WeeklyExam' (Title: 'Thi thử tuần').
+                4. Ngày thứ {weeklyExamDay} BẮT BUỘC là 'WeeklyExam' (Title: 'Thi thử tuần').
 
             *** QUIZ MENU (dùng cho cả LearnTheory và VirtualQuiz) ***
             {quizMenuJson}
@@ -318,6 +392,11 @@ namespace Tokki.Infrastructure.Services
             List<QuestionTypeMenuItem> weakTypeInfos,
             List<QuestionTypeMenuItem> questionTypeMenu)
         {
+            int scoreLow = await GetIntConfigAsync(PromptConfigKeys.ScoreThresholdLow, fallback: 50);
+            int scoreHigh = await GetIntConfigAsync(PromptConfigKeys.ScoreThresholdHigh, fallback: 80);
+            int maxTasksPerDay = await GetIntConfigAsync(PromptConfigKeys.MaxTasksPerDay, fallback: 4);
+            int weeklyExamDay = await GetIntConfigAsync(PromptConfigKeys.WeeklyExamDay, fallback: 7);
+
             var reviewSection = weakTypeInfos.Any()
                 ? string.Join("\n", weakTypeInfos
                     .Where(w => reviewTypes.Contains(w.QuestionTypeId))
@@ -348,23 +427,23 @@ namespace Tokki.Infrastructure.Services
             string strategy;
             string reviewInstruction;
 
-            if (examScorePercent < 50)
+            if (examScorePercent < scoreLow)
             {
-                strategy = "Học viên đạt dưới 50%. Tăng cường luyện tập.";
+                strategy = $"Học viên đạt dưới {scoreLow}%. Tăng cường luyện tập.";
                 reviewInstruction = reviewTypes.Any()
                     ? "Dành ngày 1 và ngày 2 để ÔN LẠI các dạng trong REVIEW LIST. Từ ngày 3 học mới."
                     : "Tập trung nội dung mới nhưng giảm tải độ khó.";
             }
-            else if (examScorePercent < 80)
+            else if (examScorePercent < scoreHigh)
             {
-                strategy = "Học viên đạt 50-79%. Kết hợp ôn cũ và học mới.";
+                strategy = $"Học viên đạt {scoreLow}-{scoreHigh - 1}%. Kết hợp ôn cũ và học mới.";
                 reviewInstruction = reviewTypes.Any()
                     ? "Dành ngày 1 ôn REVIEW LIST (~20%). Từ ngày 2 học mới (80%)."
                     : "Tiếp tục lộ trình bình thường.";
             }
             else
             {
-                strategy = "Học viên đạt >= 80%. Tăng tốc với kiến thức mới.";
+                strategy = $"Học viên đạt >= {scoreHigh}%. Tăng tốc với kiến thức mới.";
                 reviewInstruction = "Không cần ôn lại. Tập trung 100% nội dung mới.";
             }
 
@@ -388,8 +467,8 @@ namespace Tokki.Infrastructure.Services
            - Điền 'Content' là HTML lý thuyết đầy đủ (định nghĩa, pattern, ví dụ, mẹo)
            - KHÔNG điền GrammarId
             3. Task 'VirtualQuiz': Điền 'QuestionTypeId', Content ngắn gọn
-            4. Ngày 7 BẮT BUỘC là 'WeeklyExam'
-            5. Mỗi ngày tối đa 3-4 task
+            4. Ngày {weeklyExamDay} BẮT BUỘC là 'WeeklyExam'
+            5. Mỗi ngày tối đa {maxTasksPerDay} task
             6. KHÔNG dùng dạng trong danh sách ĐÃ CẢNH BÁO
 
             *** QUIZ MENU ***

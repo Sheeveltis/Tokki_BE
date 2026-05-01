@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using FluentValidation.TestHelper;
 using System;
 using System.Collections.Generic;
@@ -17,7 +17,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             _validator = new UpdateMyLevelCommandValidator();
         }
 
-        // TC-ACC-UMLV-01 | N | Level is Null
+        // UpdateMyLevelCommandValidator_01 | N | Level is Null
         [Fact]
         public void Validate_NullLevel_ShouldNotHaveError()
         {
@@ -28,7 +28,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Update My Level Valid", new TestCaseDetail
             {
                 FunctionGroup = "UpdateMyLevelCommandValidator",
-                TestCaseID = "TC-ACC-UMLV-01",
+                TestCaseID = "UpdateMyLevelCommandValidator_01",
                 Description = "Null level passes validation seamlessly",
                 ExpectedResult = "No errors",
                 StatusRound1 = "Passed",
@@ -38,7 +38,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-UMLV-02 | N | Level is valid enum int
+        // UpdateMyLevelCommandValidator_02 | N | Level is valid enum int
         [Fact]
         public void Validate_ValidEnumLevel_ShouldNotHaveError()
         {
@@ -49,7 +49,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Update My Level Valid", new TestCaseDetail
             {
                 FunctionGroup = "UpdateMyLevelCommandValidator",
-                TestCaseID = "TC-ACC-UMLV-02",
+                TestCaseID = "UpdateMyLevelCommandValidator_02",
                 Description = "Valid TopicLevel enum value passes",
                 ExpectedResult = "No errors",
                 StatusRound1 = "Passed",
@@ -59,7 +59,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-UMLV-03 | A | Invalid enum level
+        // UpdateMyLevelCommandValidator_03 | A | Invalid enum level
         [Fact]
         public void Validate_InvalidEnumLevel_ShouldHaveError()
         {
@@ -72,7 +72,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Update My Level Valid", new TestCaseDetail
             {
                 FunctionGroup = "UpdateMyLevelCommandValidator",
-                TestCaseID = "TC-ACC-UMLV-03",
+                TestCaseID = "UpdateMyLevelCommandValidator_03",
                 Description = "Out-of-bound level value fails with specific error message formatting",
                 ExpectedResult = "Validation Error",
                 StatusRound1 = "Passed",

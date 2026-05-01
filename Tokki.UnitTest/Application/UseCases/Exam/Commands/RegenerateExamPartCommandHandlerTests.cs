@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -26,7 +26,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXM-REP-01 | A | Template Part Missing -> Failure
+        // RegenerateExamPartCommandHandler_01 | A | Template Part Missing -> Failure
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_TemplatePartMissing_ShouldReturnFalse()
@@ -41,7 +41,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Commands
             QACollector.LogTestCase("Exam - Regenerate Part", new TestCaseDetail
             {
                 FunctionGroup = "RegenerateExamPartCommandHandler",
-                TestCaseID = "TC-EXM-REP-01",
+                TestCaseID = "RegenerateExamPartCommandHandler_01",
                 Description = "Checks part existence to safely break if missing",
                 ExpectedResult = "Return false error",
                 StatusRound1 = "Passed",
@@ -52,7 +52,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXM-REP-02 | A | Exam Missing -> Failure
+        // RegenerateExamPartCommandHandler_02 | A | Exam Missing -> Failure
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ExamMissing_ShouldReturnFalse()
@@ -68,7 +68,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Commands
             QACollector.LogTestCase("Exam - Regenerate Part", new TestCaseDetail
             {
                 FunctionGroup = "RegenerateExamPartCommandHandler",
-                TestCaseID = "TC-EXM-REP-02",
+                TestCaseID = "RegenerateExamPartCommandHandler_02",
                 Description = "Ensures Exam object exists before trying to modify it",
                 ExpectedResult = "Return false error",
                 StatusRound1 = "Passed",
@@ -79,7 +79,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXM-REP-03 | A | ExamTemplateId Mismatch -> Failure
+        // RegenerateExamPartCommandHandler_03 | A | ExamTemplateId Mismatch -> Failure
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ExamTemplateIdMismatch_ShouldReturnFalse()
@@ -96,7 +96,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Commands
             QACollector.LogTestCase("Exam - Regenerate Part", new TestCaseDetail
             {
                 FunctionGroup = "RegenerateExamPartCommandHandler",
-                TestCaseID = "TC-EXM-REP-03",
+                TestCaseID = "RegenerateExamPartCommandHandler_03",
                 Description = "Security matching to ensure no part from a different template is injected",
                 ExpectedResult = "Return false mismatch",
                 StatusRound1 = "Passed",
@@ -107,7 +107,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXM-REP-04 | A | Validation Error Questions <= 0
+        // RegenerateExamPartCommandHandler_04 | A | Validation Error Questions <= 0
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ZeroQuantity_ShouldReturnFalse()
@@ -126,7 +126,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Commands
             QACollector.LogTestCase("Exam - Regenerate Part", new TestCaseDetail
             {
                 FunctionGroup = "RegenerateExamPartCommandHandler",
-                TestCaseID = "TC-EXM-REP-04",
+                TestCaseID = "RegenerateExamPartCommandHandler_04",
                 Description = "Zero or negative questions check blocks operation",
                 ExpectedResult = "Return false error",
                 StatusRound1 = "Passed",
@@ -137,7 +137,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXM-REP-05 | A | Not Enough Questions in DB -> Failure
+        // RegenerateExamPartCommandHandler_05 | A | Not Enough Questions in DB -> Failure
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NotEnoughBankQuestions_ShouldReturnFalse()
@@ -162,7 +162,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Commands
             QACollector.LogTestCase("Exam - Regenerate Part", new TestCaseDetail
             {
                 FunctionGroup = "RegenerateExamPartCommandHandler",
-                TestCaseID = "TC-EXM-REP-05",
+                TestCaseID = "RegenerateExamPartCommandHandler_05",
                 Description = "System fails safely if QuestionBank repo doesn't contain sufficient items",
                 ExpectedResult = "Return false insufficient items",
                 StatusRound1 = "Passed",
@@ -173,7 +173,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXM-REP-06 | N | Success -> Remove Old and Push New
+        // RegenerateExamPartCommandHandler_06 | N | Success -> Remove Old and Push New
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidRandomization_ShouldSwapAndSaveCorrectly()
@@ -203,7 +203,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Commands
             QACollector.LogTestCase("Exam - Regenerate Part", new TestCaseDetail
             {
                 FunctionGroup = "RegenerateExamPartCommandHandler",
-                TestCaseID = "TC-EXM-REP-06",
+                TestCaseID = "RegenerateExamPartCommandHandler_06",
                 Description = "Valid configuration removes old matching questions and inserts exactly requested amount new questions",
                 ExpectedResult = "Return Success True",
                 StatusRound1 = "Passed",

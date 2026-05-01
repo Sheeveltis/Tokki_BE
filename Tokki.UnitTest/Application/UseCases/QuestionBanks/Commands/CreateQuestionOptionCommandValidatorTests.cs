@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using FluentValidation.TestHelper;
 using System;
 using System.Collections.Generic;
@@ -17,7 +17,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
             _validator = new CreateQuestionOptionCommandValidator();
         }
 
-        // TC-QB-COV-01 | A | KeyOption Empty -> Error
+        // CreateQuestionOptionCommandValidator_01 | A | KeyOption Empty -> Error
         [Fact]
         public void Validate_EmptyKeyOption_ShouldHaveError()
         {
@@ -29,7 +29,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
             QACollector.LogTestCase("Question Bank Option - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreateQuestionOptionCommandValidator",
-                TestCaseID = "TC-QB-COV-01",
+                TestCaseID = "CreateQuestionOptionCommandValidator_01",
                 Description = "Empty KeyOption triggers immediate requirement constraint",
                 ExpectedResult = "Validation Error",
                 StatusRound1 = "Passed",
@@ -39,7 +39,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
             });
         }
 
-        // TC-QB-COV-02 | A | KeyOption out of bounds -> Error
+        // CreateQuestionOptionCommandValidator_02 | A | KeyOption out of bounds -> Error
         [Fact]
         public void Validate_InvalidKeyOptionBounds_ShouldHaveError()
         {
@@ -52,7 +52,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
             QACollector.LogTestCase("Question Bank Option - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreateQuestionOptionCommandValidator",
-                TestCaseID = "TC-QB-COV-02",
+                TestCaseID = "CreateQuestionOptionCommandValidator_02",
                 Description = "Restricts multiple choice answers to exactly 4 classical slots",
                 ExpectedResult = "Validation Error",
                 StatusRound1 = "Passed",
@@ -62,7 +62,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
             });
         }
 
-        // TC-QB-COV-03 | A | Both Content and ImageUrl Empty -> Error
+        // CreateQuestionOptionCommandValidator_03 | A | Both Content and ImageUrl Empty -> Error
         [Fact]
         public void Validate_BothMediaEmpty_ShouldHaveError()
         {
@@ -75,7 +75,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
             QACollector.LogTestCase("Question Bank Option - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreateQuestionOptionCommandValidator",
-                TestCaseID = "TC-QB-COV-03",
+                TestCaseID = "CreateQuestionOptionCommandValidator_03",
                 Description = "Evaluates inter-dependency forcing an explicit data medium to appear on front-end",
                 ExpectedResult = "Validation Error",
                 StatusRound1 = "Passed",
@@ -85,7 +85,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
             });
         }
 
-        // TC-QB-COV-04 | N | Content Only -> Pass
+        // CreateQuestionOptionCommandValidator_04 | N | Content Only -> Pass
         [Fact]
         public void Validate_ContentOnly_ShouldNotHaveError()
         {
@@ -97,7 +97,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
             QACollector.LogTestCase("Question Bank Option - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreateQuestionOptionCommandValidator",
-                TestCaseID = "TC-QB-COV-04",
+                TestCaseID = "CreateQuestionOptionCommandValidator_04",
                 Description = "Satisfies validation requiring at least primary text format medium",
                 ExpectedResult = "No Errors",
                 StatusRound1 = "Passed",
@@ -107,7 +107,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
             });
         }
 
-        // TC-QB-COV-05 | N | ImageUrl Only -> Pass
+        // CreateQuestionOptionCommandValidator_05 | N | ImageUrl Only -> Pass
         [Fact]
         public void Validate_ImageOnly_ShouldNotHaveError()
         {
@@ -119,7 +119,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
             QACollector.LogTestCase("Question Bank Option - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreateQuestionOptionCommandValidator",
-                TestCaseID = "TC-QB-COV-05",
+                TestCaseID = "CreateQuestionOptionCommandValidator_05",
                 Description = "Satisfies validation requiring at least alternate photo medium format",
                 ExpectedResult = "No Errors",
                 StatusRound1 = "Passed",
@@ -129,7 +129,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
             });
         }
 
-        // TC-QB-COV-06 | N | Both Contents -> Pass
+        // CreateQuestionOptionCommandValidator_06 | N | Both Contents -> Pass
         [Fact]
         public void Validate_BothFormats_ShouldNotHaveError()
         {
@@ -146,7 +146,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
             QACollector.LogTestCase("Question Bank Option - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreateQuestionOptionCommandValidator",
-                TestCaseID = "TC-QB-COV-06",
+                TestCaseID = "CreateQuestionOptionCommandValidator_06",
                 Description = "Combination media gracefully accepted",
                 ExpectedResult = "No Errors",
                 StatusRound1 = "Passed",

@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -24,7 +24,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             => new((accountRepo ?? MockAccountRepository.GetMock()).Object);
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GAD-01 | A | UserId not found → 404
+        // Get_Account_Detail_By_Id_01 | A | UserId not found → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_UserNotFound_ShouldReturn404()
@@ -38,7 +38,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Get Account Detail By Id", new TestCaseDetail
             {
                 FunctionGroup   = "Get Account Detail By Id",
-                TestCaseID      = "TC-GAD-01",
+                TestCaseID      = "Get_Account_Detail_By_Id_01",
                 Description     = "UserId does not exist in the system",
                 ExpectedResult  = "Return 404 AccountNotFound",
                 StatusRound1    = "Passed",
@@ -49,7 +49,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GAD-02 | N | Valid UserId → 200, all DTO fields mapped
+        // Get_Account_Detail_By_Id_02 | N | Valid UserId → 200, all DTO fields mapped
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidUser_ShouldReturn200WithDetailDto()
@@ -79,7 +79,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Get Account Detail By Id", new TestCaseDetail
             {
                 FunctionGroup   = "Get Account Detail By Id",
-                TestCaseID      = "TC-GAD-02",
+                TestCaseID      = "Get_Account_Detail_By_Id_02",
                 Description     = "Valid UserId → 200 with fully mapped AccountDetailDto",
                 ExpectedResult  = "Return 200, all DTO fields (UserId, Email, Role, TotalXP, FailedLoginCount) are correct",
                 StatusRound1    = "Passed",
@@ -95,7 +95,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GAD-03 | N | Account with null DateOfBirth → fallback to 2000-01-01
+        // Get_Account_Detail_By_Id_03 | N | Account with null DateOfBirth → fallback to 2000-01-01
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NullDateOfBirth_ShouldFallbackToDefault()
@@ -115,7 +115,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Get Account Detail By Id", new TestCaseDetail
             {
                 FunctionGroup   = "Get Account Detail By Id",
-                TestCaseID      = "TC-GAD-03",
+                TestCaseID      = "Get_Account_Detail_By_Id_03",
                 Description     = "Account DateOfBirth is null → DTO falls back to 2000-01-01",
                 ExpectedResult  = "Return 200, DateOfBirth = new DateTime(2000, 1, 1)",
                 StatusRound1    = "Passed",
@@ -130,7 +130,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GAD-04 | N | Account with LockedUntil set → DTO reflects the value
+        // Get_Account_Detail_By_Id_04 | N | Account with LockedUntil set → DTO reflects the value
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_LockedAccount_ShouldIncludeLockedUntilInDto()
@@ -153,7 +153,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Get Account Detail By Id", new TestCaseDetail
             {
                 FunctionGroup   = "Get Account Detail By Id",
-                TestCaseID      = "TC-GAD-04",
+                TestCaseID      = "Get_Account_Detail_By_Id_04",
                 Description     = "Account is temporarily locked → LockedUntil and FailedLoginCount included in DTO",
                 ExpectedResult  = "Return 200, LockedUntil is set, FailedLoginCount = 5",
                 StatusRound1    = "Passed",
@@ -169,7 +169,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GAD-05 | N | Staff account → Role correctly mapped in DTO
+        // Get_Account_Detail_By_Id_05 | N | Staff account → Role correctly mapped in DTO
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_StaffAccount_ShouldReturnCorrectRole()
@@ -189,7 +189,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Get Account Detail By Id", new TestCaseDetail
             {
                 FunctionGroup   = "Get Account Detail By Id",
-                TestCaseID      = "TC-GAD-05",
+                TestCaseID      = "Get_Account_Detail_By_Id_05",
                 Description     = "Staff account → Role = Staff correctly mapped in DTO",
                 ExpectedResult  = "Return 200, Role = Staff, Status = Active",
                 StatusRound1    = "Passed",
@@ -205,7 +205,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GAD-06 | N | Account with AvatarUrl → URL correctly mapped in DTO
+        // Get_Account_Detail_By_Id_06 | N | Account with AvatarUrl → URL correctly mapped in DTO
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_AccountWithAvatar_ShouldMapAvatarUrl()
@@ -225,7 +225,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Get Account Detail By Id", new TestCaseDetail
             {
                 FunctionGroup   = "Get Account Detail By Id",
-                TestCaseID      = "TC-GAD-06",
+                TestCaseID      = "Get_Account_Detail_By_Id_06",
                 Description     = "Account has an AvatarUrl → correctly mapped to DTO",
                 ExpectedResult  = "Return 200, AvatarUrl matches the stored URL",
                 StatusRound1    = "Passed",

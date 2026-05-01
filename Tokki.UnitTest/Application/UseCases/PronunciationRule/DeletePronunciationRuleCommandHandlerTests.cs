@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -22,7 +22,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PR-DEL-01 | A | RuleId not found → 404 Failure
+        // DeletePronunciationRule_01 | A | RuleId not found → 404 Failure
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RuleNotFound_ShouldReturn404Failure()
@@ -43,7 +43,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation Rule - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "DeletePronunciationRule",
-                TestCaseID        = "TC-PR-DEL-01",
+                TestCaseID        = "DeletePronunciationRule_01",
                 Description       = "PronunciationRuleId does not exist → return 404 Failure",
                 ExpectedResult    = "IsSuccess=false, StatusCode=404",
                 StatusRound1      = "Passed",
@@ -54,7 +54,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PR-DEL-02 | N | Happy path → returns true, StatusCode=200
+        // DeletePronunciationRule_02 | N | Happy path → returns true, StatusCode=200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RuleFound_ShouldReturnTrueWith200()
@@ -77,7 +77,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation Rule - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "DeletePronunciationRule",
-                TestCaseID        = "TC-PR-DEL-02",
+                TestCaseID        = "DeletePronunciationRule_02",
                 Description       = "Happy path: rule found → deleted successfully, returns true with 200",
                 ExpectedResult    = "IsSuccess=true, StatusCode=200, Data=true",
                 StatusRound1      = "Passed",
@@ -88,7 +88,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PR-DEL-03 | N | DeleteAsync and SaveChangesAsync each called once
+        // DeletePronunciationRule_03 | N | DeleteAsync and SaveChangesAsync each called once
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RuleFound_ShouldCallDeleteAndSaveOnce()
@@ -110,7 +110,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation Rule - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "DeletePronunciationRule",
-                TestCaseID        = "TC-PR-DEL-03",
+                TestCaseID        = "DeletePronunciationRule_03",
                 Description       = "Rule found → DeleteAsync and SaveChangesAsync each called exactly once",
                 ExpectedResult    = "DeleteAsync Times.Once, SaveChangesAsync Times.Once",
                 StatusRound1      = "Passed",
@@ -121,7 +121,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PR-DEL-04 | A | Repository GetByIdAsync throws → propagates
+        // DeletePronunciationRule_04 | A | Repository GetByIdAsync throws → propagates
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
@@ -143,7 +143,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation Rule - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "DeletePronunciationRule",
-                TestCaseID        = "TC-PR-DEL-04",
+                TestCaseID        = "DeletePronunciationRule_04",
                 Description       = "Repository throws exception on GetByIdAsync → exception propagates",
                 ExpectedResult    = "InvalidOperationException thrown",
                 StatusRound1      = "Passed",
@@ -154,7 +154,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PR-DEL-05 | A | Rule not found → DeleteAsync never called
+        // DeletePronunciationRule_05 | A | Rule not found → DeleteAsync never called
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RuleNotFound_ShouldNotCallDeleteAsync()
@@ -175,7 +175,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation Rule - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "DeletePronunciationRule",
-                TestCaseID        = "TC-PR-DEL-05",
+                TestCaseID        = "DeletePronunciationRule_05",
                 Description       = "Rule not found → DeleteAsync and SaveChangesAsync never called",
                 ExpectedResult    = "DeleteAsync Times.Never, SaveChangesAsync Times.Never",
                 StatusRound1      = "Passed",
@@ -186,7 +186,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PR-DEL-06 | B | Empty ruleId → not found → 404
+        // DeletePronunciationRule_06 | B | Empty ruleId → not found → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyRuleId_ShouldReturn404()
@@ -208,7 +208,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation Rule - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "DeletePronunciationRule",
-                TestCaseID        = "TC-PR-DEL-06",
+                TestCaseID        = "DeletePronunciationRule_06",
                 Description       = "Boundary: empty PronunciationRuleId → GetByIdAsync returns null → 404",
                 ExpectedResult    = "IsSuccess=false, StatusCode=404, GetByIdAsync(empty) called once",
                 StatusRound1      = "Passed",

@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -39,7 +39,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
         };
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-PAY-QR-01 | 404 | Payment not found → Failure
+        // GetPaymentQr_01 | 404 | Payment not found → Failure
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_PaymentNotFound_ShouldReturn404()
@@ -61,7 +61,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             QACollector.LogTestCase("Payments - Get QR", new TestCaseDetail
             {
                 FunctionGroup     = "GetPaymentQr",
-                TestCaseID        = "TC-PAY-QR-01",
+                TestCaseID        = "GetPaymentQr_01",
                 Description       = "PaymentId does not exist → 404 PaymentNotFound",
                 ExpectedResult    = "Return 404",
                 StatusRound1      = "Passed",
@@ -72,7 +72,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-PAY-QR-02 | 200 | Payment found → QR URL returned
+        // GetPaymentQr_02 | 200 | Payment found → QR URL returned
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_PaymentFound_ShouldReturnQrUrl()
@@ -100,7 +100,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             QACollector.LogTestCase("Payments - Get QR", new TestCaseDetail
             {
                 FunctionGroup     = "GetPaymentQr",
-                TestCaseID        = "TC-PAY-QR-02",
+                TestCaseID        = "GetPaymentQr_02",
                 Description       = "Payment found → GenerateQrUrl called, URL returned",
                 ExpectedResult    = "Return 200, Data = QR URL",
                 StatusRound1      = "Passed",
@@ -111,7 +111,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-PAY-QR-03 | 200 | GenerateQrUrl called with correct payment fields
+        // GetPaymentQr_03 | 200 | GenerateQrUrl called with correct payment fields
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_PaymentFound_ShouldPassCorrectFieldsToGenerateQrUrl()
@@ -145,7 +145,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             QACollector.LogTestCase("Payments - Get QR", new TestCaseDetail
             {
                 FunctionGroup     = "GetPaymentQr",
-                TestCaseID        = "TC-PAY-QR-03",
+                TestCaseID        = "GetPaymentQr_03",
                 Description       = "GenerateQrUrl called with exact id, amount, description from Payment entity",
                 ExpectedResult    = "GenerateQrUrl('PRECISE-ID', 199000, 'Thanh toán PRECISE-ID') called once",
                 StatusRound1      = "Passed",
@@ -156,7 +156,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-PAY-QR-04 | 200 | Different payment ID → different QR URL
+        // GetPaymentQr_04 | 200 | Different payment ID → different QR URL
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DifferentPaymentId_ShouldReturnDistinctQrUrl()
@@ -182,7 +182,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             QACollector.LogTestCase("Payments - Get QR", new TestCaseDetail
             {
                 FunctionGroup     = "GetPaymentQr",
-                TestCaseID        = "TC-PAY-QR-04",
+                TestCaseID        = "GetPaymentQr_04",
                 Description       = "Different PaymentId produces distinct QR URL",
                 ExpectedResult    = "QR URL contains 'PAY-002'",
                 StatusRound1      = "Passed",
@@ -193,7 +193,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-PAY-QR-05 | 500 | Repository throws → exception propagates
+        // GetPaymentQr_05 | 500 | Repository throws → exception propagates
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
@@ -209,7 +209,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             QACollector.LogTestCase("Payments - Get QR", new TestCaseDetail
             {
                 FunctionGroup     = "GetPaymentQr",
-                TestCaseID        = "TC-PAY-QR-05",
+                TestCaseID        = "GetPaymentQr_05",
                 Description       = "Repository throws → exception propagates",
                 ExpectedResult    = "Throws Exception",
                 StatusRound1      = "Passed",
@@ -220,7 +220,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-PAY-QR-06 | 500 | GenerateQrUrl throws → exception propagates
+        // GetPaymentQr_06 | 500 | GenerateQrUrl throws → exception propagates
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_GenerateQrUrlThrows_ShouldPropagateException()
@@ -241,7 +241,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             QACollector.LogTestCase("Payments - Get QR", new TestCaseDetail
             {
                 FunctionGroup     = "GetPaymentQr",
-                TestCaseID        = "TC-PAY-QR-06",
+                TestCaseID        = "GetPaymentQr_06",
                 Description       = "GenerateQrUrl throws (SePay unreachable) → exception propagates",
                 ExpectedResult    = "Throws Exception",
                 StatusRound1      = "Passed",

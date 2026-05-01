@@ -47,7 +47,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             QACollector.LogTestCase("Wordle - Toggle Like", new TestCaseDetail
             {
                 FunctionGroup = "Toggle Like Wordle",
-                TestCaseID = "TC-WDL-LKE-01",
+                TestCaseID = "Toggle_Like_Wordle_01",
                 Description = "Like/Unlike with SubmissionId does not exist",
                 ExpectedResult = "Return 404 Failure",
                 StatusRound1 = "Passed",
@@ -110,7 +110,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             QACollector.LogTestCase("Wordle - Toggle Like", new TestCaseDetail
             {
                 FunctionGroup = "Toggle Like Wordle",
-                TestCaseID = "TC-WDL-LKE-02",
+                TestCaseID = "Toggle_Like_Wordle_02",
                 Description = "User liked → unlike, LikeCount decreased by 1",
                 ExpectedResult = "Return Success, LikeCount = 4, RemoveLike called once",
                 StatusRound1 = "Passed",
@@ -167,7 +167,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             QACollector.LogTestCase("Wordle - Toggle Like", new TestCaseDetail
             {
                 FunctionGroup = "Toggle Like Wordle",
-                TestCaseID = "TC-WDL-LKE-03",
+                TestCaseID = "Toggle_Like_Wordle_03",
                 Description = "User has not liked yet → add like, LikeCount increases by 1",
                 ExpectedResult = "Return Success, LikeCount = 4, AddLike called once",
                 StatusRound1 = "Passed",

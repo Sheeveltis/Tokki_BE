@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -52,7 +52,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-SYNW-01 | A | Writing answer not found → 404
+        // SyncWritingProgress_01 | A | Writing answer not found → 404
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_WritingAnswerNotFound_ShouldReturn404()
@@ -74,7 +74,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Sync Writing", new TestCaseDetail
             {
                 FunctionGroup     = "SyncWritingProgress",
-                TestCaseID        = "TC-SYNW-01",
+                TestCaseID        = "SyncWritingProgress_01",
                 Description       = "Writing answer ID not found → 404 Not Found",
                 ExpectedResult    = "IsSuccess=false, StatusCode=404",
                 StatusRound1      = "Passed",
@@ -85,7 +85,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-SYNW-02 | A | UserId mismatch → 403
+        // SyncWritingProgress_02 | A | UserId mismatch → 403
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_UserIdMismatch_ShouldReturn403()
@@ -108,7 +108,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Sync Writing", new TestCaseDetail
             {
                 FunctionGroup     = "SyncWritingProgress",
-                TestCaseID        = "TC-SYNW-02",
+                TestCaseID        = "SyncWritingProgress_02",
                 Description       = "Request UserId differs from session owner → 403",
                 ExpectedResult    = "IsSuccess=false, StatusCode=403",
                 StatusRound1      = "Passed",
@@ -119,7 +119,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-SYNW-03 | A | Exam already Completed → 400
+        // SyncWritingProgress_03 | A | Exam already Completed → 400
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ExamCompleted_ShouldReturn400()
@@ -142,7 +142,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Sync Writing", new TestCaseDetail
             {
                 FunctionGroup     = "SyncWritingProgress",
-                TestCaseID        = "TC-SYNW-03",
+                TestCaseID        = "SyncWritingProgress_03",
                 Description       = "Exam status is Completed, writing sync rejected → 400",
                 ExpectedResult    = "IsSuccess=false, StatusCode=400",
                 StatusRound1      = "Passed",
@@ -153,7 +153,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-SYNW-04 | N | Content changed → SaveChanges called, WordCount updated
+        // SyncWritingProgress_04 | N | Content changed → SaveChanges called, WordCount updated
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ContentChanged_ShouldSaveAndUpdateWordCount()
@@ -178,7 +178,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Sync Writing", new TestCaseDetail
             {
                 FunctionGroup     = "SyncWritingProgress",
-                TestCaseID        = "TC-SYNW-04",
+                TestCaseID        = "SyncWritingProgress_04",
                 Description       = "Answer content changed → SaveChanges called, WordCount updated",
                 ExpectedResult    = "IsSuccess=true, SaveChanges Times.Once",
                 StatusRound1      = "Passed",
@@ -189,7 +189,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-SYNW-05 | B | Same content → SaveChanges NOT called
+        // SyncWritingProgress_05 | B | Same content → SaveChanges NOT called
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SameContent_ShouldNotSaveChanges()
@@ -212,7 +212,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Sync Writing", new TestCaseDetail
             {
                 FunctionGroup     = "SyncWritingProgress",
-                TestCaseID        = "TC-SYNW-05",
+                TestCaseID        = "SyncWritingProgress_05",
                 Description       = "Answer content unchanged → SaveChanges NOT called",
                 ExpectedResult    = "IsSuccess=true, SaveChanges Times.Never",
                 StatusRound1      = "Passed",
@@ -223,7 +223,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-SYNW-06 | E | Repository throws exception → propagates
+        // SyncWritingProgress_06 | E | Repository throws exception → propagates
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
@@ -244,7 +244,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Sync Writing", new TestCaseDetail
             {
                 FunctionGroup     = "SyncWritingProgress",
-                TestCaseID        = "TC-SYNW-06",
+                TestCaseID        = "SyncWritingProgress_06",
                 Description       = "Repository throws exception → propagates to caller",
                 ExpectedResult    = "Exception thrown with 'DB timeout'",
                 StatusRound1      = "Passed",

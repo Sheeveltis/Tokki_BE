@@ -30,7 +30,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments
             return new CreateCommentCommandHandler(_commentRepo.Object, _idGen.Object, _blogRepo.Object);
         }
 
-        // B01: Blog does not exist → 404
+        // B01: Blog does not exist ? 404
         [Fact]
         public async Task Handle_BlogNotFound_ShouldReturn404()
         {
@@ -45,15 +45,15 @@ namespace Tokki.UnitTest.Application.UseCases.Comments
 
             QACollector.LogTestCase("Comment - Create", new TestCaseDetail
             {
-                FunctionGroup = "CreateCommentCommandHandler", TestCaseID = "TC-CC-B01",
-                Description = "Blog does not exist → 404 BlogNotFound",
+                FunctionGroup = "CreateCommentCommandHandler", TestCaseID = "CreateCommentCommandHandler_01",
+                Description = "Blog does not exist ? 404 BlogNotFound",
                 ExpectedResult = "404", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string> { "ExistsAsync returns false" }
             });
         }
 
-        // B02: Parent comment not found → 404
+        // B02: Parent comment not found ? 404
         [Fact]
         public async Task Handle_ParentCommentNotFound_ShouldReturn404()
         {
@@ -69,20 +69,20 @@ namespace Tokki.UnitTest.Application.UseCases.Comments
 
             QACollector.LogTestCase("Comment - Create", new TestCaseDetail
             {
-                FunctionGroup = "CreateCommentCommandHandler", TestCaseID = "TC-CC-B02",
-                Description = "ParentId provided but parent comment not found → 404",
+                FunctionGroup = "CreateCommentCommandHandler", TestCaseID = "CreateCommentCommandHandler_02",
+                Description = "ParentId provided but parent comment not found ? 404",
                 ExpectedResult = "404 CommentNotFound", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string> { "GetByIdAsync for parentId returns null" }
             });
         }
 
-        // B03: Parent comment has own parentId → flatten (use grandparent's id)
+        // B03: Parent comment has own parentId ? flatten (use grandparent's id)
         [Fact]
         public async Task Handle_ParentHasParent_ShouldFlattenToGrandparent()
         {
             _blogRepo.Setup(x => x.ExistsAsync("blog-1")).ReturnsAsync(true);
-            // parent-1 itself has a parent "root-comment"
+            // parent-1 itself has a parent"root-comment"
             _commentRepo.Setup(x => x.GetByIdAsync("parent-1"))
                         .ReturnsAsync(new Comment { CommentId = "parent-1", ParentId = "root-comment" });
             _commentRepo.Setup(x => x.AddAsync(It.IsAny<Comment>())).Returns(Task.CompletedTask);
@@ -92,20 +92,20 @@ namespace Tokki.UnitTest.Application.UseCases.Comments
             var result = await CreateHandler().Handle(cmd, CancellationToken.None);
 
             result.IsSuccess.Should().BeTrue();
-            // The saved comment's ParentId should be "root-comment" (flattened)
+            // The saved comment's ParentId should be"root-comment" (flattened)
             _commentRepo.Verify(x => x.AddAsync(It.Is<Comment>(c => c.ParentId == "root-comment")), Times.Once);
 
             QACollector.LogTestCase("Comment - Create", new TestCaseDetail
             {
-                FunctionGroup = "CreateCommentCommandHandler", TestCaseID = "TC-CC-B03",
+                FunctionGroup = "CreateCommentCommandHandler", TestCaseID = "CreateCommentCommandHandler_03",
                 Description = "Nested reply: ParentId flattened to grandparent's id",
                 ExpectedResult = "Comment.ParentId = 'root-comment', 201 success", StatusRound1 = "Passed",
                 TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "parent.ParentId != null → request.ParentId = parent.ParentId" }
+                AppliedConditions = new List<string> { "parent.ParentId != null ? request.ParentId = parent.ParentId" }
             });
         }
 
-        // B04: First-level reply (parent has no parent) → parentId kept as-is
+        // B04: First-level reply (parent has no parent) ? parentId kept as-is
         [Fact]
         public async Task Handle_FirstLevelParent_ShouldKeepParentId()
         {
@@ -124,15 +124,15 @@ namespace Tokki.UnitTest.Application.UseCases.Comments
 
             QACollector.LogTestCase("Comment - Create", new TestCaseDetail
             {
-                FunctionGroup = "CreateCommentCommandHandler", TestCaseID = "TC-CC-B04",
-                Description = "First-level reply: parent.ParentId is null → ParentId kept as original",
+                FunctionGroup = "CreateCommentCommandHandler", TestCaseID = "CreateCommentCommandHandler_04",
+                Description = "First-level reply: parent.ParentId is null ? ParentId kept as original",
                 ExpectedResult = "Comment.ParentId = 'root-1'", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "parent.ParentId == null → no flattening" }
+                AppliedConditions = new List<string> { "parent.ParentId == null ? no flattening" }
             });
         }
 
-        // B05: No ParentId → top-level comment 201
+        // B05: No ParentId ? top-level comment 201
         [Fact]
         public async Task Handle_TopLevelComment_ShouldReturn201()
         {
@@ -150,15 +150,15 @@ namespace Tokki.UnitTest.Application.UseCases.Comments
 
             QACollector.LogTestCase("Comment - Create", new TestCaseDetail
             {
-                FunctionGroup = "CreateCommentCommandHandler", TestCaseID = "TC-CC-B05",
-                Description = "Top-level comment (no ParentId) created successfully → 201",
+                FunctionGroup = "CreateCommentCommandHandler", TestCaseID = "CreateCommentCommandHandler_05",
+                Description = "Top-level comment (no ParentId) created successfully ? 201",
                 ExpectedResult = "201, Comment returned", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "ParentId = null → no parent check" }
+                AppliedConditions = new List<string> { "ParentId = null ? no parent check" }
             });
         }
 
-        // B06: Repository throws → 500
+        // B06: Repository throws ? 500
         [Fact]
         public async Task Handle_RepoThrows_ShouldReturn500()
         {
@@ -175,8 +175,8 @@ namespace Tokki.UnitTest.Application.UseCases.Comments
 
             QACollector.LogTestCase("Comment - Create", new TestCaseDetail
             {
-                FunctionGroup = "CreateCommentCommandHandler", TestCaseID = "TC-CC-B06",
-                Description = "AddAsync throws → outer catch → 500 ServerError",
+                FunctionGroup = "CreateCommentCommandHandler", TestCaseID = "CreateCommentCommandHandler_06",
+                Description = "AddAsync throws ? outer catch ? 500 ServerError",
                 ExpectedResult = "500", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string> { "AddAsync throws Exception" }

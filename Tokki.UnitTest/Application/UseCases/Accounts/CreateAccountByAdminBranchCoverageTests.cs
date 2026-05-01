@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -95,7 +95,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
 
             QACollector.LogTestCase("Account - Create By Admin", new TestCaseDetail
             {
-                FunctionGroup = "CreateAccountByAdminCommandHandler", TestCaseID = "TC-CAA-B01",
+                FunctionGroup = "CreateAccountByAdminCommandHandler", TestCaseID = "CreateAccountByAdminCommandHandler_01",
                 Description = "Moderator role uses same key as Staff for default password",
                 ExpectedResult = "201 created", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -115,7 +115,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
 
             QACollector.LogTestCase("Account - Create By Admin", new TestCaseDetail
             {
-                FunctionGroup = "CreateAccountByAdminCommandHandler", TestCaseID = "TC-CAA-B02",
+                FunctionGroup = "CreateAccountByAdminCommandHandler", TestCaseID = "CreateAccountByAdminCommandHandler_02",
                 Description = "User role path → 201 + message contains 'User'",
                 ExpectedResult = "201", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -139,7 +139,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
 
             QACollector.LogTestCase("Account - Create By Admin", new TestCaseDetail
             {
-                FunctionGroup = "CreateAccountByAdminCommandHandler", TestCaseID = "TC-CAA-B03",
+                FunctionGroup = "CreateAccountByAdminCommandHandler", TestCaseID = "CreateAccountByAdminCommandHandler_03",
                 Description = "Primary password config missing → fallback to DEFAULT_PASSWORD_FOR_STAFF → 201",
                 ExpectedResult = "201 created using fallback password", StatusRound1 = "Passed",
                 TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -162,7 +162,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
 
             QACollector.LogTestCase("Account - Create By Admin", new TestCaseDetail
             {
-                FunctionGroup = "CreateAccountByAdminCommandHandler", TestCaseID = "TC-CAA-B04",
+                FunctionGroup = "CreateAccountByAdminCommandHandler", TestCaseID = "CreateAccountByAdminCommandHandler_04",
                 Description = "Both primary and fallback configs return null → 500",
                 ExpectedResult = "500 ServerError", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -188,7 +188,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
 
             QACollector.LogTestCase("Account - Create By Admin", new TestCaseDetail
             {
-                FunctionGroup = "CreateAccountByAdminCommandHandler", TestCaseID = "TC-CAA-B05",
+                FunctionGroup = "CreateAccountByAdminCommandHandler", TestCaseID = "CreateAccountByAdminCommandHandler_05",
                 Description = "Email send throws but account still created → 201 (silent failure)",
                 ExpectedResult = "201 despite email failure", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -212,7 +212,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
 
             QACollector.LogTestCase("Account - Create By Admin", new TestCaseDetail
             {
-                FunctionGroup = "CreateAccountByAdminCommandHandler", TestCaseID = "TC-CAA-B06",
+                FunctionGroup = "CreateAccountByAdminCommandHandler", TestCaseID = "CreateAccountByAdminCommandHandler_06",
                 Description = "SaveChangesAsync throws → outer catch → 500",
                 ExpectedResult = "500 ServerError", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

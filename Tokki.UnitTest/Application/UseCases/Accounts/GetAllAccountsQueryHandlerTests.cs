@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -50,7 +50,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             }).ToList();
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GAA-01 | N | No filters, page 1 → returns first page items
+        // Get_All_Accounts_01 | N | No filters, page 1 → returns first page items
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NoFilters_Page1_ShouldReturnFirstPage()
@@ -70,7 +70,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Get All Accounts", new TestCaseDetail
             {
                 FunctionGroup   = "Get All Accounts",
-                TestCaseID      = "TC-GAA-01",
+                TestCaseID      = "Get_All_Accounts_01",
                 Description     = "No filters applied, page 1, page size 10 → returns first 10 of 15 records",
                 ExpectedResult  = "Return 200, Items.Count = 10, TotalCount = 15, PageNumber = 1",
                 StatusRound1    = "Passed",
@@ -87,7 +87,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GAA-02 | N | Page 2 → returns remaining items
+        // Get_All_Accounts_02 | N | Page 2 → returns remaining items
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_Page2_ShouldReturnRemainingItems()
@@ -106,7 +106,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Get All Accounts", new TestCaseDetail
             {
                 FunctionGroup   = "Get All Accounts",
-                TestCaseID      = "TC-GAA-02",
+                TestCaseID      = "Get_All_Accounts_02",
                 Description     = "Page 2 of total 15 records with page size 10 → returns last 5 items",
                 ExpectedResult  = "Return 200, Items.Count = 5, TotalCount = 15, PageNumber = 2",
                 StatusRound1    = "Passed",
@@ -122,7 +122,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GAA-03 | N | Empty database → returns empty page
+        // Get_All_Accounts_03 | N | Empty database → returns empty page
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyDatabase_ShouldReturnEmptyPage()
@@ -139,7 +139,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Get All Accounts", new TestCaseDetail
             {
                 FunctionGroup   = "Get All Accounts",
-                TestCaseID      = "TC-GAA-03",
+                TestCaseID      = "Get_All_Accounts_03",
                 Description     = "No accounts in the system → empty result",
                 ExpectedResult  = "Return 200, Items empty, TotalCount = 0",
                 StatusRound1    = "Passed",
@@ -150,7 +150,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GAA-04 | N | Filter by Role = Admin → returns only admin accounts
+        // Get_All_Accounts_04 | N | Filter by Role = Admin → returns only admin accounts
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_FilterByRole_ShouldReturnMatchingRoleOnly()
@@ -172,7 +172,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Get All Accounts", new TestCaseDetail
             {
                 FunctionGroup   = "Get All Accounts",
-                TestCaseID      = "TC-GAA-04",
+                TestCaseID      = "Get_All_Accounts_04",
                 Description     = "Filter by Role = Admin → only Admin accounts returned",
                 ExpectedResult  = "Return 200, all items have Role = Admin",
                 StatusRound1    = "Passed",
@@ -188,7 +188,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GAA-05 | N | Filter by Status = Inactive → returns only inactive accounts
+        // Get_All_Accounts_05 | N | Filter by Status = Inactive → returns only inactive accounts
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_FilterByStatus_ShouldReturnMatchingStatusOnly()
@@ -210,7 +210,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Get All Accounts", new TestCaseDetail
             {
                 FunctionGroup   = "Get All Accounts",
-                TestCaseID      = "TC-GAA-05",
+                TestCaseID      = "Get_All_Accounts_05",
                 Description     = "Filter by Status = Inactive → only inactive accounts returned",
                 ExpectedResult  = "Return 200, all items have Status = Inactive",
                 StatusRound1    = "Passed",
@@ -226,7 +226,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GAA-06 | N | DTO mapping is correct (email, role, status)
+        // Get_All_Accounts_06 | N | DTO mapping is correct (email, role, status)
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidAccounts_ShouldMapDtoCorrectly()
@@ -251,7 +251,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Get All Accounts", new TestCaseDetail
             {
                 FunctionGroup   = "Get All Accounts",
-                TestCaseID      = "TC-GAA-06",
+                TestCaseID      = "Get_All_Accounts_06",
                 Description     = "Account entity correctly mapped to AccountDto",
                 ExpectedResult  = "DTO fields (UserId, Email, FullName, Role, Status) match entity values",
                 StatusRound1    = "Passed",

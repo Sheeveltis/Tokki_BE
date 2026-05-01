@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -60,7 +60,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-UPD-01 | A | Empty QuestionBankId → 400
+        // UpdateQuestionBank_01 | A | Empty QuestionBankId → 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyQuestionBankId_ShouldReturn400()
@@ -79,7 +79,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Update", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateQuestionBank",
-                TestCaseID        = "TC-QB-UPD-01",
+                TestCaseID        = "UpdateQuestionBank_01",
                 Description       = "Empty QuestionBankId → 400 ValidationFailed",
                 ExpectedResult    = "IsSuccess=false, StatusCode=400",
                 StatusRound1      = "Passed",
@@ -90,7 +90,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-UPD-02 | A | QB not found → 404
+        // UpdateQuestionBank_02 | A | QB not found → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_QBNotFound_ShouldReturn404()
@@ -110,7 +110,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Update", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateQuestionBank",
-                TestCaseID        = "TC-QB-UPD-02",
+                TestCaseID        = "UpdateQuestionBank_02",
                 Description       = "QuestionBankId not found → 404 QuestionBankNotFound",
                 ExpectedResult    = "IsSuccess=false, StatusCode=404",
                 StatusRound1      = "Passed",
@@ -121,7 +121,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-UPD-03 | A | Assigned QB → 403 Forbidden
+        // UpdateQuestionBank_03 | A | Assigned QB → 403 Forbidden
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_AssignedQB_ShouldReturn403()
@@ -152,7 +152,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Update", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateQuestionBank",
-                TestCaseID        = "TC-QB-UPD-03",
+                TestCaseID        = "UpdateQuestionBank_03",
                 Description       = "QB is Assigned → cannot update → 403 Forbidden",
                 ExpectedResult    = "IsSuccess=false, StatusCode=403",
                 StatusRound1      = "Passed",
@@ -163,7 +163,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-UPD-04 | A | Deleted QB → 403 Forbidden
+        // UpdateQuestionBank_04 | A | Deleted QB → 403 Forbidden
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DeletedQB_ShouldReturn403()
@@ -189,7 +189,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Update", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateQuestionBank",
-                TestCaseID        = "TC-QB-UPD-04",
+                TestCaseID        = "UpdateQuestionBank_04",
                 Description       = "QB is Deleted → cannot update → 403 Forbidden",
                 ExpectedResult    = "IsSuccess=false, StatusCode=403",
                 StatusRound1      = "Passed",
@@ -200,7 +200,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-UPD-05 | A | Listening skill but no MediaUrl after patch → 400
+        // UpdateQuestionBank_05 | A | Listening skill but no MediaUrl after patch → 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ListeningWithoutMediaUrl_ShouldReturn400()
@@ -229,7 +229,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Update", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateQuestionBank",
-                TestCaseID        = "TC-QB-UPD-05",
+                TestCaseID        = "UpdateQuestionBank_05",
                 Description       = "Listening skill without MediaUrl after patch → 400",
                 ExpectedResult    = "IsSuccess=false, StatusCode=400",
                 StatusRound1      = "Passed",
@@ -240,7 +240,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-UPD-06 | N | Happy path: Draft QB update content, 200
+        // UpdateQuestionBank_06 | N | Happy path: Draft QB update content, 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DraftQBUpdateContent_ShouldReturn200()
@@ -275,7 +275,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Update", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateQuestionBank",
-                TestCaseID        = "TC-QB-UPD-06",
+                TestCaseID        = "UpdateQuestionBank_06",
                 Description       = "Happy path: Draft QB content updated, UpdateAsync+SaveChanges called, 200",
                 ExpectedResult    = "IsSuccess=true, StatusCode=200, Data=QB id",
                 StatusRound1      = "Passed",
@@ -286,7 +286,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-UPD-07 | A | Repository throws on UpdateAsync → 500
+        // UpdateQuestionBank_07 | A | Repository throws on UpdateAsync → 500
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldReturn500()
@@ -319,7 +319,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Update", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateQuestionBank",
-                TestCaseID        = "TC-QB-UPD-07",
+                TestCaseID        = "UpdateQuestionBank_07",
                 Description       = "UpdateAsync throws exception → caught → 500 ServerError",
                 ExpectedResult    = "IsSuccess=false, StatusCode=500",
                 StatusRound1      = "Passed",

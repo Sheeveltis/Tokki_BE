@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -52,7 +52,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             QACollector.LogTestCase("Exam - Add Question", new TestCaseDetail
             {
                 FunctionGroup = "Add Question To Exam",
-                TestCaseID = "TC-EXAM-ADD-01",
+                TestCaseID = "Add_Question_To_Exam_01",
                 Description = "Successfully replace an existing question in the exam with a new one",
                 ExpectedResult = "Slot updated and return Success",
                 StatusRound1 = "Passed",
@@ -94,7 +94,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             QACollector.LogTestCase("Exam - Add Question", new TestCaseDetail
             {
                 FunctionGroup = "Add Question To Exam",
-                TestCaseID = "TC-EXAM-ADD-02",
+                TestCaseID = "Add_Question_To_Exam_02",
                 Description = "Attempt to add a question that does not exist in QuestionBank",
                 ExpectedResult = "Return 404 QuestionBankNotFound",
                 StatusRound1 = "Passed",
@@ -135,7 +135,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             QACollector.LogTestCase("Exam - Add Question", new TestCaseDetail
             {
                 FunctionGroup = "Add Question To Exam",
-                TestCaseID = "TC-EXAM-ADD-03",
+                TestCaseID = "Add_Question_To_Exam_03",
                 Description = "Attempt to update a question slot that does not exist in the exam",
                 ExpectedResult = "Return 404 Slot Not Found",
                 StatusRound1 = "Passed",
@@ -180,7 +180,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             QACollector.LogTestCase("Exam - Add Question", new TestCaseDetail
             {
                 FunctionGroup = "Add Question To Exam",
-                TestCaseID = "TC-EXAM-ADD-04",
+                TestCaseID = "Add_Question_To_Exam_04",
                 Description = "System throws unhandled exception during database operation",
                 ExpectedResult = "Catch exception and return 500 Server Error",
                 StatusRound1 = "Passed",
@@ -210,7 +210,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Add Question", new TestCaseDetail
             {
-                FunctionGroup = "Add Question To Exam", TestCaseID = "TC-EXAM-ADD-05",
+                FunctionGroup = "Add Question To Exam", TestCaseID = "Add_Question_To_Exam_05",
                 Description = "Ensure UpdateAsync is called exactly once when data is valid",
                 ExpectedResult = "Times.Once verified", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -236,7 +236,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Add Question", new TestCaseDetail
             {
-                FunctionGroup = "Add Question To Exam", TestCaseID = "TC-EXAM-ADD-06",
+                FunctionGroup = "Add Question To Exam", TestCaseID = "Add_Question_To_Exam_06",
                 Description = "Ensure SaveChangesAsync is called exactly once when data is valid",
                 ExpectedResult = "Times.Once verified", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

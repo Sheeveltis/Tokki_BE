@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -36,7 +36,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CC-01 | A | Empty Name → 400 ValidationFailed
+        // Create_Category_01 | A | Empty Name → 400 ValidationFailed
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyName_ShouldReturn400()
@@ -51,7 +51,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
             QACollector.LogTestCase("Category - Create", new TestCaseDetail
             {
                 FunctionGroup     = "Create Category",
-                TestCaseID        = "TC-CC-01",
+                TestCaseID        = "Create_Category_01",
                 Description       = "Attempt to create category with empty string name",
                 ExpectedResult    = "Return 400 ValidationFailed",
                 StatusRound1      = "Passed",
@@ -62,7 +62,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CC-02 | B | Whitespace Name → 400 ValidationFailed
+        // Create_Category_02 | B | Whitespace Name → 400 ValidationFailed
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_WhitespaceName_ShouldReturn400()
@@ -77,7 +77,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
             QACollector.LogTestCase("Category - Create", new TestCaseDetail
             {
                 FunctionGroup     = "Create Category",
-                TestCaseID        = "TC-CC-02",
+                TestCaseID        = "Create_Category_02",
                 Description       = "Attempt to create category with whitespace name",
                 ExpectedResult    = "Return 400 ValidationFailed",
                 StatusRound1      = "Passed",
@@ -88,7 +88,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CC-03 | N | Valid Name → 201 Created
+        // Create_Category_03 | N | Valid Name → 201 Created
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidName_ShouldReturn201Created()
@@ -108,7 +108,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
             QACollector.LogTestCase("Category - Create", new TestCaseDetail
             {
                 FunctionGroup     = "Create Category",
-                TestCaseID        = "TC-CC-03",
+                TestCaseID        = "Create_Category_03",
                 Description       = "Provide valid category name",
                 ExpectedResult    = "Return 201 Created and new Category ID",
                 StatusRound1      = "Passed",
@@ -119,7 +119,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CC-04 | N | Verify Slug Generation logic
+        // Create_Category_04 | N | Verify Slug Generation logic
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidName_ShouldGenerateCorrectSlug()
@@ -134,7 +134,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
             QACollector.LogTestCase("Category - Create", new TestCaseDetail
             {
                 FunctionGroup     = "Create Category",
-                TestCaseID        = "TC-CC-04",
+                TestCaseID        = "Create_Category_04",
                 Description       = "Provide Vietnamese title to verify Slug normalizer",
                 ExpectedResult    = "Slug should strip accents, symbols and map to lowercase format",
                 StatusRound1      = "Passed",
@@ -145,7 +145,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CC-05 | A | Internal DB Exception → 500 ServerError
+        // Create_Category_05 | A | Internal DB Exception → 500 ServerError
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DatabaseThrowsException_ShouldReturn500()
@@ -164,7 +164,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
             QACollector.LogTestCase("Category - Create", new TestCaseDetail
             {
                 FunctionGroup     = "Create Category",
-                TestCaseID        = "TC-CC-05",
+                TestCaseID        = "Create_Category_05",
                 Description       = "Simulate unhandled database crash during INSERT command",
                 ExpectedResult    = "Catch blocks exception and gracefully returns 500",
                 StatusRound1      = "Passed",
@@ -175,7 +175,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CC-06 | N | Check CreatedAt timestamp is populated
+        // Create_Category_06 | N | Check CreatedAt timestamp is populated
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidName_ShouldBindCreatedAt()
@@ -190,7 +190,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
             QACollector.LogTestCase("Category - Create", new TestCaseDetail
             {
                 FunctionGroup     = "Create Category",
-                TestCaseID        = "TC-CC-06",
+                TestCaseID        = "Create_Category_06",
                 Description       = "Ensure the created Entity has an active timestamp",
                 ExpectedResult    = "CreatedAt struct is instantiated to current UTC Time",
                 StatusRound1      = "Passed",

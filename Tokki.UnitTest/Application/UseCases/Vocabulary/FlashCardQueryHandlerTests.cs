@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -28,7 +28,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-FC-01 | A | Topic not found → 404
+        // Get_Flash_Card_01 | A | Topic not found → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_TopicNotFound_ShouldReturn404()
@@ -48,7 +48,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Flash Card", new TestCaseDetail
             {
                 FunctionGroup     = "Get Flash Card",
-                TestCaseID        = "TC-VOCAB-FC-01",
+                TestCaseID        = "Get_Flash_Card_01",
                 Description       = "Get flashcards with non-existent TopicId",
                 ExpectedResult    = "Return 404 TopicNotFound",
                 StatusRound1      = "Passed",
@@ -59,7 +59,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-FC-02 | N | Topic exists, no VocabTopic mappings → 200, empty list
+        // Get_Flash_Card_02 | N | Topic exists, no VocabTopic mappings → 200, empty list
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_TopicHasNoVocabMappings_ShouldReturn200EmptyList()
@@ -83,7 +83,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Flash Card", new TestCaseDetail
             {
                 FunctionGroup     = "Get Flash Card",
-                TestCaseID        = "TC-VOCAB-FC-02",
+                TestCaseID        = "Get_Flash_Card_02",
                 Description       = "Topic exists but has no VocabularyTopic relationships → empty list",
                 ExpectedResult    = "Return 200, Data = empty list",
                 StatusRound1      = "Passed",
@@ -94,7 +94,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-FC-03 | N | Only Active VocabTopics returned, Deleted filtered
+        // Get_Flash_Card_03 | N | Only Active VocabTopics returned, Deleted filtered
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_MixedStatusVocabTopics_ShouldReturnOnlyActiveVocabs()
@@ -132,7 +132,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Flash Card", new TestCaseDetail
             {
                 FunctionGroup     = "Get Flash Card",
-                TestCaseID        = "TC-VOCAB-FC-03",
+                TestCaseID        = "Get_Flash_Card_03",
                 Description       = "Topic has 2 VocabTopics (1 Active, 1 Deleted) → only Active returned",
                 ExpectedResult    = "Return 200, Data.Count = 1, only Active vocab",
                 StatusRound1      = "Passed",
@@ -143,7 +143,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-FC-04 | N | All vocabs Active → return full list → 200
+        // Get_Flash_Card_04 | N | All vocabs Active → return full list → 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_AllActiveVocabs_ShouldReturnFullList()
@@ -181,7 +181,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Flash Card", new TestCaseDetail
             {
                 FunctionGroup     = "Get Flash Card",
-                TestCaseID        = "TC-VOCAB-FC-04",
+                TestCaseID        = "Get_Flash_Card_04",
                 Description       = "2 Active VocabTopics, but one vocab has Status=PendingApproval → only Active vocab passes",
                 ExpectedResult    = "Return 200, Data.Count = 1",
                 StatusRound1      = "Passed",
@@ -192,7 +192,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-FC-05 | A | VocabTopics only Deleted → return empty → 200
+        // Get_Flash_Card_05 | A | VocabTopics only Deleted → return empty → 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_AllDeletedVocabTopics_ShouldReturn200WithEmpty()
@@ -220,7 +220,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Flash Card", new TestCaseDetail
             {
                 FunctionGroup     = "Get Flash Card",
-                TestCaseID        = "TC-VOCAB-FC-05",
+                TestCaseID        = "Get_Flash_Card_05",
                 Description       = "Topic has VocabTopics but all are Deleted → no Active vocabs → empty list",
                 ExpectedResult    = "Return 200, Data = empty list",
                 StatusRound1      = "Passed",
@@ -231,7 +231,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-FC-06 | N | Valid flashcard with audio and image → 200 with full DTO
+        // Get_Flash_Card_06 | N | Valid flashcard with audio and image → 200 with full DTO
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_VocabWithAudioAndImage_ShouldReturnDtoWithFields()
@@ -269,7 +269,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Flash Card", new TestCaseDetail
             {
                 FunctionGroup     = "Get Flash Card",
-                TestCaseID        = "TC-VOCAB-FC-06",
+                TestCaseID        = "Get_Flash_Card_06",
                 Description       = "Valid flashcard retrieval – vocab has AudioURL and ImgURL → DTO fields mapped correctly",
                 ExpectedResult    = "Return 200, AudioUrl and ImgURL populated",
                 StatusRound1      = "Passed",

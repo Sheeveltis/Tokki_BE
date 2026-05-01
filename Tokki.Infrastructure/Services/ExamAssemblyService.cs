@@ -3,11 +3,13 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Tokki.Application.Common.Models;
+using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Application.UseCases.Exam.Commands.CreateExam;
 using Tokki.Application.UseCases.ExamTemplates.Commands.AddTemplateParts;
 using Tokki.Application.UseCases.ExamTemplates.Commands.CreateExamTemplate;
 using Tokki.Application.UseCases.ExamTemplates.DTOs;
+using Tokki.Domain.Constants;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 using Tokki.Infrastructure.Data;
@@ -19,26 +21,44 @@ namespace Tokki.Infrastructure.Services
         private readonly IMediator _mediator;
         private readonly TokkiDbContext _context;
         private readonly IIdGeneratorService _idGenerator;
+        private readonly ISystemConfigRepository _configRepo;
         private const string AI_SYSTEM_ID = "AI_EXAM_SYSTEM";
 
-
-        private const int QUESTIONS_PER_PART_MCQ = 10;
-        private const int QUESTIONS_PER_PART_WRITING = 2;
-        private const int MINUTES_PER_MCQ_QUESTION = 2; 
-        private const int MINUTES_PER_WRITING_QUESTION = 20; 
+        private const int DEFAULT_QUESTIONS_PER_PART_MCQ = 10;
+        private const int DEFAULT_QUESTIONS_PER_PART_WRITING = 2;
+        private const int DEFAULT_MINUTES_PER_MCQ_QUESTION = 2;
+        private const int DEFAULT_MINUTES_PER_WRITING_QUESTION = 20;
 
         private readonly ILogger<ExamAssemblyService> _logger;
         public ExamAssemblyService(
             IMediator mediator,
             TokkiDbContext context,
             IIdGeneratorService idGenerator,
+            ISystemConfigRepository configRepo,
             ILogger<ExamAssemblyService> logger)
         {
             _mediator = mediator;
             _context = context;
             _idGenerator = idGenerator;
+            _configRepo = configRepo;
             _logger = logger;
         }
+        private async Task<int> GetIntConfigAsync(string key, int fallback)
+        {
+            try
+            {
+                var cfg = await _configRepo.GetByKeyAsync(key);
+                if (cfg is { IsActive: true, Value: not null }
+                    && int.TryParse(cfg.Value, out int parsed))
+                    return parsed;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Không đọc được config '{Key}', dùng fallback={Fallback}.", key, fallback);
+            }
+            return fallback;
+        }
+
         public async Task<OperationResult<string>> GenerateWeeklyExamFromScopeAsync(
             string userId,
             int weekIndex,
@@ -46,6 +66,11 @@ namespace Tokki.Infrastructure.Services
             ExamType examType,
             CancellationToken cancellationToken = default)
         {
+            int questionsPerPartMcq = await GetIntConfigAsync(PromptConfigKeys.QuestionsPerPartMcq, DEFAULT_QUESTIONS_PER_PART_MCQ);
+            int questionsPerPartWriting = await GetIntConfigAsync(PromptConfigKeys.QuestionsPerPartWriting, DEFAULT_QUESTIONS_PER_PART_WRITING);
+            int minutesPerMcqQuestion = await GetIntConfigAsync(PromptConfigKeys.MinutesPerMcqQuestion, DEFAULT_MINUTES_PER_MCQ_QUESTION);
+            int minutesPerWritingQuestion = await GetIntConfigAsync(PromptConfigKeys.MinutesPerWritingQuestion, DEFAULT_MINUTES_PER_WRITING_QUESTION);
+
             var targetTypes = weeklyQuestionTypeIds.Distinct().OrderBy(x => x).ToList();
             if (!targetTypes.Any())
                 return OperationResult<string>.Failure("Không có dạng bài nào để tạo đề.", 400);
@@ -119,8 +144,8 @@ namespace Tokki.Infrastructure.Services
                     QuestionSkill skill = qType?.Skill ?? QuestionSkill.Reading;
 
                     int questionsForType = skill == QuestionSkill.Writing
-                        ? QUESTIONS_PER_PART_WRITING
-                        : QUESTIONS_PER_PART_MCQ;
+                        ? questionsPerPartWriting
+                        : questionsPerPartMcq;
 
                     int markPerQuestion = 2;
                     if (skill == QuestionSkill.Writing)
@@ -180,15 +205,15 @@ namespace Tokki.Infrastructure.Services
             {
                 if (!qtMap.TryGetValue(typeId, out var qt)) continue;
 
-                string skillKey = qt.Skill.ToString(); 
+                string skillKey = qt.Skill.ToString();
 
                 int questionsForType = qt.Skill == QuestionSkill.Writing
-                    ? QUESTIONS_PER_PART_WRITING
-                    : QUESTIONS_PER_PART_MCQ;
+                    ? questionsPerPartWriting
+                    : questionsPerPartMcq;
 
                 int minutesForType = qt.Skill == QuestionSkill.Writing
-                    ? questionsForType * MINUTES_PER_WRITING_QUESTION
-                    : questionsForType * MINUTES_PER_MCQ_QUESTION;
+                    ? questionsForType * minutesPerWritingQuestion
+                    : questionsForType * minutesPerMcqQuestion;
 
                 if (!skillDurations.ContainsKey(skillKey))
                     skillDurations[skillKey] = 0;
@@ -241,6 +266,9 @@ namespace Tokki.Infrastructure.Services
             List<string> questionTypeIds,
             CancellationToken cancellationToken = default)
         {
+            int questionsPerPartMcq = await GetIntConfigAsync(PromptConfigKeys.QuestionsPerPartMcq, DEFAULT_QUESTIONS_PER_PART_MCQ);
+            int questionsPerPartWriting = await GetIntConfigAsync(PromptConfigKeys.QuestionsPerPartWriting, DEFAULT_QUESTIONS_PER_PART_WRITING);
+
             var insufficientTypes = new List<string>();
 
             foreach (var typeId in questionTypeIds)
@@ -252,8 +280,8 @@ namespace Tokki.Infrastructure.Services
                 if (qType == null) continue;
 
                 int required = qType.Skill == QuestionSkill.Writing
-                    ? QUESTIONS_PER_PART_WRITING
-                    : QUESTIONS_PER_PART_MCQ;
+                    ? questionsPerPartWriting
+                    : questionsPerPartMcq;
 
                 int available = await _context.QuestionBank
                     .CountAsync(q => q.QuestionTypeId == typeId

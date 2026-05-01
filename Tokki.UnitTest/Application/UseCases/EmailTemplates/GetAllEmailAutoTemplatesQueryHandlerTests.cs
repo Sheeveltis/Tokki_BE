@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -56,7 +56,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email Template - Get All", new TestCaseDetail
             {
                 FunctionGroup     = "GetAllEmailAutoTemplates",
-                TestCaseID        = "TC-EMAIL-GALL-01",
+                TestCaseID        = "GetAllEmailAutoTemplates_01",
                 Description       = "Repository empty → Return 200, Items empty",
                 ExpectedResult    = "Return 200, Items = []",
                 StatusRound1      = "Passed",
@@ -89,7 +89,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email Template - Get All", new TestCaseDetail
             {
                 FunctionGroup     = "GetAllEmailAutoTemplates",
-                TestCaseID        = "TC-EMAIL-GALL-02",
+                TestCaseID        = "GetAllEmailAutoTemplates_02",
                 Description       = "No Status filter → Deleted templates excluded by default",
                 ExpectedResult    = "Return 200, Items exclude Deleted (2 out of 3)",
                 StatusRound1      = "Passed",
@@ -123,7 +123,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email Template - Get All", new TestCaseDetail
             {
                 FunctionGroup     = "GetAllEmailAutoTemplates",
-                TestCaseID        = "TC-EMAIL-GALL-03",
+                TestCaseID        = "GetAllEmailAutoTemplates_03",
                 Description       = "Status=Draft filter → only Draft templates returned",
                 ExpectedResult    = "Return 200, Items.Count=1, Status=Draft",
                 StatusRound1      = "Passed",
@@ -155,7 +155,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email Template - Get All", new TestCaseDetail
             {
                 FunctionGroup     = "GetAllEmailAutoTemplates",
-                TestCaseID        = "TC-EMAIL-GALL-04",
+                TestCaseID        = "GetAllEmailAutoTemplates_04",
                 Description       = "SearchName='welcome' (case-insensitive) → only matching template",
                 ExpectedResult    = "Return 200, Items.Count=1, TemplateName contains 'welcome'",
                 StatusRound1      = "Passed",
@@ -186,7 +186,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email Template - Get All", new TestCaseDetail
             {
                 FunctionGroup     = "GetAllEmailAutoTemplates",
-                TestCaseID        = "TC-EMAIL-GALL-05",
+                TestCaseID        = "GetAllEmailAutoTemplates_05",
                 Description       = "Page 2 of 15 items with PageSize=5 → Items=5, TotalPages=3",
                 ExpectedResult    = "Return 200, Items=5, TotalPages=3",
                 StatusRound1      = "Passed",
@@ -209,7 +209,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email Template - Get All", new TestCaseDetail
             {
                 FunctionGroup     = "GetAllEmailAutoTemplates",
-                TestCaseID        = "TC-EMAIL-GALL-06",
+                TestCaseID        = "GetAllEmailAutoTemplates_06",
                 Description       = "Repository throws → exception propagates",
                 ExpectedResult    = "Throws Exception",
                 StatusRound1      = "Passed",

@@ -32,7 +32,7 @@ namespace Tokki.UnitTest.Application.UseCases.Passages
             Status    = PassageStatus.Active
         };
 
-        // TC-01: Passage not found → 404
+        // TC-01: Passage not found ? 404
         [Fact]
         public async Task Handle_PassageNotFound_ShouldReturn404()
         {
@@ -47,15 +47,15 @@ namespace Tokki.UnitTest.Application.UseCases.Passages
 
             QACollector.LogTestCase("Passage - Delete", new TestCaseDetail
             {
-                FunctionGroup = "DeletePassage", TestCaseID = "TC-PAS-DEL-01",
-                Description = "Passage not found → 404 NotFound",
+                FunctionGroup = "DeletePassage", TestCaseID = "DeletePassage_01",
+                Description = "Passage not found ? 404 NotFound",
                 ExpectedResult = "Return 404", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string> { "passage == null => 404" }
             });
         }
 
-        // TC-02: Passage in use by QuestionBank → 409
+        // TC-02: Passage in use by QuestionBank ? 409
         [Fact]
         public async Task Handle_PassageInUse_ShouldReturn409()
         {
@@ -74,15 +74,15 @@ namespace Tokki.UnitTest.Application.UseCases.Passages
 
             QACollector.LogTestCase("Passage - Delete", new TestCaseDetail
             {
-                FunctionGroup = "DeletePassage", TestCaseID = "TC-PAS-DEL-02",
-                Description = "Passage used by QuestionBank → 409 Conflict",
+                FunctionGroup = "DeletePassage", TestCaseID = "DeletePassage_02",
+                Description = "Passage used by QuestionBank ? 409 Conflict",
                 ExpectedResult = "Return 409 PassageInUse", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string> { "AnyUsingPassageAsync == true => 409" }
             });
         }
 
-        // TC-03: Already hidden → idempotent 200
+        // TC-03: Already hidden ? idempotent 200
         [Fact]
         public async Task Handle_AlreadyHidden_ShouldReturnIdempotent200()
         {
@@ -102,15 +102,15 @@ namespace Tokki.UnitTest.Application.UseCases.Passages
 
             QACollector.LogTestCase("Passage - Delete", new TestCaseDetail
             {
-                FunctionGroup = "DeletePassage", TestCaseID = "TC-PAS-DEL-03",
-                Description = "Already Hidden → idempotent 200 without UpdateAsync",
+                FunctionGroup = "DeletePassage", TestCaseID = "DeletePassage_03",
+                Description = "Already Hidden ? idempotent 200 without UpdateAsync",
                 ExpectedResult = "Return 200, UpdateAsync NOT called", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string> { "status==Hidden => 200 no-op" }
             });
         }
 
-        // TC-04: Happy path → status set to Hidden, 200
+        // TC-04: Happy path ? status set to Hidden, 200
         [Fact]
         public async Task Handle_ActivePassage_ShouldSetHiddenAndReturn200()
         {
@@ -133,15 +133,15 @@ namespace Tokki.UnitTest.Application.UseCases.Passages
 
             QACollector.LogTestCase("Passage - Delete", new TestCaseDetail
             {
-                FunctionGroup = "DeletePassage", TestCaseID = "TC-PAS-DEL-04",
-                Description = "Active passage, not in use → Status=Hidden, UpdateAsync called, 200",
+                FunctionGroup = "DeletePassage", TestCaseID = "DeletePassage_04",
+                Description = "Active passage, not in use ? Status=Hidden, UpdateAsync called, 200",
                 ExpectedResult = "Return 200, Status=Hidden", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string> { "not in use, active => set Hidden => 200" }
             });
         }
 
-        // TC-05: SaveChanges throws → 500
+        // TC-05: SaveChanges throws ? 500
         [Fact]
         public async Task Handle_SaveChangesThrows_ShouldReturn500()
         {
@@ -162,8 +162,8 @@ namespace Tokki.UnitTest.Application.UseCases.Passages
 
             QACollector.LogTestCase("Passage - Delete", new TestCaseDetail
             {
-                FunctionGroup = "DeletePassage", TestCaseID = "TC-PAS-DEL-05",
-                Description = "SaveChangesAsync throws → catch → 500",
+                FunctionGroup = "DeletePassage", TestCaseID = "DeletePassage_05",
+                Description = "SaveChangesAsync throws ? catch ? 500",
                 ExpectedResult = "Return 500 ServerError", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string> { "SaveChangesAsync throws => 500" }
@@ -179,14 +179,14 @@ namespace Tokki.UnitTest.Application.UseCases.Passages
                        .ReturnsAsync((Passage?)null);
 
             await CreateHandler(passageRepo)
-                .Handle(new DeletePassageCommand { PassageId = "  P-001  " }, CancellationToken.None);
+                .Handle(new DeletePassageCommand { PassageId = "  P-001" }, CancellationToken.None);
 
             passageRepo.Verify(x => x.GetByIdAsync("P-001", It.IsAny<CancellationToken>()), Times.Once);
 
             QACollector.LogTestCase("Passage - Delete", new TestCaseDetail
             {
-                FunctionGroup = "DeletePassage", TestCaseID = "TC-PAS-DEL-06",
-                Description = "PassageId with whitespace → trimmed before GetByIdAsync call",
+                FunctionGroup = "DeletePassage", TestCaseID = "DeletePassage_06",
+                Description = "PassageId with whitespace ? trimmed before GetByIdAsync call",
                 ExpectedResult = "GetByIdAsync('P-001') called", StatusRound1 = "Passed",
                 TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string> { "request.PassageId.Trim() used" }

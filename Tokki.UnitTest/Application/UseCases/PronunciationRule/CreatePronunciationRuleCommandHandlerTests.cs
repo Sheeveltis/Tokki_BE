@@ -27,9 +27,9 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
                 mockIdGen.Object);
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-PR-CR-01 | A | RuleName already exists → 400 Failure
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // CreatePronunciationRule_01 | A | RuleName already exists ? 400 Failure
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_DuplicateRuleName_ShouldReturn400Failure()
         {
@@ -38,7 +38,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             var handler = CreateHandler(repo);
             var command = new CreatePronunciationRuleCommand
             {
-                RuleName    = "받침 발음",
+                RuleName    = "?? ??",
                 Description = "Test desc",
                 CreateBy    = "ADMIN-001"
             };
@@ -54,8 +54,8 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation Rule - Create", new TestCaseDetail
             {
                 FunctionGroup     = "CreatePronunciationRule",
-                TestCaseID        = "TC-PR-CR-01",
-                Description       = "RuleName already exists in repository → return 400 Failure",
+                TestCaseID        = "CreatePronunciationRule_01",
+                Description       = "RuleName already exists in repository ? return 400 Failure",
                 ExpectedResult    = "IsSuccess=false, StatusCode=400",
                 StatusRound1      = "Passed",
                 TestCaseType      = "A",
@@ -64,9 +64,9 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-PR-CR-02 | N | Happy path → rule created, new ID returned, StatusCode=200
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // CreatePronunciationRule_02 | N | Happy path ? rule created, new ID returned, StatusCode=200
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_ValidCommand_ShouldReturnNewIdWith200()
         {
@@ -77,7 +77,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             var handler = CreateHandler(repo, idGen);
             var command = new CreatePronunciationRuleCommand
             {
-                RuleName    = "새로운 규칙",
+                RuleName    = "??? ??",
                 Description = "New rule description",
                 Content     = "Content here",
                 CreateBy    = "ADMIN-001"
@@ -95,8 +95,8 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation Rule - Create", new TestCaseDetail
             {
                 FunctionGroup     = "CreatePronunciationRule",
-                TestCaseID        = "TC-PR-CR-02",
-                Description       = "Happy path: valid unique RuleName → rule created and new ID returned with 200",
+                TestCaseID        = "CreatePronunciationRule_02",
+                Description       = "Happy path: valid unique RuleName ? rule created and new ID returned with 200",
                 ExpectedResult    = "IsSuccess=true, StatusCode=200, Data='RULE-NEW01'",
                 StatusRound1      = "Passed",
                 TestCaseType      = "N",
@@ -105,9 +105,9 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-PR-CR-03 | N | AddAsync and SaveChangesAsync each called exactly once
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // CreatePronunciationRule_03 | N | AddAsync and SaveChangesAsync each called exactly once
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_ValidCommand_ShouldCallAddAndSaveOnce()
         {
@@ -116,7 +116,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             var handler = CreateHandler(repo);
             var command = new CreatePronunciationRuleCommand
             {
-                RuleName = "연음 법칙",
+                RuleName = "?? ??",
                 CreateBy = "ADMIN-001"
             };
 
@@ -131,7 +131,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation Rule - Create", new TestCaseDetail
             {
                 FunctionGroup     = "CreatePronunciationRule",
-                TestCaseID        = "TC-PR-CR-03",
+                TestCaseID        = "CreatePronunciationRule_03",
                 Description       = "Verify AddAsync and SaveChangesAsync each called exactly once on happy path",
                 ExpectedResult    = "AddAsync Times.Once, SaveChangesAsync Times.Once",
                 StatusRound1      = "Passed",
@@ -141,9 +141,9 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-PR-CR-04 | A | Repository throws → exception propagates
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // CreatePronunciationRule_04 | A | Repository throws ? exception propagates
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
         {
@@ -164,8 +164,8 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation Rule - Create", new TestCaseDetail
             {
                 FunctionGroup     = "CreatePronunciationRule",
-                TestCaseID        = "TC-PR-CR-04",
-                Description       = "Repository throws exception on IsRuleNameExistsAsync → exception propagates",
+                TestCaseID        = "CreatePronunciationRule_04",
+                Description       = "Repository throws exception on IsRuleNameExistsAsync ? exception propagates",
                 ExpectedResult    = "InvalidOperationException thrown",
                 StatusRound1      = "Passed",
                 TestCaseType      = "A",
@@ -174,9 +174,9 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-PR-CR-05 | B | RuleName with leading/trailing spaces → trimmed before duplicate check
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // CreatePronunciationRule_05 | B | RuleName with leading/trailing spaces ? trimmed before duplicate check
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_RuleNameWithSpaces_ShouldTrimBeforeCheck()
         {
@@ -185,7 +185,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             var handler = CreateHandler(repo);
             var command = new CreatePronunciationRuleCommand
             {
-                RuleName = "  경음화  ",
+                RuleName = "  ???",
                 CreateBy = "ADMIN-001"
             };
 
@@ -193,25 +193,25 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             await handler.Handle(command, CancellationToken.None);
 
             // Assert: IsRuleNameExistsAsync called with trimmed name
-            repo.Verify(x => x.IsRuleNameExistsAsync("경음화", It.IsAny<string?>()), Times.Once);
+            repo.Verify(x => x.IsRuleNameExistsAsync("???", It.IsAny<string?>()), Times.Once);
 
             // Excel Log
             QACollector.LogTestCase("Pronunciation Rule - Create", new TestCaseDetail
             {
                 FunctionGroup     = "CreatePronunciationRule",
-                TestCaseID        = "TC-PR-CR-05",
-                Description       = "Boundary: RuleName has leading/trailing spaces → trimmed before IsRuleNameExistsAsync call",
-                ExpectedResult    = "IsRuleNameExistsAsync called with '경음화' (trimmed)",
+                TestCaseID        = "CreatePronunciationRule_05",
+                Description       = "Boundary: RuleName has leading/trailing spaces ? trimmed before IsRuleNameExistsAsync call",
+                ExpectedResult    = "IsRuleNameExistsAsync called with '???' (trimmed)",
                 StatusRound1      = "Passed",
                 TestCaseType      = "B",
                 TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "RuleName = '  경음화  '", "Trim() applied before check" }
+                AppliedConditions = new List<string> { "RuleName = '  ???  '", "Trim() applied before check" }
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-PR-CR-06 | N | Duplicate check → AddAsync never called on 400 path
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // CreatePronunciationRule_06 | N | Duplicate check ? AddAsync never called on 400 path
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_DuplicateRuleName_ShouldNotCallAddAsync()
         {
@@ -231,13 +231,13 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation Rule - Create", new TestCaseDetail
             {
                 FunctionGroup     = "CreatePronunciationRule",
-                TestCaseID        = "TC-PR-CR-06",
-                Description       = "Duplicate rule name → AddAsync and SaveChangesAsync never called",
+                TestCaseID        = "CreatePronunciationRule_06",
+                Description       = "Duplicate rule name ? AddAsync and SaveChangesAsync never called",
                 ExpectedResult    = "AddAsync Times.Never, SaveChangesAsync Times.Never",
                 StatusRound1      = "Passed",
                 TestCaseType      = "N",
                 TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "IsRuleNameExistsAsync=true", "early return → no persistence" }
+                AppliedConditions = new List<string> { "IsRuleNameExistsAsync=true", "early return ? no persistence" }
             });
         }
     }

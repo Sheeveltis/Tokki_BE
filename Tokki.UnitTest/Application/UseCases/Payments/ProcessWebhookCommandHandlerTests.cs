@@ -17,9 +17,9 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
 {
     public class ProcessWebhookCommandHandlerTests
     {
-        // ─────────────────────────────────────────────────────────────────────
+        // ---------------------------------------------------------------------
         // Factory
-        // ─────────────────────────────────────────────────────────────────────
+        // ---------------------------------------------------------------------
         private static ProcessWebhookCommandHandler CreateHandler(
             Mock<IPaymentRepository>? paymentRepo = null,
             Mock<IAccountRepository>? accountRepo = null,
@@ -62,13 +62,13 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             VipPackageId = "PKG-001"
         };
 
-        // ═══════════════════════════════════════════════════════════════════
-        // TC-PAY-WHK-01 | 200 | Content has no paymentId → returns invalid content msg
-        // ═══════════════════════════════════════════════════════════════════
+        // -------------------------------------------------------------------
+        // ProcessWebhook_01 | 200 | Content has no paymentId ? returns invalid content msg
+        // -------------------------------------------------------------------
         [Fact]
         public async Task Handle_NoPaymentIdInContent_ShouldReturnInvalidContentMessage()
         {
-            // Arrange – content does not contain a 10-char alphanumeric token
+            // Arrange � content does not contain a 10-char alphanumeric token
             var data = BuildWebhookData(content: "GD den ngan hang");
             var mockPayRepo = new Mock<IPaymentRepository>();
             mockPayRepo.Setup(x => x.AddTransactionAsync(It.IsAny<Transaction>())).Returns(Task.CompletedTask);
@@ -83,8 +83,8 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             QACollector.LogTestCase("Payments - Process Webhook", new TestCaseDetail
             {
                 FunctionGroup     = "ProcessWebhook",
-                TestCaseID        = "TC-PAY-WHK-01",
-                Description       = "Webhook content has no 10-char paymentId → returns PaymentInvalidContent message",
+                TestCaseID        = "ProcessWebhook_01",
+                Description       = "Webhook content has no 10-char paymentId ? returns PaymentInvalidContent message",
                 ExpectedResult    = "Return Success with informational message, GetByIdAsync never called",
                 StatusRound1      = "Passed",
                 TestCaseType      = "A",
@@ -93,13 +93,13 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             });
         }
 
-        // ═══════════════════════════════════════════════════════════════════
-        // TC-PAY-WHK-02 | 200 | PaymentId extracted but payment not found → informational
-        // ═══════════════════════════════════════════════════════════════════
+        // -------------------------------------------------------------------
+        // ProcessWebhook_02 | 200 | PaymentId extracted but payment not found ? informational
+        // -------------------------------------------------------------------
         [Fact]
         public async Task Handle_PaymentNotFound_ShouldReturnPaymentNotFoundMessage()
         {
-            // Arrange – content has valid 10-char token "PAYID12345" but payment not in DB
+            // Arrange � content has valid 10-char token"PAYID12345" but payment not in DB
             var data = BuildWebhookData(content: "Thanh toan PAYID12345");
             var mockPayRepo = new Mock<IPaymentRepository>();
             mockPayRepo.Setup(x => x.AddTransactionAsync(It.IsAny<Transaction>())).Returns(Task.CompletedTask);
@@ -115,8 +115,8 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             QACollector.LogTestCase("Payments - Process Webhook", new TestCaseDetail
             {
                 FunctionGroup     = "ProcessWebhook",
-                TestCaseID        = "TC-PAY-WHK-02",
-                Description       = "PaymentId extracted from content but not found in DB → informational success",
+                TestCaseID        = "ProcessWebhook_02",
+                Description       = "PaymentId extracted from content but not found in DB ? informational success",
                 ExpectedResult    = "Return Success, UpdateAsync never called",
                 StatusRound1      = "Passed",
                 TestCaseType      = "A",
@@ -125,9 +125,9 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             });
         }
 
-        // ═══════════════════════════════════════════════════════════════════
-        // TC-PAY-WHK-03 | 200 | Payment already Paid → returns AlreadyProcessed msg
-        // ═══════════════════════════════════════════════════════════════════
+        // -------------------------------------------------------------------
+        // ProcessWebhook_03 | 200 | Payment already Paid ? returns AlreadyProcessed msg
+        // -------------------------------------------------------------------
         [Fact]
         public async Task Handle_PaymentAlreadyPaid_ShouldReturnAlreadyProcessedMessage()
         {
@@ -149,8 +149,8 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             QACollector.LogTestCase("Payments - Process Webhook", new TestCaseDetail
             {
                 FunctionGroup     = "ProcessWebhook",
-                TestCaseID        = "TC-PAY-WHK-03",
-                Description       = "Payment is already Paid → returns AlreadyProcessed, no update",
+                TestCaseID        = "ProcessWebhook_03",
+                Description       = "Payment is already Paid ? returns AlreadyProcessed, no update",
                 ExpectedResult    = "Return Success (AlreadyProcessed msg), UpdateAsync never called",
                 StatusRound1      = "Passed",
                 TestCaseType      = "N",
@@ -159,9 +159,9 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             });
         }
 
-        // ═══════════════════════════════════════════════════════════════════
-        // TC-PAY-WHK-04 | 200 | Pending + enough amount → Status=Paid, VIP activated
-        // ═══════════════════════════════════════════════════════════════════
+        // -------------------------------------------------------------------
+        // ProcessWebhook_04 | 200 | Pending + enough amount ? Status=Paid, VIP activated
+        // -------------------------------------------------------------------
         [Fact]
         public async Task Handle_PendingPaymentEnoughAmount_ShouldActivateVipAndMarkPaid()
         {
@@ -201,8 +201,8 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             QACollector.LogTestCase("Payments - Process Webhook", new TestCaseDetail
             {
                 FunctionGroup     = "ProcessWebhook",
-                TestCaseID        = "TC-PAY-WHK-04",
-                Description       = "Pending payment, amount >= required → Status=Paid, user becomes VIP",
+                TestCaseID        = "ProcessWebhook_04",
+                Description       = "Pending payment, amount >= required ? Status=Paid, user becomes VIP",
                 ExpectedResult    = "Payment.Status=Paid, user.Role=Vip, UpdateAsync called",
                 StatusRound1      = "Passed",
                 TestCaseType      = "N",
@@ -211,13 +211,13 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             });
         }
 
-        // ═══════════════════════════════════════════════════════════════════
-        // TC-PAY-WHK-05 | 200 | Pending + insufficient amount → informational msg
-        // ═══════════════════════════════════════════════════════════════════
+        // -------------------------------------------------------------------
+        // ProcessWebhook_05 | 200 | Pending + insufficient amount ? informational msg
+        // -------------------------------------------------------------------
         [Fact]
         public async Task Handle_PendingPaymentInsufficientAmount_ShouldReturnInsufficientMsg()
         {
-            // Arrange – only sent 50,000 but required 99,000
+            // Arrange � only sent 50,000 but required 99,000
             var payment = BuildPayment("PAYID12345", PaymentStatus.Pending, 99_000m);
             var data    = BuildWebhookData(content: "Thanh toan PAYID12345", amount: 50_000m);
 
@@ -236,8 +236,8 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             QACollector.LogTestCase("Payments - Process Webhook", new TestCaseDetail
             {
                 FunctionGroup     = "ProcessWebhook",
-                TestCaseID        = "TC-PAY-WHK-05",
-                Description       = "Transfer amount (50,000) < required (99,000) → not activated, still Pending",
+                TestCaseID        = "ProcessWebhook_05",
+                Description       = "Transfer amount (50,000) < required (99,000) ? not activated, still Pending",
                 ExpectedResult    = "Return Success with InsufficientAmount msg, Payment still Pending",
                 StatusRound1      = "Passed",
                 TestCaseType      = "N",
@@ -246,9 +246,9 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             });
         }
 
-        // ═══════════════════════════════════════════════════════════════════
-        // TC-PAY-WHK-06 | 500 | AddTransactionAsync throws → returns ServerError
-        // ═══════════════════════════════════════════════════════════════════
+        // -------------------------------------------------------------------
+        // ProcessWebhook_06 | 500 | AddTransactionAsync throws ? returns ServerError
+        // -------------------------------------------------------------------
         [Fact]
         public async Task Handle_AddTransactionThrows_ShouldReturn500()
         {
@@ -267,8 +267,8 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             QACollector.LogTestCase("Payments - Process Webhook", new TestCaseDetail
             {
                 FunctionGroup     = "ProcessWebhook",
-                TestCaseID        = "TC-PAY-WHK-06",
-                Description       = "AddTransactionAsync throws → handler catches and returns ServerError 500",
+                TestCaseID        = "ProcessWebhook_06",
+                Description       = "AddTransactionAsync throws ? handler catches and returns ServerError 500",
                 ExpectedResult    = "Return 500 ServerError",
                 StatusRound1      = "Passed",
                 TestCaseType      = "A",

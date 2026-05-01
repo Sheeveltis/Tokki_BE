@@ -26,7 +26,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             return new ValidationBehavior<TReq, TRes>(validators);
         }
 
-        // TC-CH-VB-01 | N | No Validators -> Invokes next() natively
+        // ValidationBehavior_01 | N | No Validators -> Invokes next() natively
         [Fact]
         public async Task Handle_WithNoValidators_ShouldInvokeNext()
         {
@@ -44,7 +44,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             QACollector.LogTestCase("Common - Helpers", new TestCaseDetail
             {
                 FunctionGroup = "ValidationBehavior",
-                TestCaseID = "TC-CH-VB-01",
+                TestCaseID = "ValidationBehavior_01",
                 Description = "No validators skips cleanly",
                 ExpectedResult = "next() result accurately returned",
                 StatusRound1 = "Passed",
@@ -54,7 +54,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             });
         }
 
-        // TC-CH-VB-02 | N | Has Validators But Pass
+        // ValidationBehavior_02 | N | Has Validators But Pass
         [Fact]
         public async Task Handle_ValidatorsPass_ShouldInvokeNext()
         {
@@ -75,7 +75,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             QACollector.LogTestCase("Common - Helpers", new TestCaseDetail
             {
                 FunctionGroup = "ValidationBehavior",
-                TestCaseID = "TC-CH-VB-02",
+                TestCaseID = "ValidationBehavior_02",
                 Description = "Passed validation smoothly invokes RequestHandlerDelegate",
                 ExpectedResult = "Success execution",
                 StatusRound1 = "Passed",
@@ -85,7 +85,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             });
         }
 
-        // TC-CH-VB-03 | A | Action Validates With Failure -> Maps smoothly into OperationResult<T> 
+        // ValidationBehavior_03 | A | Action Validates With Failure -> Maps smoothly into OperationResult<T> 
         [Fact]
         public async Task Handle_ValidatorFails_ShouldReturnOperationResultFailure()
         {
@@ -110,7 +110,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             QACollector.LogTestCase("Common - Helpers", new TestCaseDetail
             {
                 FunctionGroup = "ValidationBehavior",
-                TestCaseID = "TC-CH-VB-03",
+                TestCaseID = "ValidationBehavior_03",
                 Description = "Failures convert perfectly into OperationResult wrapping without throwing",
                 ExpectedResult = "StatusCode 400 + Validation.Error mapping",
                 StatusRound1 = "Passed",
@@ -120,7 +120,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             });
         }
 
-        // TC-CH-VB-04 | A | Fails formatting joins string arrays successfully "Error1; Error2"
+        // ValidationBehavior_04 | A | Fails formatting joins string arrays successfully"Error1; Error2"
         [Fact]
         public async Task Handle_MultipleFailures_ShouldFormatSemicolonJoinedString()
         {
@@ -145,7 +145,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             QACollector.LogTestCase("Common - Helpers", new TestCaseDetail
             {
                 FunctionGroup = "ValidationBehavior",
-                TestCaseID = "TC-CH-VB-04",
+                TestCaseID = "ValidationBehavior_04",
                 Description = "Join messages combined perfectly",
                 ExpectedResult = "Error1; Error2",
                 StatusRound1 = "Passed",
@@ -155,7 +155,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             });
         }
 
-        // TC-CH-VB-05 | A | Non-OperationResult TResponse bypasses gracefully back to next() essentially nullifying
+        // ValidationBehavior_05 | A | Non-OperationResult TResponse bypasses gracefully back to next() essentially nullifying
         [Fact]
         public async Task Handle_NonOperationResult_SwallowsValidationAndReturnsNext()
         {
@@ -176,7 +176,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             QACollector.LogTestCase("Common - Helpers", new TestCaseDetail
             {
                 FunctionGroup = "ValidationBehavior",
-                TestCaseID = "TC-CH-VB-05",
+                TestCaseID = "ValidationBehavior_05",
                 Description = "Legacy endpoints swallowed validation logic securely as implemented",
                 ExpectedResult = "next() is returned anyway",
                 StatusRound1 = "Passed",
@@ -186,7 +186,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             });
         }
 
-        // TC-CH-VB-06 | B | Context Request Equality
+        // ValidationBehavior_06 | B | Context Request Equality
         [Fact]
         public async Task Handle_VerifyContextMapping_EnsuresCorrectContextUsage()
         {
@@ -207,7 +207,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             QACollector.LogTestCase("Common - Helpers", new TestCaseDetail
             {
                 FunctionGroup = "ValidationBehavior",
-                TestCaseID = "TC-CH-VB-06",
+                TestCaseID = "ValidationBehavior_06",
                 Description = "Instance context strictly matches input request data",
                 ExpectedResult = "Verify exact instance",
                 StatusRound1 = "Passed",

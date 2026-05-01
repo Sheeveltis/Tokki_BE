@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
 using MediatR;
@@ -23,7 +23,7 @@ namespace Tokki.UnitTest.Application.Common.Behaviors
             return new ValidationBehavior<TestRequest, string>(validators);
         }
 
-        // TC-CB-VB-01 | N | No Validators -> Next Call
+        // ValidationBehavior_01 | N | No Validators -> Next Call
         [Fact]
         public async Task Handle_WithNoValidators_ShouldInvokeNext()
         {
@@ -39,7 +39,7 @@ namespace Tokki.UnitTest.Application.Common.Behaviors
             QACollector.LogTestCase("Common - Behaviors", new TestCaseDetail
             {
                 FunctionGroup = "ValidationBehavior",
-                TestCaseID = "TC-CB-VB-01",
+                TestCaseID = "ValidationBehavior_01",
                 Description = "Pipeline with empty validators skips verification",
                 ExpectedResult = "next() is returned cleanly",
                 StatusRound1 = "Passed",
@@ -49,7 +49,7 @@ namespace Tokki.UnitTest.Application.Common.Behaviors
             });
         }
 
-        // TC-CB-VB-02 | N | Has Validators But All Pass
+        // ValidationBehavior_02 | N | Has Validators But All Pass
         [Fact]
         public async Task Handle_ValidatorsPass_ShouldInvokeNext()
         {
@@ -69,7 +69,7 @@ namespace Tokki.UnitTest.Application.Common.Behaviors
             QACollector.LogTestCase("Common - Behaviors", new TestCaseDetail
             {
                 FunctionGroup = "ValidationBehavior",
-                TestCaseID = "TC-CB-VB-02",
+                TestCaseID = "ValidationBehavior_02",
                 Description = "Success validators proceeds pipeline",
                 ExpectedResult = "next() is invoked",
                 StatusRound1 = "Passed",
@@ -79,7 +79,7 @@ namespace Tokki.UnitTest.Application.Common.Behaviors
             });
         }
 
-        // TC-CB-VB-03 | A | One Validator Fails -> Throws FluentValidation Exception
+        // ValidationBehavior_03 | A | One Validator Fails -> Throws FluentValidation Exception
         [Fact]
         public async Task Handle_ValidatorFails_ShouldThrowValidationException()
         {
@@ -102,7 +102,7 @@ namespace Tokki.UnitTest.Application.Common.Behaviors
             QACollector.LogTestCase("Common - Behaviors", new TestCaseDetail
             {
                 FunctionGroup = "ValidationBehavior",
-                TestCaseID = "TC-CB-VB-03",
+                TestCaseID = "ValidationBehavior_03",
                 Description = "Failure halts pipeline cleanly through standard Exception throw",
                 ExpectedResult = "ValidationException Thrown",
                 StatusRound1 = "Passed",
@@ -112,7 +112,7 @@ namespace Tokki.UnitTest.Application.Common.Behaviors
             });
         }
 
-        // TC-CB-VB-04 | A | Multiple Validators Fail -> Throws Exception with Combined Errors
+        // ValidationBehavior_04 | A | Multiple Validators Fail -> Throws Exception with Combined Errors
         [Fact]
         public async Task Handle_MultipleValidatorsFail_ShouldCombineErrors()
         {
@@ -135,7 +135,7 @@ namespace Tokki.UnitTest.Application.Common.Behaviors
             QACollector.LogTestCase("Common - Behaviors", new TestCaseDetail
             {
                 FunctionGroup = "ValidationBehavior",
-                TestCaseID = "TC-CB-VB-04",
+                TestCaseID = "ValidationBehavior_04",
                 Description = "Multiple validators combine errors smoothly across asynchronous yields",
                 ExpectedResult = "ValidationException with matched error count 2",
                 StatusRound1 = "Passed",
@@ -145,7 +145,7 @@ namespace Tokki.UnitTest.Application.Common.Behaviors
             });
         }
 
-        // TC-CB-VB-05 | B | Context Request Equality
+        // ValidationBehavior_05 | B | Context Request Equality
         [Fact]
         public async Task Handle_VerifyContextMapping_EnsuresCorrectContextUsage()
         {
@@ -166,7 +166,7 @@ namespace Tokki.UnitTest.Application.Common.Behaviors
             QACollector.LogTestCase("Common - Behaviors", new TestCaseDetail
             {
                 FunctionGroup = "ValidationBehavior",
-                TestCaseID = "TC-CB-VB-05",
+                TestCaseID = "ValidationBehavior_05",
                 Description = "Instance context mapped synchronously to validators",
                 ExpectedResult = "Verify exact instance mapping",
                 StatusRound1 = "Passed",
@@ -176,7 +176,7 @@ namespace Tokki.UnitTest.Application.Common.Behaviors
             });
         }
 
-        // TC-CB-VB-06 | B | Cancellation token passed optimally
+        // ValidationBehavior_06 | B | Cancellation token passed optimally
         [Fact]
         public async Task Handle_WithCancellationContext_ShouldThrowOrPassToken()
         {
@@ -196,7 +196,7 @@ namespace Tokki.UnitTest.Application.Common.Behaviors
             QACollector.LogTestCase("Common - Behaviors", new TestCaseDetail
             {
                 FunctionGroup = "ValidationBehavior",
-                TestCaseID = "TC-CB-VB-06",
+                TestCaseID = "ValidationBehavior_06",
                 Description = "Ensures pipeline accurately supports cascading cancellations",
                 ExpectedResult = "CancellationToken matching",
                 StatusRound1 = "Passed",

@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -38,7 +38,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-BST-01 | A | No token → 401
+        // Bulk_Create_Vocabulary_By_Staff_01 | A | No token → 401
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_Unauthorized_ShouldReturn401()
@@ -64,7 +64,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Bulk Create By Staff", new TestCaseDetail
             {
                 FunctionGroup     = "Bulk Create Vocabulary By Staff",
-                TestCaseID        = "TC-VOCAB-BST-01",
+                TestCaseID        = "Bulk_Create_Vocabulary_By_Staff_01",
                 Description       = "Staff bulk creates vocabulary without authentication token",
                 ExpectedResult    = "Return 401 Unauthorized",
                 StatusRound1      = "Passed",
@@ -75,7 +75,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-BST-02 | A | Duplicate vocab → 400
+        // Bulk_Create_Vocabulary_By_Staff_02 | A | Duplicate vocab → 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_HasDuplicateVocab_ShouldReturn400()
@@ -103,7 +103,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Bulk Create By Staff", new TestCaseDetail
             {
                 FunctionGroup     = "Bulk Create Vocabulary By Staff",
-                TestCaseID        = "TC-VOCAB-BST-02",
+                TestCaseID        = "Bulk_Create_Vocabulary_By_Staff_02",
                 Description       = "Staff bulk create has identical vocab Text + Definition → reject all",
                 ExpectedResult    = "Return 400 VOCABULARY_DUPLICATE",
                 StatusRound1      = "Passed",
@@ -114,7 +114,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-BST-03 | N | Valid list → Draft status → 201
+        // Bulk_Create_Vocabulary_By_Staff_03 | N | Valid list → Draft status → 201
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidList_ShouldReturnDraftStatusAndReturn201()
@@ -155,7 +155,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Bulk Create By Staff", new TestCaseDetail
             {
                 FunctionGroup     = "Bulk Create Vocabulary By Staff",
-                TestCaseID        = "TC-VOCAB-BST-03",
+                TestCaseID        = "Bulk_Create_Vocabulary_By_Staff_03",
                 Description       = "Staff bulk create 2 valid vocabs → Status = Draft, awaiting approval",
                 ExpectedResult    = "Return 201, SuccessCount = 2",
                 StatusRound1      = "Passed",
@@ -166,7 +166,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-BST-04 | B | Duplicate example in request → skip → 201
+        // Bulk_Create_Vocabulary_By_Staff_04 | B | Duplicate example in request → skip → 201
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ExampleDuplicateInRequest_ShouldSkipAndStillReturn201()
@@ -203,7 +203,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Bulk Create By Staff", new TestCaseDetail
             {
                 FunctionGroup     = "Bulk Create Vocabulary By Staff",
-                TestCaseID        = "TC-VOCAB-BST-04",
+                TestCaseID        = "Bulk_Create_Vocabulary_By_Staff_04",
                 Description       = "Staff bulk create has duplicate example Sentence → skip duplicate, still create vocab",
                 ExpectedResult    = "Return 201, message contains 'Skip'",
                 StatusRound1      = "Passed",
@@ -214,7 +214,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-BST-05 | A | TTS fails → vocab created, AudioURL = null → 201
+        // Bulk_Create_Vocabulary_By_Staff_05 | A | TTS fails → vocab created, AudioURL = null → 201
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_TtsFails_ShouldStillReturn201WithNullAudio()
@@ -247,7 +247,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Bulk Create By Staff", new TestCaseDetail
             {
                 FunctionGroup     = "Bulk Create Vocabulary By Staff",
-                TestCaseID        = "TC-VOCAB-BST-05",
+                TestCaseID        = "Bulk_Create_Vocabulary_By_Staff_05",
                 Description       = "TTS error in staff bulk create → vocab created with AudioURL = null",
                 ExpectedResult    = "Return 201, AudioURL = null",
                 StatusRound1      = "Passed",
@@ -258,7 +258,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-BST-06 | A | Repository throws → rollback → 500
+        // Bulk_Create_Vocabulary_By_Staff_06 | A | Repository throws → rollback → 500
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrowsInsideTransaction_ShouldRollbackAndReturn500()
@@ -288,7 +288,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Bulk Create By Staff", new TestCaseDetail
             {
                 FunctionGroup     = "Bulk Create Vocabulary By Staff",
-                TestCaseID        = "TC-VOCAB-BST-06",
+                TestCaseID        = "Bulk_Create_Vocabulary_By_Staff_06",
                 Description       = "Repository throws exception during transaction → rollback → 500",
                 ExpectedResult    = "Transaction rollback, return 500 Server Error",
                 StatusRound1      = "Passed",

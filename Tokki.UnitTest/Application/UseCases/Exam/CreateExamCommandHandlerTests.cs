@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -69,7 +69,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             QACollector.LogTestCase("Exam - Create Exam", new TestCaseDetail
             {
                 FunctionGroup = "Create Exam",
-                TestCaseID = "TC-EXAM-CRT-01",
+                TestCaseID = "Create_Exam_01",
                 Description = "Successfully create exam from a valid published template with enough questions",
                 ExpectedResult = "Return 201 Success with new Exam ID",
                 StatusRound1 = "Passed",
@@ -104,7 +104,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             QACollector.LogTestCase("Exam - Create Exam", new TestCaseDetail
             {
                 FunctionGroup = "Create Exam",
-                TestCaseID = "TC-EXAM-CRT-02",
+                TestCaseID = "Create_Exam_02",
                 Description = "Fail to create exam due to duplicated title",
                 ExpectedResult = "Return 400 Bad Request",
                 StatusRound1 = "Passed",
@@ -139,7 +139,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             QACollector.LogTestCase("Exam - Create Exam", new TestCaseDetail
             {
                 FunctionGroup = "Create Exam",
-                TestCaseID = "TC-EXAM-CRT-03",
+                TestCaseID = "Create_Exam_03",
                 Description = "Fail to create exam because template does not exist",
                 ExpectedResult = "Return 404 Not Found",
                 StatusRound1 = "Passed",
@@ -175,7 +175,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             QACollector.LogTestCase("Exam - Create Exam", new TestCaseDetail
             {
                 FunctionGroup = "Create Exam",
-                TestCaseID = "TC-EXAM-CRT-04",
+                TestCaseID = "Create_Exam_04",
                 Description = "Fail to create exam because template is not published",
                 ExpectedResult = "Return 400 Bad Request",
                 StatusRound1 = "Passed",
@@ -211,7 +211,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             QACollector.LogTestCase("Exam - Create Exam", new TestCaseDetail
             {
                 FunctionGroup = "Create Exam",
-                TestCaseID = "TC-EXAM-CRT-05",
+                TestCaseID = "Create_Exam_05",
                 Description = "Fail to create exam because template has no parts defined",
                 ExpectedResult = "Return 400 Bad Request",
                 StatusRound1 = "Passed",
@@ -256,7 +256,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             QACollector.LogTestCase("Exam - Create Exam", new TestCaseDetail
             {
                 FunctionGroup = "Create Exam",
-                TestCaseID = "TC-EXAM-CRT-06",
+                TestCaseID = "Create_Exam_06",
                 Description = "Fail to create exam because question bank does not have enough questions",
                 ExpectedResult = "Return 400 Bad Request with missing count info",
                 StatusRound1 = "Passed",
@@ -294,7 +294,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             QACollector.LogTestCase("Exam - Create Exam", new TestCaseDetail
             {
                 FunctionGroup = "Create Exam",
-                TestCaseID = "TC-EXAM-CRT-07",
+                TestCaseID = "Create_Exam_07",
                 Description = "Handle unexpected system exception gracefully",
                 ExpectedResult = "Return 500 Server Error",
                 StatusRound1 = "Passed",

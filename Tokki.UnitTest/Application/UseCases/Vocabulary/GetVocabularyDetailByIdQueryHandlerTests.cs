@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -24,7 +24,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-GID-01 | A | Vocab not found → 404
+        // Get_Vocabulary_Detail_By_Id_01 | A | Vocab not found → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_VocabNotFound_ShouldReturn404()
@@ -45,7 +45,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Get Detail", new TestCaseDetail
             {
                 FunctionGroup     = "Get Vocabulary Detail By Id",
-                TestCaseID        = "TC-VOCAB-GID-01",
+                TestCaseID        = "Get_Vocabulary_Detail_By_Id_01",
                 Description       = "Get vocab detail with ID that doesn't exist",
                 ExpectedResult    = "Return 404 VocabularyNotFound",
                 StatusRound1      = "Passed",
@@ -56,7 +56,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-GID-02 | A | Vocab is Deleted → 404
+        // Get_Vocabulary_Detail_By_Id_02 | A | Vocab is Deleted → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_VocabIsDeleted_ShouldReturn404()
@@ -78,7 +78,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Get Detail", new TestCaseDetail
             {
                 FunctionGroup     = "Get Vocabulary Detail By Id",
-                TestCaseID        = "TC-VOCAB-GID-02",
+                TestCaseID        = "Get_Vocabulary_Detail_By_Id_02",
                 Description       = "Get deleted vocab detail (Status = Deleted) → not displayed",
                 ExpectedResult    = "Return 404 VocabularyNotFound",
                 StatusRound1      = "Passed",
@@ -89,7 +89,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-GID-03 | N | Valid Active vocab → 200 with full DTO
+        // Get_Vocabulary_Detail_By_Id_03 | N | Valid Active vocab → 200 with full DTO
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidActiveVocab_ShouldReturn200WithDto()
@@ -113,7 +113,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Get Detail", new TestCaseDetail
             {
                 FunctionGroup     = "Get Vocabulary Detail By Id",
-                TestCaseID        = "TC-VOCAB-GID-03",
+                TestCaseID        = "Get_Vocabulary_Detail_By_Id_03",
                 Description       = "Get valid Active vocab → return full DTO with topics and examples",
                 ExpectedResult    = "Return 200, Data.VocabularyId = VOCAB-001",
                 StatusRound1      = "Passed",
@@ -124,7 +124,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-GID-04 | N | PendingApproval vocab → 200 (not blocked for user view)
+        // Get_Vocabulary_Detail_By_Id_04 | N | PendingApproval vocab → 200 (not blocked for user view)
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_PendingApprovalVocab_ShouldReturn200()
@@ -147,7 +147,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Get Detail", new TestCaseDetail
             {
                 FunctionGroup     = "Get Vocabulary Detail By Id",
-                TestCaseID        = "TC-VOCAB-GID-04",
+                TestCaseID        = "Get_Vocabulary_Detail_By_Id_04",
                 Description       = "Get PendingApproval vocab detail → accessible (not filtered like Deleted)",
                 ExpectedResult    = "Return 200, Data.Status = PendingApproval",
                 StatusRound1      = "Passed",
@@ -158,7 +158,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-GID-05 | N | Vocab with examples → examples in DTO ordered by CreateAt
+        // Get_Vocabulary_Detail_By_Id_05 | N | Vocab with examples → examples in DTO ordered by CreateAt
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_VocabWithMultipleExamples_ShouldReturnOnlyActiveExamples()
@@ -188,7 +188,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Get Detail", new TestCaseDetail
             {
                 FunctionGroup     = "Get Vocabulary Detail By Id",
-                TestCaseID        = "TC-VOCAB-GID-05",
+                TestCaseID        = "Get_Vocabulary_Detail_By_Id_05",
                 Description       = "Vocab with 2 examples (1 Active, 1 Deleted) → only Active example in DTO",
                 ExpectedResult    = "Return 200, Examples.Count = 1",
                 StatusRound1      = "Passed",
@@ -199,7 +199,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-GID-06 | N | Draft vocab → 200 (accessible to caller)
+        // Get_Vocabulary_Detail_By_Id_06 | N | Draft vocab → 200 (accessible to caller)
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DraftVocab_ShouldReturn200()
@@ -222,7 +222,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Get Detail", new TestCaseDetail
             {
                 FunctionGroup     = "Get Vocabulary Detail By Id",
-                TestCaseID        = "TC-VOCAB-GID-06",
+                TestCaseID        = "Get_Vocabulary_Detail_By_Id_06",
                 Description       = "Get Draft vocab detail → accessible (not filtered)",
                 ExpectedResult    = "Return 200, Data.Status = Draft",
                 StatusRound1      = "Passed",

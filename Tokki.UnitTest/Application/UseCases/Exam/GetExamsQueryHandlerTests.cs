@@ -1,4 +1,4 @@
-using ExamEntity = Tokki.Domain.Entities.Exam;
+﻿using ExamEntity = Tokki.Domain.Entities.Exam;
 using FluentAssertions;
 using Moq;
 using System;
@@ -38,7 +38,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             return mock;
         }
 
-        // TC-EXGQ-01 | N | Valid query returns 200 with data
+        // Get_Exams_01 | N | Valid query returns 200 with data
         [Fact]
         public async Task Handle_ValidQuery_ShouldReturn200WithItems()
         {
@@ -52,7 +52,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get List", new TestCaseDetail
             {
-                FunctionGroup = "Get Exams", TestCaseID = "TC-EXGQ-01",
+                FunctionGroup = "Get Exams", TestCaseID = "Get_Exams_01",
                 Description = "Basic paged query retrieval",
                 ExpectedResult = "Return 200 with 2 items", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -60,7 +60,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXGQ-02 | N | DTOs mapped correctly
+        // Get_Exams_02 | N | DTOs mapped correctly
         [Fact]
         public async Task Handle_ValidQuery_ShouldMapDTOsCorrectly()
         {
@@ -75,7 +75,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get List", new TestCaseDetail
             {
-                FunctionGroup = "Get Exams", TestCaseID = "TC-EXGQ-02",
+                FunctionGroup = "Get Exams", TestCaseID = "Get_Exams_02",
                 Description = "Verify DTO mapping from entity",
                 ExpectedResult = "ExamId, Title, ExamTemplateName correctly mapped", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -83,7 +83,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXGQ-03 | N | Pagination
+        // Get_Exams_03 | N | Pagination
         [Fact]
         public async Task Handle_Pagination_ShouldReturnCorrectPageInfo()
         {
@@ -102,7 +102,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get List", new TestCaseDetail
             {
-                FunctionGroup = "Get Exams", TestCaseID = "TC-EXGQ-03",
+                FunctionGroup = "Get Exams", TestCaseID = "Get_Exams_03",
                 Description = "Verify paging metadata on result",
                 ExpectedResult = "TotalCount 20, PageNumber 2, TotalPages 2", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -110,7 +110,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXGQ-04 | N | Empty DB returns empty page
+        // Get_Exams_04 | N | Empty DB returns empty page
         [Fact]
         public async Task Handle_EmptyDatabase_ShouldReturnEmptyResult()
         {
@@ -129,7 +129,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get List", new TestCaseDetail
             {
-                FunctionGroup = "Get Exams", TestCaseID = "TC-EXGQ-04",
+                FunctionGroup = "Get Exams", TestCaseID = "Get_Exams_04",
                 Description = "Empty database returns graceful empty result",
                 ExpectedResult = "Items empty, TotalCount 0, 200 OK", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -137,7 +137,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXGQ-05 | N | Repo called once with exact params
+        // Get_Exams_05 | N | Repo called once with exact params
         [Fact]
         public async Task Handle_ValidQuery_RepoCalledOnce()
         {
@@ -151,7 +151,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get List", new TestCaseDetail
             {
-                FunctionGroup = "Get Exams", TestCaseID = "TC-EXGQ-05",
+                FunctionGroup = "Get Exams", TestCaseID = "Get_Exams_05",
                 Description = "Verify exact params routed to repository once",
                 ExpectedResult = "Times.Once verification passes", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -159,7 +159,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXGQ-06 | A | Exception propagates
+        // Get_Exams_06 | A | Exception propagates
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
         {
@@ -173,7 +173,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Get List", new TestCaseDetail
             {
-                FunctionGroup = "Get Exams", TestCaseID = "TC-EXGQ-06",
+                FunctionGroup = "Get Exams", TestCaseID = "Get_Exams_06",
                 Description = "Repository throws unhandled exception",
                 ExpectedResult = "Exception propagates", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

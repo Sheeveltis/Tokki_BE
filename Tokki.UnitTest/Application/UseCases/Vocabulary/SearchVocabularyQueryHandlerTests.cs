@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Caching.Memory;
 using Moq;
 using System;
@@ -26,7 +26,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-SRC-01 | A | Empty SearchTerm → 400
+        // Search_Vocabulary_01 | A | Empty SearchTerm → 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptySearchTerm_ShouldReturn400()
@@ -46,7 +46,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Search", new TestCaseDetail
             {
                 FunctionGroup     = "Search Vocabulary",
-                TestCaseID        = "TC-VOCAB-SRC-01",
+                TestCaseID        = "Search_Vocabulary_01",
                 Description       = "Search with empty SearchTerm",
                 ExpectedResult    = "Return 400 INVALID_SEARCH_TERM",
                 StatusRound1      = "Passed",
@@ -57,7 +57,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-SRC-02 | B | SearchTerm > 50 chars → 400 (boundary)
+        // Search_Vocabulary_02 | B | SearchTerm > 50 chars → 400 (boundary)
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SearchTermTooLong_ShouldReturn400()
@@ -77,7 +77,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Search", new TestCaseDetail
             {
                 FunctionGroup     = "Search Vocabulary",
-                TestCaseID        = "TC-VOCAB-SRC-02",
+                TestCaseID        = "Search_Vocabulary_02",
                 Description       = "Search with SearchTerm 51 chars long (exceeds limit of 50)",
                 ExpectedResult    = "Return 400 SEARCH_TERM_TOO_LONG",
                 StatusRound1      = "Passed",
@@ -88,7 +88,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-SRC-03 | B | SearchTerm exactly 50 chars → passes validation → 200
+        // Search_Vocabulary_03 | B | SearchTerm exactly 50 chars → passes validation → 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SearchTermExactly50Chars_ShouldPassValidation()
@@ -116,7 +116,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Search", new TestCaseDetail
             {
                 FunctionGroup     = "Search Vocabulary",
-                TestCaseID        = "TC-VOCAB-SRC-03",
+                TestCaseID        = "Search_Vocabulary_03",
                 Description       = "SearchTerm is exactly 50 characters (boundary: max) → validation passes",
                 ExpectedResult    = "Return 200, validation not blocked",
                 StatusRound1      = "Passed",
@@ -127,7 +127,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-SRC-04 | N | Valid search → returns results → 200
+        // Search_Vocabulary_04 | N | Valid search → returns results → 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidSearch_ShouldReturnResults200()
@@ -160,7 +160,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Search", new TestCaseDetail
             {
                 FunctionGroup     = "Search Vocabulary",
-                TestCaseID        = "TC-VOCAB-SRC-04",
+                TestCaseID        = "Search_Vocabulary_04",
                 Description       = "Valid search term → returns 2 vocab results → 200",
                 ExpectedResult    = "Return 200, TotalCount = 2, Items.Count = 2",
                 StatusRound1      = "Passed",
@@ -171,7 +171,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-SRC-05 | N | Cache hit on second search call → DB called once
+        // Search_Vocabulary_05 | N | Cache hit on second search call → DB called once
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SecondCallSameKey_ShouldUseCacheAndCallDbOnce()
@@ -206,7 +206,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Search", new TestCaseDetail
             {
                 FunctionGroup     = "Search Vocabulary",
-                TestCaseID        = "TC-VOCAB-SRC-05",
+                TestCaseID        = "Search_Vocabulary_05",
                 Description       = "Same search term called twice → 2nd call uses cache, DB called only once",
                 ExpectedResult    = "Return 200 twice, DB called exactly 1 time",
                 StatusRound1      = "Passed",
@@ -217,7 +217,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-SRC-06 | N | Search with zero results → 200 empty list
+        // Search_Vocabulary_06 | N | Search with zero results → 200 empty list
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NoResults_ShouldReturn200WithEmptyList()
@@ -247,7 +247,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Search", new TestCaseDetail
             {
                 FunctionGroup     = "Search Vocabulary",
-                TestCaseID        = "TC-VOCAB-SRC-06",
+                TestCaseID        = "Search_Vocabulary_06",
                 Description       = "Valid search term but no matching results → 200 empty list",
                 ExpectedResult    = "Return 200, TotalCount = 0, Items = empty",
                 StatusRound1      = "Passed",

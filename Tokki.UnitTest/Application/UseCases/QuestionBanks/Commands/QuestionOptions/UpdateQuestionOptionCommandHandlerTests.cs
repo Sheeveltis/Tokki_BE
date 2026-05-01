@@ -56,9 +56,9 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
             return qb;
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-QBO-UD-01 | A | Missing OptionId -> 404
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdateQuestionOptionCommandHandler_01 | A | Missing OptionId -> 404
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_OptionNotFound_ShouldReturn404()
         {
@@ -75,7 +75,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
             QACollector.LogTestCase("Question Bank Option - Update", new TestCaseDetail
             {
                 FunctionGroup = "UpdateQuestionOptionCommandHandler",
-                TestCaseID = "TC-QBO-UD-01",
+                TestCaseID = "UpdateQuestionOptionCommandHandler_01",
                 Description = "Returns error if Option is not found",
                 ExpectedResult = "Return 404 QuestionOptionNotFound",
                 StatusRound1 = "Passed",
@@ -85,9 +85,9 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-QBO-UD-02 | A | Duplicate New KeyOption -> 400
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdateQuestionOptionCommandHandler_02 | A | Duplicate New KeyOption -> 400
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_DuplicateKeyOption_ShouldReturn400()
         {
@@ -99,12 +99,12 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
 
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            result.Errors.First().Description.Should().Contain("đã tồn tại");
+            result.Errors.First().Description.Should().Contain("d� t?n t?i");
 
             QACollector.LogTestCase("Question Bank Option - Update", new TestCaseDetail
             {
                 FunctionGroup = "UpdateQuestionOptionCommandHandler",
-                TestCaseID = "TC-QBO-UD-02",
+                TestCaseID = "UpdateQuestionOptionCommandHandler_02",
                 Description = "Rejects update if new KeyOption conflicts with other options",
                 ExpectedResult = "Return 400",
                 StatusRound1 = "Passed",
@@ -114,14 +114,14 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-QBO-UD-03 | A | Clear Content/Image Fails -> 400
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdateQuestionOptionCommandHandler_03 | A | Clear Content/Image Fails -> 400
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_ContentImageCleared_ShouldReturn400()
         {
             var qb = SetupValidQuestionBankDraft();
-            // Erase content directly in DB so that incoming command "" triggers empty validation
+            // Erase content directly in DB so that incoming command"" triggers empty validation
             qb.QuestionOptions.First(o => o.OptionId == "opt-1").Content = "";
             
             var command = new UpdateQuestionOptionCommand { QuestionBankId = "qb-1", OptionId = "opt-1", KeyOption = "C", Content = "" };
@@ -135,7 +135,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
             QACollector.LogTestCase("Question Bank Option - Update", new TestCaseDetail
             {
                 FunctionGroup = "UpdateQuestionOptionCommandHandler",
-                TestCaseID = "TC-QBO-UD-03",
+                TestCaseID = "UpdateQuestionOptionCommandHandler_03",
                 Description = "Blocks update resulting in empty content and image",
                 ExpectedResult = "Return 400",
                 StatusRound1 = "Passed",
@@ -145,9 +145,9 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-QBO-UD-04 | A | Remove Single Correct Option -> 400
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdateQuestionOptionCommandHandler_04 | A | Remove Single Correct Option -> 400
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_RemoveSingleCorrect_ShouldReturn400()
         {
@@ -159,12 +159,12 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
 
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            result.Errors.First().Description.Should().Contain("ít nhất một đáp án đúng");
+            result.Errors.First().Description.Should().Contain("�t nh?t m?t d�p �n d�ng");
 
             QACollector.LogTestCase("Question Bank Option - Update", new TestCaseDetail
             {
                 FunctionGroup = "UpdateQuestionOptionCommandHandler",
-                TestCaseID = "TC-QBO-UD-04",
+                TestCaseID = "UpdateQuestionOptionCommandHandler_04",
                 Description = "Blocks un-checking IsCorrect if it's the only correct option",
                 ExpectedResult = "Return 400 ValidationFailed",
                 StatusRound1 = "Passed",
@@ -174,9 +174,9 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-QBO-UD-05 | N | Successfully Updating Toggles Other Correct
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdateQuestionOptionCommandHandler_05 | N | Successfully Updating Toggles Other Correct
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_SuccessUpdate_ToggleCorrect_ShouldReturn200()
         {
@@ -200,7 +200,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
             QACollector.LogTestCase("Question Bank Option - Update", new TestCaseDetail
             {
                 FunctionGroup = "UpdateQuestionOptionCommandHandler",
-                TestCaseID = "TC-QBO-UD-05",
+                TestCaseID = "UpdateQuestionOptionCommandHandler_05",
                 Description = "Sets new option correctly and un-sets existing correct ones",
                 ExpectedResult = "Return 200",
                 StatusRound1 = "Passed",
@@ -210,9 +210,9 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-QBO-UD-06 | N | Basic Modification Success
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdateQuestionOptionCommandHandler_06 | N | Basic Modification Success
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_SuccessUpdate_BasicFields_ShouldReturn200()
         {
@@ -230,7 +230,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
             QACollector.LogTestCase("Question Bank Option - Update", new TestCaseDetail
             {
                 FunctionGroup = "UpdateQuestionOptionCommandHandler",
-                TestCaseID = "TC-QBO-UD-06",
+                TestCaseID = "UpdateQuestionOptionCommandHandler_06",
                 Description = "Correctly modifies basic fields without toggling correct status",
                 ExpectedResult = "Return 200",
                 StatusRound1 = "Passed",

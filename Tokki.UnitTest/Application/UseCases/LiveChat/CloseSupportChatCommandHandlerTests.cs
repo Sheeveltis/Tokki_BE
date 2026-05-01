@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -19,7 +19,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             return new CloseSupportChatCommandHandler((repo ?? new Mock<IChatRoomRepository>()).Object);
         }
 
-        // TC-LCH-CSC-01 | 404 | Room not found
+        // CloseSupportChat_01 | 404 | Room not found
         [Fact]
         public async Task Handle_RoomNull_ShouldReturnFailure()
         {
@@ -34,7 +34,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
 
             QACollector.LogTestCase("LiveChat - Close Support", new TestCaseDetail
             {
-                FunctionGroup = "CloseSupportChat", TestCaseID = "TC-LCH-CSC-01",
+                FunctionGroup = "CloseSupportChat", TestCaseID = "CloseSupportChat_01",
                 Description = "Room cannot be resolved against existing entity sets via ID",
                 ExpectedResult = "Return 404 Validation Failure", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -42,7 +42,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             });
         }
 
-        // TC-LCH-CSC-02 | 403 | User is not member
+        // CloseSupportChat_02 | 403 | User is not member
         [Fact]
         public async Task Handle_UserNotMember_ShouldReturnFailureAuthorization()
         {
@@ -59,7 +59,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
 
             QACollector.LogTestCase("LiveChat - Close Support", new TestCaseDetail
             {
-                FunctionGroup = "CloseSupportChat", TestCaseID = "TC-LCH-CSC-02",
+                FunctionGroup = "CloseSupportChat", TestCaseID = "CloseSupportChat_02",
                 Description = "User submitting request exists outside of the room's ChatMember tracking",
                 ExpectedResult = "Return Failure 403", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -67,7 +67,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             });
         }
 
-        // TC-LCH-CSC-03 | 200 | Valid Logic updates IsClosed to true
+        // CloseSupportChat_03 | 200 | Valid Logic updates IsClosed to true
         [Fact]
         public async Task Handle_ValidRequest_ShouldSetIsClosedTrueAndSave()
         {
@@ -87,7 +87,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
 
             QACollector.LogTestCase("LiveChat - Close Support", new TestCaseDetail
             {
-                FunctionGroup = "CloseSupportChat", TestCaseID = "TC-LCH-CSC-03",
+                FunctionGroup = "CloseSupportChat", TestCaseID = "CloseSupportChat_03",
                 Description = "Command fully executes, flipping IsClosed to true persisting downwards",
                 ExpectedResult = "Return 200 and true", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -95,7 +95,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             });
         }
 
-        // TC-LCH-CSC-04 | 200 | Idempotent Close (Already closed)
+        // CloseSupportChat_04 | 200 | Idempotent Close (Already closed)
         [Fact]
         public async Task Handle_RoomAlreadyClosed_ShouldIdempotentlyReturnSuccess()
         {
@@ -112,7 +112,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
 
             QACollector.LogTestCase("LiveChat - Close Support", new TestCaseDetail
             {
-                FunctionGroup = "CloseSupportChat", TestCaseID = "TC-LCH-CSC-04",
+                FunctionGroup = "CloseSupportChat", TestCaseID = "CloseSupportChat_04",
                 Description = "Room already closed still goes through setting boolean gracefully acting idempotent",
                 ExpectedResult = "Return 200, successfully repeats closure", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -120,7 +120,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             });
         }
 
-        // TC-LCH-CSC-05 | 500 | UpdateRoomThrows
+        // CloseSupportChat_05 | 500 | UpdateRoomThrows
         [Fact]
         public async Task Handle_UpdateRoomThrows_ShouldPropagateException()
         {
@@ -136,7 +136,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
 
             QACollector.LogTestCase("LiveChat - Close Support", new TestCaseDetail
             {
-                FunctionGroup = "CloseSupportChat", TestCaseID = "TC-LCH-CSC-05",
+                FunctionGroup = "CloseSupportChat", TestCaseID = "CloseSupportChat_05",
                 Description = "Uncaught repository failure immediately exposes Exception to outer MediatR ring",
                 ExpectedResult = "Throws Exception natively", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -144,7 +144,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             });
         }
 
-        // TC-LCH-CSC-06 | 500 | SaveChangesThrows
+        // CloseSupportChat_06 | 500 | SaveChangesThrows
         [Fact]
         public async Task Handle_SaveChangesThrows_ShouldPropagateException()
         {
@@ -160,7 +160,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
 
             QACollector.LogTestCase("LiveChat - Close Support", new TestCaseDetail
             {
-                FunctionGroup = "CloseSupportChat", TestCaseID = "TC-LCH-CSC-06",
+                FunctionGroup = "CloseSupportChat", TestCaseID = "CloseSupportChat_06",
                 Description = "Final EF Commit errors mapping similarly outwards",
                 ExpectedResult = "Throws Exception internally mapped", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

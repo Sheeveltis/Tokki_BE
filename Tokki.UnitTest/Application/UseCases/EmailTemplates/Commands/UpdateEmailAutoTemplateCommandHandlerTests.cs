@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -29,7 +29,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EMTA-UP-01 | A | Template Not Found -> Error
+        // UpdateEmailAutoTemplateCommandHandler_01 | A | Template Not Found -> Error
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_TemplateNotFound_ShouldReturnError()
@@ -46,7 +46,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("Email Template - Update Auto", new TestCaseDetail
             {
                 FunctionGroup = "UpdateEmailAutoTemplateCommandHandler",
-                TestCaseID = "TC-EMTA-UP-01",
+                TestCaseID = "UpdateEmailAutoTemplateCommandHandler_01",
                 Description = "Returns EmailTemplateNotFound if ID not present",
                 ExpectedResult = "Validation Error EmailTemplateNotFound",
                 StatusRound1 = "Passed",
@@ -57,7 +57,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EMTA-UP-02 | A | Name Duplication -> Error
+        // UpdateEmailAutoTemplateCommandHandler_02 | A | Name Duplication -> Error
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NameDuplicated_ShouldReturnError()
@@ -79,7 +79,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("Email Template - Update Auto", new TestCaseDetail
             {
                 FunctionGroup = "UpdateEmailAutoTemplateCommandHandler",
-                TestCaseID = "TC-EMTA-UP-02",
+                TestCaseID = "UpdateEmailAutoTemplateCommandHandler_02",
                 Description = "Changing name to an existing Active template throws KeyDuplication",
                 ExpectedResult = "KeyDuplicated Error",
                 StatusRound1 = "Passed",
@@ -90,7 +90,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EMTA-UP-03 | A | Config Duplication -> Error
+        // UpdateEmailAutoTemplateCommandHandler_03 | A | Config Duplication -> Error
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ConfigDuplicated_ShouldReturnError()
@@ -113,7 +113,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("Email Template - Update Auto", new TestCaseDetail
             {
                 FunctionGroup = "UpdateEmailAutoTemplateCommandHandler",
-                TestCaseID = "TC-EMTA-UP-03",
+                TestCaseID = "UpdateEmailAutoTemplateCommandHandler_03",
                 Description = "Changing enum composite keys overlapping with active template triggers error",
                 ExpectedResult = "KeyDuplicated Error",
                 StatusRound1 = "Passed",
@@ -124,7 +124,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EMTA-UP-04 | N | No Changes made -> 200 Fast Return
+        // UpdateEmailAutoTemplateCommandHandler_04 | N | No Changes made -> 200 Fast Return
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NoChanges_ShouldReturn200WithoutSaving()
@@ -145,7 +145,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("Email Template - Update Auto", new TestCaseDetail
             {
                 FunctionGroup = "UpdateEmailAutoTemplateCommandHandler",
-                TestCaseID = "TC-EMTA-UP-04",
+                TestCaseID = "UpdateEmailAutoTemplateCommandHandler_04",
                 Description = "If no fields changed, fast return true preventing DB hit",
                 ExpectedResult = "Return 200 Not Changed",
                 StatusRound1 = "Passed",
@@ -156,7 +156,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EMTA-UP-05 | N | Partially Updates Fields -> 200 Success
+        // UpdateEmailAutoTemplateCommandHandler_05 | N | Partially Updates Fields -> 200 Success
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_PartialUpdates_ShouldSaveAndReturn200()
@@ -179,7 +179,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("Email Template - Update Auto", new TestCaseDetail
             {
                 FunctionGroup = "UpdateEmailAutoTemplateCommandHandler",
-                TestCaseID = "TC-EMTA-UP-05",
+                TestCaseID = "UpdateEmailAutoTemplateCommandHandler_05",
                 Description = "String properties update correctly if given different values",
                 ExpectedResult = "Return 200 Updated",
                 StatusRound1 = "Passed",
@@ -190,7 +190,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EMTA-UP-06 | N | Update duplicated Name but is same template -> 200 Success
+        // UpdateEmailAutoTemplateCommandHandler_06 | N | Update duplicated Name but is same template -> 200 Success
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NameCheckSameId_ShouldPass()
@@ -212,7 +212,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("Email Template - Update Auto", new TestCaseDetail
             {
                 FunctionGroup = "UpdateEmailAutoTemplateCommandHandler",
-                TestCaseID = "TC-EMTA-UP-06",
+                TestCaseID = "UpdateEmailAutoTemplateCommandHandler_06",
                 Description = "Name duplicate check passes if existingByName has SAME id as current",
                 ExpectedResult = "Return 200 bypass",
                 StatusRound1 = "Passed",

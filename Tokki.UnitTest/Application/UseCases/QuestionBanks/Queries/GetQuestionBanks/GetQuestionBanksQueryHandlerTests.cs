@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -21,7 +21,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Queries.GetQuestionB
         private GetQuestionBanksQueryHandler CreateHandler() => new(_repoMock.Object);
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-GL-01 | N | Success No Filter -> 200
+        // GetQuestionBanksQueryHandler_01 | N | Success No Filter -> 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NoFilter_ShouldReturnPagedValid()
@@ -43,7 +43,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Queries.GetQuestionB
             QACollector.LogTestCase("Question Bank - Get List", new TestCaseDetail
             {
                 FunctionGroup = "GetQuestionBanksQueryHandler",
-                TestCaseID = "TC-QB-GL-01",
+                TestCaseID = "GetQuestionBanksQueryHandler_01",
                 Description = "Returns paged items correctly if no extra filters applied",
                 ExpectedResult = "Return 200 with items and totalCount 50",
                 StatusRound1 = "Passed",
@@ -54,7 +54,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Queries.GetQuestionB
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-GL-02 | N | Success Filter CreateBy -> 200 (Total count patched)
+        // GetQuestionBanksQueryHandler_02 | N | Success Filter CreateBy -> 200 (Total count patched)
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_FilterCreateBy_ShouldReturnFilteredAndPatchedCount()
@@ -81,7 +81,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Queries.GetQuestionB
             QACollector.LogTestCase("Question Bank - Get List", new TestCaseDetail
             {
                 FunctionGroup = "GetQuestionBanksQueryHandler",
-                TestCaseID = "TC-QB-GL-02",
+                TestCaseID = "GetQuestionBanksQueryHandler_02",
                 Description = "Filters by CreateBy and patches TotalCount",
                 ExpectedResult = "Return 200 with TotalCount matching items count",
                 StatusRound1 = "Passed",
@@ -92,7 +92,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Queries.GetQuestionB
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-GL-03 | N | Success Filter ApprovedBy -> 200
+        // GetQuestionBanksQueryHandler_03 | N | Success Filter ApprovedBy -> 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_FilterApprovedBy_ShouldReturnFiltered()
@@ -118,7 +118,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Queries.GetQuestionB
             QACollector.LogTestCase("Question Bank - Get List", new TestCaseDetail
             {
                 FunctionGroup = "GetQuestionBanksQueryHandler",
-                TestCaseID = "TC-QB-GL-03",
+                TestCaseID = "GetQuestionBanksQueryHandler_03",
                 Description = "Filters by ApprovedBy correctly and patches TotalCount",
                 ExpectedResult = "Return 200 with 1 item",
                 StatusRound1 = "Passed",
@@ -129,7 +129,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Queries.GetQuestionB
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-GL-04 | N | Options Array Ordered Check
+        // GetQuestionBanksQueryHandler_04 | N | Options Array Ordered Check
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_OptionsAreOrdered_ShouldReturn200()
@@ -164,7 +164,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Queries.GetQuestionB
             QACollector.LogTestCase("Question Bank - Get List", new TestCaseDetail
             {
                 FunctionGroup = "GetQuestionBanksQueryHandler",
-                TestCaseID = "TC-QB-GL-04",
+                TestCaseID = "GetQuestionBanksQueryHandler_04",
                 Description = "Options are mapped and ordered correctly",
                 ExpectedResult = "Return 200",
                 StatusRound1 = "Passed",
@@ -175,7 +175,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Queries.GetQuestionB
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-GL-05 | B | Empty Repo Result -> 200 Empty List
+        // GetQuestionBanksQueryHandler_05 | B | Empty Repo Result -> 200 Empty List
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyResult_ShouldReturnEmptyList()
@@ -194,7 +194,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Queries.GetQuestionB
             QACollector.LogTestCase("Question Bank - Get List", new TestCaseDetail
             {
                 FunctionGroup = "GetQuestionBanksQueryHandler",
-                TestCaseID = "TC-QB-GL-05",
+                TestCaseID = "GetQuestionBanksQueryHandler_05",
                 Description = "Returns empty safely if DB is empty",
                 ExpectedResult = "Return 200 empty items",
                 StatusRound1 = "Passed",
@@ -205,7 +205,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Queries.GetQuestionB
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-GL-06 | N | Filtering Filters Out All Items -> 200 Empty Patched
+        // GetQuestionBanksQueryHandler_06 | N | Filtering Filters Out All Items -> 200 Empty Patched
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_FilterAllOut_ShouldReturnEmptyPatchedCount()
@@ -229,7 +229,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Queries.GetQuestionB
             QACollector.LogTestCase("Question Bank - Get List", new TestCaseDetail
             {
                 FunctionGroup = "GetQuestionBanksQueryHandler",
-                TestCaseID = "TC-QB-GL-06",
+                TestCaseID = "GetQuestionBanksQueryHandler_06",
                 Description = "Returns empty gracefully when local filter eliminates all items",
                 ExpectedResult = "Return 200 with TotalCount=0",
                 StatusRound1 = "Passed",

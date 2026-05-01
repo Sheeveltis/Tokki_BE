@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -23,7 +23,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VEXM-GBV-01 | A | Empty VocabularyId → 400
+        // Get_Vocabulary_Examples_By_VocabularyId_01 | A | Empty VocabularyId → 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyVocabularyId_ShouldReturn400()
@@ -43,7 +43,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
             QACollector.LogTestCase("Vocabulary Example - Get By Vocab", new TestCaseDetail
             {
                 FunctionGroup     = "Get Vocabulary Examples By VocabularyId",
-                TestCaseID        = "TC-VEXM-GBV-01",
+                TestCaseID        = "Get_Vocabulary_Examples_By_VocabularyId_01",
                 Description       = "Get examples with empty VocabularyId",
                 ExpectedResult    = "Return 400 VocabularyId empty",
                 StatusRound1      = "Passed",
@@ -54,7 +54,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VEXM-GBV-02 | A | Whitespace VocabularyId → 400
+        // Get_Vocabulary_Examples_By_VocabularyId_02 | A | Whitespace VocabularyId → 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_WhitespaceVocabularyId_ShouldReturn400()
@@ -74,7 +74,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
             QACollector.LogTestCase("Vocabulary Example - Get By Vocab", new TestCaseDetail
             {
                 FunctionGroup     = "Get Vocabulary Examples By VocabularyId",
-                TestCaseID        = "TC-VEXM-GBV-02",
+                TestCaseID        = "Get_Vocabulary_Examples_By_VocabularyId_02",
                 Description       = "Get examples with whitespace-only VocabularyId",
                 ExpectedResult    = "Return 400 VocabularyId empty",
                 StatusRound1      = "Passed",
@@ -85,7 +85,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VEXM-GBV-03 | N | Valid VocabularyId, no examples → 200 empty list
+        // Get_Vocabulary_Examples_By_VocabularyId_03 | N | Valid VocabularyId, no examples → 200 empty list
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NoExamples_ShouldReturn200EmptyList()
@@ -108,7 +108,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
             QACollector.LogTestCase("Vocabulary Example - Get By Vocab", new TestCaseDetail
             {
                 FunctionGroup     = "Get Vocabulary Examples By VocabularyId",
-                TestCaseID        = "TC-VEXM-GBV-03",
+                TestCaseID        = "Get_Vocabulary_Examples_By_VocabularyId_03",
                 Description       = "Valid VocabularyId but vocab has no example sentences → 200 empty list",
                 ExpectedResult    = "Return 200, Data = empty list",
                 StatusRound1      = "Passed",
@@ -119,7 +119,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VEXM-GBV-04 | N | Valid VocabularyId, has 2 active examples → 200
+        // Get_Vocabulary_Examples_By_VocabularyId_04 | N | Valid VocabularyId, has 2 active examples → 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_HasExamples_ShouldReturn200WithList()
@@ -147,7 +147,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
             QACollector.LogTestCase("Vocabulary Example - Get By Vocab", new TestCaseDetail
             {
                 FunctionGroup     = "Get Vocabulary Examples By VocabularyId",
-                TestCaseID        = "TC-VEXM-GBV-04",
+                TestCaseID        = "Get_Vocabulary_Examples_By_VocabularyId_04",
                 Description       = "Valid VocabularyId with 2 active examples → returns list of 2",
                 ExpectedResult    = "Return 200, Data.Count = 2",
                 StatusRound1      = "Passed",
@@ -158,7 +158,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VEXM-GBV-05 | N | DTO correctly maps Sentence and Translation fields
+        // Get_Vocabulary_Examples_By_VocabularyId_05 | N | DTO correctly maps Sentence and Translation fields
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidExamples_DtoShouldMapSentenceAndTranslation()
@@ -185,7 +185,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
             QACollector.LogTestCase("Vocabulary Example - Get By Vocab", new TestCaseDetail
             {
                 FunctionGroup     = "Get Vocabulary Examples By VocabularyId",
-                TestCaseID        = "TC-VEXM-GBV-05",
+                TestCaseID        = "Get_Vocabulary_Examples_By_VocabularyId_05",
                 Description       = "Response DTO correctly maps ExampleId, Sentence, Translation from entity",
                 ExpectedResult    = "Return 200, DTO fields correctly mapped",
                 StatusRound1      = "Passed",
@@ -196,7 +196,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VEXM-GBV-06 | N | Repository called exactly once
+        // Get_Vocabulary_Examples_By_VocabularyId_06 | N | Repository called exactly once
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidQuery_ShouldCallRepositoryOnce()
@@ -220,7 +220,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample
             QACollector.LogTestCase("Vocabulary Example - Get By Vocab", new TestCaseDetail
             {
                 FunctionGroup     = "Get Vocabulary Examples By VocabularyId",
-                TestCaseID        = "TC-VEXM-GBV-06",
+                TestCaseID        = "Get_Vocabulary_Examples_By_VocabularyId_06",
                 Description       = "Handler calls GetByVocabularyIdAsync exactly once per request",
                 ExpectedResult    = "Return 200, GetByVocabularyIdAsync called exactly once",
                 StatusRound1      = "Passed",

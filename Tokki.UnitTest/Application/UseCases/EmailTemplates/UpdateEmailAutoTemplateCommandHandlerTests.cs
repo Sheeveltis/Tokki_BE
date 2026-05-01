@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -49,7 +49,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email Template - Update Auto", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateEmailAutoTemplate",
-                TestCaseID        = "TC-EMAIL-UPD-01",
+                TestCaseID        = "UpdateEmailAutoTemplate_01",
                 Description       = "TemplateId does not exist → EmailTemplateNotFound",
                 ExpectedResult    = "Return Failure",
                 StatusRound1      = "Passed",
@@ -76,7 +76,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email Template - Update Auto", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateEmailAutoTemplate",
-                TestCaseID        = "TC-EMAIL-UPD-02",
+                TestCaseID        = "UpdateEmailAutoTemplate_02",
                 Description       = "New TemplateName already used by another template → Duplicate",
                 ExpectedResult    = "Return Failure (duplicate name)",
                 StatusRound1      = "Passed",
@@ -102,7 +102,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email Template - Update Auto", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateEmailAutoTemplate",
-                TestCaseID        = "TC-EMAIL-UPD-03",
+                TestCaseID        = "UpdateEmailAutoTemplate_03",
                 Description       = "No fields changed → Success without UpdateAsync called",
                 ExpectedResult    = "Return 200, UpdateAsync never called",
                 StatusRound1      = "Passed",
@@ -131,7 +131,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email Template - Update Auto", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateEmailAutoTemplate",
-                TestCaseID        = "TC-EMAIL-UPD-04",
+                TestCaseID        = "UpdateEmailAutoTemplate_04",
                 Description       = "Subject changed → template.Subject updated, UpdateAsync called",
                 ExpectedResult    = "Return 200, template.Subject = 'New Subject'",
                 StatusRound1      = "Passed",
@@ -159,7 +159,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email Template - Update Auto", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateEmailAutoTemplate",
-                TestCaseID        = "TC-EMAIL-UPD-05",
+                TestCaseID        = "UpdateEmailAutoTemplate_05",
                 Description       = "Status changed from Active → Draft",
                 ExpectedResult    = "Return 200, template.Status = Draft",
                 StatusRound1      = "Passed",
@@ -181,7 +181,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email Template - Update Auto", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateEmailAutoTemplate",
-                TestCaseID        = "TC-EMAIL-UPD-06",
+                TestCaseID        = "UpdateEmailAutoTemplate_06",
                 Description       = "Repository throws → exception propagates",
                 ExpectedResult    = "Throws Exception",
                 StatusRound1      = "Passed",

@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -97,7 +97,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-FBC-EX-01 | E | Exception during API Call -> 500
+        // FacebookCompleteRegistrationCommandHandler_01 | E | Exception during API Call -> 500
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_FacebookApiThrowsException_ShouldReturn500()
@@ -113,7 +113,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - FB Complete Registration", new TestCaseDetail
             {
                 FunctionGroup = "FacebookCompleteRegistrationCommandHandler",
-                TestCaseID = "TC-FBC-EX-01",
+                TestCaseID = "FacebookCompleteRegistrationCommandHandler_01",
                 Description = "Returns 500 when Facebook API throws HTTP request exception",
                 ExpectedResult = "Return 500",
                 StatusRound1 = "Passed",
@@ -124,7 +124,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-FBC-EX-02 | A | Account Exists but BANNED -> 403
+        // FacebookCompleteRegistrationCommandHandler_02 | A | Account Exists but BANNED -> 403
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_AccountBanned_ShouldReturn403()
@@ -143,7 +143,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - FB Complete Registration", new TestCaseDetail
             {
                 FunctionGroup = "FacebookCompleteRegistrationCommandHandler",
-                TestCaseID = "TC-FBC-EX-02",
+                TestCaseID = "FacebookCompleteRegistrationCommandHandler_02",
                 Description = "Existing user account mapped to email is Banned",
                 ExpectedResult = "Return 403 AccountBanned",
                 StatusRound1 = "Passed",
@@ -154,7 +154,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-FBC-EX-03 | A | Account Exists but INACTIVE -> 403
+        // FacebookCompleteRegistrationCommandHandler_03 | A | Account Exists but INACTIVE -> 403
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_AccountInactive_ShouldReturn403()
@@ -173,7 +173,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - FB Complete Registration", new TestCaseDetail
             {
                 FunctionGroup = "FacebookCompleteRegistrationCommandHandler",
-                TestCaseID = "TC-FBC-EX-03",
+                TestCaseID = "FacebookCompleteRegistrationCommandHandler_03",
                 Description = "Existing user account mapped to email is Inactive",
                 ExpectedResult = "Return 403 AccountInactive",
                 StatusRound1 = "Passed",
@@ -184,7 +184,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-FBC-EX-04 | N | Merge Successful Even Without Name Input
+        // FacebookCompleteRegistrationCommandHandler_04 | N | Merge Successful Even Without Name Input
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_CreateAccountWithoutNameFromCommand_ShouldUseDefaultNameNullSafe()
@@ -202,7 +202,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - FB Complete Registration", new TestCaseDetail
             {
                 FunctionGroup = "FacebookCompleteRegistrationCommandHandler",
-                TestCaseID = "TC-FBC-EX-04",
+                TestCaseID = "FacebookCompleteRegistrationCommandHandler_04",
                 Description = "Command Name is null should safely create account",
                 ExpectedResult = "Return 200 Success",
                 StatusRound1 = "Passed",
@@ -213,7 +213,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-FBC-EX-05 | B | New Account Creation With Exception Creating Social Login
+        // FacebookCompleteRegistrationCommandHandler_05 | B | New Account Creation With Exception Creating Social Login
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_CreateSocialLoginFails_ShouldThrowReturn500()
@@ -233,7 +233,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - FB Complete Registration", new TestCaseDetail
             {
                 FunctionGroup = "FacebookCompleteRegistrationCommandHandler",
-                TestCaseID = "TC-FBC-EX-05",
+                TestCaseID = "FacebookCompleteRegistrationCommandHandler_05",
                 Description = "If saving social login entity fails, it correctly returns 500",
                 ExpectedResult = "Return 500",
                 StatusRound1 = "Passed",
@@ -244,7 +244,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-FBC-EX-06 | N | Id Generator Custom Format Verification
+        // FacebookCompleteRegistrationCommandHandler_06 | N | Id Generator Custom Format Verification
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_VerifyIdGeneratorBehavior()
@@ -267,7 +267,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - FB Complete Registration", new TestCaseDetail
             {
                 FunctionGroup = "FacebookCompleteRegistrationCommandHandler",
-                TestCaseID = "TC-FBC-EX-06",
+                TestCaseID = "FacebookCompleteRegistrationCommandHandler_06",
                 Description = "Executes new account creation mapping fields effectively",
                 ExpectedResult = "Mapped properly to AddAsync",
                 StatusRound1 = "Passed",

@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using Tokki.Application.Common.Models;
-using Tokki.Application.IRepositories; 
-using Tokki.Application.UseCases.Roadmap.DTOs; 
+using Tokki.Application.IRepositories;
+using Tokki.Application.UseCases.Roadmap.DTOs;
 
 namespace Tokki.Application.UseCases.Roadmap.Queries.GetRoadmap
 {
@@ -34,7 +34,7 @@ namespace Tokki.Application.UseCases.Roadmap.Queries.GetRoadmap
                     WeekIndex = w.WeekIndex,
                     FocusGoal = w.WeekFocusGoal,
                     Status = w.Status.ToString(),
-                    ProgressPercent = w.DailyTasks.Count == 0 ? 0    
+                    ProgressPercent = w.DailyTasks.Count == 0 ? 0
                     : (int)((double)w.DailyTasks.Count(t => t.IsCompleted) / w.DailyTasks.Count * 100),
                     Tasks = w.DailyTasks.OrderBy(t => t.DayIndex).Select(t => new TaskViewModel
                     {
@@ -46,7 +46,7 @@ namespace Tokki.Application.UseCases.Roadmap.Queries.GetRoadmap
                         DayIndex = t.DayIndex,
                         HasContent = !string.IsNullOrEmpty(t.AiGeneratedContent),
                         ExamId = t.ExamId,
-                        QuestionTypeId = t.QuestionTypeId
+                        QuestionTypeId = t.QuestionTypeId ?? t.TargetQuestionTypeId
                     }).ToList()
                 }).ToList()
             };

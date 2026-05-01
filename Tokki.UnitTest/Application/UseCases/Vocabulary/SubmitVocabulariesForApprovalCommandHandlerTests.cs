@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -31,7 +31,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-SFA-01 | A | No token → 401
+        // Submit_Vocabularies_For_Approval_01 | A | No token → 401
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_Unauthorized_ShouldReturn401()
@@ -54,7 +54,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Submit For Approval", new TestCaseDetail
             {
                 FunctionGroup     = "Submit Vocabularies For Approval",
-                TestCaseID        = "TC-VOCAB-SFA-01",
+                TestCaseID        = "Submit_Vocabularies_For_Approval_01",
                 Description       = "Submit vocabulary for approval without authentication token",
                 ExpectedResult    = "Return 401 Unauthorized",
                 StatusRound1      = "Passed",
@@ -65,7 +65,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-SFA-02 | A | Empty VocabularyIds → 400
+        // Submit_Vocabularies_For_Approval_02 | A | Empty VocabularyIds → 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyVocabularyIds_ShouldReturn400()
@@ -85,7 +85,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Submit For Approval", new TestCaseDetail
             {
                 FunctionGroup     = "Submit Vocabularies For Approval",
-                TestCaseID        = "TC-VOCAB-SFA-02",
+                TestCaseID        = "Submit_Vocabularies_For_Approval_02",
                 Description       = "Submit with an empty vocabulary list",
                 ExpectedResult    = "Return 400 VOCABULARY_EMPTY",
                 StatusRound1      = "Passed",
@@ -96,7 +96,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-SFA-03 | A | Vocab not found → exception → 500
+        // Submit_Vocabularies_For_Approval_03 | A | Vocab not found → exception → 500
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_VocabNotFound_ShouldReturn500()
@@ -120,7 +120,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Submit For Approval", new TestCaseDetail
             {
                 FunctionGroup     = "Submit Vocabularies For Approval",
-                TestCaseID        = "TC-VOCAB-SFA-03",
+                TestCaseID        = "Submit_Vocabularies_For_Approval_03",
                 Description       = "Submit vocab that doesn't exist → exception → rollback → 500",
                 ExpectedResult    = "Transaction rollback, return 500",
                 StatusRound1      = "Passed",
@@ -131,7 +131,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-SFA-04 | A | Vocab not Draft (Active) → exception → 500
+        // Submit_Vocabularies_For_Approval_04 | A | Vocab not Draft (Active) → exception → 500
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_VocabNotDraft_ShouldReturn500()
@@ -156,7 +156,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Submit For Approval", new TestCaseDetail
             {
                 FunctionGroup     = "Submit Vocabularies For Approval",
-                TestCaseID        = "TC-VOCAB-SFA-04",
+                TestCaseID        = "Submit_Vocabularies_For_Approval_04",
                 Description       = "Submit vocab that is in Active state (not Draft) → exception thrown",
                 ExpectedResult    = "Exception thrown → rollback → return 500",
                 StatusRound1      = "Passed",
@@ -167,7 +167,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-SFA-05 | N | Valid Draft vocab → PendingApproval → 200
+        // Submit_Vocabularies_For_Approval_05 | N | Valid Draft vocab → PendingApproval → 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidDraftVocab_ShouldSetPendingApprovalAndReturn200()
@@ -193,7 +193,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Submit For Approval", new TestCaseDetail
             {
                 FunctionGroup     = "Submit Vocabularies For Approval",
-                TestCaseID        = "TC-VOCAB-SFA-05",
+                TestCaseID        = "Submit_Vocabularies_For_Approval_05",
                 Description       = "Submit valid Draft vocab → Status updated to PendingApproval",
                 ExpectedResult    = "Status = PendingApproval, return 200",
                 StatusRound1      = "Passed",
@@ -204,7 +204,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-SFA-06 | N | Multiple Draft vocabs → all PendingApproval → 200
+        // Submit_Vocabularies_For_Approval_06 | N | Multiple Draft vocabs → all PendingApproval → 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_MultipleDraftVocabs_ShouldSetAllPendingAndReturn200()
@@ -236,7 +236,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Submit For Approval", new TestCaseDetail
             {
                 FunctionGroup     = "Submit Vocabularies For Approval",
-                TestCaseID        = "TC-VOCAB-SFA-06",
+                TestCaseID        = "Submit_Vocabularies_For_Approval_06",
                 Description       = "Submit 2 Draft vocabs → both updated to PendingApproval → 200",
                 ExpectedResult    = "Both vocab.Status = PendingApproval, return 200",
                 StatusRound1      = "Passed",

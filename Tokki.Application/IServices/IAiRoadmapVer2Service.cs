@@ -9,7 +9,7 @@ namespace Tokki.Application.IServices
             List<string> questionTypeIds,
             CurrentTopikLevel currentLevel,
             TargetAimLevel targetLevel,
-            List<QuestionTypeMenuDto> typeMenu,
+            List<QuestionTypeMenuItem> typeMenu,
             CancellationToken token = default);
 
         Task<AiRoadmapResponse?> GenerateStudyPlanAsync(
@@ -19,8 +19,8 @@ namespace Tokki.Application.IServices
             int totalWeeks,
             List<string> focusTypeIds,
             List<string> deferredTypeIds,
-            List<QuestionTypeMenuDto> weakTypeInfos,
-            List<QuestionTypeMenuDto> fullMenu,
+            List<QuestionTypeMenuItem> weakTypeInfos,
+            List<QuestionTypeMenuItem> fullMenu,
             CancellationToken token = default);
     }
 }

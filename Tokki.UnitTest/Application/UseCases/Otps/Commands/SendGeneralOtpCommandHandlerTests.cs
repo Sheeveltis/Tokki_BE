@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -30,7 +30,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-OTP-SG-01 | A | User Not Found -> Failure
+        // SendGeneralOtpCommandHandler_01 | A | User Not Found -> Failure
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_UserNotFound_ShouldReturnFailure()
@@ -51,7 +51,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps.Commands
             QACollector.LogTestCase("OTP - Send General", new TestCaseDetail
             {
                 FunctionGroup = "SendGeneralOtpCommandHandler",
-                TestCaseID = "TC-OTP-SG-01",
+                TestCaseID = "SendGeneralOtpCommandHandler_01",
                 Description = "Returns failure when user email is not found",
                 ExpectedResult = "Return failure with UserNotFound",
                 StatusRound1 = "Passed",
@@ -62,7 +62,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-OTP-SG-02 | N | Success -> Sets Redis and Sends Email -> 200
+        // SendGeneralOtpCommandHandler_02 | N | Success -> Sets Redis and Sends Email -> 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidRequest_ShouldReturnSuccess()
@@ -85,7 +85,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps.Commands
             QACollector.LogTestCase("OTP - Send General", new TestCaseDetail
             {
                 FunctionGroup = "SendGeneralOtpCommandHandler",
-                TestCaseID = "TC-OTP-SG-02",
+                TestCaseID = "SendGeneralOtpCommandHandler_02",
                 Description = "Successfully creates OTP, stores in Redis, and sends Email",
                 ExpectedResult = "Return 200 Success",
                 StatusRound1 = "Passed",
@@ -96,7 +96,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-OTP-SG-03 | E | Exception during Redis Set -> 500
+        // SendGeneralOtpCommandHandler_03 | E | Exception during Redis Set -> 500
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RedisException_ShouldThrow()
@@ -119,7 +119,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps.Commands
             QACollector.LogTestCase("OTP - Send General", new TestCaseDetail
             {
                 FunctionGroup = "SendGeneralOtpCommandHandler",
-                TestCaseID = "TC-OTP-SG-03",
+                TestCaseID = "SendGeneralOtpCommandHandler_03",
                 Description = "Throws exception if Redis fails",
                 ExpectedResult = "Throws Exception",
                 StatusRound1 = "Passed",
@@ -130,7 +130,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-OTP-SG-04 | E | Exception during Email Send -> Throws
+        // SendGeneralOtpCommandHandler_04 | E | Exception during Email Send -> Throws
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmailException_ShouldThrow()
@@ -153,7 +153,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps.Commands
             QACollector.LogTestCase("OTP - Send General", new TestCaseDetail
             {
                 FunctionGroup = "SendGeneralOtpCommandHandler",
-                TestCaseID = "TC-OTP-SG-04",
+                TestCaseID = "SendGeneralOtpCommandHandler_04",
                 Description = "Throws exception if Email sending fails",
                 ExpectedResult = "Throws Exception",
                 StatusRound1 = "Passed",
@@ -164,7 +164,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-OTP-SG-05 | B | Boundary Email Null -> Assuming Validator Catches But Directly Call -> Account NotFound
+        // SendGeneralOtpCommandHandler_05 | B | Boundary Email Null -> Assuming Validator Catches But Directly Call -> Account NotFound
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyEmail_ShouldReturnUserNotFound()
@@ -185,7 +185,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps.Commands
             QACollector.LogTestCase("OTP - Send General", new TestCaseDetail
             {
                 FunctionGroup = "SendGeneralOtpCommandHandler",
-                TestCaseID = "TC-OTP-SG-05",
+                TestCaseID = "SendGeneralOtpCommandHandler_05",
                 Description = "Passing empty email directly fails at user search",
                 ExpectedResult = "Failure UserNotFound",
                 StatusRound1 = "Passed",
@@ -196,7 +196,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-OTP-SG-06 | N | Success Content Verification
+        // SendGeneralOtpCommandHandler_06 | N | Success Content Verification
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_VerifyEmailContent_ShouldContainOtpText()
@@ -222,7 +222,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps.Commands
             QACollector.LogTestCase("OTP - Send General", new TestCaseDetail
             {
                 FunctionGroup = "SendGeneralOtpCommandHandler",
-                TestCaseID = "TC-OTP-SG-06",
+                TestCaseID = "SendGeneralOtpCommandHandler_06",
                 Description = "Verifies the email body contains appropriate OTP text",
                 ExpectedResult = "Body should contain specific string",
                 StatusRound1 = "Passed",

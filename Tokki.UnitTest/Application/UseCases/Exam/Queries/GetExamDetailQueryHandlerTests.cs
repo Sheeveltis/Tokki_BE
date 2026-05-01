@@ -24,9 +24,9 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
             return new GetExamDetailQueryHandler(_examMock.Object, _partMock.Object, _templateMock.Object);
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-EXM-GDT-01 | A | Exam Not Found
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // GetExamDetailQueryHandler_01 | A | Exam Not Found
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_ExamNotFound_ShouldReturn404()
         {
@@ -44,7 +44,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
             QACollector.LogTestCase("Exam - Get Detail", new TestCaseDetail
             {
                 FunctionGroup = "GetExamDetailQueryHandler",
-                TestCaseID = "TC-EXM-GDT-01",
+                TestCaseID = "GetExamDetailQueryHandler_01",
                 Description = "Missing item securely traps to 404 block",
                 ExpectedResult = "Return 404 Error",
                 StatusRound1 = "Passed",
@@ -54,9 +54,9 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-EXM-GDT-02 | N | Parts properly aggregated and nested
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // GetExamDetailQueryHandler_02 | N | Parts properly aggregated and nested
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_QuestionsMapping_ShouldAccuratelyMatchRanges()
         {
@@ -94,7 +94,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
             QACollector.LogTestCase("Exam - Get Detail", new TestCaseDetail
             {
                 FunctionGroup = "GetExamDetailQueryHandler",
-                TestCaseID = "TC-EXM-GDT-02",
+                TestCaseID = "GetExamDetailQueryHandler_02",
                 Description = "Nested extraction logic evaluates successfully bounding properties exactly to matching questions",
                 ExpectedResult = "DTO Maps 1 Part with 2 matched questions appropriately",
                 StatusRound1 = "Passed",
@@ -104,9 +104,9 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-EXM-GDT-03 | N | Option sorting behavior guarantees strictly sorted results
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // GetExamDetailQueryHandler_03 | N | Option sorting behavior guarantees strictly sorted results
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_OptionsStrictlySorted_ShouldValidateBehaviors()
         {
@@ -131,7 +131,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
             QACollector.LogTestCase("Exam - Get Detail", new TestCaseDetail
             {
                 FunctionGroup = "GetExamDetailQueryHandler",
-                TestCaseID = "TC-EXM-GDT-03",
+                TestCaseID = "GetExamDetailQueryHandler_03",
                 Description = "Ensures unordered SQL collections explicitly sort Option items ascending safely for API JSON result",
                 ExpectedResult = "Item [0].KeyOption=1",
                 StatusRound1 = "Passed",
@@ -141,9 +141,9 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-EXM-GDT-04 | N | Question Skills switch branches covering all values cleanly
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // GetExamDetailQueryHandler_04 | N | Question Skills switch branches covering all values cleanly
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_SkillWriting_ShouldMapImages()
         {
@@ -164,7 +164,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
             QACollector.LogTestCase("Exam - Get Detail", new TestCaseDetail
             {
                 FunctionGroup = "GetExamDetailQueryHandler",
-                TestCaseID = "TC-EXM-GDT-04",
+                TestCaseID = "GetExamDetailQueryHandler_04",
                 Description = "Fallback Writing explicitly resolves into Image Media Type correctly",
                 ExpectedResult = "Return Image MediaType directly",
                 StatusRound1 = "Passed",
@@ -174,9 +174,9 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-EXM-GDT-05 | B | Missing ExamQuestions in Exam Returns Safe Zeroes
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // GetExamDetailQueryHandler_05 | B | Missing ExamQuestions in Exam Returns Safe Zeroes
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_NullExamQuestions_ShouldInitializeZeroesSafely()
         {
@@ -197,7 +197,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
             QACollector.LogTestCase("Exam - Get Detail", new TestCaseDetail
             {
                 FunctionGroup = "GetExamDetailQueryHandler",
-                TestCaseID = "TC-EXM-GDT-05",
+                TestCaseID = "GetExamDetailQueryHandler_05",
                 Description = "Initial null collection references safely handled preventing NullRef in counting",
                 ExpectedResult = "Total = 0 returned nicely",
                 StatusRound1 = "Passed",
@@ -207,9 +207,9 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
             });
         }
         
-        // ═══════════════════════════════════════════════════════════
-        // TC-EXM-GDT-06 | N | QuestionBank Is Null Internal Handling
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // GetExamDetailQueryHandler_06 | N | QuestionBank Is Null Internal Handling
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_QuestionBankNull_ShouldContinueWithoutError()
         {
@@ -225,12 +225,12 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
             var result = await handler.Handle(new GetExamDetailQuery { ExamId = "ex" }, CancellationToken.None);
 
             result.IsSuccess.Should().BeTrue();
-            result.Data!.TemplateParts[0].Questions.Should().HaveCount(0); // Ignored due to "if (qBank == null) continue;" logic safely
+            result.Data!.TemplateParts[0].Questions.Should().HaveCount(0); // Ignored due to"if (qBank == null) continue;" logic safely
 
             QACollector.LogTestCase("Exam - Get Detail", new TestCaseDetail
             {
                 FunctionGroup = "GetExamDetailQueryHandler",
-                TestCaseID = "TC-EXM-GDT-06",
+                TestCaseID = "GetExamDetailQueryHandler_06",
                 Description = "Internal boundary checks if linked structure object fails to load",
                 ExpectedResult = "Skip without breaking execution",
                 StatusRound1 = "Passed",

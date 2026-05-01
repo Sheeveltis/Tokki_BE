@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -37,7 +37,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-REJ-01 | A | No token → 401
+        // Reject_Vocabulary_01 | A | No token → 401
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_Unauthorized_ShouldReturn401()
@@ -61,7 +61,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Reject", new TestCaseDetail
             {
                 FunctionGroup     = "Reject Vocabulary",
-                TestCaseID        = "TC-VOCAB-REJ-01",
+                TestCaseID        = "Reject_Vocabulary_01",
                 Description       = "Reject vocabulary without authentication token",
                 ExpectedResult    = "Return 401 Unauthorized",
                 StatusRound1      = "Passed",
@@ -72,7 +72,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-REJ-02 | A | Empty VocabularyIds → 400
+        // Reject_Vocabulary_02 | A | Empty VocabularyIds → 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyVocabularyIds_ShouldReturn400()
@@ -96,7 +96,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Reject", new TestCaseDetail
             {
                 FunctionGroup     = "Reject Vocabulary",
-                TestCaseID        = "TC-VOCAB-REJ-02",
+                TestCaseID        = "Reject_Vocabulary_02",
                 Description       = "Reject with empty VocabularyIds list",
                 ExpectedResult    = "Return 400 VOCABULARY_EMPTY",
                 StatusRound1      = "Passed",
@@ -107,7 +107,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-REJ-03 | A | Missing reason → 400
+        // Reject_Vocabulary_03 | A | Missing reason → 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_MissingReason_ShouldReturn400()
@@ -131,7 +131,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Reject", new TestCaseDetail
             {
                 FunctionGroup     = "Reject Vocabulary",
-                TestCaseID        = "TC-VOCAB-REJ-03",
+                TestCaseID        = "Reject_Vocabulary_03",
                 Description       = "Reject vocabulary without providing a rejection reason",
                 ExpectedResult    = "Return 400 REJECT_REASON_REQUIRED",
                 StatusRound1      = "Passed",
@@ -142,7 +142,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-REJ-04 | A | Vocab not PendingApproval → 500
+        // Reject_Vocabulary_04 | A | Vocab not PendingApproval → 500
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_VocabNotPendingApproval_ShouldReturn500()
@@ -168,7 +168,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Reject", new TestCaseDetail
             {
                 FunctionGroup     = "Reject Vocabulary",
-                TestCaseID        = "TC-VOCAB-REJ-04",
+                TestCaseID        = "Reject_Vocabulary_04",
                 Description       = "Reject vocab that is in Active state (not PendingApproval) → exception",
                 ExpectedResult    = "Exception thrown → rollback → return 500",
                 StatusRound1      = "Passed",
@@ -179,7 +179,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-REJ-05 | N | Valid PendingApproval → Rejected + email → 200
+        // Reject_Vocabulary_05 | N | Valid PendingApproval → Rejected + email → 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidPendingVocab_ShouldSetRejectedAndReturn200()
@@ -218,7 +218,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Reject", new TestCaseDetail
             {
                 FunctionGroup     = "Reject Vocabulary",
-                TestCaseID        = "TC-VOCAB-REJ-05",
+                TestCaseID        = "Reject_Vocabulary_05",
                 Description       = "Reject valid vocab with reason → update Rejected and send email",
                 ExpectedResult    = "Status = Rejected, email sent, return 200",
                 StatusRound1      = "Passed",
@@ -229,7 +229,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-REJ-06 | A | Vocab not found → exception → 500
+        // Reject_Vocabulary_06 | A | Vocab not found → exception → 500
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_VocabNotFound_ShouldReturn500()
@@ -254,7 +254,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Reject", new TestCaseDetail
             {
                 FunctionGroup     = "Reject Vocabulary",
-                TestCaseID        = "TC-VOCAB-REJ-06",
+                TestCaseID        = "Reject_Vocabulary_06",
                 Description       = "Reject vocab with ID that doesn't exist → exception → rollback → 500",
                 ExpectedResult    = "Transaction rollback, return 500",
                 StatusRound1      = "Passed",

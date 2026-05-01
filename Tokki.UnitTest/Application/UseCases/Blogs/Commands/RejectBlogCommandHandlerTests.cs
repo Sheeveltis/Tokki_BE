@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -68,7 +68,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RB-01 | A | Unauthorized Access (No UserId) → 401
+        // Reject_Blog_01 | A | Unauthorized Access (No UserId) → 401
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_Unauthorized_ShouldReturn401()
@@ -85,7 +85,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Reject", new TestCaseDetail
             {
                 FunctionGroup     = "Reject Blog",
-                TestCaseID        = "TC-RB-01",
+                TestCaseID        = "Reject_Blog_01",
                 Description       = "Missing user id in HttpContext",
                 ExpectedResult    = "Return 401 UserUnauthorized",
                 StatusRound1      = "Passed",
@@ -96,7 +96,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RB-02 | A | Blog Not Found → 404
+        // Reject_Blog_02 | A | Blog Not Found → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_BlogNotFound_ShouldReturn404()
@@ -113,7 +113,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Reject", new TestCaseDetail
             {
                 FunctionGroup     = "Reject Blog",
-                TestCaseID        = "TC-RB-02",
+                TestCaseID        = "Reject_Blog_02",
                 Description       = "Blog ID does not exist in DB",
                 ExpectedResult    = "Return 404 BlogNotFound",
                 StatusRound1      = "Passed",
@@ -124,7 +124,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RB-03 | A | Blog status is not Pending Approval → 400
+        // Reject_Blog_03 | A | Blog status is not Pending Approval → 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_BlogNotPending_ShouldReturn400()
@@ -144,7 +144,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Reject", new TestCaseDetail
             {
                 FunctionGroup     = "Reject Blog",
-                TestCaseID        = "TC-RB-03",
+                TestCaseID        = "Reject_Blog_03",
                 Description       = "Attempt to reject a Published blog",
                 ExpectedResult    = "Return 400 BlogInvalidPending",
                 StatusRound1      = "Passed",
@@ -155,7 +155,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RB-04 | N | Valid request → Rejects blog and sends email
+        // Reject_Blog_04 | N | Valid request → Rejects blog and sends email
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidRequest_ShouldRejectAndEmail()
@@ -188,7 +188,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Reject", new TestCaseDetail
             {
                 FunctionGroup     = "Reject Blog",
-                TestCaseID        = "TC-RB-04",
+                TestCaseID        = "Reject_Blog_04",
                 Description       = "Reject pending blog with valid author email",
                 ExpectedResult    = "Return 200, status updated to Rejected, send email with reason",
                 StatusRound1      = "Passed",
@@ -199,7 +199,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RB-05 | N | Author not found → Still Reject, No Email
+        // Reject_Blog_05 | N | Author not found → Still Reject, No Email
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_AuthorNotFound_ShouldStillRejectWithoutEmail()
@@ -223,7 +223,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Reject", new TestCaseDetail
             {
                 FunctionGroup     = "Reject Blog",
-                TestCaseID        = "TC-RB-05",
+                TestCaseID        = "Reject_Blog_05",
                 Description       = "Reject pending blog where author is not found",
                 ExpectedResult    = "Return 200, status Rejected, NO email sent",
                 StatusRound1      = "Passed",
@@ -234,7 +234,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RB-06 | N | Verify UpdatedAt is set
+        // Reject_Blog_06 | N | Verify UpdatedAt is set
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidRequest_ShouldSetUpdatedAt()
@@ -254,7 +254,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Reject", new TestCaseDetail
             {
                 FunctionGroup     = "Reject Blog",
-                TestCaseID        = "TC-RB-06",
+                TestCaseID        = "Reject_Blog_06",
                 Description       = "Ensure the UpdatedAt timestamp is populated",
                 ExpectedResult    = "UpdatedAt is updated prior to saving",
                 StatusRound1      = "Passed",

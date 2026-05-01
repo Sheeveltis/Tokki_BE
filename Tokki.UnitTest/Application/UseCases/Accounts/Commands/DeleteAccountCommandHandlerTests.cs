@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -33,7 +33,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             return new DeleteAccountCommandHandler(repo.Object);
         }
 
-        // TC-ACC-DEL-01 | A | UserId is null or empty -> 401 Unauthorized
+        // DeleteAccountCommandHandler_01 | A | UserId is null or empty -> 401 Unauthorized
         [Fact]
         public async Task Handle_EmptyUserId_ShouldReturnFailureWithUnauthorized()
         {
@@ -46,7 +46,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Delete", new TestCaseDetail
             {
                 FunctionGroup = "DeleteAccountCommandHandler",
-                TestCaseID = "TC-ACC-DEL-01",
+                TestCaseID = "DeleteAccountCommandHandler_01",
                 Description = "Empty UserId returns User.Unauthorized",
                 ExpectedResult = "Failure with User.Unauthorized",
                 StatusRound1 = "Passed",
@@ -56,7 +56,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-DEL-02 | A | User not found -> 404
+        // DeleteAccountCommandHandler_02 | A | User not found -> 404
         [Fact]
         public async Task Handle_UserNotFound_ShouldReturnFailureWithUserNotFound()
         {
@@ -69,7 +69,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Delete", new TestCaseDetail
             {
                 FunctionGroup = "DeleteAccountCommandHandler",
-                TestCaseID = "TC-ACC-DEL-02",
+                TestCaseID = "DeleteAccountCommandHandler_02",
                 Description = "User not found returns User.NotFound.Id",
                 ExpectedResult = "Failure with User.NotFound.Id",
                 StatusRound1 = "Passed",
@@ -79,7 +79,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-DEL-03 | A | User already inactive -> "Account.AlreadyDeleted"
+        // DeleteAccountCommandHandler_03 | A | User already inactive -> "Account.AlreadyDeleted"
         [Fact]
         public async Task Handle_UserAlreadyInactive_ShouldReturnFailureAccountAlreadyDeleted()
         {
@@ -95,7 +95,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Delete", new TestCaseDetail
             {
                 FunctionGroup = "DeleteAccountCommandHandler",
-                TestCaseID = "TC-ACC-DEL-03",
+                TestCaseID = "DeleteAccountCommandHandler_03",
                 Description = "User with Inactive status returns Account.AlreadyDeleted",
                 ExpectedResult = "Failure with Account.AlreadyDeleted",
                 StatusRound1 = "Passed",
@@ -105,7 +105,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-DEL-04 | N | Happy Path -> Successfully soft deletes account
+        // DeleteAccountCommandHandler_04 | N | Happy Path -> Successfully soft deletes account
         [Fact]
         public async Task Handle_ValidRequest_ShouldSoftDeleteAccountAndReturnSuccess()
         {
@@ -124,7 +124,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Delete", new TestCaseDetail
             {
                 FunctionGroup = "DeleteAccountCommandHandler",
-                TestCaseID = "TC-ACC-DEL-04",
+                TestCaseID = "DeleteAccountCommandHandler_04",
                 Description = "Valid request mutates status to Inactive",
                 ExpectedResult = "Success 200, Status Inactive",
                 StatusRound1 = "Passed",
@@ -134,7 +134,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-DEL-05 | B | Ensure UpdateUserAsync and SaveChangesAsync are called on success
+        // DeleteAccountCommandHandler_05 | B | Ensure UpdateUserAsync and SaveChangesAsync are called on success
         [Fact]
         public async Task Handle_ValidRequest_ShouldCallUpdateAndSaveAsync()
         {
@@ -150,7 +150,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Delete", new TestCaseDetail
             {
                 FunctionGroup = "DeleteAccountCommandHandler",
-                TestCaseID = "TC-ACC-DEL-05",
+                TestCaseID = "DeleteAccountCommandHandler_05",
                 Description = "Valid request calls Update and Save",
                 ExpectedResult = "Verify Times.Once",
                 StatusRound1 = "Passed",
@@ -160,7 +160,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-DEL-06 | B | Ensure Update/Save are NOT called on failure
+        // DeleteAccountCommandHandler_06 | B | Ensure Update/Save are NOT called on failure
         [Fact]
         public async Task Handle_FailureFlow_ShouldNotCallUpdateAndSaveAsync()
         {
@@ -175,7 +175,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Delete", new TestCaseDetail
             {
                 FunctionGroup = "DeleteAccountCommandHandler",
-                TestCaseID = "TC-ACC-DEL-06",
+                TestCaseID = "DeleteAccountCommandHandler_06",
                 Description = "Failed flow skips DB modifications",
                 ExpectedResult = "Verify Times.Never",
                 StatusRound1 = "Passed",

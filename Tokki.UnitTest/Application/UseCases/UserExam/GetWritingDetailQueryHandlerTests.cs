@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -60,7 +60,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GWRD-01 | A | Session not found → 404
+        // GetWritingDetail_01 | A | Session not found → 404
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SessionNotFound_ShouldReturn404()
@@ -82,7 +82,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Writing Detail", new TestCaseDetail
             {
                 FunctionGroup     = "GetWritingDetail",
-                TestCaseID        = "TC-GWRD-01",
+                TestCaseID        = "GetWritingDetail_01",
                 Description       = "Session not found → 404",
                 ExpectedResult    = "IsSuccess=false, StatusCode=404",
                 StatusRound1      = "Passed",
@@ -93,7 +93,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GWRD-02 | A | Session still InProgress → 400
+        // GetWritingDetail_02 | A | Session still InProgress → 400
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SessionInProgress_ShouldReturn400()
@@ -117,7 +117,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Writing Detail", new TestCaseDetail
             {
                 FunctionGroup     = "GetWritingDetail",
-                TestCaseID        = "TC-GWRD-02",
+                TestCaseID        = "GetWritingDetail_02",
                 Description       = "Exam not submitted → 400",
                 ExpectedResult    = "IsSuccess=false, StatusCode=400",
                 StatusRound1      = "Passed",
@@ -128,7 +128,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GWRD-03 | A | Empty template parts → 400
+        // GetWritingDetail_03 | A | Empty template parts → 400
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyTemplateParts_ShouldReturn400()
@@ -152,7 +152,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Writing Detail", new TestCaseDetail
             {
                 FunctionGroup     = "GetWritingDetail",
-                TestCaseID        = "TC-GWRD-03",
+                TestCaseID        = "GetWritingDetail_03",
                 Description       = "No template parts → 400",
                 ExpectedResult    = "IsSuccess=false, StatusCode=400",
                 StatusRound1      = "Passed",
@@ -163,7 +163,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GWRD-04 | N | Happy path → 200 with TotalQuestions and MaxScore
+        // GetWritingDetail_04 | N | Happy path → 200 with TotalQuestions and MaxScore
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidSession_ShouldReturn200WithMaxScore()
@@ -187,7 +187,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Writing Detail", new TestCaseDetail
             {
                 FunctionGroup     = "GetWritingDetail",
-                TestCaseID        = "TC-GWRD-04",
+                TestCaseID        = "GetWritingDetail_04",
                 Description       = "Writing Q51-Q54, Mark=10 → TotalQuestions=4, MaxScore=40",
                 ExpectedResult    = "IsSuccess=true, TotalQuestions=4, MaxScore=40",
                 StatusRound1      = "Passed",
@@ -198,7 +198,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GWRD-05 | N | Graded answer score summed correctly
+        // GetWritingDetail_05 | N | Graded answer score summed correctly
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_GradedAnswer_ShouldSumScoreCorrectly()
@@ -220,7 +220,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Writing Detail", new TestCaseDetail
             {
                 FunctionGroup     = "GetWritingDetail",
-                TestCaseID        = "TC-GWRD-05",
+                TestCaseID        = "GetWritingDetail_05",
                 Description       = "Answer has Score=8 → response.Score=8",
                 ExpectedResult    = "Score=8.0",
                 StatusRound1      = "Passed",
@@ -231,7 +231,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GWRD-06 | E | Repository throws → exception propagates
+        // GetWritingDetail_06 | E | Repository throws → exception propagates
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
@@ -252,7 +252,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Writing Detail", new TestCaseDetail
             {
                 FunctionGroup     = "GetWritingDetail",
-                TestCaseID        = "TC-GWRD-06",
+                TestCaseID        = "GetWritingDetail_06",
                 Description       = "Repository throws → exception propagates",
                 ExpectedResult    = "Exception with 'DB error'",
                 StatusRound1      = "Passed",
@@ -263,7 +263,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GWRD-07 | N | Parse AI Analysis logic JSON successful and JSON parsing failure
+        // GetWritingDetail_07 | N | Parse AI Analysis logic JSON successful and JSON parsing failure
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_AiAnalysisParsing_ShouldCatchAndAssignProperly()
@@ -307,7 +307,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Writing Detail", new TestCaseDetail
             {
                 FunctionGroup     = "GetWritingDetail",
-                TestCaseID        = "TC-GWRD-07",
+                TestCaseID        = "GetWritingDetail_07",
                 Description       = "AiAnalysisJson deserialization try/catch behavior mapping",
                 ExpectedResult    = "Parsed object for valid schema, parseError object for invalid JSON string",
                 StatusRound1      = "Passed",
@@ -318,7 +318,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GWRD-08 | N | Null ExamTemplate and MediaType parsing
+        // GetWritingDetail_08 | N | Null ExamTemplate and MediaType parsing
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_MediaTypeAndNullTemplate_ShouldProcessProperly()
@@ -344,7 +344,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Writing Detail", new TestCaseDetail
             {
                 FunctionGroup     = "GetWritingDetail",
-                TestCaseID        = "TC-GWRD-08",
+                TestCaseID        = "GetWritingDetail_08",
                 Description       = "Null ExamTemplate fails, GetMediaType maps unknown files properly",
                 ExpectedResult    = "Fail on null template, Unknown SharedMediaType for .mp4",
                 StatusRound1      = "Passed",

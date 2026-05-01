@@ -154,6 +154,7 @@ namespace Tokki.Application.UseCases.Roadmap.Queries.GetEntranceFeedback
                 return CurrentTopikLevel.Pre_Topik;
             }
 
+            if (totalScore >= 230) return CurrentTopikLevel.Level_6;
             if (totalScore >= 190) return CurrentTopikLevel.Level_5;
             if (totalScore >= 150) return CurrentTopikLevel.Level_4;
             if (totalScore >= 120) return CurrentTopikLevel.Level_3;
@@ -175,11 +176,15 @@ namespace Tokki.Application.UseCases.Roadmap.Queries.GetEntranceFeedback
 
         private static List<EntranceDurationOption> CalculateDurationOptions(int totalWeakTypes)
         {
-            bool allow30 = totalWeakTypes <= 3;
-            bool allow60 = totalWeakTypes <= 8;
+            int baseWeeks = (int)Math.Ceiling(totalWeakTypes / 5.0);
+            int totalWeeks = baseWeeks + 2;
+            int recommendedDays = totalWeeks * 7;
 
-            bool recommend30 = totalWeakTypes <= 2;
-            bool recommend60 = !recommend30 && totalWeakTypes <= 6;
+            bool allow30 = recommendedDays <= 30;
+            bool allow60 = recommendedDays <= 60;
+
+            bool recommend30 = allow30;
+            bool recommend60 = !recommend30 && allow60;
             bool recommend90 = !recommend30 && !recommend60;
 
             return new List<EntranceDurationOption>
@@ -188,18 +193,18 @@ namespace Tokki.Application.UseCases.Roadmap.Queries.GetEntranceFeedback
                     Days = 30, Available = allow30, Recommended = recommend30,
                     Reason = allow30
                         ? "Số dạng cần cải thiện ít, 30 ngày là đủ nếu học đều đặn."
-                        : $"Bạn có {totalWeakTypes} dạng cần cải thiện, 30 ngày không đủ."
+                        : $"Bạn có {totalWeakTypes} dạng cần cải thiện, 30 ngày không đủ để đảm bảo chất lượng."
                 },
                 new() {
                     Days = 60, Available = allow60, Recommended = recommend60,
                     Reason = allow60
-                        ? $"Phù hợp để cải thiện {totalWeakTypes} dạng một cách vững chắc."
-                        : $"Với {totalWeakTypes} dạng cần học, nên dành ít nhất 90 ngày."
+                        ? $"Phù hợp để cải thiện {totalWeakTypes} dạng một cách vững chắc, có thời gian ôn lại các dạng khó."
+                        : $"Với {totalWeakTypes} dạng cần học, nên dành ít nhất 90 ngày để đảm bảo có thể ôn lại các dạng chưa pass."
                 },
                 new() {
                     Days = 90, Available = true, Recommended = recommend90,
                     Reason = recommend90
-                        ? $"Lựa chọn tốt nhất cho {totalWeakTypes} dạng cần cải thiện."
+                        ? $"Lựa chọn tốt nhất cho {totalWeakTypes} dạng cần cải thiện, đảm bảo đủ thời gian học và ôn lại các dạng khó."
                         : "Lộ trình thoải mái nếu bạn muốn học chắc, không áp lực."
                 }
             };

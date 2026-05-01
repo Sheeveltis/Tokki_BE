@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -47,7 +47,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Update", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateExamTemplate",
-                TestCaseID        = "TC-EXMT-UPD-01",
+                TestCaseID        = "UpdateExamTemplate_01",
                 Description       = "Template not found → Failure",
                 ExpectedResult    = "Return Failure",
                 StatusRound1      = "Passed",
@@ -78,7 +78,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Update", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateExamTemplate",
-                TestCaseID        = "TC-EXMT-UPD-02",
+                TestCaseID        = "UpdateExamTemplate_02",
                 Description       = "Status = PendingApproval (not Draft) → Failure 'Chỉ được sửa khi Draft'",
                 ExpectedResult    = "Return Failure",
                 StatusRound1      = "Passed",
@@ -106,7 +106,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Update", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateExamTemplate",
-                TestCaseID        = "TC-EXMT-UPD-03",
+                TestCaseID        = "UpdateExamTemplate_03",
                 Description       = "New name already used by another template → Failure 'Tên đề thi đã tồn tại'",
                 ExpectedResult    = "Return Failure",
                 StatusRound1      = "Passed",
@@ -136,7 +136,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Update", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateExamTemplate",
-                TestCaseID        = "TC-EXMT-UPD-04",
+                TestCaseID        = "UpdateExamTemplate_04",
                 Description       = "Valid new name → template.Name updated, Return Success",
                 ExpectedResult    = "Return Success(true), Name = 'New Name'",
                 StatusRound1      = "Passed",
@@ -165,7 +165,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Update", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateExamTemplate",
-                TestCaseID        = "TC-EXMT-UPD-05",
+                TestCaseID        = "UpdateExamTemplate_05",
                 Description       = "Type changed to IELTS → template.Type updated",
                 ExpectedResult    = "Return Success, template.Type = IELTS",
                 StatusRound1      = "Passed",
@@ -189,7 +189,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Update", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateExamTemplate",
-                TestCaseID        = "TC-EXMT-UPD-06",
+                TestCaseID        = "UpdateExamTemplate_06",
                 Description       = "Repository throws → exception propagates",
                 ExpectedResult    = "Throws Exception",
                 StatusRound1      = "Passed",

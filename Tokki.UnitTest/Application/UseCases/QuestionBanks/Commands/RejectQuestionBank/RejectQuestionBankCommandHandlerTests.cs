@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -51,7 +51,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.RejectQuest
             => new(_qbRepoMock.Object, _accRepoMock.Object, _emailMock.Object, _httpMock.Object, _loggerMock.Object);
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-REJ-01 | A | Unauthorized -> 401
+        // RejectQuestionBanksCommandHandler_01 | A | Unauthorized -> 401
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_Unauthorized_ShouldReturn401()
@@ -68,7 +68,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.RejectQuest
             QACollector.LogTestCase("Question Bank - Reject", new TestCaseDetail
             {
                 FunctionGroup = "RejectQuestionBanksCommandHandler",
-                TestCaseID = "TC-QB-REJ-01",
+                TestCaseID = "RejectQuestionBanksCommandHandler_01",
                 Description = "Returns error if user is unauthorized",
                 ExpectedResult = "Return 401 Unauthorized",
                 StatusRound1 = "Passed",
@@ -79,7 +79,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.RejectQuest
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-REJ-02 | A | Empty IDs -> 400
+        // RejectQuestionBanksCommandHandler_02 | A | Empty IDs -> 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyIds_ShouldReturn400()
@@ -95,7 +95,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.RejectQuest
             QACollector.LogTestCase("Question Bank - Reject", new TestCaseDetail
             {
                 FunctionGroup = "RejectQuestionBanksCommandHandler",
-                TestCaseID = "TC-QB-REJ-02",
+                TestCaseID = "RejectQuestionBanksCommandHandler_02",
                 Description = "Returns error if QuestionBankIds is empty",
                 ExpectedResult = "Return 400 ValidationFailed",
                 StatusRound1 = "Passed",
@@ -106,7 +106,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.RejectQuest
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-REJ-03 | A | Empty Reason -> 400
+        // RejectQuestionBanksCommandHandler_03 | A | Empty Reason -> 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyReason_ShouldReturn400()
@@ -123,7 +123,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.RejectQuest
             QACollector.LogTestCase("Question Bank - Reject", new TestCaseDetail
             {
                 FunctionGroup = "RejectQuestionBanksCommandHandler",
-                TestCaseID = "TC-QB-REJ-03",
+                TestCaseID = "RejectQuestionBanksCommandHandler_03",
                 Description = "Returns error if RejectReason is empty at handler level",
                 ExpectedResult = "Return 400 ValidationFailed",
                 StatusRound1 = "Passed",
@@ -134,7 +134,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.RejectQuest
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-REJ-04 | A | NotFound ID -> 404
+        // RejectQuestionBanksCommandHandler_04 | A | NotFound ID -> 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_MissingId_ShouldReturn404()
@@ -152,7 +152,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.RejectQuest
             QACollector.LogTestCase("Question Bank - Reject", new TestCaseDetail
             {
                 FunctionGroup = "RejectQuestionBanksCommandHandler",
-                TestCaseID = "TC-QB-REJ-04",
+                TestCaseID = "RejectQuestionBanksCommandHandler_04",
                 Description = "Returns error if ID is not found in db",
                 ExpectedResult = "Return 404",
                 StatusRound1 = "Passed",
@@ -163,7 +163,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.RejectQuest
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-REJ-05 | A | Status Deleted -> 400
+        // RejectQuestionBanksCommandHandler_05 | A | Status Deleted -> 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DeletedStatus_ShouldReturn400()
@@ -182,7 +182,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.RejectQuest
             QACollector.LogTestCase("Question Bank - Reject", new TestCaseDetail
             {
                 FunctionGroup = "RejectQuestionBanksCommandHandler",
-                TestCaseID = "TC-QB-REJ-05",
+                TestCaseID = "RejectQuestionBanksCommandHandler_05",
                 Description = "Blocks if the bank is already Deleted",
                 ExpectedResult = "Return 400",
                 StatusRound1 = "Passed",
@@ -193,7 +193,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.RejectQuest
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-REJ-06 | A | Status Not PendingApproval -> 400
+        // RejectQuestionBanksCommandHandler_06 | A | Status Not PendingApproval -> 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NotPendingStatus_ShouldReturn400()
@@ -212,7 +212,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.RejectQuest
             QACollector.LogTestCase("Question Bank - Reject", new TestCaseDetail
             {
                 FunctionGroup = "RejectQuestionBanksCommandHandler",
-                TestCaseID = "TC-QB-REJ-06",
+                TestCaseID = "RejectQuestionBanksCommandHandler_06",
                 Description = "Blocks if the bank is Not PendingApproval",
                 ExpectedResult = "Return 400 ValidationFailed",
                 StatusRound1 = "Passed",
@@ -223,7 +223,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.RejectQuest
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-REJ-07 | N | Success -> 200 Send Email
+        // RejectQuestionBanksCommandHandler_07 | N | Success -> 200 Send Email
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_Success_ShouldReturn200AndSendEmail()
@@ -262,7 +262,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.RejectQuest
             QACollector.LogTestCase("Question Bank - Reject", new TestCaseDetail
             {
                 FunctionGroup = "RejectQuestionBanksCommandHandler",
-                TestCaseID = "TC-QB-REJ-07",
+                TestCaseID = "RejectQuestionBanksCommandHandler_07",
                 Description = "Rejects pending QA correctly and sends email",
                 ExpectedResult = "Return 200 and sent email",
                 StatusRound1 = "Passed",
@@ -273,7 +273,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.RejectQuest
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-REJ-08 | E | Exception Thrown -> 500
+        // RejectQuestionBanksCommandHandler_08 | E | Exception Thrown -> 500
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_Exception_ShouldReturn500()
@@ -291,7 +291,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.RejectQuest
             QACollector.LogTestCase("Question Bank - Reject", new TestCaseDetail
             {
                 FunctionGroup = "RejectQuestionBanksCommandHandler",
-                TestCaseID = "TC-QB-REJ-08",
+                TestCaseID = "RejectQuestionBanksCommandHandler_08",
                 Description = "Returns error if exception is thrown",
                 ExpectedResult = "Return 500 ServerError",
                 StatusRound1 = "Passed",

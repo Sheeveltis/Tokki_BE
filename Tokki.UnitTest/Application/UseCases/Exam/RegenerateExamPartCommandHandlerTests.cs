@@ -1,4 +1,4 @@
-using ExamEntity = Tokki.Domain.Entities.Exam;
+﻿using ExamEntity = Tokki.Domain.Entities.Exam;
 using FluentAssertions;
 using Moq;
 using System;
@@ -45,7 +45,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             ExamTemplateId  = templateId
         };
 
-        // TC-EXRP-01 | A | TemplatePart not found → 400
+        // Regenerate_Exam_Part_01 | A | TemplatePart not found → 400
         [Fact]
         public async Task Handle_TemplatePartNotFound_ShouldReturnFailure()
         {
@@ -59,7 +59,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Regenerate Part", new TestCaseDetail
             {
-                FunctionGroup = "Regenerate Exam Part", TestCaseID = "TC-EXRP-01",
+                FunctionGroup = "Regenerate Exam Part", TestCaseID = "Regenerate_Exam_Part_01",
                 Description = "TemplatePart ID is not found in the database",
                 ExpectedResult = "Return Failure", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -67,7 +67,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXRP-02 | A | Exam not found → Failure
+        // Regenerate_Exam_Part_02 | A | Exam not found → Failure
         [Fact]
         public async Task Handle_ExamNotFound_ShouldReturnFailure()
         {
@@ -83,7 +83,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Regenerate Part", new TestCaseDetail
             {
-                FunctionGroup = "Regenerate Exam Part", TestCaseID = "TC-EXRP-02",
+                FunctionGroup = "Regenerate Exam Part", TestCaseID = "Regenerate_Exam_Part_02",
                 Description = "Exam ID does not exist in the database",
                 ExpectedResult = "Return Failure", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -91,7 +91,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXRP-03 | A | ExamTemplateId mismatch → Failure
+        // Regenerate_Exam_Part_03 | A | ExamTemplateId mismatch → Failure
         [Fact]
         public async Task Handle_TemplateMismatch_ShouldReturnFailure()
         {
@@ -108,7 +108,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Regenerate Part", new TestCaseDetail
             {
-                FunctionGroup = "Regenerate Exam Part", TestCaseID = "TC-EXRP-03",
+                FunctionGroup = "Regenerate Exam Part", TestCaseID = "Regenerate_Exam_Part_03",
                 Description = "Part ExamTemplateId does not match the Exam ExamTemplateId",
                 ExpectedResult = "Return Failure", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -116,7 +116,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXRP-04 | A | Not enough questions in bank → Failure
+        // Regenerate_Exam_Part_04 | A | Not enough questions in bank → Failure
         [Fact]
         public async Task Handle_NotEnoughQuestions_ShouldReturnFailure()
         {
@@ -141,7 +141,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Regenerate Part", new TestCaseDetail
             {
-                FunctionGroup = "Regenerate Exam Part", TestCaseID = "TC-EXRP-04",
+                FunctionGroup = "Regenerate Exam Part", TestCaseID = "Regenerate_Exam_Part_04",
                 Description = "Question bank has fewer questions than required to fill the part",
                 ExpectedResult = "Return Failure", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -149,7 +149,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXRP-05 | N | Sufficient questions → regeneration succeeds
+        // Regenerate_Exam_Part_05 | N | Sufficient questions → regeneration succeeds
         [Fact]
         public async Task Handle_SufficientQuestions_ShouldReturnSuccess()
         {
@@ -182,7 +182,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Regenerate Part", new TestCaseDetail
             {
-                FunctionGroup = "Regenerate Exam Part", TestCaseID = "TC-EXRP-05",
+                FunctionGroup = "Regenerate Exam Part", TestCaseID = "Regenerate_Exam_Part_05",
                 Description = "Bank has enough questions; old ones removed, new ones added",
                 ExpectedResult = "Return Success(true)", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -190,7 +190,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXRP-06 | A | Exception from SaveChanges → caught → Failure(500)
+        // Regenerate_Exam_Part_06 | A | Exception from SaveChanges → caught → Failure(500)
         [Fact]
         public async Task Handle_SaveChangesThrows_ShouldReturnFailure()
         {
@@ -223,7 +223,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Regenerate Part", new TestCaseDetail
             {
-                FunctionGroup = "Regenerate Exam Part", TestCaseID = "TC-EXRP-06",
+                FunctionGroup = "Regenerate Exam Part", TestCaseID = "Regenerate_Exam_Part_06",
                 Description = "SaveChanges throws exception; handler catches and returns failure",
                 ExpectedResult = "Return Failure with error message", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

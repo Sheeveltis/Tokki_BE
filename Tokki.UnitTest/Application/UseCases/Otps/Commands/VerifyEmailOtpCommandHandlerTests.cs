@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -26,7 +26,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-OTP-VE-01 | A | OTP Not Found In Redis -> Failure
+        // VerifyEmailOtpCommandHandler_01 | A | OTP Not Found In Redis -> Failure
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_OtpNotFound_ShouldReturnFailure()
@@ -48,7 +48,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps.Commands
             QACollector.LogTestCase("OTP - Verify Email", new TestCaseDetail
             {
                 FunctionGroup = "VerifyEmailOtpCommandHandler",
-                TestCaseID = "TC-OTP-VE-01",
+                TestCaseID = "VerifyEmailOtpCommandHandler_01",
                 Description = "Returns failure when OTP is not found in Redis",
                 ExpectedResult = "Failure OtpNotFound",
                 StatusRound1 = "Passed",
@@ -59,7 +59,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-OTP-VE-02 | A | OTP Invalid JSON -> Failure
+        // VerifyEmailOtpCommandHandler_02 | A | OTP Invalid JSON -> Failure
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_InvalidJson_ShouldReturnFailure()
@@ -81,7 +81,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps.Commands
             QACollector.LogTestCase("OTP - Verify Email", new TestCaseDetail
             {
                 FunctionGroup = "VerifyEmailOtpCommandHandler",
-                TestCaseID = "TC-OTP-VE-02",
+                TestCaseID = "VerifyEmailOtpCommandHandler_02",
                 Description = "Returns failure when JSON is null/invalid",
                 ExpectedResult = "Failure OtpNotFound",
                 StatusRound1 = "Passed",
@@ -92,7 +92,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-OTP-VE-03 | A | OTP Max Retry Exceeded Initially -> Failure
+        // VerifyEmailOtpCommandHandler_03 | A | OTP Max Retry Exceeded Initially -> Failure
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_MaxRetryExceededInitially_ShouldReturnFailure()
@@ -115,7 +115,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps.Commands
             QACollector.LogTestCase("OTP - Verify Email", new TestCaseDetail
             {
                 FunctionGroup = "VerifyEmailOtpCommandHandler",
-                TestCaseID = "TC-OTP-VE-03",
+                TestCaseID = "VerifyEmailOtpCommandHandler_03",
                 Description = "Fails immediately if attempt count matches or exceeds max limit",
                 ExpectedResult = "Failure OtpMaxRetryExceeded",
                 StatusRound1 = "Passed",
@@ -126,7 +126,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-OTP-VE-04 | A | Wrong OTP Code -> Attempt Increased -> Failure 400
+        // VerifyEmailOtpCommandHandler_04 | A | Wrong OTP Code -> Attempt Increased -> Failure 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_WrongOtp_ShouldIncreaseAttempt_AndReturn400()
@@ -152,7 +152,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps.Commands
             QACollector.LogTestCase("OTP - Verify Email", new TestCaseDetail
             {
                 FunctionGroup = "VerifyEmailOtpCommandHandler",
-                TestCaseID = "TC-OTP-VE-04",
+                TestCaseID = "VerifyEmailOtpCommandHandler_04",
                 Description = "Wrong OTP increases attempt count and says how many tries left",
                 ExpectedResult = "Return 400 with remaining tries message",
                 StatusRound1 = "Passed",
@@ -163,7 +163,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-OTP-VE-05 | A | Wrong OTP Code Reaches Max -> Revokes -> Failure
+        // VerifyEmailOtpCommandHandler_05 | A | Wrong OTP Code Reaches Max -> Revokes -> Failure
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_WrongOtp_ReachesLimit_ShouldRevokeAndReturnFailure()
@@ -187,7 +187,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps.Commands
             QACollector.LogTestCase("OTP - Verify Email", new TestCaseDetail
             {
                 FunctionGroup = "VerifyEmailOtpCommandHandler",
-                TestCaseID = "TC-OTP-VE-05",
+                TestCaseID = "VerifyEmailOtpCommandHandler_05",
                 Description = "Wrong OTP that hits the max limit causes OTP to be revoked/deleted",
                 ExpectedResult = "Failure OtpRevoked, Deleted from Redis",
                 StatusRound1 = "Passed",
@@ -198,7 +198,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-OTP-VE-06 | N | Correct OTP -> Deletes and Returns 200
+        // VerifyEmailOtpCommandHandler_06 | N | Correct OTP -> Deletes and Returns 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_CorrectOtp_ShouldDeleteAndReturn200()
@@ -222,7 +222,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps.Commands
             QACollector.LogTestCase("OTP - Verify Email", new TestCaseDetail
             {
                 FunctionGroup = "VerifyEmailOtpCommandHandler",
-                TestCaseID = "TC-OTP-VE-06",
+                TestCaseID = "VerifyEmailOtpCommandHandler_06",
                 Description = "Correct OTP deletes it from Redis and returns 200 success",
                 ExpectedResult = "Return 200, delete from Redis",
                 StatusRound1 = "Passed",

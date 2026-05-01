@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using FluentValidation.TestHelper;
 using System.Collections.Generic;
 using Tokki.Application.UseCases.QuestionBanks.Commands.UpdateQuestionBank;
@@ -13,7 +13,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.UpdateQuest
         private readonly UpdateQuestionBankCommandValidator _validator = new();
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-V-UP-01 | A | Empty QuestionBankId -> Fails
+        // UpdateQuestionBankCommandValidator_01 | A | Empty QuestionBankId -> Fails
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public void Validate_EmptyQuestionBankId_ShouldHaveError()
@@ -25,7 +25,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.UpdateQuest
             QACollector.LogTestCase("Question Bank - Update", new TestCaseDetail
             {
                 FunctionGroup = "UpdateQuestionBankCommandValidator",
-                TestCaseID = "TC-QB-V-UP-01",
+                TestCaseID = "UpdateQuestionBankCommandValidator_01",
                 Description = "Validator returns error if QuestionBankId is empty",
                 ExpectedResult = "Validation failed",
                 StatusRound1 = "Passed",
@@ -36,7 +36,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.UpdateQuest
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-V-UP-02 | N | Valid -> Success
+        // UpdateQuestionBankCommandValidator_02 | N | Valid -> Success
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public void Validate_Valid_ShouldNotHaveError()
@@ -48,7 +48,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.UpdateQuest
             QACollector.LogTestCase("Question Bank - Update", new TestCaseDetail
             {
                 FunctionGroup = "UpdateQuestionBankCommandValidator",
-                TestCaseID = "TC-QB-V-UP-02",
+                TestCaseID = "UpdateQuestionBankCommandValidator_02",
                 Description = "Validator passes on valid command",
                 ExpectedResult = "No errors",
                 StatusRound1 = "Passed",

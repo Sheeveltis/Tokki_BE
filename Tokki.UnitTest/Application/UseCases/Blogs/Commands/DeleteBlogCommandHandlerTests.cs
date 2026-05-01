@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -25,7 +25,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-DB-01 | A | Blog Not Found → 404
+        // Delete_Blog_01 | A | Blog Not Found → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_BlogNotFound_ShouldReturn404()
@@ -40,7 +40,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Blog",
-                TestCaseID        = "TC-DB-01",
+                TestCaseID        = "Delete_Blog_01",
                 Description       = "Attempt to delete a non-existent blog",
                 ExpectedResult    = "Return 404 BlogNotFound",
                 StatusRound1      = "Passed",
@@ -51,7 +51,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-DB-02 | N | Valid Deletion → Returns 200 Success
+        // Delete_Blog_02 | N | Valid Deletion → Returns 200 Success
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidRequest_ShouldDeleteAndReturn200()
@@ -69,7 +69,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Blog",
-                TestCaseID        = "TC-DB-02",
+                TestCaseID        = "Delete_Blog_02",
                 Description       = "Provide valid existing blog ID for deletion",
                 ExpectedResult    = "Return 200 Success",
                 StatusRound1      = "Passed",
@@ -80,7 +80,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-DB-03 | N | DeleteAsync Verification
+        // Delete_Blog_03 | N | DeleteAsync Verification
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidRequest_ShouldCallDeleteAsyncOnRepository()
@@ -96,7 +96,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Blog",
-                TestCaseID        = "TC-DB-03",
+                TestCaseID        = "Delete_Blog_03",
                 Description       = "Verify that DeleteAsync is invoked exactly once",
                 ExpectedResult    = "DeleteAsync called x1",
                 StatusRound1      = "Passed",
@@ -107,7 +107,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-DB-04 | N | SaveChangesAsync Verification
+        // Delete_Blog_04 | N | SaveChangesAsync Verification
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidRequest_ShouldCallSaveChangesAsync()
@@ -123,7 +123,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Blog",
-                TestCaseID        = "TC-DB-04",
+                TestCaseID        = "Delete_Blog_04",
                 Description       = "Verify that SaveChangesAsync is invoked after deletion",
                 ExpectedResult    = "SaveChangesAsync called x1",
                 StatusRound1      = "Passed",
@@ -134,7 +134,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-DB-05 | N | Database Exception → Returns 500
+        // Delete_Blog_05 | N | Database Exception → Returns 500
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DatabaseException_ShouldReturn500ServerError()
@@ -155,7 +155,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Blog",
-                TestCaseID        = "TC-DB-05",
+                TestCaseID        = "Delete_Blog_05",
                 Description       = "Simulate database exception during DeleteAsync",
                 ExpectedResult    = "Return 500 ServerError",
                 StatusRound1      = "Passed",
@@ -166,7 +166,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-DB-06 | B | Empty id string
+        // Delete_Blog_06 | B | Empty id string
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyBlogId_ShouldReturn404()
@@ -180,7 +180,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Blog",
-                TestCaseID        = "TC-DB-06",
+                TestCaseID        = "Delete_Blog_06",
                 Description       = "Provide empty string as Blog ID",
                 ExpectedResult    = "Return 404 BlogNotFound due to failed lookup",
                 StatusRound1      = "Passed",

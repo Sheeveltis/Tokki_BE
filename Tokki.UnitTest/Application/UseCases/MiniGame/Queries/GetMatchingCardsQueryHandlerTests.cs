@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -24,7 +24,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame.Queries
             _handler = new GetMatchingCardsQueryHandler(_mockRepo.Object);
         }
 
-        // TC-MG-GMC-01 | A | Vocab Collection Null -> Error
+        // GetMatchingCardsQueryHandler_01 | A | Vocab Collection Null -> Error
         [Fact]
         public async Task Handle_NullVocabulary_ShouldReturn404()
         {
@@ -40,7 +40,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame.Queries
             QACollector.LogTestCase("Mini Game - Get Matching Cards", new TestCaseDetail
             {
                 FunctionGroup = "GetMatchingCardsQueryHandler",
-                TestCaseID = "TC-MG-GMC-01",
+                TestCaseID = "GetMatchingCardsQueryHandler_01",
                 Description = "Empty subsets accurately parsed directly returning graceful exits",
                 ExpectedResult = "Error 404",
                 StatusRound1 = "Passed",
@@ -50,7 +50,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame.Queries
             });
         }
 
-        // TC-MG-GMC-02 | A | Vocab Collection Empty -> Error
+        // GetMatchingCardsQueryHandler_02 | A | Vocab Collection Empty -> Error
         [Fact]
         public async Task Handle_EmptyVocabulary_ShouldReturn404()
         {
@@ -66,7 +66,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame.Queries
             QACollector.LogTestCase("Mini Game - Get Matching Cards", new TestCaseDetail
             {
                 FunctionGroup = "GetMatchingCardsQueryHandler",
-                TestCaseID = "TC-MG-GMC-02",
+                TestCaseID = "GetMatchingCardsQueryHandler_02",
                 Description = "Validates Any() condition blocks cleanly",
                 ExpectedResult = "Error 404",
                 StatusRound1 = "Passed",
@@ -76,7 +76,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame.Queries
             });
         }
 
-        // TC-MG-GMC-03 | N | Standard Result Maps DTO Properties
+        // GetMatchingCardsQueryHandler_03 | N | Standard Result Maps DTO Properties
         [Fact]
         public async Task Handle_ValidResult_ShouldMapDTOs()
         {
@@ -98,7 +98,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame.Queries
             QACollector.LogTestCase("Mini Game - Get Matching Cards", new TestCaseDetail
             {
                 FunctionGroup = "GetMatchingCardsQueryHandler",
-                TestCaseID = "TC-MG-GMC-03",
+                TestCaseID = "GetMatchingCardsQueryHandler_03",
                 Description = "Verifies accurate data mapping across domain object borders into standard shapes",
                 ExpectedResult = "Success Data Output",
                 StatusRound1 = "Passed",
@@ -108,7 +108,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame.Queries
             });
         }
 
-        // TC-MG-GMC-04 | N | Preserves Pronunciations
+        // GetMatchingCardsQueryHandler_04 | N | Preserves Pronunciations
         [Fact]
         public async Task Handle_PreservesPronunciation_MapsValidString()
         {
@@ -127,7 +127,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame.Queries
             QACollector.LogTestCase("Mini Game - Get Matching Cards", new TestCaseDetail
             {
                 FunctionGroup = "GetMatchingCardsQueryHandler",
-                TestCaseID = "TC-MG-GMC-04",
+                TestCaseID = "GetMatchingCardsQueryHandler_04",
                 Description = "Pronunciations map identically",
                 ExpectedResult = "Matched property string",
                 StatusRound1 = "Passed",
@@ -137,7 +137,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame.Queries
             });
         }
 
-        // TC-MG-GMC-05 | N | Preserves Definitions
+        // GetMatchingCardsQueryHandler_05 | N | Preserves Definitions
         [Fact]
         public async Task Handle_PreservesDefinitions_MapsValidString()
         {
@@ -156,7 +156,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame.Queries
             QACollector.LogTestCase("Mini Game - Get Matching Cards", new TestCaseDetail
             {
                 FunctionGroup = "GetMatchingCardsQueryHandler",
-                TestCaseID = "TC-MG-GMC-05",
+                TestCaseID = "GetMatchingCardsQueryHandler_05",
                 Description = "Definitions map identically maintaining vocabulary relationships",
                 ExpectedResult = "Matched property string definition",
                 StatusRound1 = "Passed",
@@ -166,7 +166,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame.Queries
             });
         }
 
-        // TC-MG-GMC-06 | N | Returns proper list lengths directly matching logic parameters
+        // GetMatchingCardsQueryHandler_06 | N | Returns proper list lengths directly matching logic parameters
         [Fact]
         public async Task Handle_LongList_MatchesInputCount()
         {
@@ -184,7 +184,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame.Queries
             QACollector.LogTestCase("Mini Game - Get Matching Cards", new TestCaseDetail
             {
                 FunctionGroup = "GetMatchingCardsQueryHandler",
-                TestCaseID = "TC-MG-GMC-06",
+                TestCaseID = "GetMatchingCardsQueryHandler_06",
                 Description = "Length collections persist through Select projections safely tracking arrays sequentially",
                 ExpectedResult = "Returns Count 20 list elements correctly",
                 StatusRound1 = "Passed",

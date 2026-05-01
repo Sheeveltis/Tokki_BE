@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using System;
 using System.ComponentModel;
 using Tokki.Application.Common.Helpers;
@@ -20,7 +20,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             EmptyDescription = 3
         }
 
-        // TC-CH-EE-01 | N | Enum with Description Attribute
+        // EnumExtensions_01 | N | Enum with Description Attribute
         [Fact]
         public void GetDescription_WithDescriptionAttribute_ReturnsDescription()
         {
@@ -32,7 +32,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             QACollector.LogTestCase("Common - Helpers", new TestCaseDetail
             {
                 FunctionGroup = "EnumExtensions",
-                TestCaseID = "TC-CH-EE-01",
+                TestCaseID = "EnumExtensions_01",
                 Description = "Enum with [Description] returns attribute value",
                 ExpectedResult = "First Item",
                 StatusRound1 = "Passed",
@@ -42,7 +42,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             });
         }
 
-        // TC-CH-EE-02 | N | Enum without Description Attribute
+        // EnumExtensions_02 | N | Enum without Description Attribute
         [Fact]
         public void GetDescription_WithoutDescriptionAttribute_ReturnsToString()
         {
@@ -54,7 +54,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             QACollector.LogTestCase("Common - Helpers", new TestCaseDetail
             {
                 FunctionGroup = "EnumExtensions",
-                TestCaseID = "TC-CH-EE-02",
+                TestCaseID = "EnumExtensions_02",
                 Description = "Enum without [Description] falls back to ToString()",
                 ExpectedResult = "Second",
                 StatusRound1 = "Passed",
@@ -64,7 +64,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             });
         }
 
-        // TC-CH-EE-03 | A | Enum casted from out-of-bounds int
+        // EnumExtensions_03 | A | Enum casted from out-of-bounds int
         [Fact]
         public void GetDescription_UndefinedEnumValue_ReturnsIntString()
         {
@@ -76,7 +76,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             QACollector.LogTestCase("Common - Helpers", new TestCaseDetail
             {
                 FunctionGroup = "EnumExtensions",
-                TestCaseID = "TC-CH-EE-03",
+                TestCaseID = "EnumExtensions_03",
                 Description = "Undefined enum value parsed cleanly to ToString representation",
                 ExpectedResult = "999",
                 StatusRound1 = "Passed",
@@ -86,7 +86,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             });
         }
 
-        // TC-CH-EE-04 | N | Enum with Empty String Description Attribute
+        // EnumExtensions_04 | N | Enum with Empty String Description Attribute
         [Fact]
         public void GetDescription_EmptyDescriptionAttribute_ReturnsEmptyString()
         {
@@ -98,7 +98,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             QACollector.LogTestCase("Common - Helpers", new TestCaseDetail
             {
                 FunctionGroup = "EnumExtensions",
-                TestCaseID = "TC-CH-EE-04",
+                TestCaseID = "EnumExtensions_04",
                 Description = "Blank description returns blank space",
                 ExpectedResult = "empty string",
                 StatusRound1 = "Passed",
@@ -108,7 +108,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             });
         }
 
-        // TC-CH-EE-05 | A | Throws NRE if invoked on null directly somehow (Using object wrapper implicitly)
+        // EnumExtensions_05 | A | Throws NRE if invoked on null directly somehow (Using object wrapper implicitly)
         [Fact]
         public void GetDescription_NullEnumObject_ShouldThrowNullReference()
         {
@@ -120,7 +120,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             QACollector.LogTestCase("Common - Helpers", new TestCaseDetail
             {
                 FunctionGroup = "EnumExtensions",
-                TestCaseID = "TC-CH-EE-05",
+                TestCaseID = "EnumExtensions_05",
                 Description = "Throws implicitly due to value.GetType() call on null",
                 ExpectedResult = "NullReferenceException",
                 StatusRound1 = "Passed",
@@ -130,7 +130,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             });
         }
 
-        // TC-CH-EE-06 | N | Verify edge case checking for base Enum behavior (System.Enum generic)
+        // EnumExtensions_06 | N | Verify edge case checking for base Enum behavior (System.Enum generic)
         [Fact]
         public void GetDescription_DayOfWeekSystemEnum_ShouldFallback()
         {
@@ -142,7 +142,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             QACollector.LogTestCase("Common - Helpers", new TestCaseDetail
             {
                 FunctionGroup = "EnumExtensions",
-                TestCaseID = "TC-CH-EE-06",
+                TestCaseID = "EnumExtensions_06",
                 Description = "Operates seamlessly on any existing System.Enum",
                 ExpectedResult = "Monday",
                 StatusRound1 = "Passed",

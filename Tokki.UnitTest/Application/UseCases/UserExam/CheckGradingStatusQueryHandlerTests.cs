@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -20,7 +20,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             => new CheckGradingStatusQuery { UserExamId = userExamId };
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-CGRD-01 | N | All writing graded → IsGraded=true
+        // CheckGradingStatus_01 | N | All writing graded → IsGraded=true
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NoPendingWriting_ShouldReturnIsGradedTrue()
@@ -42,7 +42,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Check Grading", new TestCaseDetail
             {
                 FunctionGroup     = "CheckGradingStatus",
-                TestCaseID        = "TC-CGRD-01",
+                TestCaseID        = "CheckGradingStatus_01",
                 Description       = "No pending writing answers → IsGraded=true",
                 ExpectedResult    = "IsSuccess=true, IsGraded=true",
                 StatusRound1      = "Passed",
@@ -53,7 +53,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-CGRD-02 | N | Writing still pending → IsGraded=false
+        // CheckGradingStatus_02 | N | Writing still pending → IsGraded=false
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_HasPendingWriting_ShouldReturnIsGradedFalse()
@@ -75,7 +75,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Check Grading", new TestCaseDetail
             {
                 FunctionGroup     = "CheckGradingStatus",
-                TestCaseID        = "TC-CGRD-02",
+                TestCaseID        = "CheckGradingStatus_02",
                 Description       = "Writing answers still pending → IsGraded=false",
                 ExpectedResult    = "IsSuccess=true, IsGraded=false",
                 StatusRound1      = "Passed",
@@ -86,7 +86,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-CGRD-03 | N | Repository called with correct UserExamId
+        // CheckGradingStatus_03 | N | Repository called with correct UserExamId
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ShouldCallRepoWithCorrectId()
@@ -107,7 +107,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Check Grading", new TestCaseDetail
             {
                 FunctionGroup     = "CheckGradingStatus",
-                TestCaseID        = "TC-CGRD-03",
+                TestCaseID        = "CheckGradingStatus_03",
                 Description       = "Repository called with the correct UserExamId",
                 ExpectedResult    = "HasPendingWritingAnswersAsync called with 'UE-999'",
                 StatusRound1      = "Passed",
@@ -118,7 +118,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-CGRD-04 | N | Always returns 200 (no 404/400 logic)
+        // CheckGradingStatus_04 | N | Always returns 200 (no 404/400 logic)
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_AnyInput_ShouldAlwaysReturnSuccess()
@@ -139,7 +139,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Check Grading", new TestCaseDetail
             {
                 FunctionGroup     = "CheckGradingStatus",
-                TestCaseID        = "TC-CGRD-04",
+                TestCaseID        = "CheckGradingStatus_04",
                 Description       = "Handler has no guard clauses → always returns Success",
                 ExpectedResult    = "IsSuccess=true regardless of input",
                 StatusRound1      = "Passed",
@@ -150,7 +150,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-CGRD-05 | B | Empty UserExamId passed → still calls repo
+        // CheckGradingStatus_05 | B | Empty UserExamId passed → still calls repo
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyUserExamId_ShouldStillCallRepo()
@@ -171,7 +171,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Check Grading", new TestCaseDetail
             {
                 FunctionGroup     = "CheckGradingStatus",
-                TestCaseID        = "TC-CGRD-05",
+                TestCaseID        = "CheckGradingStatus_05",
                 Description       = "Empty UserExamId → handler still delegates to repo (no validation at handler level)",
                 ExpectedResult    = "IsSuccess=true",
                 StatusRound1      = "Passed",
@@ -182,7 +182,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-CGRD-06 | E | Repository throws → exception propagates
+        // CheckGradingStatus_06 | E | Repository throws → exception propagates
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
@@ -203,7 +203,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Check Grading", new TestCaseDetail
             {
                 FunctionGroup     = "CheckGradingStatus",
-                TestCaseID        = "TC-CGRD-06",
+                TestCaseID        = "CheckGradingStatus_06",
                 Description       = "Repository throws exception → propagates",
                 ExpectedResult    = "Exception thrown with 'DB error'",
                 StatusRound1      = "Passed",

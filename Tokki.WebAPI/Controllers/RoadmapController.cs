@@ -17,6 +17,7 @@ using Tokki.Application.UseCases.Roadmap.Queries.GetEntranceExam;
 using Tokki.Application.UseCases.Roadmap.Queries.GetEntranceFeedback;
 using Tokki.Application.UseCases.Roadmap.Queries.GetRoadmap;
 using Tokki.Application.UseCases.Roadmap.Queries.GetVirtualQuiz;
+using Tokki.Application.UseCases.Roadmap.Constants;
 using Tokki.Domain.Enums;
 
 namespace Tokki.WebAPI.Controllers
@@ -29,33 +30,38 @@ namespace Tokki.WebAPI.Controllers
         private readonly IMediator _mediator;
         private readonly IUserRoadmapRepository _userRoadmapRepository;
         private readonly IRoadmapProgressService _progressService;
+        private readonly ITopikLevelConfigService _topikConfig;
 
         public RoadmapController(
             IMediator mediator,
             IUserRoadmapRepository userRoadmapRepository,
-            IRoadmapProgressService progressService) 
+            IRoadmapProgressService progressService,
+            ITopikLevelConfigService topikConfig) 
         {
             _mediator = mediator;
             _userRoadmapRepository = userRoadmapRepository;
             _progressService = progressService;
+            _topikConfig = topikConfig;
         }
-     
+
         [HttpGet("target-aims")]
         [AllowAnonymous]
-        public IActionResult GetTargetAims()
+        public async Task<IActionResult> GetTargetAims(CancellationToken ct)
         {
-            var result = TopikLevelConfig.Levels
-                .Select(kvp => new
-                {
-                    Value = (int)kvp.Key,
-                    EnumName = kvp.Key.ToString(),
-                    DisplayName = kvp.Value.DisplayName,
-                    ExamGroup = kvp.Value.ExamGroup,
-                    PassScore = kvp.Value.PassScore,
-                    TotalScore = kvp.Value.TotalScore
-                })
-                .OrderBy(x => x.Value)
-                .ToList();
+            var levels = await _topikConfig.GetAllAsync(ct);
+
+            var result = levels.Select(x => new
+            {
+                Value = x.TargetAimLevel,
+                DisplayName = x.DisplayName,
+                ExamGroup = x.ExamGroup,
+                PassScore = x.PassScore,
+                TotalScore = x.TotalScore,
+                Listening = x.Listening,
+                Reading = x.Reading,
+                Writing = x.Writing,
+                Strategy = x.Strategy
+            }).ToList();
 
             return Ok(result);
         }
@@ -161,28 +167,18 @@ namespace Tokki.WebAPI.Controllers
 
             var command = new GenerateNextWeekCommand
             {
-                UserId = userId,
+                UserId         = userId,
                 FinishedWeekId = request.FinishedWeekId
             };
 
             var result = await _mediator.Send(command);
 
-            if (result.StatusCode == 200 && result.Message?.Contains("hoàn thành") == true)
-                return Ok(new { message = result.Message, isFinished = true });
-
             if (!result.IsSuccess)
-                return BadRequest(result);
+                return StatusCode(result.StatusCode, result);
 
-            return Ok(new
-            {
-                message = "Đã tạo lộ trình tuần mới thành công!",
-                isFinished = false,
-                hasWarning = result.Data?.HasWarning ?? false,
-                warningMessage = result.Data?.WarningMessage,
-                persistentWeakTypeIds = result.Data?.PersistentWeakTypeIds ?? new List<string>()
-            });
+            return StatusCode(202, result);
         }
-        
+      
         [HttpGet("virtual-quiz/{questionTypeId}")]
         public async Task<IActionResult> GetVirtualQuiz(
             string questionTypeId,

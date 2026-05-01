@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
 using Moq;
@@ -77,7 +77,7 @@ namespace Tokki.UnitTest.Application.UseCases.FavoriteVocabulary
 
             QACollector.LogTestCase("Favorite Vocabulary - Remove", new TestCaseDetail
             {
-                FunctionGroup = "RemoveFavoriteVocabulary", TestCaseID = "TC-FAV-REM-01",
+                FunctionGroup = "RemoveFavoriteVocabulary", TestCaseID = "RemoveFavoriteVocabulary_01",
                 Description = "Validator fails → 400 ValidationFailed",
                 ExpectedResult = "Return 400 Failure", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -98,7 +98,7 @@ namespace Tokki.UnitTest.Application.UseCases.FavoriteVocabulary
 
             QACollector.LogTestCase("Favorite Vocabulary - Remove", new TestCaseDetail
             {
-                FunctionGroup = "RemoveFavoriteVocabulary", TestCaseID = "TC-FAV-REM-02",
+                FunctionGroup = "RemoveFavoriteVocabulary", TestCaseID = "RemoveFavoriteVocabulary_02",
                 Description = "No user in HttpContext → 401",
                 ExpectedResult = "Return 401 Failure", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -121,7 +121,7 @@ namespace Tokki.UnitTest.Application.UseCases.FavoriteVocabulary
 
             QACollector.LogTestCase("Favorite Vocabulary - Remove", new TestCaseDetail
             {
-                FunctionGroup = "RemoveFavoriteVocabulary", TestCaseID = "TC-FAV-REM-03",
+                FunctionGroup = "RemoveFavoriteVocabulary", TestCaseID = "RemoveFavoriteVocabulary_03",
                 Description = "Vocab not in favorites (deleted==0) → idempotent 200",
                 ExpectedResult = "Return 200 Success", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -144,7 +144,7 @@ namespace Tokki.UnitTest.Application.UseCases.FavoriteVocabulary
 
             QACollector.LogTestCase("Favorite Vocabulary - Remove", new TestCaseDetail
             {
-                FunctionGroup = "RemoveFavoriteVocabulary", TestCaseID = "TC-FAV-REM-04",
+                FunctionGroup = "RemoveFavoriteVocabulary", TestCaseID = "RemoveFavoriteVocabulary_04",
                 Description = "Valid remove → HardDeleteAsync called, Return 200",
                 ExpectedResult = "Return 200, deleted=1", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -168,7 +168,7 @@ namespace Tokki.UnitTest.Application.UseCases.FavoriteVocabulary
 
             QACollector.LogTestCase("Favorite Vocabulary - Remove", new TestCaseDetail
             {
-                FunctionGroup = "RemoveFavoriteVocabulary", TestCaseID = "TC-FAV-REM-05",
+                FunctionGroup = "RemoveFavoriteVocabulary", TestCaseID = "RemoveFavoriteVocabulary_05",
                 Description = "HardDeleteAsync throws → catch → 400",
                 ExpectedResult = "Return 400 Failure", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -190,7 +190,7 @@ namespace Tokki.UnitTest.Application.UseCases.FavoriteVocabulary
 
             QACollector.LogTestCase("Favorite Vocabulary - Remove", new TestCaseDetail
             {
-                FunctionGroup = "RemoveFavoriteVocabulary", TestCaseID = "TC-FAV-REM-06",
+                FunctionGroup = "RemoveFavoriteVocabulary", TestCaseID = "RemoveFavoriteVocabulary_06",
                 Description = "HardDeleteAsync called with exact userId and vocabId",
                 ExpectedResult = "HardDeleteAsync('USER-001','V-SPECIFIC') called once", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

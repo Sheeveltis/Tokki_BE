@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Moq;
 using System;
@@ -66,7 +66,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Create", new TestCaseDetail
             {
                 FunctionGroup     = "CreateExamTemplate",
-                TestCaseID        = "TC-EXMT-CRT-01",
+                TestCaseID        = "CreateExamTemplate_01",
                 Description       = "Template name already exists → Failure 'Tên đề thi mẫu đã tồn tại'",
                 ExpectedResult    = "Return Failure",
                 StatusRound1      = "Passed",
@@ -98,7 +98,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Create", new TestCaseDetail
             {
                 FunctionGroup     = "CreateExamTemplate",
-                TestCaseID        = "TC-EXMT-CRT-02",
+                TestCaseID        = "CreateExamTemplate_02",
                 Description       = "Valid command with CreatedBy → template created with Status=Draft",
                 ExpectedResult    = "Return Success, Status=Draft, CreatedBy='ADMIN-001'",
                 StatusRound1      = "Passed",
@@ -137,7 +137,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Create", new TestCaseDetail
             {
                 FunctionGroup     = "CreateExamTemplate",
-                TestCaseID        = "TC-EXMT-CRT-03",
+                TestCaseID        = "CreateExamTemplate_03",
                 Description       = "CreatedBy empty → fallback to HttpContext NameIdentifier claim",
                 ExpectedResult    = "CreatedBy = 'CTX-USER-001' from token",
                 StatusRound1      = "Passed",
@@ -176,7 +176,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Create", new TestCaseDetail
             {
                 FunctionGroup     = "CreateExamTemplate",
-                TestCaseID        = "TC-EXMT-CRT-04",
+                TestCaseID        = "CreateExamTemplate_04",
                 Description       = "No CreatedBy, no HttpContext → fallback to 'SYSTEM'",
                 ExpectedResult    = "CreatedBy = 'SYSTEM'",
                 StatusRound1      = "Passed",
@@ -207,7 +207,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Create", new TestCaseDetail
             {
                 FunctionGroup     = "CreateExamTemplate",
-                TestCaseID        = "TC-EXMT-CRT-05",
+                TestCaseID        = "CreateExamTemplate_05",
                 Description       = "Valid command → ExamTemplateId generated and returned as Data",
                 ExpectedResult    = "Result.Data = generated ExamTemplateId",
                 StatusRound1      = "Passed",
@@ -229,7 +229,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Create", new TestCaseDetail
             {
                 FunctionGroup     = "CreateExamTemplate",
-                TestCaseID        = "TC-EXMT-CRT-06",
+                TestCaseID        = "CreateExamTemplate_06",
                 Description       = "Repository throws → exception propagates",
                 ExpectedResult    = "Throws Exception",
                 StatusRound1      = "Passed",

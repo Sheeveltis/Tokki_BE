@@ -1,4 +1,4 @@
-using FluentValidation.TestHelper;
+﻿using FluentValidation.TestHelper;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -31,7 +31,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample.Commands
             QACollector.LogTestCase("Vocabulary Example - Update Validator", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateVocabularyExampleCommandValidator",
-                TestCaseID        = "TC-VEX-UVEV-01",
+                TestCaseID        = "UpdateVocabularyExampleCommandValidator_01",
                 Description       = "ExampleId empty",
                 ExpectedResult    = "Error ExampleId must not be empty",
                 StatusRound1      = "Passed",
@@ -53,7 +53,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample.Commands
             QACollector.LogTestCase("Vocabulary Example - Update Validator", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateVocabularyExampleCommandValidator",
-                TestCaseID        = "TC-VEX-UVEV-02",
+                TestCaseID        = "UpdateVocabularyExampleCommandValidator_02",
                 Description       = "UpdateData null",
                 ExpectedResult    = "Error UpdateData missing",
                 StatusRound1      = "Passed",
@@ -79,7 +79,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample.Commands
             QACollector.LogTestCase("Vocabulary Example - Update Validator", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateVocabularyExampleCommandValidator",
-                TestCaseID        = "TC-VEX-UVEV-03",
+                TestCaseID        = "UpdateVocabularyExampleCommandValidator_03",
                 Description       = "Invalid enum status",
                 ExpectedResult    = "Error status not in enum",
                 StatusRound1      = "Passed",
@@ -104,7 +104,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample.Commands
             QACollector.LogTestCase("Vocabulary Example - Update Validator", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateVocabularyExampleCommandValidator",
-                TestCaseID        = "TC-VEX-UVEV-04",
+                TestCaseID        = "UpdateVocabularyExampleCommandValidator_04",
                 Description       = "Valid inputs check",
                 ExpectedResult    = "No errors",
                 StatusRound1      = "Passed",

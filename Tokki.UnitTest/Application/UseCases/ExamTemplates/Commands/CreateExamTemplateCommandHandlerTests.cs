@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Moq;
 using System;
@@ -27,7 +27,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXT-C-01 | A | Name Conflicted Duplicate
+        // CreateExamTemplateCommandHandler_01 | A | Name Conflicted Duplicate
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NameConflicted_ShouldReturnFailure()
@@ -42,7 +42,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             QACollector.LogTestCase("Exam Template - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreateExamTemplateCommandHandler",
-                TestCaseID = "TC-EXT-C-01",
+                TestCaseID = "CreateExamTemplateCommandHandler_01",
                 Description = "Rejects same identical name validation securely avoiding SQL errors",
                 ExpectedResult = "Return Duplication error",
                 StatusRound1 = "Passed",
@@ -53,7 +53,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXT-C-02 | N | Success -> Fallback CreatedBy = SYSTEM
+        // CreateExamTemplateCommandHandler_02 | N | Success -> Fallback CreatedBy = SYSTEM
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_MissingCreatedBy_ShouldFallbackToSystem()
@@ -73,7 +73,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             QACollector.LogTestCase("Exam Template - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreateExamTemplateCommandHandler",
-                TestCaseID = "TC-EXT-C-02",
+                TestCaseID = "CreateExamTemplateCommandHandler_02",
                 Description = "Ensures background offline requests default assignment SYSTEM safely",
                 ExpectedResult = "Successfully creates with mapped values",
                 StatusRound1 = "Passed",
@@ -84,7 +84,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXT-C-03 | N | Success -> CreatedBy maps from Provided String
+        // CreateExamTemplateCommandHandler_03 | N | Success -> CreatedBy maps from Provided String
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_CreatedByString_ShouldMapCorrectly()
@@ -101,7 +101,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             QACollector.LogTestCase("Exam Template - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreateExamTemplateCommandHandler",
-                TestCaseID = "TC-EXT-C-03",
+                TestCaseID = "CreateExamTemplateCommandHandler_03",
                 Description = "Command payload correctly maps property without HTTP extraction",
                 ExpectedResult = "Creates correctly via internal request assignment",
                 StatusRound1 = "Passed",
@@ -112,7 +112,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXT-C-04 | N | Success -> CreatedBy HTTP NameIdentifier Claim mapped
+        // CreateExamTemplateCommandHandler_04 | N | Success -> CreatedBy HTTP NameIdentifier Claim mapped
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_HTTPNameIdentifier_ShouldExtractClaimSuccessfully()
@@ -134,7 +134,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             QACollector.LogTestCase("Exam Template - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreateExamTemplateCommandHandler",
-                TestCaseID = "TC-EXT-C-04",
+                TestCaseID = "CreateExamTemplateCommandHandler_04",
                 Description = "Auth extraction logic perfectly extracts system valid NameIdentifiers efficiently",
                 ExpectedResult = "Maps claim correctly",
                 StatusRound1 = "Passed",
@@ -145,7 +145,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
         }
         
         // ═══════════════════════════════════════════════════════════
-        // TC-EXT-C-05 | N | Success -> CreatedBy SUB Claim fallback
+        // CreateExamTemplateCommandHandler_05 | N | Success -> CreatedBy SUB Claim fallback
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_HTTPSubClaim_ShouldExtractAppropriately()
@@ -167,7 +167,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             QACollector.LogTestCase("Exam Template - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreateExamTemplateCommandHandler",
-                TestCaseID = "TC-EXT-C-05",
+                TestCaseID = "CreateExamTemplateCommandHandler_05",
                 Description = "Different fallback Auth frameworks utilizing SUB mapping also accurately matched",
                 ExpectedResult = "Maps sub smoothly",
                 StatusRound1 = "Passed",
@@ -178,7 +178,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXT-C-06 | N | Success -> Sets Status explicitly to Draft overriding defaults safely
+        // CreateExamTemplateCommandHandler_06 | N | Success -> Sets Status explicitly to Draft overriding defaults safely
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EnsureDraftStatus()
@@ -194,7 +194,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             QACollector.LogTestCase("Exam Template - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreateExamTemplateCommandHandler",
-                TestCaseID = "TC-EXT-C-06",
+                TestCaseID = "CreateExamTemplateCommandHandler_06",
                 Description = "Verify newly instantiated DB entities strictly initialize securely at Draft state initially",
                 ExpectedResult = "Status verified at Draft successfully",
                 StatusRound1 = "Passed",

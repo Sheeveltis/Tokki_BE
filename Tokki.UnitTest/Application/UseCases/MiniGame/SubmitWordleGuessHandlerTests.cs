@@ -47,7 +47,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             QACollector.LogTestCase("Wordle - Submit Guess", new TestCaseDetail
             {
                 FunctionGroup = "Submit Wordle Guess",
-                TestCaseID = "TC-WDL-GUS-01",
+                TestCaseID = "Submit_Wordle_Guess_01",
                 Description = "Submit guess with DailyWordleId does not exist",
                 ExpectedResult = "Return Failure",
                 StatusRound1 = "Passed",
@@ -85,7 +85,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             QACollector.LogTestCase("Wordle - Submit Guess", new TestCaseDetail
             {
                 FunctionGroup = "Submit Wordle Guess",
-                TestCaseID = "TC-WDL-GUS-02",
+                TestCaseID = "Submit_Wordle_Guess_02",
                 Description = "GuessWord's length is wrong compared to the target",
                 ExpectedResult = "Return Failure with invalid message length",
                 StatusRound1 = "Passed",
@@ -140,7 +140,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             QACollector.LogTestCase("Wordle - Submit Guess", new TestCaseDetail
             {
                 FunctionGroup = "Submit Wordle Guess",
-                TestCaseID = "TC-WDL-GUS-03",
+                TestCaseID = "Submit_Wordle_Guess_03",
                 Description = "User has won (IsWon = true) → no more guesses are allowed",
                 ExpectedResult = "Return Failure 'turn has ended'",
                 StatusRound1 = "Passed",

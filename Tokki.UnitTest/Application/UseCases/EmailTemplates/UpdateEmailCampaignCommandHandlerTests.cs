@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -53,7 +53,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Update Campaign", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateEmailCampaign",
-                TestCaseID        = "TC-EMAIL-UCMP-01",
+                TestCaseID        = "UpdateEmailCampaign_01",
                 Description       = "JobId not found → 404 Failure",
                 ExpectedResult    = "Return 404 'Không tìm thấy campaign!'",
                 StatusRound1      = "Passed",
@@ -78,7 +78,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Update Campaign", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateEmailCampaign",
-                TestCaseID        = "TC-EMAIL-UCMP-02",
+                TestCaseID        = "UpdateEmailCampaign_02",
                 Description       = "Job is Sent (not Pending) → 400 Failure (cannot update sent jobs)",
                 ExpectedResult    = "Return 400",
                 StatusRound1      = "Passed",
@@ -104,7 +104,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Update Campaign", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateEmailCampaign",
-                TestCaseID        = "TC-EMAIL-UCMP-03",
+                TestCaseID        = "UpdateEmailCampaign_03",
                 Description       = "Attempting to update Status to Sent (only Deleted allowed) → 400",
                 ExpectedResult    = "Return 400 'Chỉ cho phép Status sang Deleted'",
                 StatusRound1      = "Passed",
@@ -132,7 +132,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Update Campaign", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateEmailCampaign",
-                TestCaseID        = "TC-EMAIL-UCMP-04",
+                TestCaseID        = "UpdateEmailCampaign_04",
                 Description       = "Valid subject update → job.Subject updated, Return 200",
                 ExpectedResult    = "Return 200, job.Subject = 'New Subject'",
                 StatusRound1      = "Passed",
@@ -160,7 +160,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Update Campaign", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateEmailCampaign",
-                TestCaseID        = "TC-EMAIL-UCMP-05",
+                TestCaseID        = "UpdateEmailCampaign_05",
                 Description       = "Audit fields UpdatedBy='ADMIN-001' and UpdatedAt=VN now set",
                 ExpectedResult    = "job.UpdatedBy = 'ADMIN-001', job.UpdatedAt updated",
                 StatusRound1      = "Passed",
@@ -182,7 +182,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Update Campaign", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateEmailCampaign",
-                TestCaseID        = "TC-EMAIL-UCMP-06",
+                TestCaseID        = "UpdateEmailCampaign_06",
                 Description       = "Repository throws → exception propagates",
                 ExpectedResult    = "Throws Exception",
                 StatusRound1      = "Passed",

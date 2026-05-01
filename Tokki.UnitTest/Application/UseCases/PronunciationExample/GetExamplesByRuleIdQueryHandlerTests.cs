@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -23,7 +23,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PE-GR-01 | N | No examples for ruleId → empty list, IsSuccess=true
+        // GetExamplesByRuleId_01 | N | No examples for ruleId → empty list, IsSuccess=true
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NoExamplesForRule_ShouldReturnEmptyListSuccess()
@@ -46,7 +46,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample
             QACollector.LogTestCase("Pronunciation Example - Get By Rule", new TestCaseDetail
             {
                 FunctionGroup     = "GetExamplesByRuleId",
-                TestCaseID        = "TC-PE-GR-01",
+                TestCaseID        = "GetExamplesByRuleId_01",
                 Description       = "No examples exist for the given ruleId → returns empty list with IsSuccess=true",
                 ExpectedResult    = "IsSuccess=true, Data is empty list",
                 StatusRound1      = "Passed",
@@ -57,7 +57,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PE-GR-02 | N | Happy path → StatusCode=200, mapped list returned
+        // GetExamplesByRuleId_02 | N | Happy path → StatusCode=200, mapped list returned
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidRuleWithExamples_ShouldReturn200()
@@ -81,7 +81,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample
             QACollector.LogTestCase("Pronunciation Example - Get By Rule", new TestCaseDetail
             {
                 FunctionGroup     = "GetExamplesByRuleId",
-                TestCaseID        = "TC-PE-GR-02",
+                TestCaseID        = "GetExamplesByRuleId_02",
                 Description       = "Happy path: valid ruleId with examples → Returns 200 with mapped list",
                 ExpectedResult    = "IsSuccess=true, StatusCode=200, list count matches",
                 StatusRound1      = "Passed",
@@ -92,7 +92,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PE-GR-03 | N | Multiple examples → all mapped to ExampleSimpleDTO correctly
+        // GetExamplesByRuleId_03 | N | Multiple examples → all mapped to ExampleSimpleDTO correctly
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_MultipleExamples_ShouldMapAllDTOsCorrectly()
@@ -119,7 +119,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample
             QACollector.LogTestCase("Pronunciation Example - Get By Rule", new TestCaseDetail
             {
                 FunctionGroup     = "GetExamplesByRuleId",
-                TestCaseID        = "TC-PE-GR-03",
+                TestCaseID        = "GetExamplesByRuleId_03",
                 Description       = "Multiple examples returned → all mapped to ExampleSimpleDTO (ExampleId, RawScript, SortOrder)",
                 ExpectedResult    = "All DTO properties match source entity",
                 StatusRound1      = "Passed",
@@ -130,7 +130,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PE-GR-04 | A | Repository throws exception → propagates
+        // GetExamplesByRuleId_04 | A | Repository throws exception → propagates
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
@@ -153,7 +153,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample
             QACollector.LogTestCase("Pronunciation Example - Get By Rule", new TestCaseDetail
             {
                 FunctionGroup     = "GetExamplesByRuleId",
-                TestCaseID        = "TC-PE-GR-04",
+                TestCaseID        = "GetExamplesByRuleId_04",
                 Description       = "Repository throws InvalidOperationException → exception propagates to caller",
                 ExpectedResult    = "InvalidOperationException thrown",
                 StatusRound1      = "Passed",
@@ -164,7 +164,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PE-GR-05 | B | Empty ruleId → returns empty list (no filter applied in handler)
+        // GetExamplesByRuleId_05 | B | Empty ruleId → returns empty list (no filter applied in handler)
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyRuleId_ShouldReturnEmptyList()
@@ -188,7 +188,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample
             QACollector.LogTestCase("Pronunciation Example - Get By Rule", new TestCaseDetail
             {
                 FunctionGroup     = "GetExamplesByRuleId",
-                TestCaseID        = "TC-PE-GR-05",
+                TestCaseID        = "GetExamplesByRuleId_05",
                 Description       = "Boundary: empty ruleId passed through to repo → returns empty list",
                 ExpectedResult    = "IsSuccess=true, Data=[]. GetExamplesByRuleIdAsync called with empty string",
                 StatusRound1      = "Passed",
@@ -199,7 +199,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PE-GR-06 | N | GetExamplesByRuleIdAsync called with correct ruleId
+        // GetExamplesByRuleId_06 | N | GetExamplesByRuleIdAsync called with correct ruleId
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidRuleId_ShouldCallRepoWithCorrectRuleId()
@@ -221,7 +221,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample
             QACollector.LogTestCase("Pronunciation Example - Get By Rule", new TestCaseDetail
             {
                 FunctionGroup     = "GetExamplesByRuleId",
-                TestCaseID        = "TC-PE-GR-06",
+                TestCaseID        = "GetExamplesByRuleId_06",
                 Description       = "Verify GetExamplesByRuleIdAsync is called exactly once with the correct ruleId",
                 ExpectedResult    = "GetExamplesByRuleIdAsync(ruleId) called Times.Once",
                 StatusRound1      = "Passed",

@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Moq;
 using System;
@@ -40,7 +40,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CUA-01 | N | Valid audio file → 200 Success with URL
+        // Upload_Audio_01 | N | Valid audio file → 200 Success with URL
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidAudioFile_ShouldReturnAudioUrl()
@@ -58,7 +58,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary
             QACollector.LogTestCase("Cloudinary - Upload Audio", new TestCaseDetail
             {
                 FunctionGroup     = "Upload Audio",
-                TestCaseID        = "TC-CUA-01",
+                TestCaseID        = "Upload_Audio_01",
                 Description       = "Upload valid MP3 audio file to specified folder",
                 ExpectedResult    = "Return 200 Success with Cloudinary audio URL",
                 StatusRound1      = "Passed",
@@ -69,7 +69,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CUA-02 | A | Cloudinary throws exception → Failure
+        // Upload_Audio_02 | A | Cloudinary throws exception → Failure
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_CloudinaryThrowsException_ShouldReturnFailure()
@@ -90,7 +90,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary
             QACollector.LogTestCase("Cloudinary - Upload Audio", new TestCaseDetail
             {
                 FunctionGroup     = "Upload Audio",
-                TestCaseID        = "TC-CUA-02",
+                TestCaseID        = "Upload_Audio_02",
                 Description       = "Cloudinary service throws a timeout exception during upload",
                 ExpectedResult    = "Exception is caught, return Failure",
                 StatusRound1      = "Passed",
@@ -101,7 +101,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CUA-03 | N | Returned URL contains expected domain
+        // Upload_Audio_03 | N | Returned URL contains expected domain
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidAudio_ReturnedUrlContainsCloudinaryDomain()
@@ -119,7 +119,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary
             QACollector.LogTestCase("Cloudinary - Upload Audio", new TestCaseDetail
             {
                 FunctionGroup     = "Upload Audio",
-                TestCaseID        = "TC-CUA-03",
+                TestCaseID        = "Upload_Audio_03",
                 Description       = "Verify the returned URL references the Cloudinary CDN",
                 ExpectedResult    = "URL contains 'cloudinary.com'",
                 StatusRound1      = "Passed",
@@ -130,7 +130,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CUA-04 | N | UploadAudioAsync is called exactly once
+        // Upload_Audio_04 | N | UploadAudioAsync is called exactly once
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidAudio_ShouldCallUploadAudioAsyncOnce()
@@ -150,7 +150,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary
             QACollector.LogTestCase("Cloudinary - Upload Audio", new TestCaseDetail
             {
                 FunctionGroup     = "Upload Audio",
-                TestCaseID        = "TC-CUA-04",
+                TestCaseID        = "Upload_Audio_04",
                 Description       = "Verify handler calls the audio upload service exactly once with correct folder",
                 ExpectedResult    = "UploadAudioAsync called once with folder = 'tokki/audio'",
                 StatusRound1      = "Passed",
@@ -161,7 +161,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CUA-05 | B | 0-byte audio file → reads empty bytes
+        // Upload_Audio_05 | B | 0-byte audio file → reads empty bytes
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ZeroByteFile_ShouldStillCallService()
@@ -180,7 +180,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary
             QACollector.LogTestCase("Cloudinary - Upload Audio", new TestCaseDetail
             {
                 FunctionGroup     = "Upload Audio",
-                TestCaseID        = "TC-CUA-05",
+                TestCaseID        = "Upload_Audio_05",
                 Description       = "Upload a 0-byte audio file (boundary case for empty stream)",
                 ExpectedResult    = "Handler passes empty bytes to service; mock returns Success",
                 StatusRound1      = "Passed",
@@ -191,7 +191,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CUA-06 | N | Error message is included in failure result
+        // Upload_Audio_06 | N | Error message is included in failure result
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_CloudinaryThrows_ErrorMessageForwardedInResult()
@@ -213,7 +213,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary
             QACollector.LogTestCase("Cloudinary - Upload Audio", new TestCaseDetail
             {
                 FunctionGroup     = "Upload Audio",
-                TestCaseID        = "TC-CUA-06",
+                TestCaseID        = "Upload_Audio_06",
                 Description       = "Exception message from Cloudinary is surfaced in the result message",
                 ExpectedResult    = "Result.Message contains the original exception text",
                 StatusRound1      = "Passed",

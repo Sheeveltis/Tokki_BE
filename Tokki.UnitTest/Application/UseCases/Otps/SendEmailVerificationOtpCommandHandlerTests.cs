@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
 using Moq;
@@ -69,7 +69,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Send Email Verify", new TestCaseDetail
             {
-                FunctionGroup = "SendEmailVerificationOtp", TestCaseID = "TC-OTP-EML-01",
+                FunctionGroup = "SendEmailVerificationOtp", TestCaseID = "SendEmailVerificationOtp_01",
                 Description = "Email already registered (Active) → 400 EmailAlreadyExists",
                 ExpectedResult = "Return 400", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -93,7 +93,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Send Email Verify", new TestCaseDetail
             {
-                FunctionGroup = "SendEmailVerificationOtp", TestCaseID = "TC-OTP-EML-02",
+                FunctionGroup = "SendEmailVerificationOtp", TestCaseID = "SendEmailVerificationOtp_02",
                 Description = "Email exists but Banned → 400 AccountUnavailable",
                 ExpectedResult = "Return 400 AccountUnavailable", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -121,7 +121,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Send Email Verify", new TestCaseDetail
             {
-                FunctionGroup = "SendEmailVerificationOtp", TestCaseID = "TC-OTP-EML-03",
+                FunctionGroup = "SendEmailVerificationOtp", TestCaseID = "SendEmailVerificationOtp_03",
                 Description = "Rate limit key exists in Redis → 429 TooManyRequests",
                 ExpectedResult = "Return 429", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -159,7 +159,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Send Email Verify", new TestCaseDetail
             {
-                FunctionGroup = "SendEmailVerificationOtp", TestCaseID = "TC-OTP-EML-04",
+                FunctionGroup = "SendEmailVerificationOtp", TestCaseID = "SendEmailVerificationOtp_04",
                 Description = "New email → OTP key + rate-limit key stored in Redis, Return 200",
                 ExpectedResult = "Return 200, both Redis keys set", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -193,7 +193,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Send Email Verify", new TestCaseDetail
             {
-                FunctionGroup = "SendEmailVerificationOtp", TestCaseID = "TC-OTP-EML-05",
+                FunctionGroup = "SendEmailVerificationOtp", TestCaseID = "SendEmailVerificationOtp_05",
                 Description = "Email service throws → both Redis keys deleted, Return 400",
                 ExpectedResult = "Return 400, both keys deleted", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -225,7 +225,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Send Email Verify", new TestCaseDetail
             {
-                FunctionGroup = "SendEmailVerificationOtp", TestCaseID = "TC-OTP-EML-06",
+                FunctionGroup = "SendEmailVerificationOtp", TestCaseID = "SendEmailVerificationOtp_06",
                 Description = "OTP_EXPIRATION_SECONDS=600 → TTL=600s used for OTP Redis key",
                 ExpectedResult = "SetAsync called with TTL=600s", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

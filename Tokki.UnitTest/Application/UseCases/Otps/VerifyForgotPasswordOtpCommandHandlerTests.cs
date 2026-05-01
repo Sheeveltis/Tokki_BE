@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -48,7 +48,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Verify Forgot Password", new TestCaseDetail
             {
-                FunctionGroup = "VerifyForgotPasswordOtp", TestCaseID = "TC-OTP-VFP-01",
+                FunctionGroup = "VerifyForgotPasswordOtp", TestCaseID = "VerifyForgotPasswordOtp_01",
                 Description = "OTP key not in Redis → OtpInvalid failure",
                 ExpectedResult = "Return Failure OtpInvalid", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -70,7 +70,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Verify Forgot Password", new TestCaseDetail
             {
-                FunctionGroup = "VerifyForgotPasswordOtp", TestCaseID = "TC-OTP-VFP-02",
+                FunctionGroup = "VerifyForgotPasswordOtp", TestCaseID = "VerifyForgotPasswordOtp_02",
                 Description = "Redis returns 'null' string → deserialized entry is null → OtpInvalid",
                 ExpectedResult = "Return Failure OtpInvalid", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -93,7 +93,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Verify Forgot Password", new TestCaseDetail
             {
-                FunctionGroup = "VerifyForgotPasswordOtp", TestCaseID = "TC-OTP-VFP-03",
+                FunctionGroup = "VerifyForgotPasswordOtp", TestCaseID = "VerifyForgotPasswordOtp_03",
                 Description = "Wrong OTP code → OtpCodeWrong failure",
                 ExpectedResult = "Return Failure OtpCodeWrong", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -116,7 +116,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Verify Forgot Password", new TestCaseDetail
             {
-                FunctionGroup = "VerifyForgotPasswordOtp", TestCaseID = "TC-OTP-VFP-04",
+                FunctionGroup = "VerifyForgotPasswordOtp", TestCaseID = "VerifyForgotPasswordOtp_04",
                 Description = "Correct OTP → Redis key deleted (one-time use)",
                 ExpectedResult = "DeleteAsync called once", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -144,7 +144,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Verify Forgot Password", new TestCaseDetail
             {
-                FunctionGroup = "VerifyForgotPasswordOtp", TestCaseID = "TC-OTP-VFP-05",
+                FunctionGroup = "VerifyForgotPasswordOtp", TestCaseID = "VerifyForgotPasswordOtp_05",
                 Description = "Correct OTP → JWT reset token issued, Return 200 with token",
                 ExpectedResult = "Return 200, Data='RESET-TOKEN-ABC'", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -167,7 +167,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Verify Forgot Password", new TestCaseDetail
             {
-                FunctionGroup = "VerifyForgotPasswordOtp", TestCaseID = "TC-OTP-VFP-06",
+                FunctionGroup = "VerifyForgotPasswordOtp", TestCaseID = "VerifyForgotPasswordOtp_06",
                 Description = "Wrong OTP → DeleteAsync never called",
                 ExpectedResult = "DeleteAsync Times.Never", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -42,7 +42,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
         };
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-PAY-HST-01 | 200 | No payments for user → returns empty list
+        // GetPaymentHistory_01 | 200 | No payments for user → returns empty list
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NoPayments_ShouldReturnEmptyList()
@@ -65,7 +65,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             QACollector.LogTestCase("Payments - Get History", new TestCaseDetail
             {
                 FunctionGroup     = "GetPaymentHistory",
-                TestCaseID        = "TC-PAY-HST-01",
+                TestCaseID        = "GetPaymentHistory_01",
                 Description       = "User has no payment records → returns empty list",
                 ExpectedResult    = "Return 200, Data = empty list",
                 StatusRound1      = "Passed",
@@ -76,7 +76,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-PAY-HST-02 | 200 | Multiple payments → all mapped to DTO
+        // GetPaymentHistory_02 | 200 | Multiple payments → all mapped to DTO
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_MultiplePayments_ShouldMapAllToDto()
@@ -106,7 +106,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             QACollector.LogTestCase("Payments - Get History", new TestCaseDetail
             {
                 FunctionGroup     = "GetPaymentHistory",
-                TestCaseID        = "TC-PAY-HST-02",
+                TestCaseID        = "GetPaymentHistory_02",
                 Description       = "2 payments → both mapped to PaymentHistoryDTO",
                 ExpectedResult    = "Return 200, Count=2, IDs correct",
                 StatusRound1      = "Passed",
@@ -117,7 +117,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-PAY-HST-03 | 200 | VipExpirationDate from user → included in DTO
+        // GetPaymentHistory_03 | 200 | VipExpirationDate from user → included in DTO
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_UserHasVipExpirationDate_ShouldIncludeInDto()
@@ -142,7 +142,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             QACollector.LogTestCase("Payments - Get History", new TestCaseDetail
             {
                 FunctionGroup     = "GetPaymentHistory",
-                TestCaseID        = "TC-PAY-HST-03",
+                TestCaseID        = "GetPaymentHistory_03",
                 Description       = "User has VipExpirationDate → included in every DTO row",
                 ExpectedResult    = "DTO.CurrentVipExpirationDate = user.VipExpirationDate",
                 StatusRound1      = "Passed",
@@ -153,7 +153,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-PAY-HST-04 | 200 | User not found → VipExpirationDate = null in DTO
+        // GetPaymentHistory_04 | 200 | User not found → VipExpirationDate = null in DTO
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_UserNotFound_ShouldReturnNullVipExpirationDate()
@@ -176,7 +176,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             QACollector.LogTestCase("Payments - Get History", new TestCaseDetail
             {
                 FunctionGroup     = "GetPaymentHistory",
-                TestCaseID        = "TC-PAY-HST-04",
+                TestCaseID        = "GetPaymentHistory_04",
                 Description       = "Account not found → CurrentVipExpirationDate = null",
                 ExpectedResult    = "DTO.CurrentVipExpirationDate = null",
                 StatusRound1      = "Passed",
@@ -187,7 +187,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-PAY-HST-05 | 200 | Payment fields correctly mapped to DTO
+        // GetPaymentHistory_05 | 200 | Payment fields correctly mapped to DTO
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_PaymentFields_ShouldBeMappedCorrectly()
@@ -227,7 +227,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             QACollector.LogTestCase("Payments - Get History", new TestCaseDetail
             {
                 FunctionGroup     = "GetPaymentHistory",
-                TestCaseID        = "TC-PAY-HST-05",
+                TestCaseID        = "GetPaymentHistory_05",
                 Description       = "All payment fields correctly mapped to PaymentHistoryDTO",
                 ExpectedResult    = "PaymentId, Amount, Description, Status, VipPackageId, PaidAt all correct",
                 StatusRound1      = "Passed",
@@ -238,7 +238,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-PAY-HST-06 | 500 | Repository throws → exception propagates
+        // GetPaymentHistory_06 | 500 | Repository throws → exception propagates
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
@@ -257,7 +257,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             QACollector.LogTestCase("Payments - Get History", new TestCaseDetail
             {
                 FunctionGroup     = "GetPaymentHistory",
-                TestCaseID        = "TC-PAY-HST-06",
+                TestCaseID        = "GetPaymentHistory_06",
                 Description       = "GetByUserIdAsync throws → exception propagates unhandled",
                 ExpectedResult    = "Throws Exception",
                 StatusRound1      = "Passed",

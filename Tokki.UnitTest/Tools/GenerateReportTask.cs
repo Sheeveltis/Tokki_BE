@@ -8,7 +8,7 @@ using Xunit.Abstractions;
 namespace Tokki.UnitTest.Tools
 {
     // ─────────────────────────────────────────────────────────────────────────
-    // Z_GenerateReportTask  (prefix "Z_" ensures this class sorts LAST
+    // Z_GenerateReportTask  (prefix"Z_" ensures this class sorts LAST
     // alphabetically, so xUnit schedules it after all other test classes
     // when parallelization is disabled.)
     // ─────────────────────────────────────────────────────────────────────────
@@ -152,9 +152,9 @@ namespace Tokki.UnitTest.Tools
 
                 var header = new ProjectReportHeader
                 {
-                    ProjectName = "TOKKI LEARNING MANAGEMENT SYSTEM",
+                    ProjectName = "A Comprehensive Korean Learning Platform from Beginner to TOPIK, integrating Gamification Strategies, SRS Flashcards, and AI-powered Pronunciation Practice",
                     ProjectCode = "TK_CAPSTONE_2026",
-                    Creator     = "Project Team G1",
+                    Creator     = "KietNA",
                     Executor    = "KietNASE185061"
                 };
 

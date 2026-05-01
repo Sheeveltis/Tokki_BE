@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -50,7 +50,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Verify Email", new TestCaseDetail
             {
-                FunctionGroup = "VerifyEmailOtp", TestCaseID = "TC-OTP-VRF-01",
+                FunctionGroup = "VerifyEmailOtp", TestCaseID = "VerifyEmailOtp_01",
                 Description = "OTP key not in Redis → OtpNotFound failure",
                 ExpectedResult = "Return Failure OtpNotFound", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -73,7 +73,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Verify Email", new TestCaseDetail
             {
-                FunctionGroup = "VerifyEmailOtp", TestCaseID = "TC-OTP-VRF-02",
+                FunctionGroup = "VerifyEmailOtp", TestCaseID = "VerifyEmailOtp_02",
                 Description = "AttemptCount already = maxRetry → OtpMaxRetryExceeded",
                 ExpectedResult = "Return Failure OtpMaxRetryExceeded", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -105,7 +105,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Verify Email", new TestCaseDetail
             {
-                FunctionGroup = "VerifyEmailOtp", TestCaseID = "TC-OTP-VRF-03",
+                FunctionGroup = "VerifyEmailOtp", TestCaseID = "VerifyEmailOtp_03",
                 Description = "Wrong code, attempt 2→3 → 400, AttemptCount incremented in Redis",
                 ExpectedResult = "Return 400, SetAsync with AttemptCount=3", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -129,7 +129,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Verify Email", new TestCaseDetail
             {
-                FunctionGroup = "VerifyEmailOtp", TestCaseID = "TC-OTP-VRF-04",
+                FunctionGroup = "VerifyEmailOtp", TestCaseID = "VerifyEmailOtp_04",
                 Description = "Wrong code on last attempt → OtpRevoked, Redis key deleted",
                 ExpectedResult = "Return Failure OtpRevoked, DeleteAsync called", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -154,7 +154,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Verify Email", new TestCaseDetail
             {
-                FunctionGroup = "VerifyEmailOtp", TestCaseID = "TC-OTP-VRF-05",
+                FunctionGroup = "VerifyEmailOtp", TestCaseID = "VerifyEmailOtp_05",
                 Description = "Correct OTP → 200 success, key deleted (one-time use)",
                 ExpectedResult = "Return 200, DeleteAsync called", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -179,7 +179,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Verify Email", new TestCaseDetail
             {
-                FunctionGroup = "VerifyEmailOtp", TestCaseID = "TC-OTP-VRF-06",
+                FunctionGroup = "VerifyEmailOtp", TestCaseID = "VerifyEmailOtp_06",
                 Description = "Custom OTP_RETRY_LIMIT=3, attempts=3 → OtpMaxRetryExceeded",
                 ExpectedResult = "Return Failure MaxRetry", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

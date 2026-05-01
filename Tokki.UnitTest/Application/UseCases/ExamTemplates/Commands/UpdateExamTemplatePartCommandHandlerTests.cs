@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -26,7 +26,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             _handler = new UpdateExamTemplatePartCommandHandler(_mockTemplateRepo.Object, _mockTypeRepo.Object);
         }
 
-        // TC-EXT-UTP-01 | A | Template Not Found -> Error
+        // UpdateExamTemplatePartCommandHandler_01 | A | Template Not Found -> Error
         [Fact]
         public async Task Handle_TemplateNotFound_ShouldFail()
         {
@@ -42,7 +42,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             QACollector.LogTestCase("Exam Template - Update", new TestCaseDetail
             {
                 FunctionGroup = "UpdateExamTemplatePartCommandHandler",
-                TestCaseID = "TC-EXT-UTP-01",
+                TestCaseID = "UpdateExamTemplatePartCommandHandler_01",
                 Description = "Returns error if template fails object mapping natively",
                 ExpectedResult = "Failure",
                 StatusRound1 = "Passed",
@@ -52,7 +52,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             });
         }
 
-        // TC-EXT-UTP-02 | A | Status Not Draft -> Error
+        // UpdateExamTemplatePartCommandHandler_02 | A | Status Not Draft -> Error
         [Fact]
         public async Task Handle_StatusNotDraft_ShouldFail()
         {
@@ -69,7 +69,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             QACollector.LogTestCase("Exam Template - Update", new TestCaseDetail
             {
                 FunctionGroup = "UpdateExamTemplatePartCommandHandler",
-                TestCaseID = "TC-EXT-UTP-02",
+                TestCaseID = "UpdateExamTemplatePartCommandHandler_02",
                 Description = "Blocks editing sections when exam configuration commits beyond draft stage",
                 ExpectedResult = "Failure",
                 StatusRound1 = "Passed",
@@ -79,7 +79,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             });
         }
 
-        // TC-EXT-UTP-03 | A | PartId Not Found -> Error
+        // UpdateExamTemplatePartCommandHandler_03 | A | PartId Not Found -> Error
         [Fact]
         public async Task Handle_PartIdNotFound_ShouldFail()
         {
@@ -100,7 +100,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             QACollector.LogTestCase("Exam Template - Update", new TestCaseDetail
             {
                 FunctionGroup = "UpdateExamTemplatePartCommandHandler",
-                TestCaseID = "TC-EXT-UTP-03",
+                TestCaseID = "UpdateExamTemplatePartCommandHandler_03",
                 Description = "Safeguards against orphan edits where component arrays reject bad injection attempts",
                 ExpectedResult = "Failure",
                 StatusRound1 = "Passed",
@@ -110,7 +110,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             });
         }
 
-        // TC-EXT-UTP-04 | A | Overlap Detect With Other Parts
+        // UpdateExamTemplatePartCommandHandler_04 | A | Overlap Detect With Other Parts
         [Fact]
         public async Task Handle_OverlapWithOther_ShouldFail()
         {
@@ -136,7 +136,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             QACollector.LogTestCase("Exam Template - Update", new TestCaseDetail
             {
                 FunctionGroup = "UpdateExamTemplatePartCommandHandler",
-                TestCaseID = "TC-EXT-UTP-04",
+                TestCaseID = "UpdateExamTemplatePartCommandHandler_04",
                 Description = "Enforces non-overlapping array slots excluding its own identity reference securely",
                 ExpectedResult = "Failure",
                 StatusRound1 = "Passed",
@@ -146,7 +146,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             });
         }
 
-        // TC-EXT-UTP-05 | A | QuestionType Match Skill Failure
+        // UpdateExamTemplatePartCommandHandler_05 | A | QuestionType Match Skill Failure
         [Fact]
         public async Task Handle_SkillMismatchUpdate_ShouldFail()
         {
@@ -173,7 +173,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             QACollector.LogTestCase("Exam Template - Update", new TestCaseDetail
             {
                 FunctionGroup = "UpdateExamTemplatePartCommandHandler",
-                TestCaseID = "TC-EXT-UTP-05",
+                TestCaseID = "UpdateExamTemplatePartCommandHandler_05",
                 Description = "Rejects edits placing reading question types into listening configurations safely",
                 ExpectedResult = "Failure",
                 StatusRound1 = "Passed",
@@ -183,7 +183,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             });
         }
 
-        // TC-EXT-UTP-06 | N | Success Path Partial Update
+        // UpdateExamTemplatePartCommandHandler_06 | N | Success Path Partial Update
         [Fact]
         public async Task Handle_ValidPartialUpdate_ShouldSucceed()
         {
@@ -213,7 +213,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             QACollector.LogTestCase("Exam Template - Update", new TestCaseDetail
             {
                 FunctionGroup = "UpdateExamTemplatePartCommandHandler",
-                TestCaseID = "TC-EXT-UTP-06",
+                TestCaseID = "UpdateExamTemplatePartCommandHandler_06",
                 Description = "Successfully modifies specified isolated values ignoring unsupplied fallback properties unconditionally",
                 ExpectedResult = "Success true",
                 StatusRound1 = "Passed",

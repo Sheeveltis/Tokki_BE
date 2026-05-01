@@ -22,15 +22,15 @@ namespace Tokki.UnitTest.Application.UseCases.Passages.Commands
             return new UpdatePassageCommandHandler(_passageMock.Object);
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-PAS-UP-01 | A | Passage Not Found
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdatePassageCommandHandler_01 | A | Passage Not Found
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_NotFound_ShouldReturn404()
         {
             _passageMock.Setup(x => x.GetByIdAsync("id", It.IsAny<CancellationToken>())).ReturnsAsync((Passage?)null);
             var handler = CreateHandler();
-            var cmd = new UpdatePassageCommand { PassageId = "id" };
+            var cmd = new UpdatePassageCommand { PassageId ="id" };
 
             var result = await handler.Handle(cmd, CancellationToken.None);
 
@@ -39,131 +39,131 @@ namespace Tokki.UnitTest.Application.UseCases.Passages.Commands
 
             QACollector.LogTestCase("Passages - Update", new TestCaseDetail
             {
-                FunctionGroup = "UpdatePassageCommandHandler",
-                TestCaseID = "TC-PAS-UP-01",
-                Description = "Rejects immediately 404 securely if null lookup entity natively missing",
-                ExpectedResult = "Return 404 error",
-                StatusRound1 = "Passed",
-                TestCaseType = "A",
+                FunctionGroup ="UpdatePassageCommandHandler",
+                TestCaseID ="UpdatePassageCommandHandler_01",
+                Description ="Rejects immediately 404 securely if null lookup entity natively missing",
+                ExpectedResult ="Return 404 error",
+                StatusRound1 ="Passed",
+                TestCaseType ="A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "Get returns null" }
+                AppliedConditions = new List<string> {"Get returns null" }
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-PAS-UP-02 | A | Missing Title Empty -> 400
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdatePassageCommandHandler_02 | A | Missing Title Empty -> 400
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_TitleEmpty_ShouldReturn400()
         {
-            _passageMock.Setup(x => x.GetByIdAsync("id", It.IsAny<CancellationToken>())).ReturnsAsync(new Passage { Title = "X" });
+            _passageMock.Setup(x => x.GetByIdAsync("id", It.IsAny<CancellationToken>())).ReturnsAsync(new Passage { Title ="X" });
             var handler = CreateHandler();
-            var cmd = new UpdatePassageCommand { PassageId = "id", Title = "   " }; // Intentional empty string patching
+            var cmd = new UpdatePassageCommand { PassageId ="id", Title ="" }; // Intentional empty string patching
 
             var result = await handler.Handle(cmd, CancellationToken.None);
 
-            // Actually, because of "incomingTitle = string.IsNullOrWhiteSpace(request.Title) ? null : ...", 
-            // a purely whitespace title patch means "don't update". 
+            // Actually, because of"incomingTitle = string.IsNullOrWhiteSpace(request.Title) ? null : ...", 
+            // a purely whitespace title patch means"don't update". 
             // But if the old one was also somehow empty, it throws error.
             // Let's test if we force old to empty, it catches the validation.
-            _passageMock.Setup(x => x.GetByIdAsync("id", It.IsAny<CancellationToken>())).ReturnsAsync(new Passage { Title = "   " });
+            _passageMock.Setup(x => x.GetByIdAsync("id", It.IsAny<CancellationToken>())).ReturnsAsync(new Passage { Title ="" });
             var result2 = await handler.Handle(cmd, CancellationToken.None);
 
             result2.IsSuccess.Should().BeFalse();
-            result2.Message.Should().Contain("Tiêu đề không được để trống");
+            result2.Message.Should().Contain("Ti�u d? kh�ng du?c d? tr?ng");
 
             QACollector.LogTestCase("Passages - Update", new TestCaseDetail
             {
-                FunctionGroup = "UpdatePassageCommandHandler",
-                TestCaseID = "TC-PAS-UP-02",
-                Description = "Blocks invalid title patching dynamically catching boundaries solidly",
-                ExpectedResult = "Return 400 Validations text",
-                StatusRound1 = "Passed",
-                TestCaseType = "A",
+                FunctionGroup ="UpdatePassageCommandHandler",
+                TestCaseID ="UpdatePassageCommandHandler_02",
+                Description ="Blocks invalid title patching dynamically catching boundaries solidly",
+                ExpectedResult ="Return 400 Validations text",
+                StatusRound1 ="Passed",
+                TestCaseType ="A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "New title calculated is entirely blank string empty" }
+                AppliedConditions = new List<string> {"New title calculated is entirely blank string empty" }
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-PAS-UP-03 | A | Missing Text Content -> 400
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdatePassageCommandHandler_03 | A | Missing Text Content -> 400
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_TextMissingContent_ShouldReturn400()
         {
-            var passage = new Passage { Title = "T1", MediaType = PassageMediaType.Text, Content = "A" };
+            var passage = new Passage { Title ="T1", MediaType = PassageMediaType.Text, Content ="A" };
             _passageMock.Setup(x => x.GetByIdAsync("id", It.IsAny<CancellationToken>())).ReturnsAsync(passage);
             var handler = CreateHandler();
-            var cmd = new UpdatePassageCommand { PassageId = "id", Content = "   " }; // Patch empty content on Text MediaType
+            var cmd = new UpdatePassageCommand { PassageId ="id", Content ="" }; // Patch empty content on Text MediaType
 
-            // If we patch empty, it falls back to passage.Content? No wait, patching "   " turns incoming to null, thus keeping passage.Content ("A").
-            // To trigger the error, we need the old passage to have Content = " ", or we pass MediaType = Text but old content was null.
+            // If we patch empty, it falls back to passage.Content? No wait, patching"" turns incoming to null, thus keeping passage.Content ("A").
+            // To trigger the error, we need the old passage to have Content ="", or we pass MediaType = Text but old content was null.
 
-            var invalidPassage = new Passage { Title = "T1", MediaType = PassageMediaType.Image, ImageUrl = "img" }; // currently image
+            var invalidPassage = new Passage { Title ="T1", MediaType = PassageMediaType.Image, ImageUrl ="img" }; // currently image
             _passageMock.Setup(x => x.GetByIdAsync("id", It.IsAny<CancellationToken>())).ReturnsAsync(invalidPassage);
-            var badCmd = new UpdatePassageCommand { PassageId = "id", MediaType = PassageMediaType.Text }; // Convert to Text, but content is missing!
+            var badCmd = new UpdatePassageCommand { PassageId ="id", MediaType = PassageMediaType.Text }; // Convert to Text, but content is missing!
 
             var result = await handler.Handle(badCmd, CancellationToken.None);
 
             result.IsSuccess.Should().BeFalse();
-            result.Message.Should().Contain("bắt buộc phải có nội dung");
+            result.Message.Should().Contain("b?t bu?c ph?i c� n?i dung");
 
             QACollector.LogTestCase("Passages - Update", new TestCaseDetail
             {
-                FunctionGroup = "UpdatePassageCommandHandler",
-                TestCaseID = "TC-PAS-UP-03",
-                Description = "Converting types strictly demands appropriate string validation fields mapping safely",
-                ExpectedResult = "Return 400 Text requirements",
-                StatusRound1 = "Passed",
-                TestCaseType = "A",
+                FunctionGroup ="UpdatePassageCommandHandler",
+                TestCaseID ="UpdatePassageCommandHandler_03",
+                Description ="Converting types strictly demands appropriate string validation fields mapping safely",
+                ExpectedResult ="Return 400 Text requirements",
+                StatusRound1 ="Passed",
+                TestCaseType ="A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "MediaType mapped Text without Content String fully" }
+                AppliedConditions = new List<string> {"MediaType mapped Text without Content String fully" }
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-PAS-UP-04 | A | Image Missing Url -> 400
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdatePassageCommandHandler_04 | A | Image Missing Url -> 400
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_ImageMissingUrl_ShouldReturn400()
         {
-            var passage = new Passage { Title = "T1", MediaType = PassageMediaType.Text, Content = "Hi" }; // Old is text
+            var passage = new Passage { Title ="T1", MediaType = PassageMediaType.Text, Content ="Hi" }; // Old is text
             _passageMock.Setup(x => x.GetByIdAsync("id", It.IsAny<CancellationToken>())).ReturnsAsync(passage);
             
             var handler = CreateHandler();
-            var cmd = new UpdatePassageCommand { PassageId = "id", MediaType = PassageMediaType.Image }; // Convert to Image, but ImageUrl is missing
+            var cmd = new UpdatePassageCommand { PassageId ="id", MediaType = PassageMediaType.Image }; // Convert to Image, but ImageUrl is missing
 
             var result = await handler.Handle(cmd, CancellationToken.None);
 
             result.IsSuccess.Should().BeFalse();
-            result.Message.Should().Contain("link hình");
+            result.Message.Should().Contain("link h�nh");
 
             QACollector.LogTestCase("Passages - Update", new TestCaseDetail
             {
-                FunctionGroup = "UpdatePassageCommandHandler",
-                TestCaseID = "TC-PAS-UP-04",
-                Description = "Changing type to Image prevents execution smoothly without dedicated ImageUrl passed securely globally logically natively",
-                ExpectedResult = "Return 400 Image constraints correctly",
-                StatusRound1 = "Passed",
-                TestCaseType = "A",
+                FunctionGroup ="UpdatePassageCommandHandler",
+                TestCaseID ="UpdatePassageCommandHandler_04",
+                Description ="Changing type to Image prevents execution smoothly without dedicated ImageUrl passed",
+                ExpectedResult ="Return 400 Image constraints correctly",
+                StatusRound1 ="Passed",
+                TestCaseType ="A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "MediaType mapped Image missing url link effectively dynamically" }
+                AppliedConditions = new List<string> {"MediaType mapped Image missing url link effectively dynamically" }
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-PAS-UP-05 | A | Title Exists Check -> 409
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdatePassageCommandHandler_05 | A | Title Exists Check -> 409
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_DuplicatedTitle_ShouldReturn409()
         {
-            var passage = new Passage { Title = "Old Title", MediaType = PassageMediaType.Text, Content = "Content" }; 
+            var passage = new Passage { Title ="Old Title", MediaType = PassageMediaType.Text, Content ="Content" }; 
             _passageMock.Setup(x => x.GetByIdAsync("id", It.IsAny<CancellationToken>())).ReturnsAsync(passage);
             
-            _passageMock.Setup(x => x.IsTitleExistsAsync("Duplicate", "id")).ReturnsAsync(true); // Exists!
+            _passageMock.Setup(x => x.IsTitleExistsAsync("Duplicate","id")).ReturnsAsync(true); // Exists!
 
             var handler = CreateHandler();
-            var cmd = new UpdatePassageCommand { PassageId = "id", Title = "Duplicate" }; 
+            var cmd = new UpdatePassageCommand { PassageId ="id", Title ="Duplicate" }; 
 
             var result = await handler.Handle(cmd, CancellationToken.None);
 
@@ -172,28 +172,28 @@ namespace Tokki.UnitTest.Application.UseCases.Passages.Commands
 
             QACollector.LogTestCase("Passages - Update", new TestCaseDetail
             {
-                FunctionGroup = "UpdatePassageCommandHandler",
-                TestCaseID = "TC-PAS-UP-05",
-                Description = "Validates new titles overriding conflicting repo checks dynamically accurately effectively",
-                ExpectedResult = "Return 409 Conflict logic checked securely natively effectively",
-                StatusRound1 = "Passed",
-                TestCaseType = "A",
+                FunctionGroup ="UpdatePassageCommandHandler",
+                TestCaseID ="UpdatePassageCommandHandler_05",
+                Description ="Validates new titles overriding conflicting repo",
+                ExpectedResult ="Return 409 Conflict logic checked securely natively effectively",
+                StatusRound1 ="Passed",
+                TestCaseType ="A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "isTitleExists = true mapping string explicitly dynamically" }
+                AppliedConditions = new List<string> {"isTitleExists = true" }
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-PAS-UP-06 | N | Audio wiping logic successfully maps
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdatePassageCommandHandler_06 | N | Audio wiping logic successfully maps
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_AudioConvert_ShouldWipeOtherFieldsAndReturn200()
         {
-            var passage = new Passage { Title = "T1", MediaType = PassageMediaType.Image, ImageUrl = "oldImg" }; 
+            var passage = new Passage { Title ="T1", MediaType = PassageMediaType.Image, ImageUrl ="oldImg" }; 
             _passageMock.Setup(x => x.GetByIdAsync("id", It.IsAny<CancellationToken>())).ReturnsAsync(passage);
 
             var handler = CreateHandler();
-            var cmd = new UpdatePassageCommand { PassageId = "id", MediaType = PassageMediaType.Audio, AudioUrl = "newAudioUrl" }; 
+            var cmd = new UpdatePassageCommand { PassageId ="id", MediaType = PassageMediaType.Audio, AudioUrl ="newAudioUrl" }; 
 
             var result = await handler.Handle(cmd, CancellationToken.None);
 
@@ -208,14 +208,14 @@ namespace Tokki.UnitTest.Application.UseCases.Passages.Commands
 
             QACollector.LogTestCase("Passages - Update", new TestCaseDetail
             {
-                FunctionGroup = "UpdatePassageCommandHandler",
-                TestCaseID = "TC-PAS-UP-06",
-                Description = "Switch block securely wipes garbage entity states preventing hybrid dirty values persistently organically effectively efficiently natively dynamically intelligently robustly properly",
-                ExpectedResult = "Garbage collected 200 explicitly true safely",
-                StatusRound1 = "Passed",
-                TestCaseType = "N",
+                FunctionGroup ="UpdatePassageCommandHandler",
+                TestCaseID ="UpdatePassageCommandHandler_06",
+                Description ="Switch block securely wipes garbage entity states preventing hybrid dirty values",
+                ExpectedResult ="Garbage collected 200 explicitly true safely",
+                StatusRound1 ="Passed",
+                TestCaseType ="N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "MediaType mapping successfully switched completely erasing previous data dynamically effectively intelligently completely securely properly securely naturally flawlessly seamlessly elegantly efficiently organically reliably effortlessly flawlessly robustly natively correctly" }
+                AppliedConditions = new List<string> {"MediaType mapping successfully switched completely erasing previous data" }
             });
         }
     }

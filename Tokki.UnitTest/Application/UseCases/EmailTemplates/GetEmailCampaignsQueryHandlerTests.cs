@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -57,7 +57,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Get Campaigns List", new TestCaseDetail
             {
                 FunctionGroup     = "GetEmailCampaigns",
-                TestCaseID        = "TC-EMAIL-GCMP-01",
+                TestCaseID        = "GetEmailCampaigns_01",
                 Description       = "No jobs in DB → Return 200, Items empty",
                 ExpectedResult    = "Return 200, Items = []",
                 StatusRound1      = "Passed",
@@ -87,7 +87,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Get Campaigns List", new TestCaseDetail
             {
                 FunctionGroup     = "GetEmailCampaigns",
-                TestCaseID        = "TC-EMAIL-GCMP-02",
+                TestCaseID        = "GetEmailCampaigns_02",
                 Description       = "2 jobs found → Return 200, Items=2",
                 ExpectedResult    = "Return 200, Items.Count=2",
                 StatusRound1      = "Passed",
@@ -118,7 +118,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Get Campaigns List", new TestCaseDetail
             {
                 FunctionGroup     = "GetEmailCampaigns",
-                TestCaseID        = "TC-EMAIL-GCMP-03",
+                TestCaseID        = "GetEmailCampaigns_03",
                 Description       = "Page 2/5, 20 total → TotalPages=4",
                 ExpectedResult    = "Return 200, TotalPages=4, PageNumber=2",
                 StatusRound1      = "Passed",
@@ -146,7 +146,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Get Campaigns List", new TestCaseDetail
             {
                 FunctionGroup     = "GetEmailCampaigns",
-                TestCaseID        = "TC-EMAIL-GCMP-04",
+                TestCaseID        = "GetEmailCampaigns_04",
                 Description       = "Status=Pending filter passed directly to repository",
                 ExpectedResult    = "Return 200, GetPagedAsync called with Status=Pending",
                 StatusRound1      = "Passed",
@@ -174,7 +174,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Get Campaigns List", new TestCaseDetail
             {
                 FunctionGroup     = "GetEmailCampaigns",
-                TestCaseID        = "TC-EMAIL-GCMP-05",
+                TestCaseID        = "GetEmailCampaigns_05",
                 Description       = "IncludeDeleted=true passed to repository",
                 ExpectedResult    = "Return 200, includeDeleted=true in repo call",
                 StatusRound1      = "Passed",
@@ -200,7 +200,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Get Campaigns List", new TestCaseDetail
             {
                 FunctionGroup     = "GetEmailCampaigns",
-                TestCaseID        = "TC-EMAIL-GCMP-06",
+                TestCaseID        = "GetEmailCampaigns_06",
                 Description       = "Repository throws → exception propagates",
                 ExpectedResult    = "Throws Exception",
                 StatusRound1      = "Passed",

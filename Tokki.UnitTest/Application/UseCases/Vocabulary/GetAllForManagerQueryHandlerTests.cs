@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -28,7 +28,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-GAM-01 | N | No filter → returns all paged → 200
+        // Get_All_Vocabularies_For_Manager_01 | N | No filter → returns all paged → 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NoFilter_ShouldReturnPagedList200()
@@ -62,7 +62,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Get All For Manager", new TestCaseDetail
             {
                 FunctionGroup     = "Get All Vocabularies For Manager",
-                TestCaseID        = "TC-VOCAB-GAM-01",
+                TestCaseID        = "Get_All_Vocabularies_For_Manager_01",
                 Description       = "Get all manager vocabs without any filter → returns all paged",
                 ExpectedResult    = "Return 200, TotalCount = 2, Items.Count = 2",
                 StatusRound1      = "Passed",
@@ -73,7 +73,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-GAM-02 | N | Filter by Status = PendingApproval → 200
+        // Get_All_Vocabularies_For_Manager_02 | N | Filter by Status = PendingApproval → 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_FilterByStatusPendingApproval_ShouldReturn200()
@@ -110,7 +110,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Get All For Manager", new TestCaseDetail
             {
                 FunctionGroup     = "Get All Vocabularies For Manager",
-                TestCaseID        = "TC-VOCAB-GAM-02",
+                TestCaseID        = "Get_All_Vocabularies_For_Manager_02",
                 Description       = "Filter by Status = PendingApproval → returns only pending vocabs",
                 ExpectedResult    = "Return 200, TotalCount = 1",
                 StatusRound1      = "Passed",
@@ -121,7 +121,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-GAM-03 | N | Filter by SearchText → 200
+        // Get_All_Vocabularies_For_Manager_03 | N | Filter by SearchText → 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_FilterBySearchText_ShouldReturn200()
@@ -153,7 +153,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Get All For Manager", new TestCaseDetail
             {
                 FunctionGroup     = "Get All Vocabularies For Manager",
-                TestCaseID        = "TC-VOCAB-GAM-03",
+                TestCaseID        = "Get_All_Vocabularies_For_Manager_03",
                 Description       = "Filter by SearchText '안녕' → returns matching vocab",
                 ExpectedResult    = "Return 200, Items.Count = 1",
                 StatusRound1      = "Passed",
@@ -164,7 +164,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-GAM-04 | N | No vocabs match → 200 empty paged
+        // Get_All_Vocabularies_For_Manager_04 | N | No vocabs match → 200 empty paged
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NoVocabsExist_ShouldReturn200EmptyPaged()
@@ -193,7 +193,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Get All For Manager", new TestCaseDetail
             {
                 FunctionGroup     = "Get All Vocabularies For Manager",
-                TestCaseID        = "TC-VOCAB-GAM-04",
+                TestCaseID        = "Get_All_Vocabularies_For_Manager_04",
                 Description       = "No vocabs match filter → returns empty paged result",
                 ExpectedResult    = "Return 200, TotalCount = 0, Items = empty",
                 StatusRound1      = "Passed",
@@ -204,7 +204,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-GAM-05 | N | Vocab with active topic mapping → LevelTopic set
+        // Get_All_Vocabularies_For_Manager_05 | N | Vocab with active topic mapping → LevelTopic set
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_VocabWithActiveTopic_ShouldEnrichLevelTopic()
@@ -241,7 +241,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Get All For Manager", new TestCaseDetail
             {
                 FunctionGroup     = "Get All Vocabularies For Manager",
-                TestCaseID        = "TC-VOCAB-GAM-05",
+                TestCaseID        = "Get_All_Vocabularies_For_Manager_05",
                 Description       = "Vocab has active topic mapping → LevelTopic enriched in DTO",
                 ExpectedResult    = "Return 200, Items[0].LevelTopic != null",
                 StatusRound1      = "Passed",
@@ -252,7 +252,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-GAM-06 | N | Filter by LevelTopic → 200
+        // Get_All_Vocabularies_For_Manager_06 | N | Filter by LevelTopic → 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_FilterByLevelTopic_ShouldReturn200()
@@ -284,7 +284,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Get All For Manager", new TestCaseDetail
             {
                 FunctionGroup     = "Get All Vocabularies For Manager",
-                TestCaseID        = "TC-VOCAB-GAM-06",
+                TestCaseID        = "Get_All_Vocabularies_For_Manager_06",
                 Description       = "Filter by LevelTopic = Level1 → returns matching vocab",
                 ExpectedResult    = "Return 200, TotalCount = 1",
                 StatusRound1      = "Passed",

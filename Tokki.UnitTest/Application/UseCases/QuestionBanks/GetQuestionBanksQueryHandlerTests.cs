@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -24,7 +24,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-GL-01 | N | Happy path with items → PagedResult, 200
+        // GetQuestionBanks_01 | N | Happy path with items → PagedResult, 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_HasItems_ShouldReturn200WithPagedResult()
@@ -48,7 +48,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Get List", new TestCaseDetail
             {
                 FunctionGroup     = "GetQuestionBanks",
-                TestCaseID        = "TC-QB-GL-01",
+                TestCaseID        = "GetQuestionBanks_01",
                 Description       = "Happy path: 3 QBs in DB → PagedResult with 3 items, 200",
                 ExpectedResult    = "IsSuccess=true, StatusCode=200, Items.Count=3",
                 StatusRound1      = "Passed",
@@ -59,7 +59,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-GL-02 | N | Empty result → PagedResult with 0 items
+        // GetQuestionBanks_02 | N | Empty result → PagedResult with 0 items
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NoItems_ShouldReturnEmptyPagedResult()
@@ -81,7 +81,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Get List", new TestCaseDetail
             {
                 FunctionGroup     = "GetQuestionBanks",
-                TestCaseID        = "TC-QB-GL-02",
+                TestCaseID        = "GetQuestionBanks_02",
                 Description       = "No QBs in DB → empty PagedResult, IsSuccess=true",
                 ExpectedResult    = "IsSuccess=true, Items=[], TotalCount=0",
                 StatusRound1      = "Passed",
@@ -92,7 +92,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-GL-03 | N | PagedResult metadata correct
+        // GetQuestionBanks_03 | N | PagedResult metadata correct
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_HasItems_ShouldSetPagedMetadataCorrectly()
@@ -114,7 +114,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Get List", new TestCaseDetail
             {
                 FunctionGroup     = "GetQuestionBanks",
-                TestCaseID        = "TC-QB-GL-03",
+                TestCaseID        = "GetQuestionBanks_03",
                 Description       = "PagedResult metadata (TotalCount=100, PageNumber=3, PageSize=5) correctly set",
                 ExpectedResult    = "TotalCount=100, PageNumber=3, PageSize=5",
                 StatusRound1      = "Passed",
@@ -125,7 +125,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-GL-04 | N | CreateBy filter applied after paging
+        // GetQuestionBanks_04 | N | CreateBy filter applied after paging
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_CreateByFilter_ShouldFilterResultsInHandler()
@@ -155,7 +155,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Get List", new TestCaseDetail
             {
                 FunctionGroup     = "GetQuestionBanks",
-                TestCaseID        = "TC-QB-GL-04",
+                TestCaseID        = "GetQuestionBanks_04",
                 Description       = "CreateBy filter applied after paging → only STAFF-001 QBs returned",
                 ExpectedResult    = "Items.Count=1, Items[0].CreateBy='STAFF-001'",
                 StatusRound1      = "Passed",
@@ -166,7 +166,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-GL-05 | A | Repository throws → exception propagates
+        // GetQuestionBanks_05 | A | Repository throws → exception propagates
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
@@ -191,7 +191,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Get List", new TestCaseDetail
             {
                 FunctionGroup     = "GetQuestionBanks",
-                TestCaseID        = "TC-QB-GL-05",
+                TestCaseID        = "GetQuestionBanks_05",
                 Description       = "Repository throws exception on GetPagedAsync → propagates to caller",
                 ExpectedResult    = "InvalidOperationException thrown",
                 StatusRound1      = "Passed",
@@ -202,7 +202,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-GL-06 | B | GetPagedAsync called with correct pagination params
+        // GetQuestionBanks_06 | B | GetPagedAsync called with correct pagination params
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidQuery_ShouldCallGetPagedAsyncWithCorrectParams()
@@ -230,7 +230,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Get List", new TestCaseDetail
             {
                 FunctionGroup     = "GetQuestionBanks",
-                TestCaseID        = "TC-QB-GL-06",
+                TestCaseID        = "GetQuestionBanks_06",
                 Description       = "Boundary: GetPagedAsync called with exact query params (PageNumber=2, PageSize=15, searchTerm, typeId, status)",
                 ExpectedResult    = "GetPagedAsync(2,15,'grammar','QT-001',null,Active,...) Times.Once",
                 StatusRound1      = "Passed",

@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using System;
 using System.Collections.Generic;
 using Tokki.Application.UseCases.UserExam.DTOs;
@@ -26,7 +26,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam.DTOs
             QACollector.LogTestCase("UserExam - DTO", new TestCaseDetail
             {
                 FunctionGroup     = "UserExamResultResponse",
-                TestCaseID        = "TC-UE-UERR-01",
+                TestCaseID        = "UserExamResultResponse_01",
                 Description       = "Verifies TotalScore correctly adds L, R, W scores",
                 ExpectedResult    = "Total score equals 61.0",
                 StatusRound1      = "Passed",
@@ -51,7 +51,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam.DTOs
             QACollector.LogTestCase("UserExam - DTO", new TestCaseDetail
             {
                 FunctionGroup     = "UserExamResultResponse",
-                TestCaseID        = "TC-UE-UERR-02",
+                TestCaseID        = "UserExamResultResponse_02",
                 Description       = "Verifies IsGraded correctly tests all flawlessly tests true",
                 ExpectedResult    = "Returns true",
                 StatusRound1      = "Passed",
@@ -76,7 +76,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam.DTOs
             QACollector.LogTestCase("UserExam - DTO", new TestCaseDetail
             {
                 FunctionGroup     = "UserExamResultResponse",
-                TestCaseID        = "TC-UE-UERR-03",
+                TestCaseID        = "UserExamResultResponse_03",
                 Description       = "Verifies IsGraded returns false if one is not graded",
                 ExpectedResult    = "Returns false",
                 StatusRound1      = "Passed",

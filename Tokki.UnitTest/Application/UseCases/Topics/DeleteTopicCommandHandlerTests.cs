@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -60,7 +60,7 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
         private static Topic SampleTopic(TopicStatus status = TopicStatus.Draft, int? orderIndex = 1) =>
             new Topic { TopicId = "T-001", TopicName = "Korean Basics", Status = status, TopicType = TopicType.VocabStudy, OrderIndex = orderIndex };
 
-        // TC-TOPIC-DEL-01 | A | No auth user → 401
+        // DeleteTopic_01 | A | No auth user → 401
         [Fact]
         public async Task Handle_NoAuthUser_ShouldReturn401()
         {
@@ -68,10 +68,10 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
                 .Handle(new DeleteTopicCommand { TopicId = "T-001" }, CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(401);
-            QACollector.LogTestCase("Topic - Delete", new TestCaseDetail { FunctionGroup = "DeleteTopic", TestCaseID = "TC-TOPIC-DEL-01", Description = "No auth user → 401", ExpectedResult = "IsSuccess=false, 401", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "No NameIdentifier claim" } });
+            QACollector.LogTestCase("Topic - Delete", new TestCaseDetail { FunctionGroup = "DeleteTopic", TestCaseID = "DeleteTopic_01", Description = "No auth user → 401", ExpectedResult = "IsSuccess=false, 401", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "No NameIdentifier claim" } });
         }
 
-        // TC-TOPIC-DEL-02 | A | Topic not found → 404
+        // DeleteTopic_02 | A | Topic not found → 404
         [Fact]
         public async Task Handle_TopicNotFound_ShouldReturn404()
         {
@@ -80,10 +80,10 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
                 .Handle(new DeleteTopicCommand { TopicId = "MISSING" }, CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(404);
-            QACollector.LogTestCase("Topic - Delete", new TestCaseDetail { FunctionGroup = "DeleteTopic", TestCaseID = "TC-TOPIC-DEL-02", Description = "Topic not found → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetByIdAsync returns null" } });
+            QACollector.LogTestCase("Topic - Delete", new TestCaseDetail { FunctionGroup = "DeleteTopic", TestCaseID = "DeleteTopic_02", Description = "Topic not found → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetByIdAsync returns null" } });
         }
 
-        // TC-TOPIC-DEL-03 | A | Topic already deleted → 400
+        // DeleteTopic_03 | A | Topic already deleted → 400
         [Fact]
         public async Task Handle_TopicAlreadyDeleted_ShouldReturn400()
         {
@@ -92,10 +92,10 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
                 .Handle(new DeleteTopicCommand { TopicId = "T-001" }, CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            QACollector.LogTestCase("Topic - Delete", new TestCaseDetail { FunctionGroup = "DeleteTopic", TestCaseID = "TC-TOPIC-DEL-03", Description = "Topic already deleted → 400", ExpectedResult = "IsSuccess=false, 400", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Status == Deleted guard" } });
+            QACollector.LogTestCase("Topic - Delete", new TestCaseDetail { FunctionGroup = "DeleteTopic", TestCaseID = "DeleteTopic_03", Description = "Topic already deleted → 400", ExpectedResult = "IsSuccess=false, 400", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Status == Deleted guard" } });
         }
 
-        // TC-TOPIC-DEL-04 | N | Happy path: topic soft-deleted → Status=Deleted, 200
+        // DeleteTopic_04 | N | Happy path: topic soft-deleted → Status=Deleted, 200
         [Fact]
         public async Task Handle_ValidRequest_ShouldSoftDeleteTopicAndReturn200()
         {
@@ -106,10 +106,10 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
             topic.Status.Should().Be(TopicStatus.Deleted);
-            QACollector.LogTestCase("Topic - Delete", new TestCaseDetail { FunctionGroup = "DeleteTopic", TestCaseID = "TC-TOPIC-DEL-04", Description = "Valid request → 200, Status=Deleted", ExpectedResult = "IsSuccess=true, 200, Status=Deleted", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Soft delete applied" } });
+            QACollector.LogTestCase("Topic - Delete", new TestCaseDetail { FunctionGroup = "DeleteTopic", TestCaseID = "DeleteTopic_04", Description = "Valid request → 200, Status=Deleted", ExpectedResult = "IsSuccess=true, 200, Status=Deleted", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Soft delete applied" } });
         }
 
-        // TC-TOPIC-DEL-05 | B | UpdateAsync and SaveChangesAsync called on success
+        // DeleteTopic_05 | B | UpdateAsync and SaveChangesAsync called on success
         [Fact]
         public async Task Handle_ValidRequest_UpdateAndSaveCalledOnRepo()
         {
@@ -118,10 +118,10 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
                 .Handle(new DeleteTopicCommand { TopicId = "T-001" }, CancellationToken.None);
             repo.Verify(x => x.UpdateAsync(It.IsAny<Topic>()), Times.Once);
             repo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
-            QACollector.LogTestCase("Topic - Delete", new TestCaseDetail { FunctionGroup = "DeleteTopic", TestCaseID = "TC-TOPIC-DEL-05", Description = "UpdateAsync and SaveChangesAsync called once", ExpectedResult = "Both Times.Once", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Persist calls verified" } });
+            QACollector.LogTestCase("Topic - Delete", new TestCaseDetail { FunctionGroup = "DeleteTopic", TestCaseID = "DeleteTopic_05", Description = "UpdateAsync and SaveChangesAsync called once", ExpectedResult = "Both Times.Once", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Persist calls verified" } });
         }
 
-        // TC-TOPIC-DEL-06 | A | Repository throws → 500 failure
+        // DeleteTopic_06 | A | Repository throws → 500 failure
         [Fact]
         public async Task Handle_RepoThrows_ShouldReturn500()
         {
@@ -131,10 +131,10 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
                 .Handle(new DeleteTopicCommand { TopicId = "T-001" }, CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(500);
-            QACollector.LogTestCase("Topic - Delete", new TestCaseDetail { FunctionGroup = "DeleteTopic", TestCaseID = "TC-TOPIC-DEL-06", Description = "Repository throws → 500", ExpectedResult = "IsSuccess=false, 500", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Exception caught in try-catch" } });
+            QACollector.LogTestCase("Topic - Delete", new TestCaseDetail { FunctionGroup = "DeleteTopic", TestCaseID = "DeleteTopic_06", Description = "Repository throws → 500", ExpectedResult = "IsSuccess=false, 500", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Exception caught in try-catch" } });
         }
 
-        // TC-TOPIC-DEL-07 | N | Null OrderIndex should not execute DecrementOrderIndexAfterAsync
+        // DeleteTopic_07 | N | Null OrderIndex should not execute DecrementOrderIndexAfterAsync
         [Fact]
         public async Task Handle_NullOrderIndex_ShouldSoftDeleteWithoutDecrementing()
         {
@@ -147,10 +147,10 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
             result.IsSuccess.Should().BeTrue();
             repo.Verify(x => x.DecrementOrderIndexAfterAsync(It.IsAny<int>(), It.IsAny<TopicType>(), It.IsAny<string>(), It.IsAny<DateTime>()), Times.Never);
             
-            QACollector.LogTestCase("Topic - Delete", new TestCaseDetail { FunctionGroup = "DeleteTopic", TestCaseID = "TC-TOPIC-DEL-07", Description = "OrderIndex is null so DecrementOrderIndexAfterAsync is completely avoided", ExpectedResult = "Success without Decrement call", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "OrderIndex = null guard fails safely" } });
+            QACollector.LogTestCase("Topic - Delete", new TestCaseDetail { FunctionGroup = "DeleteTopic", TestCaseID = "DeleteTopic_07", Description = "OrderIndex is null so DecrementOrderIndexAfterAsync is completely avoided", ExpectedResult = "Success without Decrement call", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "OrderIndex = null guard fails safely" } });
         }
 
-        // TC-TOPIC-DEL-08 | N | Vocabulary mappings exist, iterates and updates them
+        // DeleteTopic_08 | N | Vocabulary mappings exist, iterates and updates them
         [Fact]
         public async Task Handle_MappingsExist_ShouldSoftDeleteMappings()
         {
@@ -171,7 +171,7 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
             // Expect update called 2 times for 2 mappings
             vtRepo.Verify(x => x.UpdateAsync(It.IsAny<VocabularyTopic>()), Times.Exactly(2));
             
-            QACollector.LogTestCase("Topic - Delete", new TestCaseDetail { FunctionGroup = "DeleteTopic", TestCaseID = "TC-TOPIC-DEL-08", Description = "Loop over existing topic mappings and update child statuses", ExpectedResult = "Success, UpdateAsync for Mappings called correctly", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "mappings.Count > 0" } });
+            QACollector.LogTestCase("Topic - Delete", new TestCaseDetail { FunctionGroup = "DeleteTopic", TestCaseID = "DeleteTopic_08", Description = "Loop over existing topic mappings and update child statuses", ExpectedResult = "Success, UpdateAsync for Mappings called correctly", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "mappings.Count > 0" } });
         }
     }
 }

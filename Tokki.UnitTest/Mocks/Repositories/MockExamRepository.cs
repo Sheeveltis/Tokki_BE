@@ -1,4 +1,4 @@
-﻿using Moq;
+using Moq;
 using System.Threading;
 using System.Threading.Tasks;
 using Tokki.Application.IRepositories;
@@ -12,7 +12,7 @@ namespace Tokki.UnitTest.Mocks.Repositories
         {
             var mockRepo = new Mock<IExamRepository>();
 
-            // FIX: Thay chữ "null" trần trụi bằng It.IsAny<string>() 
+            // FIX: Thay ch?"null" tr?n tr?i b?ng It.IsAny<string>() 
             mockRepo.Setup(x => x.IsTitleExistsAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(isTitleExists);
 

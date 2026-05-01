@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -28,7 +28,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-GVT-01 | A | Topic not found → 404
+        // Get_Vocabularies_By_Topic_01 | A | Topic not found → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_TopicNotFound_ShouldReturn404()
@@ -48,7 +48,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Get By Topic", new TestCaseDetail
             {
                 FunctionGroup     = "Get Vocabularies By Topic",
-                TestCaseID        = "TC-VOCAB-GVT-01",
+                TestCaseID        = "Get_Vocabularies_By_Topic_01",
                 Description       = "Get vocab by topic with non-existent TopicId",
                 ExpectedResult    = "Return 404 TOPIC_NOT_FOUND",
                 StatusRound1      = "Passed",
@@ -59,7 +59,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-GVT-02 | N | Topic exists, no vocabs → 200 empty paged
+        // Get_Vocabularies_By_Topic_02 | N | Topic exists, no vocabs → 200 empty paged
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_TopicExistsNoVocabs_ShouldReturn200EmptyPaged()
@@ -90,7 +90,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Get By Topic", new TestCaseDetail
             {
                 FunctionGroup     = "Get Vocabularies By Topic",
-                TestCaseID        = "TC-VOCAB-GVT-02",
+                TestCaseID        = "Get_Vocabularies_By_Topic_02",
                 Description       = "Topic exists but has no vocabularies → returns 200 empty paged",
                 ExpectedResult    = "Return 200, TotalCount = 0, Items = empty",
                 StatusRound1      = "Passed",
@@ -101,7 +101,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-GVT-03 | N | Topic with vocabs → 200 paged list
+        // Get_Vocabularies_By_Topic_03 | N | Topic with vocabs → 200 paged list
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_TopicWithVocabs_ShouldReturn200PagedList()
@@ -137,7 +137,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Get By Topic", new TestCaseDetail
             {
                 FunctionGroup     = "Get Vocabularies By Topic",
-                TestCaseID        = "TC-VOCAB-GVT-03",
+                TestCaseID        = "Get_Vocabularies_By_Topic_03",
                 Description       = "Topic exists with 2 vocabularies → return paged list 200",
                 ExpectedResult    = "Return 200, TotalCount = 2, Items.Count = 2",
                 StatusRound1      = "Passed",
@@ -148,7 +148,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-GVT-04 | N | Filter by Status = Active → 200
+        // Get_Vocabularies_By_Topic_04 | N | Filter by Status = Active → 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_FilterByStatusActive_ShouldReturn200()
@@ -188,7 +188,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Get By Topic", new TestCaseDetail
             {
                 FunctionGroup     = "Get Vocabularies By Topic",
-                TestCaseID        = "TC-VOCAB-GVT-04",
+                TestCaseID        = "Get_Vocabularies_By_Topic_04",
                 Description       = "Filter by Status = Active → returns only Active vocabs",
                 ExpectedResult    = "Return 200, TotalCount = 1",
                 StatusRound1      = "Passed",
@@ -199,7 +199,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-GVT-05 | N | SearchText filter → 200
+        // Get_Vocabularies_By_Topic_05 | N | SearchText filter → 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_FilterBySearchText_ShouldReturn200()
@@ -239,7 +239,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Get By Topic", new TestCaseDetail
             {
                 FunctionGroup     = "Get Vocabularies By Topic",
-                TestCaseID        = "TC-VOCAB-GVT-05",
+                TestCaseID        = "Get_Vocabularies_By_Topic_05",
                 Description       = "Filter by SearchText '감사' → returns matching vocab in topic",
                 ExpectedResult    = "Return 200, TotalCount = 1",
                 StatusRound1      = "Passed",
@@ -250,7 +250,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-GVT-06 | N | Vocab has topic mapping → DTO includes topic info
+        // Get_Vocabularies_By_Topic_06 | N | Vocab has topic mapping → DTO includes topic info
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_VocabWithTopicMappings_ShouldReturnDtoWithTopics()
@@ -288,7 +288,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Get By Topic", new TestCaseDetail
             {
                 FunctionGroup     = "Get Vocabularies By Topic",
-                TestCaseID        = "TC-VOCAB-GVT-06",
+                TestCaseID        = "Get_Vocabularies_By_Topic_06",
                 Description       = "Vocab has topic mapping → DTO.Topics populated with correct topic info",
                 ExpectedResult    = "Return 200, DTO.Topics.Count > 0, TopicId = TOPIC-001",
                 StatusRound1      = "Passed",

@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -31,7 +31,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
         };
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXDEL-01 | A | Exam not found → 404
+        // Delete_Exam_01 | A | Exam not found → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ExamNotFound_ShouldReturn404()
@@ -52,7 +52,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             QACollector.LogTestCase("Exam - Delete Exam", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Exam",
-                TestCaseID        = "TC-EXDEL-01",
+                TestCaseID        = "Delete_Exam_01",
                 Description       = "Attempt to delete an exam with an ID that does not exist",
                 ExpectedResult    = "Return 404 ExamNotFound",
                 StatusRound1      = "Passed",
@@ -63,7 +63,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXDEL-02 | N | Valid exam → soft-deleted 200
+        // Delete_Exam_02 | N | Valid exam → soft-deleted 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidExam_ShouldSoftDeleteAndReturn200()
@@ -88,7 +88,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             QACollector.LogTestCase("Exam - Delete Exam", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Exam",
-                TestCaseID        = "TC-EXDEL-02",
+                TestCaseID        = "Delete_Exam_02",
                 Description       = "Valid delete request — exam should be soft-deleted",
                 ExpectedResult    = "Return 200 Success, exam.Status = Deleted",
                 StatusRound1      = "Passed",
@@ -99,7 +99,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXDEL-03 | N | UpdateAsync is called exactly once
+        // Delete_Exam_03 | N | UpdateAsync is called exactly once
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidExam_UpdateAsyncCalledOnce()
@@ -122,7 +122,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             QACollector.LogTestCase("Exam - Delete Exam", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Exam",
-                TestCaseID        = "TC-EXDEL-03",
+                TestCaseID        = "Delete_Exam_03",
                 Description       = "Verify UpdateAsync is invoked exactly once during soft delete",
                 ExpectedResult    = "UpdateAsync called once",
                 StatusRound1      = "Passed",
@@ -133,7 +133,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXDEL-04 | B | Null ExamId → 404 from lookup
+        // Delete_Exam_04 | B | Null ExamId → 404 from lookup
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NullExamId_ShouldReturn404()
@@ -154,7 +154,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             QACollector.LogTestCase("Exam - Delete Exam", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Exam",
-                TestCaseID        = "TC-EXDEL-04",
+                TestCaseID        = "Delete_Exam_04",
                 Description       = "Boundary: null ExamId causes lookup to fail",
                 ExpectedResult    = "Return 404 ExamNotFound",
                 StatusRound1      = "Passed",
@@ -165,7 +165,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXDEL-05 | N | Exam status is Deleted after handler runs
+        // Delete_Exam_05 | N | Exam status is Deleted after handler runs
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidExam_StatusMutatedToDeleted()
@@ -188,7 +188,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             QACollector.LogTestCase("Exam - Delete Exam", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Exam",
-                TestCaseID        = "TC-EXDEL-05",
+                TestCaseID        = "Delete_Exam_05",
                 Description       = "Delete a Published exam — status should be mutated to Deleted in memory",
                 ExpectedResult    = "exam.Status = Deleted after handler",
                 StatusRound1      = "Passed",
@@ -199,7 +199,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXDEL-06 | A | SaveChanges throws → exception propagates
+        // Delete_Exam_06 | A | SaveChanges throws → exception propagates
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SaveChangesThrows_ShouldPropagateException()
@@ -219,7 +219,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             QACollector.LogTestCase("Exam - Delete Exam", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Exam",
-                TestCaseID        = "TC-EXDEL-06",
+                TestCaseID        = "Delete_Exam_06",
                 Description       = "Database crashes during SaveChangesAsync after status mutation",
                 ExpectedResult    = "Exception propagates to global error handler",
                 StatusRound1      = "Passed",

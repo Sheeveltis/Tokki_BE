@@ -40,7 +40,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             new() { TemplatePartId = "P2", ExamTemplateId = "TMPL-001", Skill = Domain.Enums.QuestionSkill.Reading,   QuestionFrom = 11, QuestionTo = 30 }
         };
 
-        // TC-EXUI-01 | A | Exam not found → 404
+        // Update_Exam_Info_01 | A | Exam not found ? 404
         [Fact]
         public async Task Handle_ExamNotFound_ShouldReturn404()
         {
@@ -56,7 +56,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Update Info", new TestCaseDetail
             {
-                FunctionGroup = "Update Exam Info", TestCaseID = "TC-EXUI-01",
+                FunctionGroup = "Update Exam Info", TestCaseID = "Update_Exam_Info_01",
                 Description = "ExamId does not exist in database",
                 ExpectedResult = "Return 404", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -64,7 +64,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXUI-02 | A | Duplicate title (different exam) → 400
+        // Update_Exam_Info_02 | A | Duplicate title (different exam) ? 400
         [Fact]
         public async Task Handle_DuplicateTitle_ShouldReturn400()
         {
@@ -83,7 +83,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Update Info", new TestCaseDetail
             {
-                FunctionGroup = "Update Exam Info", TestCaseID = "TC-EXUI-02",
+                FunctionGroup = "Update Exam Info", TestCaseID = "Update_Exam_Info_02",
                 Description = "New title is already in use by another exam",
                 ExpectedResult = "Return 400", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -91,7 +91,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXUI-03 | A | SkillDurations missing required skill → 400
+        // Update_Exam_Info_03 | A | SkillDurations missing required skill ? 400
         [Fact]
         public async Task Handle_MissingSkillDuration_ShouldReturn400()
         {
@@ -102,7 +102,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             mockRepo.Setup(x => x.IsTitleExistsAsync(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
             mockPart.Setup(x => x.GetByExamTemplateIdAsync("TMPL-001", It.IsAny<CancellationToken>())).ReturnsAsync(GetParts());
 
-            // Missing "Reading" skill duration
+            // Missing"Reading" skill duration
             var command = new UpdateExamInfoCommand
             {
                 ExamId = "EX-001",
@@ -117,7 +117,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Update Info", new TestCaseDetail
             {
-                FunctionGroup = "Update Exam Info", TestCaseID = "TC-EXUI-03",
+                FunctionGroup = "Update Exam Info", TestCaseID = "Update_Exam_Info_03",
                 Description = "SkillDurations dict is missing an entry for a template's skill (Reading)",
                 ExpectedResult = "Return 400 bad request, missing skill duration",
                 StatusRound1 = "Passed", TestCaseType = "A",
@@ -126,7 +126,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXUI-04 | A | Skill duration value 0 or negative → 400
+        // Update_Exam_Info_04 | A | Skill duration value 0 or negative ? 400
         [Fact]
         public async Task Handle_ZeroSkillDuration_ShouldReturn400()
         {
@@ -151,7 +151,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Update Info", new TestCaseDetail
             {
-                FunctionGroup = "Update Exam Info", TestCaseID = "TC-EXUI-04",
+                FunctionGroup = "Update Exam Info", TestCaseID = "Update_Exam_Info_04",
                 Description = "A skill duration is zero which is an invalid value",
                 ExpectedResult = "Return 400", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -159,7 +159,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXUI-05 | N | Valid update with all valid skills → 200
+        // Update_Exam_Info_05 | N | Valid update with all valid skills ? 200
         [Fact]
         public async Task Handle_ValidUpdate_ShouldReturn200AndMutate()
         {
@@ -187,7 +187,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Update Info", new TestCaseDetail
             {
-                FunctionGroup = "Update Exam Info", TestCaseID = "TC-EXUI-05",
+                FunctionGroup = "Update Exam Info", TestCaseID = "Update_Exam_Info_05",
                 Description = "Valid update with correct title and proper skill durations",
                 ExpectedResult = "Return 200, exam.Title and Duration mutated", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -195,7 +195,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXUI-06 | A | General exception → 500 is returned (handler wraps with try/catch)
+        // Update_Exam_Info_06 | A | General exception ? 500 is returned (handler wraps with try/catch)
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldReturnServerError()
         {
@@ -212,11 +212,11 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Update Info", new TestCaseDetail
             {
-                FunctionGroup = "Update Exam Info", TestCaseID = "TC-EXUI-06",
+                FunctionGroup = "Update Exam Info", TestCaseID = "Update_Exam_Info_06",
                 Description = "Repository throws uncaught exception, handler has try/catch returning ServerError",
                 ExpectedResult = "Return 500 ServerError", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "Exception caught in try/catch → 500" }
+                AppliedConditions = new List<string> { "Exception caught in try/catch ? 500" }
             });
         }
     }

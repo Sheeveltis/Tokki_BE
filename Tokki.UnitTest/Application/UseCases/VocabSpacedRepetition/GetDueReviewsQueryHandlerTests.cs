@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -50,7 +50,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabSpacedRepetition
             QACollector.LogTestCase("VocabSR - Get Due Reviews", new TestCaseDetail
             {
                 FunctionGroup = "Get Due Reviews",
-                TestCaseID = "TC-GDR-01",
+                TestCaseID = "Get_Due_Reviews_01",
                 Description = "Query due reviews for users valid with limit → returns a list of due vocabs",
                 ExpectedResult = "Return 200, Data.Count = 2",
                 StatusRound1 = "Passed",
@@ -92,7 +92,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabSpacedRepetition
             QACollector.LogTestCase("VocabSR - Get Due Reviews", new TestCaseDetail
             {
                 FunctionGroup = "Get Due Reviews",
-                TestCaseID = "TC-GDR-02",
+                TestCaseID = "Get_Due_Reviews_02",
                 Description = "User has no vocabs due for review today → returns an empty list",
                 ExpectedResult = "Return 200, Data = empty list",
                 StatusRound1 = "Passed",
@@ -133,7 +133,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabSpacedRepetition
             QACollector.LogTestCase("VocabSR - Get Due Reviews", new TestCaseDetail
             {
                 FunctionGroup = "Get Due Reviews",
-                TestCaseID = "TC-GDR-03",
+                TestCaseID = "Get_Due_Reviews_03",
                 Description = "Limit = 0 (boundary) → does not take any items, returns an empty list",
                 ExpectedResult = "Return 200, Data = empty list",
                 StatusRound1 = "Passed",
@@ -187,7 +187,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabSpacedRepetition
             QACollector.LogTestCase("VocabSR - Get Due Reviews", new TestCaseDetail
             {
                 FunctionGroup = "Get Due Reviews",
-                TestCaseID = "TC-GDR-04",
+                TestCaseID = "Get_Due_Reviews_04",
                 Description = "Limit = 100 (default value) → returns exactly 100 items",
                 ExpectedResult = "Return 200, Data.Count = 100, Limit is passed correctly to the repository",
                 StatusRound1 = "Passed",
@@ -233,7 +233,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabSpacedRepetition
             QACollector.LogTestCase("VocabSR - Get Due Reviews", new TestCaseDetail
             {
                 FunctionGroup = "Get Due Reviews",
-                TestCaseID = "TC-GDR-05",
+                TestCaseID = "Get_Due_Reviews_05",
                 Description = "Repository throws exception when query due reviews → exception propagates to caller",
                 ExpectedResult = "Exception is thrown with message 'Database connection lost'",
                 StatusRound1 = "Passed",
@@ -283,7 +283,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabSpacedRepetition
             QACollector.LogTestCase("VocabSR - Get Due Reviews", new TestCaseDetail
             {
                 FunctionGroup = "Get Due Reviews",
-                TestCaseID = "TC-GDR-06",
+                TestCaseID = "Get_Due_Reviews_06",
                 Description = "Validates the handler shifts UtcNow timestamp by +7 hours when querying DB",
                 ExpectedResult = "Repository receives time between (UtcNow+7 - 1s) and (UtcNow+7 + 1s)",
                 StatusRound1 = "Passed",

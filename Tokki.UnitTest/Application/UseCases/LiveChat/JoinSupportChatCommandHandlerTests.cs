@@ -32,7 +32,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
                 (notifier ?? new Mock<IChatNotificationService>()).Object);
         }
 
-        // TC-LCH-JSC-01 | 404 | Room == null
+        // JoinSupportChat_01 | 404 | Room == null
         [Fact]
         public async Task Handle_RoomNotFound_ShouldReturn404()
         {
@@ -48,7 +48,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
 
             QACollector.LogTestCase("LiveChat - Join Support", new TestCaseDetail
             {
-                FunctionGroup = "JoinSupportChat", TestCaseID = "TC-LCH-JSC-01",
+                FunctionGroup = "JoinSupportChat", TestCaseID = "JoinSupportChat_01",
                 Description = "Room lookup resolves to null, early termination returning 404 validation",
                 ExpectedResult = "Return 404 AppErrors.ChatRoomNotFound", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -56,7 +56,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             });
         }
 
-        // TC-LCH-JSC-02 | 400 | Room already has > 1 members and staff isn't one
+        // JoinSupportChat_02 | 400 | Room already has > 1 members and staff isn't one
         [Fact]
         public async Task Handle_RoomAlreadySupported_ShouldReturn400()
         {
@@ -74,7 +74,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
 
             QACollector.LogTestCase("LiveChat - Join Support", new TestCaseDetail
             {
-                FunctionGroup = "JoinSupportChat", TestCaseID = "TC-LCH-JSC-02",
+                FunctionGroup = "JoinSupportChat", TestCaseID = "JoinSupportChat_02",
                 Description = "Room contains more than 1 member but requesting staff isn't already inside",
                 ExpectedResult = "Return 400 AppErrors.ChatRoomAlreadySupported", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -82,7 +82,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             });
         }
 
-        // TC-LCH-JSC-03 | 200 | Room > 1 member and staff is already in -> Idempotent Success
+        // JoinSupportChat_03 | 200 | Room > 1 member and staff is already in -> Idempotent Success
         [Fact]
         public async Task Handle_StaffAlreadyInRoom_ShouldReturnSuccessIdempotently()
         {
@@ -98,7 +98,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
 
             QACollector.LogTestCase("LiveChat - Join Support", new TestCaseDetail
             {
-                FunctionGroup = "JoinSupportChat", TestCaseID = "TC-LCH-JSC-03",
+                FunctionGroup = "JoinSupportChat", TestCaseID = "JoinSupportChat_03",
                 Description = "Staff already exists inside member list of >1 length, avoiding redundancy seamlessly",
                 ExpectedResult = "Return 200 true logic completes explicitly idempotently", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -106,12 +106,12 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             });
         }
 
-        // TC-LCH-JSC-04 | 200 | Valid logic parsing name
+        // JoinSupportChat_04 | 200 | Valid logic parsing name
         [Fact]
         public async Task Handle_ValidRequestWithUserInfo_ShouldParseNameAndSendNotification()
         {
             var room = new ChatRoom { Members = new List<ChatRoomMember> { new() { UserId = "U1" } } }; // Only 1 member
-            var staffInfo = new AccountBasicInfoDTO { FullName = "Nguyễn Văn Staff" };
+            var staffInfo = new AccountBasicInfoDTO { FullName = "Nguy?n Van Staff" };
 
             var mockRoomRepo = new Mock<IChatRoomRepository>();
             mockRoomRepo.Setup(x => x.GetRoomByIdAsync("R1", It.IsAny<CancellationToken>())).ReturnsAsync(room);
@@ -134,11 +134,11 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             mockRoomRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
 
             // Verify notification includes staff name
-            mockNotifier.Verify(x => x.SendMessageToRoomAsync("R1", It.Is<ChatMessage>(m => m.Content.Contains("Nguyễn Văn Staff"))), Times.Once);
+            mockNotifier.Verify(x => x.SendMessageToRoomAsync("R1", It.Is<ChatMessage>(m => m.Content.Contains("Nguy?n Van Staff"))), Times.Once);
 
             QACollector.LogTestCase("LiveChat - Join Support", new TestCaseDetail
             {
-                FunctionGroup = "JoinSupportChat", TestCaseID = "TC-LCH-JSC-04",
+                FunctionGroup = "JoinSupportChat", TestCaseID = "JoinSupportChat_04",
                 Description = "Valid join successfully retrieves account full name attaching to system presence message",
                 ExpectedResult = "Return 200, sends message mapped out appropriately via notification", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -146,7 +146,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             });
         }
 
-        // TC-LCH-JSC-05 | 200 | Valid logic, Account Info missing/null default text fallback
+        // JoinSupportChat_05 | 200 | Valid logic, Account Info missing/null default text fallback
         [Fact]
         public async Task Handle_ValidRequestMissingUserInfo_ShouldUseDefaultFallback()
         {
@@ -169,20 +169,20 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
 
             result.IsSuccess.Should().BeTrue();
             
-            // Verify notification includes fallback string "Nhân viên hỗ trợ"
-            mockNotifier.Verify(x => x.SendMessageToRoomAsync("R1", It.Is<ChatMessage>(m => m.Content.Contains("Nhân viên hỗ trợ"))), Times.Once);
+            // Verify notification includes fallback string"Nh�n vi�n h? tr?"
+            mockNotifier.Verify(x => x.SendMessageToRoomAsync("R1", It.Is<ChatMessage>(m => m.Content.Contains("Nh�n vi�n h? tr?"))), Times.Once);
 
             QACollector.LogTestCase("LiveChat - Join Support", new TestCaseDetail
             {
-                FunctionGroup = "JoinSupportChat", TestCaseID = "TC-LCH-JSC-05",
-                Description = "Missing active user cache forces usage of generic string 'Nhân viên hỗ trợ'",
+                FunctionGroup = "JoinSupportChat", TestCaseID = "JoinSupportChat_05",
+                Description = "Missing active user cache forces usage of generic string 'Nh�n vi�n h? tr?'",
                 ExpectedResult = "Return 200, sends message parsing fallback text properly", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string> { "staffInfo == null -> const generic text" }
             });
         }
 
-        // TC-LCH-JSC-06 | 500 | Dependency throws
+        // JoinSupportChat_06 | 500 | Dependency throws
         [Fact]
         public async Task Handle_DependencyThrows_ShouldPropagateException()
         {
@@ -203,7 +203,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
 
             QACollector.LogTestCase("LiveChat - Join Support", new TestCaseDetail
             {
-                FunctionGroup = "JoinSupportChat", TestCaseID = "TC-LCH-JSC-06",
+                FunctionGroup = "JoinSupportChat", TestCaseID = "JoinSupportChat_06",
                 Description = "Dependency throws SignalR equivalent error breaking method stack explicitly mapping exception upwards",
                 ExpectedResult = "Throws natively backwards to invocation caller inside MediatR", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

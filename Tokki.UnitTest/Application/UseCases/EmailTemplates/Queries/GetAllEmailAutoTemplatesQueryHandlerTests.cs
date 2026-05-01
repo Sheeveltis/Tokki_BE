@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -36,7 +36,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Queries
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EMTA-GA-01 | N | Filter Default Excludes Deleted
+        // GetAllEmailAutoTemplatesQueryHandler_01 | N | Filter Default Excludes Deleted
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NoStatus_ShouldExcludeDeleted()
@@ -59,7 +59,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Queries
             QACollector.LogTestCase("Email Template - Get All", new TestCaseDetail
             {
                 FunctionGroup = "GetAllEmailAutoTemplatesQueryHandler",
-                TestCaseID = "TC-EMTA-GA-01",
+                TestCaseID = "GetAllEmailAutoTemplatesQueryHandler_01",
                 Description = "Default behavior excludes items with Deleted status automatically",
                 ExpectedResult = "Return items without Deleted",
                 StatusRound1 = "Passed",
@@ -70,7 +70,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Queries
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EMTA-GA-02 | N | Filter by Exact Status
+        // GetAllEmailAutoTemplatesQueryHandler_02 | N | Filter by Exact Status
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ByStatus_ShouldReturnMatching()
@@ -93,7 +93,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Queries
             QACollector.LogTestCase("Email Template - Get All", new TestCaseDetail
             {
                 FunctionGroup = "GetAllEmailAutoTemplatesQueryHandler",
-                TestCaseID = "TC-EMTA-GA-02",
+                TestCaseID = "GetAllEmailAutoTemplatesQueryHandler_02",
                 Description = "Specific Status query retrieves specifically that state, even if deleted",
                 ExpectedResult = "Return explicitly matched statuses",
                 StatusRound1 = "Passed",
@@ -104,7 +104,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Queries
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EMTA-GA-03 | N | Filter Type and SearchName
+        // GetAllEmailAutoTemplatesQueryHandler_03 | N | Filter Type and SearchName
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_TypeAndSearchName_ShouldFilterCorrectly()
@@ -131,7 +131,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Queries
             QACollector.LogTestCase("Email Template - Get All", new TestCaseDetail
             {
                 FunctionGroup = "GetAllEmailAutoTemplatesQueryHandler",
-                TestCaseID = "TC-EMTA-GA-03",
+                TestCaseID = "GetAllEmailAutoTemplatesQueryHandler_03",
                 Description = "Case insensitive searchName coupled with Type param filters",
                 ExpectedResult = "Filtered List properly",
                 StatusRound1 = "Passed",
@@ -142,7 +142,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Queries
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EMTA-GA-04 | N | Filter TargetGroup and Value
+        // GetAllEmailAutoTemplatesQueryHandler_04 | N | Filter TargetGroup and Value
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_TargetGroupAndValue_ShouldFilterCorrectly()
@@ -169,7 +169,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Queries
             QACollector.LogTestCase("Email Template - Get All", new TestCaseDetail
             {
                 FunctionGroup = "GetAllEmailAutoTemplatesQueryHandler",
-                TestCaseID = "TC-EMTA-GA-04",
+                TestCaseID = "GetAllEmailAutoTemplatesQueryHandler_04",
                 Description = "Filters properly matching TargetGroup Enums and integer Values",
                 ExpectedResult = "Filtered list properly",
                 StatusRound1 = "Passed",
@@ -180,7 +180,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Queries
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EMTA-GA-05 | N | SearchSubject and Sort Order
+        // GetAllEmailAutoTemplatesQueryHandler_05 | N | SearchSubject and Sort Order
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SearchSubject_RetrievesDescendingOrder()
@@ -203,7 +203,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Queries
             QACollector.LogTestCase("Email Template - Get All", new TestCaseDetail
             {
                 FunctionGroup = "GetAllEmailAutoTemplatesQueryHandler",
-                TestCaseID = "TC-EMTA-GA-05",
+                TestCaseID = "GetAllEmailAutoTemplatesQueryHandler_05",
                 Description = "Subject string search works and default descending order is maintained",
                 ExpectedResult = "List returned newest first",
                 StatusRound1 = "Passed",
@@ -214,7 +214,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Queries
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EMTA-GA-06 | N | Pagination Skip and Take
+        // GetAllEmailAutoTemplatesQueryHandler_06 | N | Pagination Skip and Take
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_Pagination_AppliesSkipTake()
@@ -237,7 +237,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Queries
             QACollector.LogTestCase("Email Template - Get All", new TestCaseDetail
             {
                 FunctionGroup = "GetAllEmailAutoTemplatesQueryHandler",
-                TestCaseID = "TC-EMTA-GA-06",
+                TestCaseID = "GetAllEmailAutoTemplatesQueryHandler_06",
                 Description = "PageNumber > 1 accurately offsets data results array",
                 ExpectedResult = "Data is paginated properly",
                 StatusRound1 = "Passed",

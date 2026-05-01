@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using System;
 using System.Collections.Generic;
 using Tokki.Application.Common.Helpers;
@@ -31,7 +31,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             QACollector.LogTestCase("Helper - Wordle", new TestCaseDetail
             {
                 FunctionGroup     = "WordleHelper",
-                TestCaseID        = "TC-HLP-WD-01",
+                TestCaseID        = "WordleHelper_01",
                 Description       = "Exact match",
                 ExpectedResult    = "All parts and blocks Green",
                 StatusRound1      = "Passed",
@@ -67,7 +67,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             QACollector.LogTestCase("Helper - Wordle", new TestCaseDetail
             {
                 FunctionGroup     = "WordleHelper",
-                TestCaseID        = "TC-HLP-WD-02",
+                TestCaseID        = "WordleHelper_02",
                 Description       = "Partial match calculates Yellow blocks correctly",
                 ExpectedResult    = "Initial Green, Block Yellow",
                 StatusRound1      = "Passed",
@@ -94,7 +94,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             QACollector.LogTestCase("Helper - Wordle", new TestCaseDetail
             {
                 FunctionGroup     = "WordleHelper",
-                TestCaseID        = "TC-HLP-WD-03",
+                TestCaseID        = "WordleHelper_03",
                 Description       = "No match calculates Gray correctly",
                 ExpectedResult    = "All Gray",
                 StatusRound1      = "Passed",

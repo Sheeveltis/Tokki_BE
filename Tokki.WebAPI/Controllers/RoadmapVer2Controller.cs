@@ -12,6 +12,7 @@ namespace Tokki.WebAPI.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
+    [Microsoft.AspNetCore.Mvc.ApiExplorerSettings(IgnoreApi = true)] // Deprecated: Logic da duoc gop vao RoadmapController
     public class RoadmapVer2Controller : ControllerBase
     {
         private readonly IMediator _mediator;

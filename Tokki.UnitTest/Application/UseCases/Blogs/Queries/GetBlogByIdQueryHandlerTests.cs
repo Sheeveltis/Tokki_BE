@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -31,7 +31,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GBI-01 | A | Blog Not Found → 404
+        // Get_Blog_By_Id_01 | A | Blog Not Found → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_BlogNotFound_ShouldReturn404()
@@ -46,7 +46,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "Get Blog By Id",
-                TestCaseID        = "TC-GBI-01",
+                TestCaseID        = "Get_Blog_By_Id_01",
                 Description       = "Provide an ID that does not exist in DB",
                 ExpectedResult    = "Return 404 BlogNotFound",
                 StatusRound1      = "Passed",
@@ -57,7 +57,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GBI-02 | N | Valid request, Author Exists → Return DTO
+        // Get_Blog_By_Id_02 | N | Valid request, Author Exists → Return DTO
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidRequest_WithAuthorInfo_ShouldReturn200()
@@ -81,7 +81,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "Get Blog By Id",
-                TestCaseID        = "TC-GBI-02",
+                TestCaseID        = "Get_Blog_By_Id_02",
                 Description       = "Fetch an existing blog with a valid author",
                 ExpectedResult    = "Return 200 with populated Author info",
                 StatusRound1      = "Passed",
@@ -92,7 +92,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GBI-03 | A | Valid request, Author Missing → Anonymous
+        // Get_Blog_By_Id_03 | A | Valid request, Author Missing → Anonymous
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidRequest_MissingAuthor_ShouldReturnAnonymous()
@@ -112,7 +112,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "Get Blog By Id",
-                TestCaseID        = "TC-GBI-03",
+                TestCaseID        = "Get_Blog_By_Id_03",
                 Description       = "Fetch an existing blog where author was deleted/missing",
                 ExpectedResult    = "Return 200, Author name defaults to 'Người dùng ẩn danh'",
                 StatusRound1      = "Passed",
@@ -123,7 +123,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GBI-04 | N | Check Tags mapping
+        // Get_Blog_By_Id_04 | N | Check Tags mapping
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_WithTags_ShouldMapTagsCorrectly()
@@ -145,7 +145,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "Get Blog By Id",
-                TestCaseID        = "TC-GBI-04",
+                TestCaseID        = "Get_Blog_By_Id_04",
                 Description       = "Fetch blog containing multiple Tags",
                 ExpectedResult    = "Return 200, Tags list is properly mapped to string list",
                 StatusRound1      = "Passed",
@@ -156,7 +156,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GBI-05 | N | Category Mapping Fallback
+        // Get_Blog_By_Id_05 | N | Category Mapping Fallback
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_WithoutCategoryInclude_ShouldReturnNA()
@@ -175,7 +175,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "Get Blog By Id",
-                TestCaseID        = "TC-GBI-05",
+                TestCaseID        = "Get_Blog_By_Id_05",
                 Description       = "Fetch blog when joined Category object is null",
                 ExpectedResult    = "Return 200, CategoryName property defaults to 'N/A'",
                 StatusRound1      = "Passed",
@@ -186,7 +186,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GBI-06 | B | Empty Request ID → Returns 404
+        // Get_Blog_By_Id_06 | B | Empty Request ID → Returns 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyId_ShouldReturn404()
@@ -200,7 +200,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "Get Blog By Id",
-                TestCaseID        = "TC-GBI-06",
+                TestCaseID        = "Get_Blog_By_Id_06",
                 Description       = "Pass empty ID string to handler",
                 ExpectedResult    = "Lookup fails, returns 404",
                 StatusRound1      = "Passed",

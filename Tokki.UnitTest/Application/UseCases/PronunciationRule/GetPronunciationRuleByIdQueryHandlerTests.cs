@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -22,7 +22,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PR-GBI-01 | A | RuleId not found → 404 Failure
+        // GetPronunciationRuleById_01 | A | RuleId not found → 404 Failure
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RuleNotFound_ShouldReturn404Failure()
@@ -43,7 +43,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation Rule - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetPronunciationRuleById",
-                TestCaseID        = "TC-PR-GBI-01",
+                TestCaseID        = "GetPronunciationRuleById_01",
                 Description       = "PronunciationRuleId does not exist → return 404 Failure",
                 ExpectedResult    = "IsSuccess=false, StatusCode=404",
                 StatusRound1      = "Passed",
@@ -54,7 +54,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PR-GBI-02 | N | Happy path → DTO correctly mapped
+        // GetPronunciationRuleById_02 | N | Happy path → DTO correctly mapped
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RuleFound_ShouldReturnMappedDTO()
@@ -81,7 +81,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation Rule - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetPronunciationRuleById",
-                TestCaseID        = "TC-PR-GBI-02",
+                TestCaseID        = "GetPronunciationRuleById_02",
                 Description       = "Happy path: rule found → PronunciationRuleDTO correctly mapped from entity",
                 ExpectedResult    = "All DTO fields match entity properties",
                 StatusRound1      = "Passed",
@@ -92,7 +92,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PR-GBI-03 | N | Result has default 200 status (Success without explicit code)
+        // GetPronunciationRuleById_03 | N | Result has default 200 status (Success without explicit code)
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RuleFound_ShouldReturnSuccess()
@@ -113,7 +113,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation Rule - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetPronunciationRuleById",
-                TestCaseID        = "TC-PR-GBI-03",
+                TestCaseID        = "GetPronunciationRuleById_03",
                 Description       = "Rule found → result IsSuccess=true",
                 ExpectedResult    = "IsSuccess=true",
                 StatusRound1      = "Passed",
@@ -124,7 +124,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PR-GBI-04 | N | Description is null → empty string in DTO
+        // GetPronunciationRuleById_04 | N | Description is null → empty string in DTO
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NullDescription_ShouldReturnEmptyStringInDTO()
@@ -149,7 +149,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation Rule - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetPronunciationRuleById",
-                TestCaseID        = "TC-PR-GBI-04",
+                TestCaseID        = "GetPronunciationRuleById_04",
                 Description       = "Entity Description and Content are null → DTO maps to empty string via null-coalescing",
                 ExpectedResult    = "DTO.Description='' and DTO.Content=''",
                 StatusRound1      = "Passed",
@@ -160,7 +160,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PR-GBI-05 | A | Repository throws → exception propagates
+        // GetPronunciationRuleById_05 | A | Repository throws → exception propagates
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
@@ -182,7 +182,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation Rule - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetPronunciationRuleById",
-                TestCaseID        = "TC-PR-GBI-05",
+                TestCaseID        = "GetPronunciationRuleById_05",
                 Description       = "Repository throws exception → exception propagates to caller",
                 ExpectedResult    = "InvalidOperationException thrown",
                 StatusRound1      = "Passed",
@@ -193,7 +193,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PR-GBI-06 | B | GetByIdAsync called with exact ruleId passed in query
+        // GetPronunciationRuleById_06 | B | GetByIdAsync called with exact ruleId passed in query
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidQuery_ShouldCallGetByIdAsyncWithCorrectId()
@@ -214,7 +214,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation Rule - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetPronunciationRuleById",
-                TestCaseID        = "TC-PR-GBI-06",
+                TestCaseID        = "GetPronunciationRuleById_06",
                 Description       = "Boundary: verify GetByIdAsync is called exactly once with the exact PronunciationRuleId from query",
                 ExpectedResult    = "GetByIdAsync('RULE-SPECIFIC') called Times.Once",
                 StatusRound1      = "Passed",

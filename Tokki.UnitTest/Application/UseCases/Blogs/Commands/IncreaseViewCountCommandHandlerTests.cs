@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -24,7 +24,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-IV-01 | A | Blog Not Found → 404
+        // Increase_View_Count_01 | A | Blog Not Found → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_BlogNotFound_ShouldReturn404()
@@ -39,7 +39,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Increase View Count", new TestCaseDetail
             {
                 FunctionGroup     = "Increase View Count",
-                TestCaseID        = "TC-IV-01",
+                TestCaseID        = "Increase_View_Count_01",
                 Description       = "Provide an ID that does not exist",
                 ExpectedResult    = "Return 404 BlogNotFound",
                 StatusRound1      = "Passed",
@@ -50,7 +50,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-IV-02 | N | Valid Update → Returns 200
+        // Increase_View_Count_02 | N | Valid Update → Returns 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidRequest_ShouldReturn200Success()
@@ -69,7 +69,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Increase View Count", new TestCaseDetail
             {
                 FunctionGroup     = "Increase View Count",
-                TestCaseID        = "TC-IV-02",
+                TestCaseID        = "Increase_View_Count_02",
                 Description       = "Valid blog ID provided",
                 ExpectedResult    = "Return 200 and successful message",
                 StatusRound1      = "Passed",
@@ -80,7 +80,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-IV-03 | B | Empty String ID → 404
+        // Increase_View_Count_03 | B | Empty String ID → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyString_ShouldReturn404()
@@ -94,7 +94,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Increase View Count", new TestCaseDetail
             {
                 FunctionGroup     = "Increase View Count",
-                TestCaseID        = "TC-IV-03",
+                TestCaseID        = "Increase_View_Count_03",
                 Description       = "Empty string passed as Blog ID",
                 ExpectedResult    = "Lookup fails, return 404",
                 StatusRound1      = "Passed",
@@ -105,7 +105,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-IV-04 | N | Correct Repository Method Called
+        // Increase_View_Count_04 | N | Correct Repository Method Called
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidRequest_ShouldCallRepositoryMethod()
@@ -121,7 +121,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Increase View Count", new TestCaseDetail
             {
                 FunctionGroup     = "Increase View Count",
-                TestCaseID        = "TC-IV-04",
+                TestCaseID        = "Increase_View_Count_04",
                 Description       = "Verify IncreaseViewCountAsync is invoked",
                 ExpectedResult    = "IncreaseViewCountAsync called x1 with correct ID",
                 StatusRound1      = "Passed",
@@ -132,7 +132,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-IV-05 | A | Database Exception bubbles up or handled
+        // Increase_View_Count_05 | A | Database Exception bubbles up or handled
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryException_ShouldThrow()
@@ -150,7 +150,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Increase View Count", new TestCaseDetail
             {
                 FunctionGroup     = "Increase View Count",
-                TestCaseID        = "TC-IV-05",
+                TestCaseID        = "Increase_View_Count_05",
                 Description       = "Repository throws an exception",
                 ExpectedResult    = "Exception bubbles up (if unhandled)",
                 StatusRound1      = "Passed",
@@ -161,7 +161,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-IV-06 | N | Success Response Formatting
+        // Increase_View_Count_06 | N | Success Response Formatting
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidRequest_ShouldHaveCorrectResponse()
@@ -179,7 +179,7 @@ namespace Tokki.UnitTest.Application.UseCases.Blogs
             QACollector.LogTestCase("Blog - Increase View Count", new TestCaseDetail
             {
                 FunctionGroup     = "Increase View Count",
-                TestCaseID        = "TC-IV-06",
+                TestCaseID        = "Increase_View_Count_06",
                 Description       = "Check formatting of OperationResult on success",
                 ExpectedResult    = "Success payload conforms to standard",
                 StatusRound1      = "Passed",

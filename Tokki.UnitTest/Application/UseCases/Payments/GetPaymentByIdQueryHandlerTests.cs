@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -37,7 +37,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
         };
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-PAY-GBI-01 | 404 | Payment not found → Failure
+        // GetPaymentById_01 | 404 | Payment not found → Failure
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_PaymentNotFound_ShouldReturn404()
@@ -58,7 +58,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             QACollector.LogTestCase("Payments - Get Payment By ID", new TestCaseDetail
             {
                 FunctionGroup     = "GetPaymentById",
-                TestCaseID        = "TC-PAY-GBI-01",
+                TestCaseID        = "GetPaymentById_01",
                 Description       = "PaymentId does not exist → 404 PaymentNotFound",
                 ExpectedResult    = "Return 404",
                 StatusRound1      = "Passed",
@@ -69,7 +69,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-PAY-GBI-02 | 200 | Payment found → returned correctly
+        // GetPaymentById_02 | 200 | Payment found → returned correctly
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_PaymentFound_ShouldReturn200WithPayment()
@@ -93,7 +93,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             QACollector.LogTestCase("Payments - Get Payment By ID", new TestCaseDetail
             {
                 FunctionGroup     = "GetPaymentById",
-                TestCaseID        = "TC-PAY-GBI-02",
+                TestCaseID        = "GetPaymentById_02",
                 Description       = "Payment found → return 200 with Payment entity",
                 ExpectedResult    = "Return 200, Payment.Id='PAY-001', Amount=99000",
                 StatusRound1      = "Passed",
@@ -104,7 +104,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-PAY-GBI-03 | 200 | Payment status Pending → returned
+        // GetPaymentById_03 | 200 | Payment status Pending → returned
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_PendingPayment_ShouldReturnWithPendingStatus()
@@ -125,7 +125,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             QACollector.LogTestCase("Payments - Get Payment By ID", new TestCaseDetail
             {
                 FunctionGroup     = "GetPaymentById",
-                TestCaseID        = "TC-PAY-GBI-03",
+                TestCaseID        = "GetPaymentById_03",
                 Description       = "Payment with Pending status → Status returned correctly",
                 ExpectedResult    = "Payment.Status = Pending",
                 StatusRound1      = "Passed",
@@ -136,7 +136,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-PAY-GBI-04 | 200 | Payment status Paid → returned
+        // GetPaymentById_04 | 200 | Payment status Paid → returned
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_PaidPayment_ShouldReturnWithPaidStatus()
@@ -160,7 +160,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             QACollector.LogTestCase("Payments - Get Payment By ID", new TestCaseDetail
             {
                 FunctionGroup     = "GetPaymentById",
-                TestCaseID        = "TC-PAY-GBI-04",
+                TestCaseID        = "GetPaymentById_04",
                 Description       = "Payment already Paid → Status=Paid and PaidAt is set",
                 ExpectedResult    = "Payment.Status = Paid, PaidAt != null",
                 StatusRound1      = "Passed",
@@ -171,7 +171,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-PAY-GBI-05 | 200 | UserId and VipPackageId mapped correctly
+        // GetPaymentById_05 | 200 | UserId and VipPackageId mapped correctly
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidPayment_ShouldMapUserIdAndVipPackageId()
@@ -202,7 +202,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             QACollector.LogTestCase("Payments - Get Payment By ID", new TestCaseDetail
             {
                 FunctionGroup     = "GetPaymentById",
-                TestCaseID        = "TC-PAY-GBI-05",
+                TestCaseID        = "GetPaymentById_05",
                 Description       = "UserId, VipPackageId and Amount mapped correctly from entity",
                 ExpectedResult    = "UserId='USER-XYZ', VipPackageId='PKG-999', Amount=149000",
                 StatusRound1      = "Passed",
@@ -213,7 +213,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-PAY-GBI-06 | 500 | Repository throws → exception propagates
+        // GetPaymentById_06 | 500 | Repository throws → exception propagates
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
@@ -229,7 +229,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             QACollector.LogTestCase("Payments - Get Payment By ID", new TestCaseDetail
             {
                 FunctionGroup     = "GetPaymentById",
-                TestCaseID        = "TC-PAY-GBI-06",
+                TestCaseID        = "GetPaymentById_06",
                 Description       = "Repository throws exception → propagates unhandled",
                 ExpectedResult    = "Throws Exception",
                 StatusRound1      = "Passed",

@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -24,7 +24,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-GBI-01 | A | QB not found → 404
+        // GetQuestionBankById_01 | A | QB not found → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_QBNotFound_ShouldReturn404()
@@ -44,7 +44,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetQuestionBankById",
-                TestCaseID        = "TC-QB-GBI-01",
+                TestCaseID        = "GetQuestionBankById_01",
                 Description       = "QuestionBankId not found → 404 QuestionBankNotFound",
                 ExpectedResult    = "IsSuccess=false, StatusCode=404",
                 StatusRound1      = "Passed",
@@ -55,7 +55,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-GBI-02 | N | Happy path → DTO correctly mapped, 200
+        // GetQuestionBankById_02 | N | Happy path → DTO correctly mapped, 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidQB_ShouldReturn200WithMappedDTO()
@@ -81,7 +81,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetQuestionBankById",
-                TestCaseID        = "TC-QB-GBI-02",
+                TestCaseID        = "GetQuestionBankById_02",
                 Description       = "Happy path: QB found with options → QuestionBankDto correctly mapped, 200",
                 ExpectedResult    = "IsSuccess=true, StatusCode=200, Data.Options.Count=2",
                 StatusRound1      = "Passed",
@@ -92,7 +92,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-GBI-03 | N | Options sorted by KeyOption ascending
+        // GetQuestionBankById_03 | N | Options sorted by KeyOption ascending
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidQB_OptionsSortedByKeyOption()
@@ -124,7 +124,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetQuestionBankById",
-                TestCaseID        = "TC-QB-GBI-03",
+                TestCaseID        = "GetQuestionBankById_03",
                 Description       = "Options are sorted by KeyOption ascending in the mapped DTO",
                 ExpectedResult    = "Options[0].KeyOption='A', Options[1].KeyOption='B'",
                 StatusRound1      = "Passed",
@@ -135,7 +135,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-GBI-04 | N | Nav props null → DTO PassageTitle/QuestionTypeName null
+        // GetQuestionBankById_04 | N | Nav props null → DTO PassageTitle/QuestionTypeName null
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NoNavProps_ShouldMapNullForNavFields()
@@ -164,7 +164,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetQuestionBankById",
-                TestCaseID        = "TC-QB-GBI-04",
+                TestCaseID        = "GetQuestionBankById_04",
                 Description       = "Navigation props (Passage, QuestionType) null → PassageTitle/QuestionTypeName null in DTO",
                 ExpectedResult    = "PassageTitle=null, QuestionTypeName=null",
                 StatusRound1      = "Passed",
@@ -175,7 +175,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-GBI-05 | A | Repository throws → exception propagates
+        // GetQuestionBankById_05 | A | Repository throws → exception propagates
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
@@ -196,7 +196,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetQuestionBankById",
-                TestCaseID        = "TC-QB-GBI-05",
+                TestCaseID        = "GetQuestionBankById_05",
                 Description       = "Repository throws exception → propagates to caller",
                 ExpectedResult    = "InvalidOperationException thrown",
                 StatusRound1      = "Passed",
@@ -207,7 +207,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-GBI-06 | B | GetByIdWithDetailsAsync called with exact QB id
+        // GetQuestionBankById_06 | B | GetByIdWithDetailsAsync called with exact QB id
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidQuery_ShouldCallGetByIdWithDetailsWithCorrectId()
@@ -228,7 +228,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetQuestionBankById",
-                TestCaseID        = "TC-QB-GBI-06",
+                TestCaseID        = "GetQuestionBankById_06",
                 Description       = "Boundary: GetByIdWithDetailsAsync called exactly once with the exact QuestionBankId",
                 ExpectedResult    = "GetByIdWithDetailsAsync('QB-SPECIFIC-01') Times.Once",
                 StatusRound1      = "Passed",

@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using System;
@@ -38,17 +38,17 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
         private static UpdateTopicOrderIndexCommand MakeCmd(string id = "T-001", int index = 3, string updatedBy = "U-001") =>
             new UpdateTopicOrderIndexCommand { TopicId = id, OrderIndex = index, UpdatedBy = updatedBy };
 
-        // TC-TOPIC-ORD-01 | A | Topic not found → 404
+        // UpdateTopicOrderIndex_01 | A | Topic not found → 404
         [Fact]
         public async Task Handle_TopicNotFound_ShouldReturn404()
         {
             var result = await CreateHandler(GetRepoMock(null)).Handle(MakeCmd("MISSING"), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(404);
-            QACollector.LogTestCase("Topic - Update Order Index", new TestCaseDetail { FunctionGroup = "UpdateTopicOrderIndex", TestCaseID = "TC-TOPIC-ORD-01", Description = "Topic not found → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetByIdAsync returns null" } });
+            QACollector.LogTestCase("Topic - Update Order Index", new TestCaseDetail { FunctionGroup = "UpdateTopicOrderIndex", TestCaseID = "UpdateTopicOrderIndex_01", Description = "Topic not found → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetByIdAsync returns null" } });
         }
 
-        // TC-TOPIC-ORD-02 | A | Topic deleted → 409
+        // UpdateTopicOrderIndex_02 | A | Topic deleted → 409
         [Fact]
         public async Task Handle_TopicDeleted_ShouldReturn409()
         {
@@ -57,20 +57,20 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
             var result = await CreateHandler(GetRepoMock(topic)).Handle(MakeCmd(), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(409);
-            QACollector.LogTestCase("Topic - Update Order Index", new TestCaseDetail { FunctionGroup = "UpdateTopicOrderIndex", TestCaseID = "TC-TOPIC-ORD-02", Description = "Topic deleted → 409", ExpectedResult = "IsSuccess=false, 409", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Status == Deleted" } });
+            QACollector.LogTestCase("Topic - Update Order Index", new TestCaseDetail { FunctionGroup = "UpdateTopicOrderIndex", TestCaseID = "UpdateTopicOrderIndex_02", Description = "Topic deleted → 409", ExpectedResult = "IsSuccess=false, 409", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Status == Deleted" } });
         }
 
-        // TC-TOPIC-ORD-03 | N | Same index → idempotent 200
+        // UpdateTopicOrderIndex_03 | N | Same index → idempotent 200
         [Fact]
         public async Task Handle_SameOrderIndex_ShouldReturn200Idempotent()
         {
             var result = await CreateHandler(GetRepoMock(SampleTopic(3))).Handle(MakeCmd(index: 3), CancellationToken.None);
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
-            QACollector.LogTestCase("Topic - Update Order Index", new TestCaseDetail { FunctionGroup = "UpdateTopicOrderIndex", TestCaseID = "TC-TOPIC-ORD-03", Description = "Same index → idempotent 200", ExpectedResult = "IsSuccess=true, 200", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "oldIndex == newIndex" } });
+            QACollector.LogTestCase("Topic - Update Order Index", new TestCaseDetail { FunctionGroup = "UpdateTopicOrderIndex", TestCaseID = "UpdateTopicOrderIndex_03", Description = "Same index → idempotent 200", ExpectedResult = "IsSuccess=true, 200", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "oldIndex == newIndex" } });
         }
 
-        // TC-TOPIC-ORD-04 | N | Happy path: new index set on topic
+        // UpdateTopicOrderIndex_04 | N | Happy path: new index set on topic
         [Fact]
         public async Task Handle_ValidRequest_TopicOrderIndexUpdated()
         {
@@ -79,20 +79,20 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
             topic.OrderIndex.Should().Be(5);
-            QACollector.LogTestCase("Topic - Update Order Index", new TestCaseDetail { FunctionGroup = "UpdateTopicOrderIndex", TestCaseID = "TC-TOPIC-ORD-04", Description = "Valid request → OrderIndex=5, 200", ExpectedResult = "IsSuccess=true, 200, OrderIndex=5", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "OrderIndex mutated" } });
+            QACollector.LogTestCase("Topic - Update Order Index", new TestCaseDetail { FunctionGroup = "UpdateTopicOrderIndex", TestCaseID = "UpdateTopicOrderIndex_04", Description = "Valid request → OrderIndex=5, 200", ExpectedResult = "IsSuccess=true, 200, OrderIndex=5", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "OrderIndex mutated" } });
         }
 
-        // TC-TOPIC-ORD-05 | B | ShiftOrderIndexBetweenAsync called when old index exists
+        // UpdateTopicOrderIndex_05 | B | ShiftOrderIndexBetweenAsync called when old index exists
         [Fact]
         public async Task Handle_HasOldIndex_ShiftBetweenCalled()
         {
             var repo = GetRepoMock(SampleTopic(2));
             await CreateHandler(repo).Handle(MakeCmd(index: 5), CancellationToken.None);
             repo.Verify(x => x.ShiftOrderIndexBetweenAsync(2, 5, It.IsAny<TopicType>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DateTime>()), Times.Once);
-            QACollector.LogTestCase("Topic - Update Order Index", new TestCaseDetail { FunctionGroup = "UpdateTopicOrderIndex", TestCaseID = "TC-TOPIC-ORD-05", Description = "Has old index → ShiftBetween(2→5) called", ExpectedResult = "Times.Once with (2, 5)", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "oldIndex=2, newIndex=5" } });
+            QACollector.LogTestCase("Topic - Update Order Index", new TestCaseDetail { FunctionGroup = "UpdateTopicOrderIndex", TestCaseID = "UpdateTopicOrderIndex_05", Description = "Has old index → ShiftBetween(2→5) called", ExpectedResult = "Times.Once with (2, 5)", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "oldIndex=2, newIndex=5" } });
         }
 
-        // TC-TOPIC-ORD-06 | A | Repository throws → 500
+        // UpdateTopicOrderIndex_06 | A | Repository throws → 500
         [Fact]
         public async Task Handle_RepoThrows_ShouldReturn500()
         {
@@ -101,7 +101,7 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
             var result = await CreateHandler(repo).Handle(MakeCmd(), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(500);
-            QACollector.LogTestCase("Topic - Update Order Index", new TestCaseDetail { FunctionGroup = "UpdateTopicOrderIndex", TestCaseID = "TC-TOPIC-ORD-06", Description = "Repository throws → 500", ExpectedResult = "IsSuccess=false, 500", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Exception caught" } });
+            QACollector.LogTestCase("Topic - Update Order Index", new TestCaseDetail { FunctionGroup = "UpdateTopicOrderIndex", TestCaseID = "UpdateTopicOrderIndex_06", Description = "Repository throws → 500", ExpectedResult = "IsSuccess=false, 500", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Exception caught" } });
         }
     }
 }

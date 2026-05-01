@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -60,7 +60,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Commands
             QACollector.LogTestCase("Exam - Create", new TestCaseDetail
             {
                 FunctionGroup     = "CreateExamCommandHandler",
-                TestCaseID        = "TC-EXM-CEC-01",
+                TestCaseID        = "CreateExamCommandHandler_01",
                 Description       = "Title already exists",
                 ExpectedResult    = "Returns 400 failure",
                 StatusRound1      = "Passed",
@@ -85,7 +85,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Commands
             QACollector.LogTestCase("Exam - Create", new TestCaseDetail
             {
                 FunctionGroup     = "CreateExamCommandHandler",
-                TestCaseID        = "TC-EXM-CEC-02",
+                TestCaseID        = "CreateExamCommandHandler_02",
                 Description       = "Template id not found",
                 ExpectedResult    = "Returns 404",
                 StatusRound1      = "Passed",
@@ -111,7 +111,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Commands
             QACollector.LogTestCase("Exam - Create", new TestCaseDetail
             {
                 FunctionGroup     = "CreateExamCommandHandler",
-                TestCaseID        = "TC-EXM-CEC-03",
+                TestCaseID        = "CreateExamCommandHandler_03",
                 Description       = "Template is not published",
                 ExpectedResult    = "Returns 400 failure",
                 StatusRound1      = "Passed",
@@ -139,7 +139,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Commands
             QACollector.LogTestCase("Exam - Create", new TestCaseDetail
             {
                 FunctionGroup     = "CreateExamCommandHandler",
-                TestCaseID        = "TC-EXM-CEC-04",
+                TestCaseID        = "CreateExamCommandHandler_04",
                 Description       = "Parts list is empty",
                 ExpectedResult    = "Returns 400 failure",
                 StatusRound1      = "Passed",
@@ -171,7 +171,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Commands
             QACollector.LogTestCase("Exam - Create", new TestCaseDetail
             {
                 FunctionGroup     = "CreateExamCommandHandler",
-                TestCaseID        = "TC-EXM-CEC-05",
+                TestCaseID        = "CreateExamCommandHandler_05",
                 Description       = "Skill durations input is missing",
                 ExpectedResult    = "Returns 400 failure",
                 StatusRound1      = "Passed",
@@ -213,7 +213,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Commands
             QACollector.LogTestCase("Exam - Create", new TestCaseDetail
             {
                 FunctionGroup     = "CreateExamCommandHandler",
-                TestCaseID        = "TC-EXM-CEC-06",
+                TestCaseID        = "CreateExamCommandHandler_06",
                 Description       = "Not enough pool questions",
                 ExpectedResult    = "Returns 400 failure",
                 StatusRound1      = "Passed",
@@ -263,7 +263,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Commands
             QACollector.LogTestCase("Exam - Create", new TestCaseDetail
             {
                 FunctionGroup     = "CreateExamCommandHandler",
-                TestCaseID        = "TC-EXM-CEC-07",
+                TestCaseID        = "CreateExamCommandHandler_07",
                 Description       = "Creates exam properly",
                 ExpectedResult    = "Returns 201 Success",
                 StatusRound1      = "Passed",

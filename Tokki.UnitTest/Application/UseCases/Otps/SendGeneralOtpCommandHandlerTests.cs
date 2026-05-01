@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -50,7 +50,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Send General", new TestCaseDetail
             {
-                FunctionGroup = "SendGeneralOtp", TestCaseID = "TC-OTP-GEN-01",
+                FunctionGroup = "SendGeneralOtp", TestCaseID = "SendGeneralOtp_01",
                 Description = "Email not registered → UserNotFound failure",
                 ExpectedResult = "Return Failure (UserNotFound)", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -79,7 +79,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Send General", new TestCaseDetail
             {
-                FunctionGroup = "SendGeneralOtp", TestCaseID = "TC-OTP-GEN-02",
+                FunctionGroup = "SendGeneralOtp", TestCaseID = "SendGeneralOtp_02",
                 Description = "Valid email → Redis.SetAsync called with key 'OTP:General:{email}'",
                 ExpectedResult = "SetAsync called with correct key and 5 min TTL", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -104,7 +104,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Send General", new TestCaseDetail
             {
-                FunctionGroup = "SendGeneralOtp", TestCaseID = "TC-OTP-GEN-03",
+                FunctionGroup = "SendGeneralOtp", TestCaseID = "SendGeneralOtp_03",
                 Description = "Valid email → SendEmailAsync called once",
                 ExpectedResult = "SendEmailAsync called with correct email", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -135,7 +135,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Send General", new TestCaseDetail
             {
-                FunctionGroup = "SendGeneralOtp", TestCaseID = "TC-OTP-GEN-04",
+                FunctionGroup = "SendGeneralOtp", TestCaseID = "SendGeneralOtp_04",
                 Description = "Redis value has OtpCode (6 digits) and AttemptCount=0",
                 ExpectedResult = "AttemptCount=0, OtpCode.Length=6", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -158,7 +158,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Send General", new TestCaseDetail
             {
-                FunctionGroup = "SendGeneralOtp", TestCaseID = "TC-OTP-GEN-05",
+                FunctionGroup = "SendGeneralOtp", TestCaseID = "SendGeneralOtp_05",
                 Description = "Valid email → Return 200 Success",
                 ExpectedResult = "Return 200", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -182,7 +182,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Send General", new TestCaseDetail
             {
-                FunctionGroup = "SendGeneralOtp", TestCaseID = "TC-OTP-GEN-06",
+                FunctionGroup = "SendGeneralOtp", TestCaseID = "SendGeneralOtp_06",
                 Description = "User not found → Redis.SetAsync never called",
                 ExpectedResult = "SetAsync Times.Never", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

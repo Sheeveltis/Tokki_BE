@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -23,7 +23,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Commands
             _handler = new DeletePronunciationExampleCommandHandler(_mockRepo.Object);
         }
 
-        // TC-PRN-DPE-01 | A | NotFound -> 404
+        // DeletePronunciationExampleCommandHandler_01 | A | NotFound -> 404
         [Fact]
         public async Task Handle_ExampleNotFound_ShouldFail404()
         {
@@ -38,7 +38,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Commands
             QACollector.LogTestCase("Pronunciation Example - Delete", new TestCaseDetail
             {
                 FunctionGroup = "DeletePronunciationExampleCommandHandler",
-                TestCaseID = "TC-PRN-DPE-01",
+                TestCaseID = "DeletePronunciationExampleCommandHandler_01",
                 Description = "Rejects invalid ID keys on delete paths natively",
                 ExpectedResult = "404 Error",
                 StatusRound1 = "Passed",
@@ -48,7 +48,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Commands
             });
         }
 
-        // TC-PRN-DPE-02 | N | Success -> Unit
+        // DeletePronunciationExampleCommandHandler_02 | N | Success -> Unit
         [Fact]
         public async Task Handle_ExistingEx_SucceedsDbClean()
         {
@@ -65,7 +65,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Commands
             QACollector.LogTestCase("Pronunciation Example - Delete", new TestCaseDetail
             {
                 FunctionGroup = "DeletePronunciationExampleCommandHandler",
-                TestCaseID = "TC-PRN-DPE-02",
+                TestCaseID = "DeletePronunciationExampleCommandHandler_02",
                 Description = "Purges matched target natively verifying connection contexts thoroughly",
                 ExpectedResult = "Execution Success Unit",
                 StatusRound1 = "Passed",
@@ -75,20 +75,20 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Commands
             });
         }
 
-        // TC-PRN-DPE-03,4,5,6 ... filling standards
+        // DeletePronunciationExampleCommandHandler_03,4,5,6 ... filling standards
         [Fact] public async Task Handles_Edge1() { var r=await _handler.Handle(new DeletePronunciationExampleCommand{ExampleId="NotFoundKey"}, CancellationToken.None); r.IsSuccess.Should().BeFalse(); 
-            QACollector.LogTestCase("Pronunciation Example - Delete", new TestCaseDetail { FunctionGroup="DeletePronunciationExampleCommandHandler", TestCaseID="TC-PRN-DPE-03", Description="Sanity check invalid length ids", ExpectedResult="404", StatusRound1="Passed", TestCaseType="A", TestDate=DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions=new List<string>{"Sanity Check"} });
+            QACollector.LogTestCase("Pronunciation Example - Delete", new TestCaseDetail { FunctionGroup="DeletePronunciationExampleCommandHandler", TestCaseID="DeletePronunciationExampleCommandHandler_03", Description="Sanity check invalid length ids", ExpectedResult="404", StatusRound1="Passed", TestCaseType="A", TestDate=DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions=new List<string>{"Sanity Check"} });
         }
         [Fact] public async Task Handles_Edge2() { var r=await _handler.Handle(new DeletePronunciationExampleCommand{ExampleId=string.Empty}, CancellationToken.None); r.IsSuccess.Should().BeFalse(); 
-            QACollector.LogTestCase("Pronunciation Example - Delete", new TestCaseDetail { FunctionGroup="DeletePronunciationExampleCommandHandler", TestCaseID="TC-PRN-DPE-04", Description="Sanity check Blank key limits", ExpectedResult="404", StatusRound1="Passed", TestCaseType="A", TestDate=DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions=new List<string>{"Empty check"} });
+            QACollector.LogTestCase("Pronunciation Example - Delete", new TestCaseDetail { FunctionGroup="DeletePronunciationExampleCommandHandler", TestCaseID="DeletePronunciationExampleCommandHandler_04", Description="Sanity check Blank key limits", ExpectedResult="404", StatusRound1="Passed", TestCaseType="A", TestDate=DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions=new List<string>{"Empty check"} });
         }
         [Fact] public async Task Handles_Edge3() { var r=await _handler.Handle(new DeletePronunciationExampleCommand{ExampleId="  "}, CancellationToken.None); r.IsSuccess.Should().BeFalse(); 
-            QACollector.LogTestCase("Pronunciation Example - Delete", new TestCaseDetail { FunctionGroup="DeletePronunciationExampleCommandHandler", TestCaseID="TC-PRN-DPE-05", Description="Sanity check whitespace masks", ExpectedResult="404", StatusRound1="Passed", TestCaseType="A", TestDate=DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions=new List<string>{"Space bypass check"} });
+            QACollector.LogTestCase("Pronunciation Example - Delete", new TestCaseDetail { FunctionGroup="DeletePronunciationExampleCommandHandler", TestCaseID="DeletePronunciationExampleCommandHandler_05", Description="Sanity check whitespace masks", ExpectedResult="404", StatusRound1="Passed", TestCaseType="A", TestDate=DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions=new List<string>{"Space bypass check"} });
         }
         [Fact] public async Task Handles_Edge4() { 
             _mockRepo.Setup(x => x.GetByIdAsync("E1")).ReturnsAsync(new Domain.Entities.PronunciationExample());
             var r=await _handler.Handle(new DeletePronunciationExampleCommand{ExampleId="E1"}, CancellationToken.None); r.IsSuccess.Should().BeTrue(); 
-            QACollector.LogTestCase("Pronunciation Example - Delete", new TestCaseDetail { FunctionGroup="DeletePronunciationExampleCommandHandler", TestCaseID="TC-PRN-DPE-06", Description="Sanity confirms true boolean flag accurately without data loss", ExpectedResult="Success", StatusRound1="Passed", TestCaseType="N", TestDate=DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions=new List<string>{"Sanity true"} });
+            QACollector.LogTestCase("Pronunciation Example - Delete", new TestCaseDetail { FunctionGroup="DeletePronunciationExampleCommandHandler", TestCaseID="DeletePronunciationExampleCommandHandler_06", Description="Sanity confirms true boolean flag accurately without data loss", ExpectedResult="Success", StatusRound1="Passed", TestCaseType="N", TestDate=DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions=new List<string>{"Sanity true"} });
         }
     }
 }

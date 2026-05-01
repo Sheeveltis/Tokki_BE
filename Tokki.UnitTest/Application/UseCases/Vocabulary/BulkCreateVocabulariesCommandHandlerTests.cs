@@ -57,7 +57,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Bulk Create", new TestCaseDetail
             {
                 FunctionGroup = "Bulk Create Vocabulary",
-                TestCaseID = "TC-VOCAB-BLK-01",
+                TestCaseID = "Bulk_Create_Vocabulary_01",
                 Description = "Bulk create vocabulary without an authentication token",
                 ExpectedResult = "Return 401 Unauthorized",
                 StatusRound1 = "Passed",
@@ -96,7 +96,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Bulk Create", new TestCaseDetail
             {
                 FunctionGroup = "Bulk Create Vocabulary",
-                TestCaseID = "TC-VOCAB-BLK-02",
+                TestCaseID = "Bulk_Create_Vocabulary_02",
                 Description = "Bulk create has a duplicate vocab Text + Definition → reject the entire request",
                 ExpectedResult = "Return 400 VOCABULARY_DUPLICATE",
                 StatusRound1 = "Passed",
@@ -152,7 +152,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Bulk Create", new TestCaseDetail
             {
                 FunctionGroup = "Bulk Create Vocabulary",
-                TestCaseID = "TC-VOCAB-BLK-03",
+                TestCaseID = "Bulk_Create_Vocabulary_03",
                 Description = "Bulk created 2 valid vocabs, no duplicates → all created successfully",
                 ExpectedResult = "Return 201, SuccessCount = 2, TotalVocabularies = 2",
                 StatusRound1 = "Passed",
@@ -201,7 +201,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Bulk Create", new TestCaseDetail
             {
                 FunctionGroup = "Bulk Create Vocabulary",
-                TestCaseID = "TC-VOCAB-BLK-04",
+                TestCaseID = "Bulk_Create_Vocabulary_04",
                 Description = "TTS error in bulk create → vocab is still created with AudioURL = null",
                 ExpectedResult = "Return 201, SuccessCount = 1, AudioURL = null",
                 StatusRound1 = "Passed",
@@ -257,7 +257,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Bulk Create", new TestCaseDetail
             {
                 FunctionGroup = "Bulk Create Vocabulary",
-                TestCaseID = "TC-VOCAB-BLK-05",
+                TestCaseID = "Bulk_Create_Vocabulary_05",
                 Description = "Bulk create has an example with the same Sentence in the same request → ignore the duplicate sentence, still create vocab",
                 ExpectedResult = "Return 201, message contains 'skip', SuccessCount = 1",
                 StatusRound1 = "Passed",
@@ -300,7 +300,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Bulk Create", new TestCaseDetail
             {
                 FunctionGroup = "Bulk Create Vocabulary",
-                TestCaseID = "TC-VOCAB-BLK-06",
+                TestCaseID = "Bulk_Create_Vocabulary_06",
                 Description = "Repository throws exception during transaction → rollback and return 500",
                 ExpectedResult = "Transaction rollback, return 500 Server Error",
                 StatusRound1 = "Passed",

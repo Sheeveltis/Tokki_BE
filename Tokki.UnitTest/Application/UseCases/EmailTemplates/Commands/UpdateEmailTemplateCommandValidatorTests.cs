@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using FluentValidation.TestHelper;
 using System;
 using System.Collections.Generic;
@@ -18,7 +18,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             _validator = new UpdateEmailTemplateCommandValidator();
         }
 
-        // TC-EMT-UTV-01 | A | TemplateId Empty -> Error
+        // UpdateEmailTemplateCommandValidator_01 | A | TemplateId Empty -> Error
         [Fact]
         public void Validate_EmptyTemplateId_ShouldHaveError()
         {
@@ -30,7 +30,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("Email Template - Update Auto", new TestCaseDetail
             {
                 FunctionGroup = "UpdateEmailTemplateCommandValidator",
-                TestCaseID = "TC-EMT-UTV-01",
+                TestCaseID = "UpdateEmailTemplateCommandValidator_01",
                 Description = "Empty TemplateId rejected immediately",
                 ExpectedResult = "Validation Error",
                 StatusRound1 = "Passed",
@@ -40,7 +40,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             });
         }
 
-        // TC-EMT-UTV-02 | A | Value <= 0 -> Error
+        // UpdateEmailTemplateCommandValidator_02 | A | Value <= 0 -> Error
         [Fact]
         public void Validate_ValueZeroOrLess_ShouldHaveError()
         {
@@ -52,7 +52,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("Email Template - Update Auto", new TestCaseDetail
             {
                 FunctionGroup = "UpdateEmailTemplateCommandValidator",
-                TestCaseID = "TC-EMT-UTV-02",
+                TestCaseID = "UpdateEmailTemplateCommandValidator_02",
                 Description = "Optional Value field restricts 0 inputs",
                 ExpectedResult = "Validation Error",
                 StatusRound1 = "Passed",
@@ -62,7 +62,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             });
         }
 
-        // TC-EMT-UTV-03 | A | Description > 500 chars -> Error
+        // UpdateEmailTemplateCommandValidator_03 | A | Description > 500 chars -> Error
         [Fact]
         public void Validate_LongDescription_ShouldHaveError()
         {
@@ -74,7 +74,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("Email Template - Update Auto", new TestCaseDetail
             {
                 FunctionGroup = "UpdateEmailTemplateCommandValidator",
-                TestCaseID = "TC-EMT-UTV-03",
+                TestCaseID = "UpdateEmailTemplateCommandValidator_03",
                 Description = "Description length restricted safely",
                 ExpectedResult = "Validation Error",
                 StatusRound1 = "Passed",
@@ -84,7 +84,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             });
         }
 
-        // TC-EMT-UTV-04 | A | VipExpiringReminder missing TargetGroup rule
+        // UpdateEmailTemplateCommandValidator_04 | A | VipExpiringReminder missing TargetGroup rule
         [Fact]
         public void Validate_VipReminderContextIssue_ShouldHaveError()
         {
@@ -102,7 +102,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("Email Template - Update Auto", new TestCaseDetail
             {
                 FunctionGroup = "UpdateEmailTemplateCommandValidator",
-                TestCaseID = "TC-EMT-UTV-04",
+                TestCaseID = "UpdateEmailTemplateCommandValidator_04",
                 Description = "Cross property checks block irregular TargetGroups on VIP types",
                 ExpectedResult = "Validation Error",
                 StatusRound1 = "Passed",
@@ -112,7 +112,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             });
         }
 
-        // TC-EMT-UTV-05 | N | Valid VipExpiringReminder Context
+        // UpdateEmailTemplateCommandValidator_05 | N | Valid VipExpiringReminder Context
         [Fact]
         public void Validate_VipReminderContextValid_ShouldNotHaveError()
         {
@@ -129,7 +129,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("Email Template - Update Auto", new TestCaseDetail
             {
                 FunctionGroup = "UpdateEmailTemplateCommandValidator",
-                TestCaseID = "TC-EMT-UTV-05",
+                TestCaseID = "UpdateEmailTemplateCommandValidator_05",
                 Description = "Cross property checks pass correctly aligning VIP group with context type on update",
                 ExpectedResult = "No Errors",
                 StatusRound1 = "Passed",
@@ -139,7 +139,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             });
         }
 
-        // TC-EMT-UTV-06 | N | Completely Valid Sparse Template Update
+        // UpdateEmailTemplateCommandValidator_06 | N | Completely Valid Sparse Template Update
         [Fact]
         public void Validate_ValidBasicTemplate_ShouldNotHaveError()
         {
@@ -156,7 +156,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("Email Template - Update Auto", new TestCaseDetail
             {
                 FunctionGroup = "UpdateEmailTemplateCommandValidator",
-                TestCaseID = "TC-EMT-UTV-06",
+                TestCaseID = "UpdateEmailTemplateCommandValidator_06",
                 Description = "Sparse updates validate only specified properties cleanly",
                 ExpectedResult = "No Errors",
                 StatusRound1 = "Passed",

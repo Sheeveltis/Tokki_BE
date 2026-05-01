@@ -1,7 +1,7 @@
 ﻿using MediatR;
-using Tokki.Application.Common.Constants;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
+using Tokki.Application.UseCases.Roadmap.Constants;
 
 namespace Tokki.Application.UseCases.Roadmap.Queries.GetEntranceExam
 {
@@ -10,20 +10,27 @@ namespace Tokki.Application.UseCases.Roadmap.Queries.GetEntranceExam
     {
         private readonly IExamRepository _examRepository;
         private readonly IUserRoadmapRepository _userRoadmapRepository;
+        private readonly ITopikLevelConfigService _topikConfig;
 
-        public GetEntranceExamQueryHandler(IExamRepository examRepository, IUserRoadmapRepository userRoadmapRepository)
+        public GetEntranceExamQueryHandler(
+            IExamRepository examRepository,
+            IUserRoadmapRepository userRoadmapRepository,
+            ITopikLevelConfigService topikConfig)
         {
             _examRepository = examRepository;
             _userRoadmapRepository = userRoadmapRepository;
+            _topikConfig = topikConfig;
         }
 
         public async Task<OperationResult<EntranceExamResult>> Handle(
-    GetEntranceExamQuery request,
-    CancellationToken cancellationToken)
+            GetEntranceExamQuery request,
+            CancellationToken cancellationToken)
         {
-            if (!TopikLevelConfig.Levels.TryGetValue(request.TargetAim, out var levelInfo))
+            var levelInfo = await _topikConfig.GetByLevelAsync(request.TargetAim, cancellationToken);
+
+            if (levelInfo == null)
                 return OperationResult<EntranceExamResult>.Failure(
-                    "Mục tiêu học tập không hợp lệ.", 400);
+                    "Mục tiêu học tập không hợp lệ hoặc chưa được cấu hình.", 400);
 
             var exam = await _userRoadmapRepository
                 .GetEntranceExamByConfigKeyAsync(levelInfo.ConfigKey, cancellationToken);

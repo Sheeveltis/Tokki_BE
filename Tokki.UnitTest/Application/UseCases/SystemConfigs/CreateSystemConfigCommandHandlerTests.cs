@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
 using Moq;
@@ -46,7 +46,7 @@ namespace Tokki.UnitTest.Application.UseCases.SystemConfigs
         private static CreateSystemConfigCommand MakeCommand(string key = "SITE_NAME")
             => new CreateSystemConfigCommand { Key = key, Value = "Tokki", Description = "App name", DataType = "string" };
 
-        // TC-SYS-CREATE-01 | N | Happy path: new key → 201 Created
+        // CreateSystemConfig_01 | N | Happy path: new key → 201 Created
         [Fact]
         public async Task Handle_NewKey_ShouldReturn201WithKey()
         {
@@ -54,10 +54,10 @@ namespace Tokki.UnitTest.Application.UseCases.SystemConfigs
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(201);
             result.Data.Should().Be("SITE_NAME");
-            QACollector.LogTestCase("SystemConfig - Create", new TestCaseDetail { FunctionGroup = "CreateSystemConfig", TestCaseID = "TC-SYS-CREATE-01", Description = "New key → 201, Data=Key", ExpectedResult = "IsSuccess=true, 201, Data='SITE_NAME'", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Key does not exist", "new config created" } });
+            QACollector.LogTestCase("SystemConfig - Create", new TestCaseDetail { FunctionGroup = "CreateSystemConfig", TestCaseID = "CreateSystemConfig_01", Description = "New key → 201, Data=Key", ExpectedResult = "IsSuccess=true, 201, Data='SITE_NAME'", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Key does not exist", "new config created" } });
         }
 
-        // TC-SYS-CREATE-02 | A | Duplicate key → failure (no status code check – AppErrors.ConfigKeyDuplicated)
+        // CreateSystemConfig_02 | A | Duplicate key → failure (no status code check – AppErrors.ConfigKeyDuplicated)
         [Fact]
         public async Task Handle_DuplicateKey_ShouldReturnFailure()
         {
@@ -65,10 +65,10 @@ namespace Tokki.UnitTest.Application.UseCases.SystemConfigs
             var repo     = GetRepoMock(existing: existing);
             var result   = await CreateHandler(repo).Handle(MakeCommand("SITE_NAME"), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
-            QACollector.LogTestCase("SystemConfig - Create", new TestCaseDetail { FunctionGroup = "CreateSystemConfig", TestCaseID = "TC-SYS-CREATE-02", Description = "Duplicate key → failure", ExpectedResult = "IsSuccess=false (ConfigKeyDuplicated)", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetByKeyAsync returns existing config" } });
+            QACollector.LogTestCase("SystemConfig - Create", new TestCaseDetail { FunctionGroup = "CreateSystemConfig", TestCaseID = "CreateSystemConfig_02", Description = "Duplicate key → failure", ExpectedResult = "IsSuccess=false (ConfigKeyDuplicated)", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetByKeyAsync returns existing config" } });
         }
 
-        // TC-SYS-CREATE-03 | B | AddAsync and SaveChangesAsync both called once
+        // CreateSystemConfig_03 | B | AddAsync and SaveChangesAsync both called once
         [Fact]
         public async Task Handle_NewKey_AddAndSaveBothCalledOnce()
         {
@@ -76,10 +76,10 @@ namespace Tokki.UnitTest.Application.UseCases.SystemConfigs
             await CreateHandler(repo).Handle(MakeCommand(), CancellationToken.None);
             repo.Verify(x => x.AddAsync(It.IsAny<SystemConfig>()), Times.Once);
             repo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
-            QACollector.LogTestCase("SystemConfig - Create", new TestCaseDetail { FunctionGroup = "CreateSystemConfig", TestCaseID = "TC-SYS-CREATE-03", Description = "AddAsync and SaveChangesAsync both called once on success", ExpectedResult = "Both Times.Once", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "New config, both persist calls verified" } });
+            QACollector.LogTestCase("SystemConfig - Create", new TestCaseDetail { FunctionGroup = "CreateSystemConfig", TestCaseID = "CreateSystemConfig_03", Description = "AddAsync and SaveChangesAsync both called once on success", ExpectedResult = "Both Times.Once", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "New config, both persist calls verified" } });
         }
 
-        // TC-SYS-CREATE-04 | N | Created config has IsActive=true
+        // CreateSystemConfig_04 | N | Created config has IsActive=true
         [Fact]
         public async Task Handle_NewKey_CreatedConfigHasIsActiveTrue()
         {
@@ -91,10 +91,10 @@ namespace Tokki.UnitTest.Application.UseCases.SystemConfigs
             await CreateHandler(repo).Handle(MakeCommand(), CancellationToken.None);
             captured.Should().NotBeNull();
             captured!.IsActive.Should().BeTrue();
-            QACollector.LogTestCase("SystemConfig - Create", new TestCaseDetail { FunctionGroup = "CreateSystemConfig", TestCaseID = "TC-SYS-CREATE-04", Description = "Created config IsActive=true by default", ExpectedResult = "SystemConfig.IsActive=true", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "IsActive defaults to true on create" } });
+            QACollector.LogTestCase("SystemConfig - Create", new TestCaseDetail { FunctionGroup = "CreateSystemConfig", TestCaseID = "CreateSystemConfig_04", Description = "Created config IsActive=true by default", ExpectedResult = "SystemConfig.IsActive=true", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "IsActive defaults to true on create" } });
         }
 
-        // TC-SYS-CREATE-05 | B | Duplicate key → AddAsync never called
+        // CreateSystemConfig_05 | B | Duplicate key → AddAsync never called
         [Fact]
         public async Task Handle_DuplicateKey_AddAsyncNeverCalled()
         {
@@ -102,16 +102,16 @@ namespace Tokki.UnitTest.Application.UseCases.SystemConfigs
             var repo     = GetRepoMock(existing: existing);
             await CreateHandler(repo).Handle(MakeCommand("DUP_KEY"), CancellationToken.None);
             repo.Verify(x => x.AddAsync(It.IsAny<SystemConfig>()), Times.Never);
-            QACollector.LogTestCase("SystemConfig - Create", new TestCaseDetail { FunctionGroup = "CreateSystemConfig", TestCaseID = "TC-SYS-CREATE-05", Description = "Duplicate key → early return, AddAsync never called", ExpectedResult = "AddAsync Times.Never", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Guard returns before AddAsync" } });
+            QACollector.LogTestCase("SystemConfig - Create", new TestCaseDetail { FunctionGroup = "CreateSystemConfig", TestCaseID = "CreateSystemConfig_05", Description = "Duplicate key → early return, AddAsync never called", ExpectedResult = "AddAsync Times.Never", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Guard returns before AddAsync" } });
         }
 
-        // TC-SYS-CREATE-06 | N | Config key in result matches request key
+        // CreateSystemConfig_06 | N | Config key in result matches request key
         [Fact]
         public async Task Handle_NewKey_ResultDataEqualsRequestKey()
         {
             var result = await CreateHandler().Handle(MakeCommand("CUSTOM_KEY"), CancellationToken.None);
             result.Data.Should().Be("CUSTOM_KEY");
-            QACollector.LogTestCase("SystemConfig - Create", new TestCaseDetail { FunctionGroup = "CreateSystemConfig", TestCaseID = "TC-SYS-CREATE-06", Description = "Result.Data='CUSTOM_KEY' matches request Key", ExpectedResult = "Data='CUSTOM_KEY'", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Key echoed back in response" } });
+            QACollector.LogTestCase("SystemConfig - Create", new TestCaseDetail { FunctionGroup = "CreateSystemConfig", TestCaseID = "CreateSystemConfig_06", Description = "Result.Data='CUSTOM_KEY' matches request Key", ExpectedResult = "Data='CUSTOM_KEY'", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Key echoed back in response" } });
         }
     }
 }

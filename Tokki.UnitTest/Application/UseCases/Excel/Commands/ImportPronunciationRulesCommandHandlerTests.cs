@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -35,7 +35,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel.Commands
                 _mockExcel.Object, _mockRepo.Object, _mockIdGen.Object, _mockLogger.Object);
         }
 
-        // TC-EXC-IR-01 | A | Excel Empty -> Error
+        // ImportPronunciationRulesCommandHandler_01 | A | Excel Empty -> Error
         [Fact]
         public async Task Handle_ExcelEmpty_ShouldReturnError()
         {
@@ -51,7 +51,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel.Commands
             QACollector.LogTestCase("Excel - Import Rules", new TestCaseDetail
             {
                 FunctionGroup = "ImportPronunciationRulesCommandHandler",
-                TestCaseID = "TC-EXC-IR-01",
+                TestCaseID = "ImportPronunciationRulesCommandHandler_01",
                 Description = "Rejects immediately if parser returns blank collections",
                 ExpectedResult = "EXCEL_EMPTY Failure",
                 StatusRound1 = "Passed",
@@ -61,7 +61,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel.Commands
             });
         }
 
-        // TC-EXC-IR-02 | A | Excel Null -> Error
+        // ImportPronunciationRulesCommandHandler_02 | A | Excel Null -> Error
         [Fact]
         public async Task Handle_ExcelNull_ShouldReturnError()
         {
@@ -77,7 +77,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel.Commands
             QACollector.LogTestCase("Excel - Import Rules", new TestCaseDetail
             {
                 FunctionGroup = "ImportPronunciationRulesCommandHandler",
-                TestCaseID = "TC-EXC-IR-02",
+                TestCaseID = "ImportPronunciationRulesCommandHandler_02",
                 Description = "Rejects completely null returns safely without NullReference breakpoints",
                 ExpectedResult = "EXCEL_EMPTY Failure",
                 StatusRound1 = "Passed",
@@ -87,7 +87,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel.Commands
             });
         }
 
-        // TC-EXC-IR-03 | A | DB Save Throws Exception
+        // ImportPronunciationRulesCommandHandler_03 | A | DB Save Throws Exception
         [Fact]
         public async Task Handle_DatabaseException_ReturnsFailure()
         {
@@ -112,7 +112,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel.Commands
             QACollector.LogTestCase("Excel - Import Rules", new TestCaseDetail
             {
                 FunctionGroup = "ImportPronunciationRulesCommandHandler",
-                TestCaseID = "TC-EXC-IR-03",
+                TestCaseID = "ImportPronunciationRulesCommandHandler_03",
                 Description = "Wraps context execution faults protecting service loops",
                 ExpectedResult = "DATABASE_ERROR",
                 StatusRound1 = "Passed",
@@ -122,7 +122,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel.Commands
             });
         }
 
-        // TC-EXC-IR-04 | N | Single Row Error Processing (Catches silently)
+        // ImportPronunciationRulesCommandHandler_04 | N | Single Row Error Processing (Catches silently)
         [Fact]
         public async Task Handle_SingleRowException_CapturesInFailureList()
         {
@@ -151,7 +151,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel.Commands
             QACollector.LogTestCase("Excel - Import Rules", new TestCaseDetail
             {
                 FunctionGroup = "ImportPronunciationRulesCommandHandler",
-                TestCaseID = "TC-EXC-IR-04",
+                TestCaseID = "ImportPronunciationRulesCommandHandler_04",
                 Description = "Batch iterations continue independently on isolated row transformation failures",
                 ExpectedResult = "Success Partial List",
                 StatusRound1 = "Passed",
@@ -161,7 +161,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel.Commands
             });
         }
 
-        // TC-EXC-IR-05 | N | Full Batch Setup Succeds
+        // ImportPronunciationRulesCommandHandler_05 | N | Full Batch Setup Succeds
         [Fact]
         public async Task Handle_SuccessfulBatch_ShouldSaveAndReturnTotal()
         {
@@ -189,7 +189,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel.Commands
             QACollector.LogTestCase("Excel - Import Rules", new TestCaseDetail
             {
                 FunctionGroup = "ImportPronunciationRulesCommandHandler",
-                TestCaseID = "TC-EXC-IR-05",
+                TestCaseID = "ImportPronunciationRulesCommandHandler_05",
                 Description = "Successful arrays bind all mapped attributes accurately committing perfectly",
                 ExpectedResult = "Success Full List Commit",
                 StatusRound1 = "Passed",
@@ -199,7 +199,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel.Commands
             });
         }
 
-        // TC-EXC-IR-06 | N | Verify Object Instantiation Flags Mapping
+        // ImportPronunciationRulesCommandHandler_06 | N | Verify Object Instantiation Flags Mapping
         [Fact]
         public async Task Handle_MapsTrackingAudits_ShouldVerifyFlags()
         {
@@ -229,7 +229,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel.Commands
             QACollector.LogTestCase("Excel - Import Rules", new TestCaseDetail
             {
                 FunctionGroup = "ImportPronunciationRulesCommandHandler",
-                TestCaseID = "TC-EXC-IR-06",
+                TestCaseID = "ImportPronunciationRulesCommandHandler_06",
                 Description = "Injected base flags initialize core tracking records precisely protecting state mechanics",
                 ExpectedResult = "Audit fields verified true",
                 StatusRound1 = "Passed",

@@ -1,4 +1,4 @@
-using FluentValidation.TestHelper;
+﻿using FluentValidation.TestHelper;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -30,7 +30,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary.Commands
             QACollector.LogTestCase("Vocabulary Admin - Create By Staff Validator", new TestCaseDetail
             {
                 FunctionGroup     = "CreateVocabularyByStaffCommandValidator",
-                TestCaseID        = "TC-VOC-CSBV-01",
+                TestCaseID        = "CreateVocabularyByStaffCommandValidator_01",
                 Description       = "Empty Definition",
                 ExpectedResult    = "Throws Empty Definition Error",
                 StatusRound1      = "Passed",
@@ -52,7 +52,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary.Commands
             QACollector.LogTestCase("Vocabulary Admin - Create By Staff Validator", new TestCaseDetail
             {
                 FunctionGroup     = "CreateVocabularyByStaffCommandValidator",
-                TestCaseID        = "TC-VOC-CSBV-02",
+                TestCaseID        = "CreateVocabularyByStaffCommandValidator_02",
                 Description       = "Pronunciation exceeds limits",
                 ExpectedResult    = "Throws bounds length error",
                 StatusRound1      = "Passed",
@@ -81,7 +81,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary.Commands
             QACollector.LogTestCase("Vocabulary Admin - Create By Staff Validator", new TestCaseDetail
             {
                 FunctionGroup     = "CreateVocabularyByStaffCommandValidator",
-                TestCaseID        = "TC-VOC-CSBV-03",
+                TestCaseID        = "CreateVocabularyByStaffCommandValidator_03",
                 Description       = "Over 10 examples",
                 ExpectedResult    = "Throws 10 maximum examples count error",
                 StatusRound1      = "Passed",
@@ -111,7 +111,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary.Commands
             QACollector.LogTestCase("Vocabulary Admin - Create By Staff Validator", new TestCaseDetail
             {
                 FunctionGroup     = "CreateVocabularyByStaffCommandValidator",
-                TestCaseID        = "TC-VOC-CSBV-04",
+                TestCaseID        = "CreateVocabularyByStaffCommandValidator_04",
                 Description       = "Valid inputs check constraints",
                 ExpectedResult    = "No errors",
                 StatusRound1      = "Passed",

@@ -1,4 +1,4 @@
-using ExamEntity = Tokki.Domain.Entities.Exam;
+﻿using ExamEntity = Tokki.Domain.Entities.Exam;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -40,7 +40,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             QuestionNo     = 5
         };
 
-        // TC-EXRQ-01 | A | Exam not found → 404
+        // Remove_Question_From_Exam_01 | A | Exam not found → 404
         [Fact]
         public async Task Handle_ExamNotFound_ShouldReturn404()
         {
@@ -56,7 +56,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Remove Question", new TestCaseDetail
             {
-                FunctionGroup = "Remove Question From Exam", TestCaseID = "TC-EXRQ-01",
+                FunctionGroup = "Remove Question From Exam", TestCaseID = "Remove_Question_From_Exam_01",
                 Description = "Exam ID not found in the database",
                 ExpectedResult = "Return 404 with ExamNotFound error", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -64,7 +64,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXRQ-02 | A | QuestionNo not in exam → 404
+        // Remove_Question_From_Exam_02 | A | QuestionNo not in exam → 404
         [Fact]
         public async Task Handle_QuestionNoNotInExam_ShouldReturn404()
         {
@@ -83,7 +83,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Remove Question", new TestCaseDetail
             {
-                FunctionGroup = "Remove Question From Exam", TestCaseID = "TC-EXRQ-02",
+                FunctionGroup = "Remove Question From Exam", TestCaseID = "Remove_Question_From_Exam_02",
                 Description = "The requested QuestionNo does not exist in the exam",
                 ExpectedResult = "Return 404 Not Found", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -91,7 +91,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXRQ-03 | N | Valid removal → 200
+        // Remove_Question_From_Exam_03 | N | Valid removal → 200
         [Fact]
         public async Task Handle_ValidRemoval_ShouldReturn200()
         {
@@ -113,7 +113,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Remove Question", new TestCaseDetail
             {
-                FunctionGroup = "Remove Question From Exam", TestCaseID = "TC-EXRQ-03",
+                FunctionGroup = "Remove Question From Exam", TestCaseID = "Remove_Question_From_Exam_03",
                 Description = "Valid removal of a question from a Draft exam",
                 ExpectedResult = "Return 200 Success", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -121,7 +121,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXRQ-04 | N | If exam is Published → status revert to Draft
+        // Remove_Question_From_Exam_04 | N | If exam is Published → status revert to Draft
         [Fact]
         public async Task Handle_PublishedExam_ShouldRevertToDraft()
         {
@@ -145,7 +145,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Remove Question", new TestCaseDetail
             {
-                FunctionGroup = "Remove Question From Exam", TestCaseID = "TC-EXRQ-04",
+                FunctionGroup = "Remove Question From Exam", TestCaseID = "Remove_Question_From_Exam_04",
                 Description = "Removing a question from Published exam auto-reverts exam status to Draft",
                 ExpectedResult = "Return 200, exam.Status = Draft", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -153,7 +153,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXRQ-05 | N | DeleteAsync called once
+        // Remove_Question_From_Exam_05 | N | DeleteAsync called once
         [Fact]
         public async Task Handle_ValidRemoval_DeleteAsyncCalledOnce()
         {
@@ -173,7 +173,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Remove Question", new TestCaseDetail
             {
-                FunctionGroup = "Remove Question From Exam", TestCaseID = "TC-EXRQ-05",
+                FunctionGroup = "Remove Question From Exam", TestCaseID = "Remove_Question_From_Exam_05",
                 Description = "Verify DeleteAsync is invoked exactly once during successful removal",
                 ExpectedResult = "Times.Once verified on DeleteAsync", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -181,7 +181,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXRQ-06 | A | SaveChanges throws → 500 (handler catches exception)
+        // Remove_Question_From_Exam_06 | A | SaveChanges throws → 500 (handler catches exception)
         [Fact]
         public async Task Handle_SaveChangesThrows_ShouldReturn500()
         {
@@ -203,7 +203,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Remove Question", new TestCaseDetail
             {
-                FunctionGroup = "Remove Question From Exam", TestCaseID = "TC-EXRQ-06",
+                FunctionGroup = "Remove Question From Exam", TestCaseID = "Remove_Question_From_Exam_06",
                 Description = "SaveChangesAsync throws exception, handler wraps to 500",
                 ExpectedResult = "Return 500 ServerError", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

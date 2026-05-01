@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -38,7 +38,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             new() { UserId = userId };
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-WDL-DST-01 | 200 | No daily games today → empty dashboard
+        // GetDailyWordleStatus_01 | 200 | No daily games today → empty dashboard
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NoDailyGamesForToday_ShouldReturnEmptyDashboard()
@@ -58,7 +58,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             QACollector.LogTestCase("MiniGame - Daily Wordle Status", new TestCaseDetail
             {
                 FunctionGroup     = "GetDailyWordleStatus",
-                TestCaseID        = "TC-WDL-DST-01",
+                TestCaseID        = "GetDailyWordleStatus_01",
                 Description       = "No daily games posted for today → empty Levels list in dashboard",
                 ExpectedResult    = "Return 200, Levels = empty",
                 StatusRound1      = "Passed",
@@ -69,7 +69,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-WDL-DST-02 | 200 | Games today but no user progress → IsWon=false, AttemptCount=0
+        // GetDailyWordleStatus_02 | 200 | Games today but no user progress → IsWon=false, AttemptCount=0
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_GamesToday_NoProgress_ShouldReturnDefaultStatus()
@@ -94,7 +94,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             QACollector.LogTestCase("MiniGame - Daily Wordle Status", new TestCaseDetail
             {
                 FunctionGroup     = "GetDailyWordleStatus",
-                TestCaseID        = "TC-WDL-DST-02",
+                TestCaseID        = "GetDailyWordleStatus_02",
                 Description       = "1 game exists, user has no progress → IsWon=false, AttemptCount=0",
                 ExpectedResult    = "Return 200, Levels[0].IsWon=false, AttemptCount=0",
                 StatusRound1      = "Passed",
@@ -105,7 +105,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-WDL-DST-03 | 200 | User has won → IsWon=true in dashboard
+        // GetDailyWordleStatus_03 | 200 | User has won → IsWon=true in dashboard
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_UserWon_ShouldSetIsWonTrue()
@@ -137,7 +137,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             QACollector.LogTestCase("MiniGame - Daily Wordle Status", new TestCaseDetail
             {
                 FunctionGroup     = "GetDailyWordleStatus",
-                TestCaseID        = "TC-WDL-DST-03",
+                TestCaseID        = "GetDailyWordleStatus_03",
                 Description       = "User already won with 3 guesses → IsWon=true, Attempts list populated",
                 ExpectedResult    = "IsWon=true, AttemptCount=3, Attempts.Count=3",
                 StatusRound1      = "Passed",
@@ -148,7 +148,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-WDL-DST-04 | 200 | Multiple levels in dashboard
+        // GetDailyWordleStatus_04 | 200 | Multiple levels in dashboard
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_MultipleGames_ShouldReturnMultipleLevels()
@@ -179,7 +179,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             QACollector.LogTestCase("MiniGame - Daily Wordle Status", new TestCaseDetail
             {
                 FunctionGroup     = "GetDailyWordleStatus",
-                TestCaseID        = "TC-WDL-DST-04",
+                TestCaseID        = "GetDailyWordleStatus_04",
                 Description       = "3 games today → dashboard has 3 levels, MaxAttempts always 6",
                 ExpectedResult    = "Levels.Count=3, MaxAttempts=6 each",
                 StatusRound1      = "Passed",
@@ -190,7 +190,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-WDL-DST-05 | 200 | Dashboard date matches today
+        // GetDailyWordleStatus_05 | 200 | Dashboard date matches today
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_Always_ShouldReturnTodayDate()
@@ -210,7 +210,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             QACollector.LogTestCase("MiniGame - Daily Wordle Status", new TestCaseDetail
             {
                 FunctionGroup     = "GetDailyWordleStatus",
-                TestCaseID        = "TC-WDL-DST-05",
+                TestCaseID        = "GetDailyWordleStatus_05",
                 Description       = "Dashboard.Date always set to today's DateOnly",
                 ExpectedResult    = "Dashboard.Date = DateOnly.FromDateTime(DateTime.Now)",
                 StatusRound1      = "Passed",
@@ -221,7 +221,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-WDL-DST-06 | 500 | Repository throws → exception propagates
+        // GetDailyWordleStatus_06 | 500 | Repository throws → exception propagates
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
@@ -237,7 +237,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             QACollector.LogTestCase("MiniGame - Daily Wordle Status", new TestCaseDetail
             {
                 FunctionGroup     = "GetDailyWordleStatus",
-                TestCaseID        = "TC-WDL-DST-06",
+                TestCaseID        = "GetDailyWordleStatus_06",
                 Description       = "Repository throws exception → propagates unhandled",
                 ExpectedResult    = "Throws Exception",
                 StatusRound1      = "Passed",

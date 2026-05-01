@@ -27,7 +27,7 @@ namespace Tokki.UnitTest.Application.UseCases.SystemConfigs
         private static GetSystemConfigByKeyQueryHandler CreateHandler(Mock<ISystemConfigRepository>? repo = null)
             => new GetSystemConfigByKeyQueryHandler((repo ?? GetRepoMock()).Object);
 
-        // TC-SYS-GBK-01 | N | Happy path: config found → 200 with DTO
+        // GetSystemConfigByKey_01 | N | Happy path: config found ? 200 with DTO
         [Fact]
         public async Task Handle_ConfigFound_ShouldReturn200WithDto()
         {
@@ -37,19 +37,19 @@ namespace Tokki.UnitTest.Application.UseCases.SystemConfigs
             result.StatusCode.Should().Be(200);
             result.Data.Should().NotBeNull();
             result.Data!.Key.Should().Be("SITE_NAME");
-            QACollector.LogTestCase("SystemConfig - Get By Key", new TestCaseDetail { FunctionGroup = "GetSystemConfigByKey", TestCaseID = "TC-SYS-GBK-01", Description = "Config found → 200, DTO.Key='SITE_NAME'", ExpectedResult = "IsSuccess=true, 200, Data.Key='SITE_NAME'", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "FirstOrDefaultAsync returns config" } });
+            QACollector.LogTestCase("SystemConfig - Get By Key", new TestCaseDetail { FunctionGroup = "GetSystemConfigByKey", TestCaseID = "GetSystemConfigByKey_01", Description = "Config found ? 200, DTO.Key='SITE_NAME'", ExpectedResult = "IsSuccess=true, 200, Data.Key='SITE_NAME'", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "FirstOrDefaultAsync returns config" } });
         }
 
-        // TC-SYS-GBK-02 | A | Config not found → failure with error code
+        // GetSystemConfigByKey_02 | A | Config not found ? failure with error code
         [Fact]
         public async Task Handle_ConfigNotFound_ShouldReturnFailure()
         {
             var result = await CreateHandler(GetRepoMock(null)).Handle(new GetSystemConfigByKeyQuery("MISSING_KEY"), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
-            QACollector.LogTestCase("SystemConfig - Get By Key", new TestCaseDetail { FunctionGroup = "GetSystemConfigByKey", TestCaseID = "TC-SYS-GBK-02", Description = "Config not found → failure (CONFIG_NOT_FOUND)", ExpectedResult = "IsSuccess=false", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "FirstOrDefaultAsync returns null" } });
+            QACollector.LogTestCase("SystemConfig - Get By Key", new TestCaseDetail { FunctionGroup = "GetSystemConfigByKey", TestCaseID = "GetSystemConfigByKey_02", Description = "Config not found ? failure (CONFIG_NOT_FOUND)", ExpectedResult = "IsSuccess=false", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "FirstOrDefaultAsync returns null" } });
         }
 
-        // TC-SYS-GBK-03 | N | All DTO fields mapped correctly
+        // GetSystemConfigByKey_03 | N | All DTO fields mapped correctly
         [Fact]
         public async Task Handle_ConfigFound_AllDtoFieldsMapped()
         {
@@ -59,23 +59,23 @@ namespace Tokki.UnitTest.Application.UseCases.SystemConfigs
             result.Data.Description.Should().Be("API rate limit");
             result.Data.DataType.Should().Be("int");
             result.Data.IsActive.Should().BeFalse();
-            QACollector.LogTestCase("SystemConfig - Get By Key", new TestCaseDetail { FunctionGroup = "GetSystemConfigByKey", TestCaseID = "TC-SYS-GBK-03", Description = "All DTO fields (Value, Description, DataType, IsActive) mapped correctly", ExpectedResult = "All fields correct", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "SystemConfig entity fully mapped to DTO" } });
+            QACollector.LogTestCase("SystemConfig - Get By Key", new TestCaseDetail { FunctionGroup = "GetSystemConfigByKey", TestCaseID = "GetSystemConfigByKey_03", Description = "All DTO fields (Value, Description, DataType, IsActive) mapped correctly", ExpectedResult = "All fields correct", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "SystemConfig entity fully mapped to DTO" } });
         }
 
-        // TC-SYS-GBK-04 | N | Key with leading/trailing spaces → trimmed before search
+        // GetSystemConfigByKey_04 | N | Key with leading/trailing spaces ? trimmed before search
         [Fact]
         public async Task Handle_KeyWithSpaces_ShouldBeTrimmedBeforeSearch()
         {
             var config = new SystemConfig { Key = "TRIMMED_KEY", Value = "v1", IsActive = true };
             var repo   = GetRepoMock(config);
             // The handler calls FirstOrDefaultAsync with x.Key == request.Key.Trim()
-            var result = await CreateHandler(repo).Handle(new GetSystemConfigByKeyQuery("  TRIMMED_KEY  "), CancellationToken.None);
+            var result = await CreateHandler(repo).Handle(new GetSystemConfigByKeyQuery("  TRIMMED_KEY"), CancellationToken.None);
             // If handler trims correctly, repo predicate receives trimmed key
             repo.Verify(x => x.FirstOrDefaultAsync(It.IsAny<Expression<Func<SystemConfig, bool>>>(), It.IsAny<CancellationToken>()), Times.Once);
-            QACollector.LogTestCase("SystemConfig - Get By Key", new TestCaseDetail { FunctionGroup = "GetSystemConfigByKey", TestCaseID = "TC-SYS-GBK-04", Description = "Key with spaces → FirstOrDefaultAsync called once (trims key)", ExpectedResult = "FirstOrDefaultAsync Times.Once", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Key.Trim() applied in predicate" } });
+            QACollector.LogTestCase("SystemConfig - Get By Key", new TestCaseDetail { FunctionGroup = "GetSystemConfigByKey", TestCaseID = "GetSystemConfigByKey_04", Description = "Key with spaces ? FirstOrDefaultAsync called once (trims key)", ExpectedResult = "FirstOrDefaultAsync Times.Once", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Key.Trim() applied in predicate" } });
         }
 
-        // TC-SYS-GBK-05 | A | Repository throws → failure with system error
+        // GetSystemConfigByKey_05 | A | Repository throws ? failure with system error
         [Fact]
         public async Task Handle_RepoThrows_ShouldReturnFailureWithSystemError()
         {
@@ -84,17 +84,17 @@ namespace Tokki.UnitTest.Application.UseCases.SystemConfigs
                 .ThrowsAsync(new Exception("Connection failed"));
             var result = await CreateHandler(repo).Handle(new GetSystemConfigByKeyQuery("ANY_KEY"), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
-            QACollector.LogTestCase("SystemConfig - Get By Key", new TestCaseDetail { FunctionGroup = "GetSystemConfigByKey", TestCaseID = "TC-SYS-GBK-05", Description = "Repository throws → failure returned (caught by try-catch)", ExpectedResult = "IsSuccess=false (GET_BY_KEY_ERROR)", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Exception caught, failure returned" } });
+            QACollector.LogTestCase("SystemConfig - Get By Key", new TestCaseDetail { FunctionGroup = "GetSystemConfigByKey", TestCaseID = "GetSystemConfigByKey_05", Description = "Repository throws ? failure returned (caught by try-catch)", ExpectedResult = "IsSuccess=false (GET_BY_KEY_ERROR)", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Exception caught, failure returned" } });
         }
 
-        // TC-SYS-GBK-06 | N | IsActive=true config returned with IsActive=true in DTO
+        // GetSystemConfigByKey_06 | N | IsActive=true config returned with IsActive=true in DTO
         [Fact]
         public async Task Handle_ActiveConfig_IsActiveTrueInDto()
         {
             var config = new SystemConfig { Key = "ACTIVE_KEY", Value = "yes", IsActive = true };
             var result = await CreateHandler(GetRepoMock(config)).Handle(new GetSystemConfigByKeyQuery("ACTIVE_KEY"), CancellationToken.None);
             result.Data!.IsActive.Should().BeTrue();
-            QACollector.LogTestCase("SystemConfig - Get By Key", new TestCaseDetail { FunctionGroup = "GetSystemConfigByKey", TestCaseID = "TC-SYS-GBK-06", Description = "Active config → DTO.IsActive=true", ExpectedResult = "IsActive=true", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "IsActive mapped correctly" } });
+            QACollector.LogTestCase("SystemConfig - Get By Key", new TestCaseDetail { FunctionGroup = "GetSystemConfigByKey", TestCaseID = "GetSystemConfigByKey_06", Description = "Active config ? DTO.IsActive=true", ExpectedResult = "IsActive=true", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "IsActive mapped correctly" } });
         }
     }
 }

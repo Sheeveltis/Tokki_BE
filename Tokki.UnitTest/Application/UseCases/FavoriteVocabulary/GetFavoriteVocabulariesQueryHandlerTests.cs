@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -81,7 +81,7 @@ namespace Tokki.UnitTest.Application.UseCases.FavoriteVocabulary
 
             QACollector.LogTestCase("Favorite Vocabulary - Get", new TestCaseDetail
             {
-                FunctionGroup = "GetFavoriteVocabularies", TestCaseID = "TC-FAV-GET-01",
+                FunctionGroup = "GetFavoriteVocabularies", TestCaseID = "GetFavoriteVocabularies_01",
                 Description = "No user context → 401 Unauthorized",
                 ExpectedResult = "Return 401", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -104,7 +104,7 @@ namespace Tokki.UnitTest.Application.UseCases.FavoriteVocabulary
 
             QACollector.LogTestCase("Favorite Vocabulary - Get", new TestCaseDetail
             {
-                FunctionGroup = "GetFavoriteVocabularies", TestCaseID = "TC-FAV-GET-02",
+                FunctionGroup = "GetFavoriteVocabularies", TestCaseID = "GetFavoriteVocabularies_02",
                 Description = "TopicId provided but topic not found → 404",
                 ExpectedResult = "Return 404 TopicNotFound", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -128,7 +128,7 @@ namespace Tokki.UnitTest.Application.UseCases.FavoriteVocabulary
 
             QACollector.LogTestCase("Favorite Vocabulary - Get", new TestCaseDetail
             {
-                FunctionGroup = "GetFavoriteVocabularies", TestCaseID = "TC-FAV-GET-03",
+                FunctionGroup = "GetFavoriteVocabularies", TestCaseID = "GetFavoriteVocabularies_03",
                 Description = "Topic exists but Disabled → 404",
                 ExpectedResult = "Return 404 TopicNotFound", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -153,7 +153,7 @@ namespace Tokki.UnitTest.Application.UseCases.FavoriteVocabulary
 
             QACollector.LogTestCase("Favorite Vocabulary - Get", new TestCaseDetail
             {
-                FunctionGroup = "GetFavoriteVocabularies", TestCaseID = "TC-FAV-GET-04",
+                FunctionGroup = "GetFavoriteVocabularies", TestCaseID = "GetFavoriteVocabularies_04",
                 Description = "No favorites → Return 200 empty paged",
                 ExpectedResult = "Return 200, Items=[]", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -180,7 +180,7 @@ namespace Tokki.UnitTest.Application.UseCases.FavoriteVocabulary
 
             QACollector.LogTestCase("Favorite Vocabulary - Get", new TestCaseDetail
             {
-                FunctionGroup = "GetFavoriteVocabularies", TestCaseID = "TC-FAV-GET-05",
+                FunctionGroup = "GetFavoriteVocabularies", TestCaseID = "GetFavoriteVocabularies_05",
                 Description = "2 favorites → DTOs mapped with correct fields",
                 ExpectedResult = "Return 200, Items=2, DTO fields correct", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -208,7 +208,7 @@ namespace Tokki.UnitTest.Application.UseCases.FavoriteVocabulary
 
             QACollector.LogTestCase("Favorite Vocabulary - Get", new TestCaseDetail
             {
-                FunctionGroup = "GetFavoriteVocabularies", TestCaseID = "TC-FAV-GET-06",
+                FunctionGroup = "GetFavoriteVocabularies", TestCaseID = "GetFavoriteVocabularies_06",
                 Description = "Page 2 of 15 with PageSize=5 → TotalPages=3",
                 ExpectedResult = "TotalPages=3, CurrentPage=2", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

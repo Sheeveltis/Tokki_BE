@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -28,7 +28,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-GBT-01 | A | Empty Text → 400
+        // Get_Vocabulary_By_Text_01 | A | Empty Text → 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyText_ShouldReturn400()
@@ -48,7 +48,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Get By Text", new TestCaseDetail
             {
                 FunctionGroup     = "Get Vocabulary By Text",
-                TestCaseID        = "TC-VOCAB-GBT-01",
+                TestCaseID        = "Get_Vocabulary_By_Text_01",
                 Description       = "Get vocab by text with empty Text field",
                 ExpectedResult    = "Return 400 INVALID_INPUT",
                 StatusRound1      = "Passed",
@@ -59,7 +59,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-GBT-02 | A | Whitespace-only Text → 400
+        // Get_Vocabulary_By_Text_02 | A | Whitespace-only Text → 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_WhitespaceText_ShouldReturn400()
@@ -79,7 +79,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Get By Text", new TestCaseDetail
             {
                 FunctionGroup     = "Get Vocabulary By Text",
-                TestCaseID        = "TC-VOCAB-GBT-02",
+                TestCaseID        = "Get_Vocabulary_By_Text_02",
                 Description       = "Get vocab by text with whitespace-only Text",
                 ExpectedResult    = "Return 400 INVALID_INPUT",
                 StatusRound1      = "Passed",
@@ -90,7 +90,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-GBT-03 | A | No vocab matches text → 404
+        // Get_Vocabulary_By_Text_03 | A | No vocab matches text → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NoVocabMatchesText_ShouldReturn404()
@@ -116,7 +116,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Get By Text", new TestCaseDetail
             {
                 FunctionGroup     = "Get Vocabulary By Text",
-                TestCaseID        = "TC-VOCAB-GBT-03",
+                TestCaseID        = "Get_Vocabulary_By_Text_03",
                 Description       = "Get vocab by text with no matching vocabulary → 404",
                 ExpectedResult    = "Return 404 VOCABULARY_NOT_FOUND",
                 StatusRound1      = "Passed",
@@ -127,7 +127,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-GBT-04 | N | Valid text with results → 200 paged list
+        // Get_Vocabulary_By_Text_04 | N | Valid text with results → 200 paged list
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidText_ShouldReturnPagedList200()
@@ -161,7 +161,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Get By Text", new TestCaseDetail
             {
                 FunctionGroup     = "Get Vocabulary By Text",
-                TestCaseID        = "TC-VOCAB-GBT-04",
+                TestCaseID        = "Get_Vocabulary_By_Text_04",
                 Description       = "Get vocab by text '은행' → finds 2 meanings → return paged 200",
                 ExpectedResult    = "Return 200, TotalCount = 2, Items.Count = 2",
                 StatusRound1      = "Passed",
@@ -172,7 +172,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-GBT-05 | N | Filter by Status → only matching status returned
+        // Get_Vocabulary_By_Text_05 | N | Filter by Status → only matching status returned
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_FilterByStatus_ShouldReturnFilteredResults()
@@ -207,7 +207,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Get By Text", new TestCaseDetail
             {
                 FunctionGroup     = "Get Vocabulary By Text",
-                TestCaseID        = "TC-VOCAB-GBT-05",
+                TestCaseID        = "Get_Vocabulary_By_Text_05",
                 Description       = "Get vocab by text with Status filter = Active → returns only Active vocab",
                 ExpectedResult    = "Return 200, TotalCount = 1",
                 StatusRound1      = "Passed",
@@ -218,7 +218,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-GBT-06 | N | Vocab has topic mappings → DTO includes topic info
+        // Get_Vocabulary_By_Text_06 | N | Vocab has topic mappings → DTO includes topic info
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_VocabWithTopicMappings_ShouldReturnDtoWithTopics()
@@ -255,7 +255,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Get By Text", new TestCaseDetail
             {
                 FunctionGroup     = "Get Vocabulary By Text",
-                TestCaseID        = "TC-VOCAB-GBT-06",
+                TestCaseID        = "Get_Vocabulary_By_Text_06",
                 Description       = "Vocab has topic mapping → DTO.Topics populated with topic info",
                 ExpectedResult    = "Return 200, DTO.Topics.Count > 0",
                 StatusRound1      = "Passed",
