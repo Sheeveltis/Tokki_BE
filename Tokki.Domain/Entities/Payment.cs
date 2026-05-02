@@ -13,6 +13,7 @@ namespace Tokki.Domain.Entities
         public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
         public DateTimeOffset? PaidAt { get; set; }
+        public DateTimeOffset ExpiresAt { get; set; }  
         public int? TransactionId { get; set; }
         [ForeignKey("TransactionId")]
         public virtual Transaction? Transaction { get; set; }
