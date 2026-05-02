@@ -88,7 +88,7 @@ namespace Tokki.Infrastructure.Repositories
                         .ThenInclude(q => q.QuestionOptions)
                 .Include(ue => ue.UserExamWritingAnswers)
                     .ThenInclude(uwa => uwa.Question)
-                .AsNoTracking() 
+                .AsNoTracking()
                 .AsSplitQuery()
                 .FirstOrDefaultAsync(ue => ue.UserExamId == userExamId, cancellationToken);
         }
@@ -99,7 +99,7 @@ namespace Tokki.Infrastructure.Repositories
                 .Include(ue => ue.Exam)
                 .AsNoTracking() // Không cần tracking vì chỉ lấy ID để submit
                 .Where(ue => ue.Status == UserExamStatus.InProgress &&
-                             ue.StartTime.AddMinutes(ue.Exam.Duration + 2) < now) 
+                             ue.StartTime.AddMinutes(ue.Exam.Duration + 2) < now)
                 .ToListAsync(token);
         }
         public async Task<PagedResult<UserExamActionDto>> GetPagedHistoryAsync(
@@ -139,7 +139,7 @@ namespace Tokki.Infrastructure.Repositories
         public async Task<List<UserExamAnswer>> GetMCQAnswersByIdsAsync(List<string> ids, CancellationToken token)
         {
             return await _context.UserExamAnswers
-                .Include(uq => uq.UserExam) 
+                .Include(uq => uq.UserExam)
                 .Include(uq => uq.Question)
                     .ThenInclude(q => q.QuestionOptions)
                 .Where(uq => ids.Contains(uq.UserExamAnswerId))
@@ -196,7 +196,7 @@ namespace Tokki.Infrastructure.Repositories
                 .Include(ue => ue.UserExamAnswers)
                     .ThenInclude(ua => ua.Question).ThenInclude(q => q.QuestionOptions)
                 .Include(ue => ue.UserExamAnswers)
-                    .ThenInclude(ua => ua.Question).ThenInclude(q => q.Passage) 
+                    .ThenInclude(ua => ua.Question).ThenInclude(q => q.Passage)
                 .AsNoTracking()
                 .AsSplitQuery()
                 .FirstOrDefaultAsync(ue => ue.UserExamId == userExamId, token);
@@ -207,7 +207,7 @@ namespace Tokki.Infrastructure.Repositories
             return await _context.UserExams
                 .Include(ue => ue.Exam).ThenInclude(e => e.ExamTemplate).ThenInclude(et => et.TemplateParts)
                 .Include(ue => ue.UserExamWritingAnswers)
-                    .ThenInclude(uwa => uwa.Question).ThenInclude(q => q.Passage) 
+                    .ThenInclude(uwa => uwa.Question).ThenInclude(q => q.Passage)
                 .AsNoTracking()
                 .AsSplitQuery()
                 .FirstOrDefaultAsync(ue => ue.UserExamId == userExamId, token);
@@ -220,7 +220,7 @@ namespace Tokki.Infrastructure.Repositories
         public async Task<List<QuestionType>> GetIncorrectQuestionTypesByExamIdAsync(string userExamId, CancellationToken cancellationToken)
         {
             var objectiveTypeIds = _context.UserExamAnswers
-                .Where(ua => ua.UserExamId == userExamId && ua.IsCorrect != true) 
+                .Where(ua => ua.UserExamId == userExamId && ua.IsCorrect != true)
                 .Select(ua => ua.Question.QuestionTypeId);
 
             var writingTypeIds = _context.UserExamWritingAnswers
@@ -230,12 +230,12 @@ namespace Tokki.Infrastructure.Repositories
             return await objectiveTypeIds
                 .Union(writingTypeIds)
                 .Where(id => id != null)
-                .Distinct() 
+                .Distinct()
                 .Join(_context.QuestionTypes,
                       id => id,
                       qt => qt.QuestionTypeId,
                       (id, qt) => qt)
-                .OrderBy(qt => qt.Skill)       
+                .OrderBy(qt => qt.Skill)
                 .ThenBy(qt => qt.OrderIndex)
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
@@ -296,20 +296,6 @@ namespace Tokki.Infrastructure.Repositories
 
             return result.OrderBy(r => r.Skill).ThenBy(r => r.QuestionTypeId).ToList();
         }
-        public async Task SaveSelfDeclaredLevelAsync(
-            string userExamId,
-            CurrentTopikLevel level,
-            CancellationToken cancellationToken = default)
-        {
-            var exam = await _context.UserExams
-                .FirstOrDefaultAsync(e => e.UserExamId == userExamId, cancellationToken);
-
-            if (exam != null)
-            {
-                exam.SelfDeclaredLevel = level;
-                await _context.SaveChangesAsync(cancellationToken);
-            }
-        }
         public async Task<UserExam?> GetByIdWithWritingDetailsAsync(string userExamId, CancellationToken token)
         {
             return await _context.UserExams
@@ -340,16 +326,6 @@ namespace Tokki.Infrastructure.Repositories
 
             return (stats.Status, stats.TotalWritingTasks, stats.GradedWritingTasks);
         }
-        public async Task<CurrentTopikLevel?> GetSelfDeclaredLevelAsync(
-            string userExamId,
-            CancellationToken cancellationToken = default)
-        {
-            return await _context.UserExams
-                .Where(ue => ue.UserExamId == userExamId)
-                .Select(ue => ue.SelfDeclaredLevel)
-                .FirstOrDefaultAsync(cancellationToken);
-        }
-
         public async Task<PagedResult<ExamParticipantDTO>> GetPagedParticipantsByExamIdAsync(
             string examId,
             int pageNumber,
@@ -379,11 +355,11 @@ namespace Tokki.Infrastructure.Repositories
             // Apply sorting
             query = sortBy switch
             {
-                ExamParticipantSortBy.Score => isDescending 
-                    ? query.OrderByDescending(ue => ue.Score) 
+                ExamParticipantSortBy.Score => isDescending
+                    ? query.OrderByDescending(ue => ue.Score)
                     : query.OrderBy(ue => ue.Score),
-                _ => isDescending 
-                    ? query.OrderByDescending(ue => ue.SubmitTime) 
+                _ => isDescending
+                    ? query.OrderByDescending(ue => ue.SubmitTime)
                     : query.OrderBy(ue => ue.SubmitTime)
             };
 
@@ -413,9 +389,9 @@ namespace Tokki.Infrastructure.Repositories
                 foreach (var part in templateParts)
                 {
                     var skillName = part.Skill.ToString();
-                    var correctInPart = ueAnswers.Count(a => 
-                        questionMappings.TryGetValue(a.QuestionId, out int qNo) && 
-                        qNo >= part.QuestionFrom && qNo <= part.QuestionTo && 
+                    var correctInPart = ueAnswers.Count(a =>
+                        questionMappings.TryGetValue(a.QuestionId, out int qNo) &&
+                        qNo >= part.QuestionFrom && qNo <= part.QuestionTo &&
                         a.IsCorrect == true);
 
                     if (!skillCounts.ContainsKey(skillName)) skillCounts[skillName] = 0;
