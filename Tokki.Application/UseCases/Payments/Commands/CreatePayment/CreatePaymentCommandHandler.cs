@@ -43,6 +43,7 @@ namespace Tokki.Application.UseCases.Payments.Commands.CreatePayment
             var description = $"Thanh toán {paymentId}"; 
 
             var qrUrl = _sePayService.GenerateQrUrl(paymentId, vipPackage.Price, description);
+            var vnTime = DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(7)); 
 
             var payment = new Payment
             {
@@ -52,8 +53,8 @@ namespace Tokki.Application.UseCases.Payments.Commands.CreatePayment
                 Description = description,
                 VipPackageId = vipPackage.Id,
                 Status = PaymentStatus.Pending,
-                CreatedAt = DateTimeOffset.UtcNow,
-                ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(10)
+                CreatedAt = vnTime,
+                ExpiresAt = vnTime.AddMinutes(10)
             };
 
             await _paymentRepository.AddAsync(payment);
