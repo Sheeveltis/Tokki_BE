@@ -9,7 +9,6 @@ namespace Tokki.Application.UseCases.Roadmap.Queries.GetEntranceFeedback
         public string UserId { get; set; } = string.Empty;
         public string UserExamId { get; set; } = string.Empty;
         public TargetAimLevel TargetAim { get; set; }
-        public CurrentTopikLevel SelfDeclaredLevel { get; set; } 
     }
 
     public class EntranceFeedbackResult
