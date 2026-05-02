@@ -10,6 +10,6 @@ namespace Tokki.Application.UseCases.Accounts.Commands.UpdateAimLevel
         [JsonIgnore]
         public string? UserId { get; set; }
         
-        public TopicLevel AimLevel { get; set; }
+        public int AimLevel { get; set; }
     }
 }

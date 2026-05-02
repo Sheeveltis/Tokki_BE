@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using Tokki.Domain.Enums;
 
 namespace Tokki.Domain.Entities
@@ -12,7 +12,7 @@ namespace Tokki.Domain.Entities
         public string? Description { get; set; }
         public string? ImgUrl { get; set; }
 
-        public TopicLevel Level { get; set; }
+        public int Level { get; set; }
 
         public string CreateBy { get; set; } = string.Empty;
         public DateTime CreateDate { get; set; } = DateTime.UtcNow;

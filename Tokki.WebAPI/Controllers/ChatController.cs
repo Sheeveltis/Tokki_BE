@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -87,12 +87,6 @@ namespace Tokki.WebAPI.Controllers
             };
 
             var result = await _sender.Send(command);
-
-            if (result.IsSuccess)
-            {
-                await _hubContext.Clients.Group(roomId).SendAsync("RoomClosed", roomId);
-            }
-
             return StatusCode(result.StatusCode, result);
         }
     }

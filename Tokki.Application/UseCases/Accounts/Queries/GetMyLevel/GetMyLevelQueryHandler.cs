@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.Accounts.DTOs;
@@ -32,7 +32,7 @@ namespace Tokki.Application.UseCases.Accounts.Queries.GetMyLevel
          
             return OperationResult<GetMyLevelResponse>.Success(new GetMyLevelResponse
             {
-                Level = user.Level.HasValue ? (int)user.Level.Value : (int?)null
+                Level = user.Level
             }, 200, "");
         }
     }

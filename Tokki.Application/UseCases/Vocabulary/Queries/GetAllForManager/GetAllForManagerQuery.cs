@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.UseCases.Vocabulary.DTOs;
 using Tokki.Domain.Enums;
@@ -18,6 +18,6 @@ namespace Tokki.Application.UseCases.Vocabulary.Queries.GetAllForManager
 
         // Search chung (tìm trong Text, Definition, Pronunciation)
         public string? SearchText { get; set; }
-        public TopicLevel? LevelTopic { get; set; }
+        public int? LevelTopic { get; set; }
     }
 }

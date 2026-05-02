@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -89,7 +89,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         public async Task Handle_Level1_ShouldReturn1()
         {
             var user = MockAccountRepository.GetActiveUser("USER-L1");
-            user.Level = TopicLevel.Level1;
+            user.Level = (int)TopicLevel.Level1;
 
             var mockRepo = MockAccountRepository.GetMock();
             mockRepo.Setup(x => x.GetByIdAsync(user.UserId)).ReturnsAsync(user);
@@ -120,7 +120,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         public async Task Handle_Level6_ShouldReturn6()
         {
             var user = MockAccountRepository.GetActiveUser("USER-L6");
-            user.Level = TopicLevel.Level6;
+            user.Level = (int)TopicLevel.Level6;
 
             var mockRepo = MockAccountRepository.GetMock();
             mockRepo.Setup(x => x.GetByIdAsync(user.UserId)).ReturnsAsync(user);

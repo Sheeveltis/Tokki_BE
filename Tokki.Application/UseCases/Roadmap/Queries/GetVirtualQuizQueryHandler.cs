@@ -45,7 +45,8 @@ namespace Tokki.Application.UseCases.Roadmap.Queries.GetVirtualQuiz
                     OptionId = o.OptionId,
                     KeyOption = o.KeyOption,
                     Content = o.Content,
-                    ImageUrl = o.ImageUrl
+                    ImageUrl = o.ImageUrl,
+                    IsAnswer = o.IsCorrect
                 }).ToList()
             }).ToList();
 

@@ -371,11 +371,12 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
 
                     var mappedLevel = MapToTopicLevel(currentLevel);
                     var account = await accountRepo.GetByIdAsync(request.UserId);
-                    if (account != null)
+                    if (account != null && mappedLevel.HasValue)
                     {
-                        if (!account.Level.HasValue || (int)mappedLevel.Value > (int)account.Level.Value)
+                        int newLevelVal = (int)mappedLevel.Value;
+                        if (!account.Level.HasValue || newLevelVal > account.Level.Value)
                         {
-                            account.Level = mappedLevel;
+                            account.Level = newLevelVal;
                             account.UpdatedAt = DateTime.UtcNow;
                             await accountRepo.UpdateUserAsync(account);
                             await accountRepo.SaveChangesAsync(CancellationToken.None);
@@ -417,15 +418,14 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
 
         private static TopicLevel? MapToTopicLevel(CurrentTopikLevel level) => level switch
         {
-            CurrentTopikLevel.Pre_Topik    => TopicLevel.Level1,
-            CurrentTopikLevel.Level_1      => TopicLevel.Level1,
-            CurrentTopikLevel.Level_2      => TopicLevel.Level2,
+            CurrentTopikLevel.Pre_Topik => TopicLevel.Level1,
+            CurrentTopikLevel.Level_1 => TopicLevel.Level1,
+            CurrentTopikLevel.Level_2 => TopicLevel.Level2,
             CurrentTopikLevel.Pre_Topik_II => TopicLevel.Level3,
-            CurrentTopikLevel.Level_3      => TopicLevel.Level3,
-            CurrentTopikLevel.Level_4      => TopicLevel.Level4,
-            CurrentTopikLevel.Level_5      => TopicLevel.Level5,
-            CurrentTopikLevel.Level_6      => TopicLevel.Level6,
-            _                              => TopicLevel.Level1
+            CurrentTopikLevel.Level_3 => TopicLevel.Level3,
+            CurrentTopikLevel.Level_4 => TopicLevel.Level4,
+            CurrentTopikLevel.Level_5 => TopicLevel.Level5,
+            _ => TopicLevel.Level1
         };
 
         private static CurrentTopikLevel CalculateLevel(

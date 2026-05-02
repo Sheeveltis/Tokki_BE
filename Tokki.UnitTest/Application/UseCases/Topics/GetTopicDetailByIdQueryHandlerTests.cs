@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -31,17 +31,26 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
             return m;
         }
 
+        private static Mock<IEnumConfigRepository> GetEnumMock()
+        {
+            var m = new Mock<IEnumConfigRepository>();
+            // Mặc định trả về null hoặc mock data nếu cần
+            return m;
+        }
+
         private static GetTopicDetailByIdQueryHandler CreateHandler(
             Mock<ITopicRepository>?           topicRepo = null,
-            Mock<IVocabularyTopicRepository>? vtRepo    = null)
+            Mock<IVocabularyTopicRepository>? vtRepo    = null,
+            Mock<IEnumConfigRepository>?      enumRepo  = null)
             => new GetTopicDetailByIdQueryHandler(
                 (topicRepo ?? GetTopicMock()).Object,
-                (vtRepo    ?? GetVtMock()).Object);
+                (vtRepo    ?? GetVtMock()).Object,
+                (enumRepo  ?? GetEnumMock()).Object);
 
         private static Topic SampleTopic() => new Topic
         {
             TopicId   = "T-001", TopicName = "Korean Basics", Description = "Intro topic",
-            Level     = TopicLevel.Level1, Status = TopicStatus.Active, OrderIndex = 1
+            Level     = (int)TopicLevel.Level1, Status = TopicStatus.Active, OrderIndex = 1
         };
 
         private static List<VocabularyTopic> SampleVtWithActiveVocab() => new List<VocabularyTopic>
@@ -115,7 +124,7 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
             var result = await CreateHandler(GetTopicMock(SampleTopic()), GetVtMock())
                 .Handle(new GetTopicDetailByIdQuery { TopicId = "T-001" }, CancellationToken.None);
             result.Data!.TopicName.Should().Be("Korean Basics");
-            result.Data.Level.Should().Be(TopicLevel.Level1);
+            result.Data.Level.Should().Be((int)TopicLevel.Level1);
             result.Data.Status.Should().Be(TopicStatus.Active);
             result.Data.OrderIndex.Should().Be(1);
             QACollector.LogTestCase("Topic - Get Detail By Id", new TestCaseDetail { FunctionGroup = "GetTopicDetailById", TestCaseID = "GetTopicDetailById_05", Description = "TopicName, Level, Status, OrderIndex mapped correctly", ExpectedResult = "All fields correct", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Topic entity mapped to TopicDetailDto" } });

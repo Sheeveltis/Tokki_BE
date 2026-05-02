@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -99,15 +99,15 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
         [Fact]
         public async Task Handle_HappyPath_ShouldUpdateAimLevelAndReturn200()
         {
-            var user = new Account { UserId = "u1", AimLevel = Tokki.Domain.Enums.TopicLevel.Level1 };
+            var user = new Account { UserId = "u1", AimLevel = (int)TopicLevel.Level1 };
             _accountRepoMock.Setup(x => x.GetByIdAsync("u1")).ReturnsAsync(user);
             
             var handler = CreateHandler();
-            var result = await handler.Handle(new UpdateAimLevelCommand { UserId = "u1", AimLevel = (Tokki.Domain.Enums.TopicLevel)5 }, CancellationToken.None);
+            var result = await handler.Handle(new UpdateAimLevelCommand { UserId = "u1", AimLevel = 5 }, CancellationToken.None);
 
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
-            user.AimLevel.Should().Be((Tokki.Domain.Enums.TopicLevel)5);
+            user.AimLevel.Should().Be(5);
             user.UpdatedAt.Should().BeAfter(DateTime.MinValue);
 
             QACollector.LogTestCase("Account - Update Aim", new TestCaseDetail
@@ -131,9 +131,9 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             _accountRepoMock.Setup(x => x.GetByIdAsync("u1")).ReturnsAsync(user);
             
             var handler = CreateHandler();
-            await handler.Handle(new UpdateAimLevelCommand { UserId = "u1", AimLevel = (Tokki.Domain.Enums.TopicLevel)5 }, CancellationToken.None);
+            await handler.Handle(new UpdateAimLevelCommand { UserId = "u1", AimLevel = 5 }, CancellationToken.None);
 
-            _accountRepoMock.Verify(x => x.UpdateUserAsync(It.Is<Account>(a => a.AimLevel == (Tokki.Domain.Enums.TopicLevel)5)), Times.Once);
+            _accountRepoMock.Verify(x => x.UpdateUserAsync(It.Is<Account>(a => a.AimLevel == 5)), Times.Once);
 
             QACollector.LogTestCase("Account - Update Aim", new TestCaseDetail
             {
@@ -156,7 +156,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             _accountRepoMock.Setup(x => x.GetByIdAsync("u1")).ReturnsAsync(user);
             
             var handler = CreateHandler();
-            await handler.Handle(new UpdateAimLevelCommand { UserId = "u1", AimLevel = (Tokki.Domain.Enums.TopicLevel)5 }, CancellationToken.None);
+            await handler.Handle(new UpdateAimLevelCommand { UserId = "u1", AimLevel = 5 }, CancellationToken.None);
 
             _accountRepoMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
 

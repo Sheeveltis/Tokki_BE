@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Domain.Enums;
@@ -15,7 +15,7 @@ namespace Tokki.Application.UseCases.Topics.Commands.UpdateTopic
         public string? Description { get; set; }
 
         // Nullable để biết client có gửi hay không
-        public TopicLevel? Level { get; set; }
+        public int? Level { get; set; }
 
         // Nullable để biết client có gửi hay không
         public TopicStatus? Status { get; set; }

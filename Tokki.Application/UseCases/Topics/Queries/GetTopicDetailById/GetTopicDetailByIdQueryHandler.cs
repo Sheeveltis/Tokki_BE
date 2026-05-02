@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -16,13 +16,16 @@ namespace Tokki.Application.UseCases.Topics.Queries.GetById
     {
         private readonly ITopicRepository _repository;
         private readonly IVocabularyTopicRepository _vocabularyTopicRepository;
+        private readonly IEnumConfigRepository _enumConfigRepository;
 
         public GetTopicDetailByIdQueryHandler(
             ITopicRepository repository,
-            IVocabularyTopicRepository vocabularyTopicRepository)
+            IVocabularyTopicRepository vocabularyTopicRepository,
+            IEnumConfigRepository enumConfigRepository)
         {
             _repository = repository;
             _vocabularyTopicRepository = vocabularyTopicRepository;
+            _enumConfigRepository = enumConfigRepository;
         }
 
         public async Task<OperationResult<TopicDetailDto>> Handle(
@@ -38,6 +41,9 @@ namespace Tokki.Application.UseCases.Topics.Queries.GetById
                     AppErrors.TopicNotFound.Description
                 );
             }
+
+            // Lấy thông tin Level từ DB
+            var levelInfo = await _enumConfigRepository.GetByValueAsync(EnumGroup.TopicLevel, topic.Level);
 
             var vocabularyTopics = await _vocabularyTopicRepository.GetByTopicIdAsync(topic.TopicId);
 
@@ -62,6 +68,8 @@ namespace Tokki.Application.UseCases.Topics.Queries.GetById
                 Description = topic.Description,
                 ImgUrl = topic.ImgUrl,
                 Level = topic.Level,
+                LevelLabel = levelInfo?.Label,
+                LevelKey = levelInfo?.Key,
 
                 CreateBy = topic.CreateBy,
                 CreateDate = topic.CreateDate,
@@ -69,7 +77,6 @@ namespace Tokki.Application.UseCases.Topics.Queries.GetById
                 UpdateBy = topic.UpdateBy,
                 UpdateDate = topic.UpdateDate,
 
-                // NEW: map người duyệt + thời gian duyệt
                 ApprovedBy = topic.ApprovedBy,
                 ApprovedDate = topic.ApprovedDate,
 

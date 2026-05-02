@@ -58,7 +58,7 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
                 (http  ?? GetHttpContextMock()).Object);
 
         private static CreateTopicCommand MakeCommand(string name = "Korean Basics")
-            => new CreateTopicCommand { TopicName = name, Level = TopicLevel.Level1, Description = "Test topic" };
+            => new CreateTopicCommand { TopicName = name, Level = (int)TopicLevel.Level1, Description = "Test topic" };
 
         // CreateTopic_01 | A | No authenticated user → 401 failure
         [Fact]

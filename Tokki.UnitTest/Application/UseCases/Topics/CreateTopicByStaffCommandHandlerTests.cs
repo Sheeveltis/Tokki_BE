@@ -57,7 +57,7 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
                 NullLogger<CreateTopicByStaffCommandHandler>.Instance);
 
         private static CreateTopicByStaffCommand MakeCmd(string name = "Korean Grammar") =>
-            new CreateTopicByStaffCommand { TopicName = name, Level = TopicLevel.Level1 };
+            new CreateTopicByStaffCommand { TopicName = name, Level = (int)TopicLevel.Level1 };
 
         // CreateTopicByStaff_01 | A | No auth user → 401
         [Fact]

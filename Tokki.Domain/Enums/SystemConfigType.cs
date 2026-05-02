@@ -4,46 +4,28 @@ namespace Tokki.Domain.Enums
 {
     public enum SystemConfigType
     {
-        [Description("Cấu hình chung hệ thống")]
+        [Description("Hệ thống & Giao diện (Chung, UI, Nội bộ)")]
         General = 0,
 
-        [Description("Cấu hình Trí tuệ nhân tạo (AI/Gemini)")]
+        [Description("Trí tuệ nhân tạo (AI & Prompts)")]
         AI = 1,
 
-        [Description("Cấu hình Mẫu thông báo (Notification Templates)")]
-        Notification = 2,
+        [Description("Thông báo & Liên lạc (Push, Email, Chat)")]
+        Communication = 2,
 
-        [Description("Cấu hình Bài viết và Blog")]
-        Blog = 3,
+        [Description("Nội dung học tập (Vocabulary, Roadmap, Blog, Audio)")]
+        Learning = 3,
 
-        [Description("Cấu hình Game và Hệ thống XP (Gamification)")]
+        [Description("Game & XP (Gamification)")]
         Gamification = 4,
 
-        [Description("Cấu hình Bảo mật và Xác thực (Security/Auth)")]
+        [Description("Bảo mật & Xác thực")]
         Security = 5,
 
-        [Description("Cấu hình Đề thi và Thi thử (Exam)")]
-        Exam = 6,
+        [Description("Đề thi & Đánh giá (Assessment)")]
+        Assessment = 6,
 
-        [Description("Cấu hình Từ vựng (Vocabulary)")]
-        Vocabulary = 7,
-
-        [Description("Cấu hình Lộ trình học tập (Roadmap)")]
-        RoadMap = 8,
-
-        [Description("Cấu hình Thanh toán và Gói cước (Payment/VIP)")]
-        Payment = 9,
-
-        [Description("Cấu hình Nội bộ hệ thống (Internal System)")]
-        SystemInternal = 10,
-
-        [Description("Cấu hình Giao diện người dùng (UI/Frontend)")]
-        UI_Frontend = 11,
-
-        [Description("Cấu hình Dịch vụ Email (SMTP/Mailing)")]
-        EmailService = 12,
-
-        [Description("Cấu hình Giọng đọc và Phát âm (Speech/Audio)")]
-        AudioPronunciation = 13
+        [Description("Thanh toán & Gói cước (Billing/VIP)")]
+        Billing = 7
     }
 }

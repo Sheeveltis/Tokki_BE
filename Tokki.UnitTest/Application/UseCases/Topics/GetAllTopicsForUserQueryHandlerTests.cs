@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -23,7 +23,7 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
         {
             var m = new Mock<ITopicRepository>();
             m.Setup(x => x.GetVocabTopicsPagedForUserAsync(
-                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<TopicLevel?>()))
+                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<int?>()))
              .ReturnsAsync((items ?? new List<Topic>(), total));
             m.Setup(x => x.CountVocabulariesInTopicAsync(It.IsAny<string>())).ReturnsAsync(vocabCount);
             m.Setup(x => x.CountLearnedVocabulariesAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(learnedCount);
@@ -33,18 +33,22 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
         private static Mock<IUserTopicProgressRepository> GetProgressMock()
             => new Mock<IUserTopicProgressRepository>();
 
+        private static Mock<IEnumConfigRepository> GetEnumMock() => new Mock<IEnumConfigRepository>();
+
         private static GetAllTopicsForUserQueryHandler CreateHandler(
             Mock<ITopicRepository>?              topicRepo    = null,
-            Mock<IUserTopicProgressRepository>?  progressRepo = null)
+            Mock<IUserTopicProgressRepository>?  progressRepo = null,
+            Mock<IEnumConfigRepository>?         enumRepo     = null)
             => new GetAllTopicsForUserQueryHandler(
                 (topicRepo    ?? GetTopicMock()).Object,
-                (progressRepo ?? GetProgressMock()).Object);
+                (progressRepo ?? GetProgressMock()).Object,
+                (enumRepo     ?? GetEnumMock()).Object);
 
         private static List<Topic> SampleTopics(int count = 2)
         {
             var list = new List<Topic>();
             for (int i = 1; i <= count; i++)
-                list.Add(new Topic { TopicId = $"T-{i:000}", TopicName = $"Topic {i}", Level = TopicLevel.Level1, Status = TopicStatus.Active });
+                list.Add(new Topic { TopicId = $"T-{i:000}", TopicName = $"Topic {i}", Level = (int)TopicLevel.Level1, Status = TopicStatus.Active });
             return list;
         }
 
@@ -115,8 +119,8 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
         public async Task Handle_WithParams_RepoCalledWithCorrectParams()
         {
             var repo = GetTopicMock();
-            await CreateHandler(repo).Handle(new GetAllTopicsForUserQuery { UserId = "U-001", PageNumber = 3, PageSize = 8, Level = TopicLevel.Level3 }, CancellationToken.None);
-            repo.Verify(x => x.GetVocabTopicsPagedForUserAsync(3, 8, null, TopicLevel.Level3), Times.Once);
+            await CreateHandler(repo).Handle(new GetAllTopicsForUserQuery { UserId = "U-001", PageNumber = 3, PageSize = 8, Level =(int) TopicLevel.Level3 }, CancellationToken.None);
+            repo.Verify(x => x.GetVocabTopicsPagedForUserAsync(3, 8, null, (int)TopicLevel.Level3), Times.Once);
             QACollector.LogTestCase("Topic - Get For User", new TestCaseDetail { FunctionGroup = "GetAllTopicsForUser", TestCaseID = "GetAllTopicsForUser_06", Description = "RepoAsync called with Page=3, Size=8, Level=Level3", ExpectedResult = "Times.Once with correct params", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "All query params forwarded" } });
         }
     }

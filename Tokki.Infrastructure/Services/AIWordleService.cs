@@ -1,8 +1,12 @@
-﻿using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Application.UseCases.MiniGame.DTOs;
 using Tokki.Infrastructure.Configurations;
@@ -13,11 +17,19 @@ namespace Tokki.Infrastructure.Services
     {
         private readonly HttpClient _httpClient;
         private readonly GeminiOptions _options;
+        private readonly ISystemConfigRepository _systemConfigRepository;
+        private readonly ILogger<AIWordleService> _logger;
 
-        public AIWordleService(HttpClient httpClient, IOptions<GeminiOptions> options)
+        public AIWordleService(
+            HttpClient httpClient, 
+            IOptions<GeminiOptions> options, 
+            ISystemConfigRepository systemConfigRepository,
+            ILogger<AIWordleService> logger)
         {
             _httpClient = httpClient;
             _options = options.Value;
+            _systemConfigRepository = systemConfigRepository;
+            _logger = logger;
         }
 
         public async Task<WordleAiFeedbackDto> EvaluateSentenceAsync(string sentence, string word, string definition)
@@ -31,7 +43,24 @@ namespace Tokki.Infrastructure.Services
             var baseUrl = config.BaseUrl.TrimEnd('/');
             var url = $"{baseUrl}/models/{config.Model}:generateContent?key={config.ApiKey}";
 
-            var prompt = $@"
+            // Lấy prompt từ SystemConfig (động)
+            string? dbPrompt = await _systemConfigRepository.GetValueByKeyAsync("AI_WORDLE_PROMPT");
+
+            string prompt;
+            if (!string.IsNullOrEmpty(dbPrompt))
+            {
+                _logger.LogInformation("[AI Wordle] Using dynamic prompt from Database.");
+                // Thay thế các placeholder trong prompt từ DB
+                prompt = dbPrompt
+                    .Replace("{word}", word)
+                    .Replace("{definition}", definition)
+                    .Replace("{sentence}", sentence);
+            }
+            else
+            {
+                _logger.LogWarning("[AI Wordle] Dynamic prompt not found in DB (Key: AI_WORDLE_PROMPT). Using hardcoded fallback.");
+                // Fallback nếu không có trong DB
+                prompt = $@"
             Bạn là một giám khảo chấm thi TOPIK (Test of Proficiency in Korean) nổi tiếng khắt khe. 
             Nhiệm vụ: Chấm điểm câu đặt của sinh viên dựa trên từ khóa cho trước.
 
@@ -73,6 +102,7 @@ namespace Tokki.Infrastructure.Services
                 ""GeneralFeedback"": ""Giải thích vì sao câu này đạt mức Sơ cấp/Trung cấp/Cao cấp"",
                 ""CorrectedSentence"": ""Viết lại 1 câu ở trình độ CAO CẤP (90+ điểm) để học sinh học hỏi""
             }}";
+            }
 
             var payload = new { contents = new[] { new { parts = new[] { new { text = prompt } } } } };
 

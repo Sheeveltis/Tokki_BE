@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +9,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Tokki.Application.IServices;
 using Tokki.Application.UseCases.PronunciationRule.DTOs;
+using Tokki.Application.IRepositories;
 using Tokki.Infrastructure.Configurations;
 
 namespace Tokki.Infrastructure.Services
@@ -16,11 +18,19 @@ namespace Tokki.Infrastructure.Services
     {
         private readonly HttpClient _httpClient;
         private readonly GeminiOptions _options;
+        private readonly ISystemConfigRepository _systemConfigRepository;
+        private readonly ILogger<AIPronunciationService> _logger;
 
-        public AIPronunciationService(HttpClient httpClient, IOptions<GeminiOptions> options)
+        public AIPronunciationService(
+            HttpClient httpClient, 
+            IOptions<GeminiOptions> options, 
+            ISystemConfigRepository systemConfigRepository,
+            ILogger<AIPronunciationService> logger)
         {
             _httpClient = httpClient;
             _options = options.Value;
+            _systemConfigRepository = systemConfigRepository;
+            _logger = logger;
         }
 
         public async Task<(string GeneralFeedback, double FinalAccuracyScore)> GenerateFeedbackAsync(
@@ -42,7 +52,24 @@ namespace Tokki.Infrastructure.Services
 
             string detailedInfo = string.Join("\n", wordDetails);
 
-            string prompt = $@"
+            // Lấy prompt từ SystemConfig (động)
+            string? dbPrompt = await _systemConfigRepository.GetValueByKeyAsync("AI_PRONUNCIATION_PROMPT");
+
+            string prompt;
+            if (!string.IsNullOrEmpty(dbPrompt))
+            {
+                _logger.LogInformation("[AI Pronunciation] Using dynamic prompt from Database.");
+                // Thay thế các placeholder trong prompt từ DB
+                prompt = dbPrompt
+                    .Replace("{targetText}", targetText)
+                    .Replace("{ruleContext}", ruleContext)
+                    .Replace("{detailedInfo}", detailedInfo);
+            }
+            else
+            {
+                _logger.LogWarning("[AI Pronunciation] Dynamic prompt not found in DB (Key: AI_PRONUNCIATION_PROMPT). Using hardcoded fallback.");
+                // Fallback nếu không có trong DB
+                prompt = $@"
             Bạn là chuyên gia ngôn ngữ Hàn Quốc tích hợp trong hệ thống Tokki. Hãy phân tích dữ liệu phát âm:
             - Câu mẫu: '{targetText}'
             - Quy tắc trọng tâm: {ruleContext}
@@ -62,6 +89,7 @@ namespace Tokki.Infrastructure.Services
                     {{ ""word"": ""<từ bị lỗi>"", ""repairGuide"": ""<cách sửa khẩu hình>"" }}
                 ]
             }}";
+            }
 
             var url = $"{config.BaseUrl.TrimEnd('/')}/models/{config.Model}:generateContent?key={config.ApiKey}";
             var payload = new

@@ -1,4 +1,4 @@
-﻿using Moq;
+using Moq;
 using System.Threading;
 using System.Threading.Tasks;
 using Tokki.Application.IRepositories;
@@ -83,7 +83,7 @@ namespace Tokki.UnitTest.Mocks.Repositories
                 TopicId = topicId,
                 TopicName = "Basic greetings",
                 Description = "Common greetings",
-                Level = TopicLevel.Level1,
+                Level = (int)TopicLevel.Level1,
                 Status = status,
                 CreateBy = "STAFF-001",
                 TopicType = TopicType.VocabStudy,
@@ -97,7 +97,7 @@ namespace Tokki.UnitTest.Mocks.Repositories
             {
                 TopicId = topicId,
                 TopicName = "Family",
-                Level = TopicLevel.Level1,
+                Level = (int)TopicLevel.Level1,
                 Status = TopicStatus.PendingApproval,
                 CreateBy = "STAFF-001",
                 TopicType = TopicType.VocabStudy
@@ -110,7 +110,7 @@ namespace Tokki.UnitTest.Mocks.Repositories
             {
                 TopicId = topicId,
                 TopicName = "Job",
-                Level = TopicLevel.Level3,
+                Level = (int)TopicLevel.Level3,
                 Status = TopicStatus.Draft,
                 CreateBy = "STAFF-001",
                 TopicType = TopicType.VocabStudy
@@ -123,7 +123,7 @@ namespace Tokki.UnitTest.Mocks.Repositories
             {
                 TopicId = topicId,
                 TopicName = "Topic has been deleted",
-                Level = TopicLevel.Level1,
+                Level = (int)TopicLevel.Level1,
                 Status = TopicStatus.Deleted,
                 CreateBy = "STAFF-001",
                 TopicType = TopicType.VocabStudy

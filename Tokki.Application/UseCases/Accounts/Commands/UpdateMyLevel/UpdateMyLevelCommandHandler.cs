@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -43,20 +43,8 @@ namespace Tokki.Application.UseCases.Accounts.Commands.UpdateMyLevel
                 return OperationResult<bool>.Failure(new List<Error> { AppErrors.AccountLocked }, 403, $"Tài khoản đang bị tạm khóa. Thử lại sau {remainingMinutes} phút.");
             }
 
-            // Validate enum nếu Level != null
-            if (request.Level.HasValue)
-            {
-                if (!Enum.IsDefined(typeof(TopicLevel), request.Level.Value))
-                {
-                    return OperationResult<bool>.Failure("Level không hợp lệ.", 400);
-                }
-
-                user.Level = (TopicLevel)request.Level.Value;
-            }
-            else
-            {
-                user.Level = null;
-            }
+            // Gán Level trực tiếp (đã được Validator kiểm tra trong DB)
+            user.Level = request.Level;
 
             user.UpdatedAt = nowLocal;
 
