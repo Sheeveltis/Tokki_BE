@@ -164,6 +164,7 @@ builder.Services.AddScoped<IExamAssemblyService, ExamAssemblyService>();
     builder.Services.AddMemoryCache();
     builder.Services.AddScoped<IRoadmapProgressService, RoadmapProgressService>();
     builder.Services.AddScoped<ITopikLevelConfigService, TopikLevelConfigService>();
+    builder.Services.AddHostedService<PaymentExpiryWorker>();
     builder.Services.AddMemoryCache(options =>
 {
     //options.SizeLimit = 1024; // Giới hạn 1024 entries
