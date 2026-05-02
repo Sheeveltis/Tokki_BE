@@ -385,36 +385,34 @@ namespace Tokki.Infrastructure.Services
             TargetAimLevel target,
             CurrentTopikLevel currentLevel,
             int nextWeekIndex,
-            int examScorePercent,
-            List<string> reviewTypes,
-            List<string> persistentFailTypes,
-            List<string> originalWeaknesses,
+            int totalWeeks,
+            List<string> focusTypeIds,
+            List<string> deferredTypeIds,
             List<QuestionTypeMenuItem> weakTypeInfos,
-            List<QuestionTypeMenuItem> questionTypeMenu)
+            List<QuestionTypeMenuItem> fullMenu)
         {
-            int scoreLow = await GetIntConfigAsync(PromptConfigKeys.ScoreThresholdLow, fallback: 50);
-            int scoreHigh = await GetIntConfigAsync(PromptConfigKeys.ScoreThresholdHigh, fallback: 80);
             int maxTasksPerDay = await GetIntConfigAsync(PromptConfigKeys.MaxTasksPerDay, fallback: 4);
+            int studyDays = await GetIntConfigAsync(PromptConfigKeys.StudyDaysPerWeek, fallback: 6);
             int weeklyExamDay = await GetIntConfigAsync(PromptConfigKeys.WeeklyExamDay, fallback: 7);
 
-            var reviewSection = weakTypeInfos.Any()
-                ? string.Join("\n", weakTypeInfos
-                    .Where(w => reviewTypes.Contains(w.QuestionTypeId))
-                    .Select(w => $"  - [{w.Skill}] {w.Name} (QuestionTypeId: {w.QuestionTypeId})"))
-                : "  - Không có dạng cần ôn lại.";
+            var focusDetails = string.Join("\n", weakTypeInfos
+                .Where(w => focusTypeIds.Contains(w.QuestionTypeId))
+                .Select(w => $"  - [{w.Skill}] {w.Name} (QuestionTypeId: {w.QuestionTypeId})" +
+                             (string.IsNullOrEmpty(w.Description) ? "" : $" — {w.Description}")));
 
-            var persistentSection = persistentFailTypes.Any()
-                ? string.Join("\n", weakTypeInfos
-                    .Where(w => persistentFailTypes.Contains(w.QuestionTypeId))
-                    .Select(w => $"  - [{w.Skill}] {w.Name} (QuestionTypeId: {w.QuestionTypeId})"))
-                : "  - Không có.";
+            var deferredSection = deferredTypeIds.Any()
+                ? "DẠNG ĐÃ FAIL 2 TUẦN LIÊN TIẾP - TẠM HOÃN (KHÔNG đưa vào tuần này):\n" +
+                  string.Join("\n", fullMenu
+                      .Where(q => deferredTypeIds.Contains(q.QuestionTypeId))
+                      .Select(q => $"  - [{q.Skill}] {q.Name}"))
+                : "Không có dạng bài tạm hoãn.";
 
-            var filteredQuizMenu = questionTypeMenu
-                .Where(q => !persistentFailTypes.Contains(q.QuestionTypeId))
+            var filteredMenu = fullMenu
+                .Where(q => !deferredTypeIds.Contains(q.QuestionTypeId))
                 .ToList();
 
             var quizMenuJson = JsonSerializer.Serialize(
-                filteredQuizMenu.Select(q => new
+                filteredMenu.Select(q => new
                 {
                     QuestionTypeId = q.QuestionTypeId,
                     Code = q.Code,
@@ -424,62 +422,124 @@ namespace Tokki.Infrastructure.Services
                 })
             );
 
-            string strategy;
-            string reviewInstruction;
-
-            if (examScorePercent < scoreLow)
-            {
-                strategy = $"Học viên đạt dưới {scoreLow}%. Tăng cường luyện tập.";
-                reviewInstruction = reviewTypes.Any()
-                    ? "Dành ngày 1 và ngày 2 để ÔN LẠI các dạng trong REVIEW LIST. Từ ngày 3 học mới."
-                    : "Tập trung nội dung mới nhưng giảm tải độ khó.";
-            }
-            else if (examScorePercent < scoreHigh)
-            {
-                strategy = $"Học viên đạt {scoreLow}-{scoreHigh - 1}%. Kết hợp ôn cũ và học mới.";
-                reviewInstruction = reviewTypes.Any()
-                    ? "Dành ngày 1 ôn REVIEW LIST (~20%). Từ ngày 2 học mới (80%)."
-                    : "Tiếp tục lộ trình bình thường.";
-            }
-            else
-            {
-                strategy = $"Học viên đạt >= {scoreHigh}%. Tăng tốc với kiến thức mới.";
-                reviewInstruction = "Không cần ôn lại. Tập trung 100% nội dung mới.";
-            }
-
             var promptText = $@"
-            Bạn là chuyên gia lập lộ trình TOPIK. Học viên bước vào TUẦN THỨ {nextWeekIndex}.
-            Kết quả tuần trước: {examScorePercent}%.
-            Trình độ hiện tại: {GetLevelDescription(currentLevel)}
-            CHIẾN LƯỢC: {strategy}
-            PHÂN BỔ: {reviewInstruction}
+            Bạn là chuyên gia thiết kế lộ trình học TOPIK cấp độ {target}.
+            Hãy thiết kế nội dung học tập TUYỆT VỜI cho TUẦN {nextWeekIndex}/{totalWeeks}.
 
-            *** DẠNG CẦN ÔN LẠI (REVIEW LIST - 20%) ***
-            {reviewSection}
+            THÔNG TIN HỌC VIÊN:
+            - Mục tiêu: {target}
+            - Trình độ hiện tại: {GetLevelDescription(currentLevel)}
+            - Dạng bài trọng tâm tuần này (theo thứ tự ưu tiên FIFO):
+            {focusDetails}
+            - {deferredSection}
 
-            *** DẠNG ĐÃ CẢNH BÁO 2 TUẦN - KHÔNG ĐƯA VÀO ***
-            {persistentSection}
+            QUY TẮC THIẾT KẾ & PHÂN BỔ (QUAN TRỌNG):
+            1. PHÂN BỔ DẠNG BÀI (TUÂN THỦ FIFO): Các dạng bài trọng tâm được đánh số theo thứ tự ưu tiên. Bạn PHẢI phân bổ như sau:
+               - THỨ 2 (DayIndex 1): Dạng bài 1 (đầu tiên trong danh sách).
+               - THỨ 3 (DayIndex 2): Dạng bài 2.
+               - THỨ 4 (DayIndex 3): Dạng bài 3.
+               - THỨ 5 (DayIndex 4): Dạng bài 4.
+               - THỨ 6 (DayIndex 5): Dạng bài 5.
+            2. CHI TIẾT CÁC NGÀY:
+               - THỨ 2 (DayIndex 1):
+                 * BẮT BUỘC có 1 task ""Document"" đầu tiên (questionTypeId: null).
+                   Tiêu đề: ""Tái khởi động và Phân tích nội dung tuần {nextWeekIndex}"".
+                   Nội dung (HTML): Tóm tắt tiến độ tuần trước. Nếu có dạng tạm hoãn, giải thích
+                   khéo léo rằng các dạng này tạm dừng để tập trung dạng mới, tránh quá tải.
+                   Cuối cùng nêu bật mục tiêu 5 dạng bài tuần này.
+                 * Sau đó 2 task cho Dạng bài 1: LearnTheory và VirtualQuiz.
+               - THỨ 3 - THỨ 6 (DayIndex 2-5): Mỗi ngày 1 dạng bài duy nhất. Mỗi ngày 2 task: LearnTheory + VirtualQuiz.
+               - THỨ 7 (TỔNG ÔN TẬP - DayIndex 6):
+                 * 1 Task LearnTheory (questionTypeId: null): Tiêu đề BẮT BUỘC ""Tóm tắt tinh hoa và chiến thuật các dạng bài tuần {nextWeekIndex}"".
+                 * Các Task VirtualQuiz: Mỗi task tương ứng 1 QuestionTypeId khác nhau từ 5 dạng tuần này.
+               - CHỦ NHẬT (THI THỬ - DayIndex 7):
+                 * 1 Task WeeklyExam (questionTypeId: null): Tiêu đề ""Bài kiểm tra tổng hợp tuần {nextWeekIndex}"".
+            3. QUY ĐỊNH VỀ ID:
+               - CHỈ sử dụng QuestionTypeId từ danh sách dạng bài trọng tâm đã cho.
+               - Task ""Document"", ""WeeklyExam"" và LearnTheory của DayIndex 6 BẮT BUỘC để ""questionTypeId"": null.
+               - KHÔNG tự sinh ID mới, KHÔNG dùng ID không có trong danh sách.
+               - KHÔNG dùng dạng bài trong danh sách TẠM HOÃN.
 
-            *** QUY TẮC BẮT BUỘC ***
-            1. CHỈ CHỌN từ MENU. KHÔNG tự bịa.
-            2. Task 'LearnTheory':
-           - Điền 'QuestionTypeId' của dạng đang học
-           - Điền 'Content' là HTML lý thuyết đầy đủ (định nghĩa, pattern, ví dụ, mẹo)
-           - KHÔNG điền GrammarId
-            3. Task 'VirtualQuiz': Điền 'QuestionTypeId', Content ngắn gọn
-            4. Ngày {weeklyExamDay} BẮT BUỘC là 'WeeklyExam'
-            5. Mỗi ngày tối đa {maxTasksPerDay} task
-            6. KHÔNG dùng dạng trong danh sách ĐÃ CẢNH BÁO
+            YÊU CẦU NỘI DUNG CHO TASK LearnTheory (CỰC KỲ QUAN TRỌNG):
+            Phần ""Content"" của task LearnTheory phải dài, chi tiết, trình bày bằng HTML đẹp mắt, chia 2 phần lớn:
+            1. GIỚI THIỆU:
+               - Mô tả chi tiết dạng bài: cấu trúc, yêu cầu kỹ năng, những gì cần tập trung (Key focus).
+               - Phương pháp học và làm bài hiệu quả (Tips & Strategies).
+            2. LÝ THUYẾT:
+               - Kiến thức chuyên sâu, điểm lưu ý quan trọng, lỗi sai thường gặp.
+               - Ngữ pháp thông dụng thường xuất hiện trong dạng bài này.
+               - 2-3 ví dụ minh họa bằng tiếng Hàn (có dịch).
+               - Kiến thức bổ trợ hoặc nâng cao trình độ.
+            Format HTML: <h3>...</h3><p>...</p><ul><li>...</li></ul>
 
-            *** QUIZ MENU ***
+            CỐ ĐỊNH CÁC LOẠI TASK: LearnTheory, VirtualQuiz, WeeklyExam, Document.
+
+            *** QUIZ MENU (chỉ dùng ID từ đây) ***
             {quizMenuJson}
 
-        *** OUTPUT JSON (WeekIndex = {nextWeekIndex}) ***
-        {{
-          ""Assessment"": ""Nhận xét và lời khuyên tuần {nextWeekIndex}"",
-          ""Weeks"": [ {{ ... }} ]
-        }}
-    ";
+            *** OUTPUT JSON (WeekIndex = {nextWeekIndex}) ***
+            {{
+              ""Assessment"": ""Nhận xét chuyên sâu tuần {nextWeekIndex}..."",
+              ""Weeks"": [
+                {{
+                  ""WeekIndex"": {nextWeekIndex},
+                  ""WeekGoal"": ""Mục tiêu đạt được sau tuần này"",
+                  ""Days"": [
+                    {{
+                      ""DayIndex"": 1,
+                      ""Tasks"": [
+                        {{
+                          ""Title"": ""Tái khởi động và Phân tích nội dung tuần {nextWeekIndex}"",
+                          ""TaskType"": ""Document"",
+                          ""QuestionTypeId"": null,
+                          ""Content"": ""HTML tóm tắt..."",
+                          ""GrammarId"": null
+                        }},
+                        {{
+                          ""Title"": ""Lý thuyết: Tên dạng bài 1"",
+                          ""TaskType"": ""LearnTheory"",
+                          ""QuestionTypeId"": ""ID_TU_MENU"",
+                          ""Content"": ""<h3>Giới thiệu</h3>...<h3>Lý thuyết</h3>..."",
+                          ""GrammarId"": null
+                        }},
+                        {{
+                          ""Title"": ""Luyện tập: Tên dạng bài 1"",
+                          ""TaskType"": ""VirtualQuiz"",
+                          ""QuestionTypeId"": ""ID_TU_MENU"",
+                          ""Content"": ""Lời khuyên ngắn"",
+                          ""GrammarId"": null
+                        }}
+                      ]
+                    }},
+                    {{
+                      ""DayIndex"": 6,
+                      ""Tasks"": [
+                        {{
+                          ""Title"": ""Tóm tắt tinh hoa và chiến thuật các dạng bài tuần {nextWeekIndex}"",
+                          ""TaskType"": ""LearnTheory"",
+                          ""QuestionTypeId"": null,
+                          ""Content"": ""HTML tổng ôn..."",
+                          ""GrammarId"": null
+                        }}
+                      ]
+                    }},
+                    {{
+                      ""DayIndex"": 7,
+                      ""Tasks"": [
+                        {{
+                          ""Title"": ""Bài kiểm tra tổng hợp tuần {nextWeekIndex}"",
+                          ""TaskType"": ""WeeklyExam"",
+                          ""QuestionTypeId"": null,
+                          ""Content"": null,
+                          ""GrammarId"": null
+                        }}
+                      ]
+                    }}
+                  ]
+                }}
+              ]
+            }}
+        ";
             return await CallGeminiApiAsync(promptText);
         }
         public async Task<string?> GenerateEntranceFeedbackAsync(
@@ -598,7 +658,7 @@ namespace Tokki.Infrastructure.Services
 
             *** OUTPUT JSON (WeekIndex = {nextWeekIndex}) ***
             {{
-              ""Assessment"": ""Chúc mừng! Bạn đã hoàn thành giai đoạn ôn luyện. Tuần này chúng ta sẽ khám phá thêm..."",
+              ""Assessment"": ""Chúc mừng! Học viên đã hoàn thành giai đoạn ôn luyện. Tuần này chúng ta sẽ khám phá thêm..."",
               ""Weeks"": [
                 {{
                   ""WeekIndex"": {nextWeekIndex},

@@ -22,12 +22,11 @@ namespace Tokki.Application.IServices
             TargetAimLevel target,
             CurrentTopikLevel currentLevel,
             int nextWeekIndex,
-            int examScorePercent,
-            List<string> reviewTypes,
-            List<string> persistentFailTypes,
-            List<string> originalWeaknesses,
+            int totalWeeks,
+            List<string> focusTypeIds,
+            List<string> deferredTypeIds,
             List<QuestionTypeMenuItem> weakTypeInfos,
-            List<QuestionTypeMenuItem> questionTypeMenu);
+            List<QuestionTypeMenuItem> fullMenu);
         Task<string?> GenerateEntranceFeedbackAsync(
             TargetAimLevel targetAim,
             int readingWeakCount,

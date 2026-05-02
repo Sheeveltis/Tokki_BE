@@ -254,24 +254,13 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
 
                     int totalWeeks = (int)Math.Ceiling((roadmap.EndDate - roadmap.StartDate).TotalDays / 7);
 
-                    int examScorePercent = deferredTypes.Any()
-                        ? Math.Max(0, 70 - deferredTypes.Count * 15)
-                        : 75;
-
-                    var reviewTypes = nextTypes.Where(t => !deferredTypes.Contains(t)).ToList();
-
-                    var allWeaknesses = (await weaknessRepo.GetByUserIdAsync(request.UserId, CancellationToken.None))
-                        .Where(w => w.RoadmapId == roadmap.UserRoadmapId)
-                        .Select(w => w.QuestionTypeId).ToList();
-
                     var aiPlan = await aiService.GenerateNextWeekPlanAsync(
                         roadmap.TargetAim,
                         roadmap.CurrentLevel,
                         nextWeekIndex,
-                        examScorePercent,
-                        reviewTypes,
+                        totalWeeks,
+                        nextTypes,
                         deferredTypes,
-                        allWeaknesses,
                         weakTypeInfos,
                         fullMenu);
 
@@ -399,8 +388,8 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
 
                 if (isPassed)
                     userWeakness.Status = 2;
-                else if (userWeakness.Status != 2) 
-                    userWeakness.Status = 1;
+                else
+                    userWeakness.Status = 1; // Ver2: luôn reset về 1 nếu fail
 
                 if (profile.ConsecutiveFailWeeks >= 2)
                 {
