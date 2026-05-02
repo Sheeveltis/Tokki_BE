@@ -53,6 +53,7 @@ namespace Tokki.Application.UseCases.Payments.Commands.CreatePayment
                 VipPackageId = vipPackage.Id,
                 Status = PaymentStatus.Pending,
                 CreatedAt = DateTimeOffset.UtcNow,
+                ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(10)
             };
 
             await _paymentRepository.AddAsync(payment);
