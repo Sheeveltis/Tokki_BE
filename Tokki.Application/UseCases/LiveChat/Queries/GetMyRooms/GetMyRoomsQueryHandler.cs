@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,6 +46,7 @@ namespace Tokki.Application.UseCases.LiveChat.Queries.GetMyRooms
                     RoomAvatar = displayAvatar,
                     IsSupport = room.IsSupport,
                     IsGroup = room.IsGroup,
+                    IsClosed = room.IsClosed,
                     CreatedAt = room.CreatedAt
                 });
             }

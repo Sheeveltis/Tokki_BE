@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.Roadmap.Constants;
 using Tokki.Application.UseCases.Roadmap.DTOs;
@@ -23,7 +23,7 @@ namespace Tokki.Infrastructure.Services.Roadmap
             return all
                 .Where(x => x.IsActive
                          && x.Key.StartsWith(KeyPrefix)
-                         && x.ConfigType == SystemConfigType.RoadMap
+                         && x.ConfigType == SystemConfigType.Learning
                          && !string.IsNullOrEmpty(x.Value))
                 .Select(x => ParseSafe(x.Value!))
                 .Where(dto => dto != null)
@@ -36,7 +36,7 @@ namespace Tokki.Infrastructure.Services.Roadmap
         {
             var key = KeyPrefix + (int)level;
             var config = await _repo.FirstOrDefaultAsync(
-                x => x.Key == key && x.IsActive && x.ConfigType == SystemConfigType.RoadMap, ct);
+                x => x.Key == key && x.IsActive && x.ConfigType == SystemConfigType.Learning, ct);
 
             if (config?.Value == null) return null;
             return ParseSafe(config.Value);
