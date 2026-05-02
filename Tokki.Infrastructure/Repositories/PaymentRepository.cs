@@ -47,5 +47,11 @@ namespace Tokki.Infrastructure.Repositories
                 .OrderByDescending(p => p.CreatedAt) 
                 .ToListAsync();
         }
+        public async Task<List<Payment>> GetExpiredPendingPaymentsAsync(DateTimeOffset now)
+        {
+            return await _context.Payments
+                .Where(p => p.Status == PaymentStatus.Pending && p.ExpiresAt <= now)
+                .ToListAsync();
+        }
     }
 }
