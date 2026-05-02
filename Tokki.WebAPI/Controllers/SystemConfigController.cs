@@ -43,13 +43,20 @@ namespace Tokki.WebAPI.Controllers
         
         [HttpGet]
         [Authorize(Roles = nameof(AccountRole.Admin))]
-
-        public async Task<IActionResult> GetAllConfigs([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetAllConfigs(
+            [FromQuery] int pageNumber = 1, 
+            [FromQuery] int pageSize = 10, 
+            [FromQuery] SystemConfigType? configType = null,
+            [FromQuery] string? search = null,
+            [FromQuery] bool? isActive = null)
         {
             var query = new GetAllSystemConfigsQuery
             {
                 PageNumber = pageNumber,
-                PageSize = pageSize
+                PageSize = pageSize,
+                ConfigType = configType,
+                SearchTerm = search,
+                IsActive = isActive
             };
 
             var result = await _sender.Send(query);

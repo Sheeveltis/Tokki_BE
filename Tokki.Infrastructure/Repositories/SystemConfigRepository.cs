@@ -40,12 +40,24 @@ namespace Tokki.Infrastructure.Repositories
             return await _context.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task<(List<SystemConfig> Items, int TotalCount)> GetPagedAsync(int pageNumber, int pageSize, Tokki.Domain.Enums.SystemConfigType? configType = null)
+        public async Task<(List<SystemConfig> Items, int TotalCount)> GetPagedAsync(int pageNumber, int pageSize, Tokki.Domain.Enums.SystemConfigType? configType = null, string? searchTerm = null, bool? isActive = null)
         {
             var query = _context.SystemConfig.AsNoTracking();
             if (configType.HasValue)
             {
                 query = query.Where(x => x.ConfigType == configType.Value);
+            }
+
+            if (isActive.HasValue)
+            {
+                query = query.Where(x => x.IsActive == isActive.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                query = query.Where(x => x.Key.Contains(searchTerm) 
+                                      || (x.Value != null && x.Value.Contains(searchTerm))
+                                      || (x.Description != null && x.Description.Contains(searchTerm)));
             }
 
             var totalCount = await query.CountAsync();
