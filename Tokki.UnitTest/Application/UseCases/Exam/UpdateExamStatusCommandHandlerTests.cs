@@ -1,4 +1,4 @@
-using ExamEntity = Tokki.Domain.Entities.Exam;
+﻿using ExamEntity = Tokki.Domain.Entities.Exam;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -27,7 +27,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             Status  = status
         };
 
-        // TC-EXUS-01 | A | Exam not found → 404
+        // Update_Exam_Status_01 | A | Exam not found → 404
         [Fact]
         public async Task Handle_ExamNotFound_ShouldReturn404()
         {
@@ -43,7 +43,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Update Status", new TestCaseDetail
             {
-                FunctionGroup = "Update Exam Status", TestCaseID = "TC-EXUS-01",
+                FunctionGroup = "Update Exam Status", TestCaseID = "Update_Exam_Status_01",
                 Description = "Exam ID does not exist in database",
                 ExpectedResult = "Return 404 Failure", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -51,7 +51,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXUS-02 | A | Invalid status value → 400
+        // Update_Exam_Status_02 | A | Invalid status value → 400
         [Fact]
         public async Task Handle_InvalidStatus_ShouldReturn400()
         {
@@ -69,7 +69,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Update Status", new TestCaseDetail
             {
-                FunctionGroup = "Update Exam Status", TestCaseID = "TC-EXUS-02",
+                FunctionGroup = "Update Exam Status", TestCaseID = "Update_Exam_Status_02",
                 Description = "Pass an invalid ExamStatus value (999) not in enum",
                 ExpectedResult = "Return 400 Failure", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -77,7 +77,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXUS-03 | N | Valid status update Draft → Published → 200
+        // Update_Exam_Status_03 | N | Valid status update Draft → Published → 200
         [Fact]
         public async Task Handle_ValidStatusUpdate_ShouldReturn200()
         {
@@ -96,7 +96,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Update Status", new TestCaseDetail
             {
-                FunctionGroup = "Update Exam Status", TestCaseID = "TC-EXUS-03",
+                FunctionGroup = "Update Exam Status", TestCaseID = "Update_Exam_Status_03",
                 Description = "Valid transition from Draft to Published",
                 ExpectedResult = "Return 200, exam.Status mutated", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -104,7 +104,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXUS-04 | N | Published → Deleted transition
+        // Update_Exam_Status_04 | N | Published → Deleted transition
         [Fact]
         public async Task Handle_PublishedToDeleted_ShouldReturn200()
         {
@@ -123,7 +123,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Update Status", new TestCaseDetail
             {
-                FunctionGroup = "Update Exam Status", TestCaseID = "TC-EXUS-04",
+                FunctionGroup = "Update Exam Status", TestCaseID = "Update_Exam_Status_04",
                 Description = "Transition Published exam to Deleted state",
                 ExpectedResult = "Return 200, exam.Status = Deleted", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -131,7 +131,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXUS-05 | N | UpdateAsync called exactly once
+        // Update_Exam_Status_05 | N | UpdateAsync called exactly once
         [Fact]
         public async Task Handle_ValidUpdate_UpdateAsyncCalledOnce()
         {
@@ -149,7 +149,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Update Status", new TestCaseDetail
             {
-                FunctionGroup = "Update Exam Status", TestCaseID = "TC-EXUS-05",
+                FunctionGroup = "Update Exam Status", TestCaseID = "Update_Exam_Status_05",
                 Description = "Verify UpdateAsync invoked exactly once during valid status change",
                 ExpectedResult = "Times.Once verified", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -157,7 +157,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             });
         }
 
-        // TC-EXUS-06 | A | SaveChanges throws → exception propagates
+        // Update_Exam_Status_06 | A | SaveChanges throws → exception propagates
         [Fact]
         public async Task Handle_SaveChangesThrows_ShouldPropagateException()
         {
@@ -173,7 +173,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
 
             QACollector.LogTestCase("Exam - Update Status", new TestCaseDetail
             {
-                FunctionGroup = "Update Exam Status", TestCaseID = "TC-EXUS-06",
+                FunctionGroup = "Update Exam Status", TestCaseID = "Update_Exam_Status_06",
                 Description = "SaveChangesAsync throws exception during status update",
                 ExpectedResult = "Exception propagates without suppression", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

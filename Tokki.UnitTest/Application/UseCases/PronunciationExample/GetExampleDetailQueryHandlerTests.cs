@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -23,7 +23,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PE-GD-01 | A | ExampleId not found → NOT_FOUND failure
+        // GetExampleDetail_01 | A | ExampleId not found → NOT_FOUND failure
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ExampleNotFound_ShouldReturnNotFoundFailure()
@@ -44,7 +44,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample
             QACollector.LogTestCase("Pronunciation Example - Get Detail", new TestCaseDetail
             {
                 FunctionGroup     = "GetExampleDetail",
-                TestCaseID        = "TC-PE-GD-01",
+                TestCaseID        = "GetExampleDetail_01",
                 Description       = "ExampleId does not exist in repository → NOT_FOUND failure",
                 ExpectedResult    = "IsSuccess = false, error NOT_FOUND",
                 StatusRound1      = "Passed",
@@ -55,7 +55,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PE-GD-02 | A | Repository throws exception → propagates
+        // GetExampleDetail_02 | A | Repository throws exception → propagates
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
@@ -78,7 +78,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample
             QACollector.LogTestCase("Pronunciation Example - Get Detail", new TestCaseDetail
             {
                 FunctionGroup     = "GetExampleDetail",
-                TestCaseID        = "TC-PE-GD-02",
+                TestCaseID        = "GetExampleDetail_02",
                 Description       = "Repository throws InvalidOperationException → exception propagates",
                 ExpectedResult    = "InvalidOperationException thrown",
                 StatusRound1      = "Passed",
@@ -89,7 +89,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PE-GD-03 | N | Example found without nav prop → rule fields are empty strings
+        // GetExampleDetail_03 | N | Example found without nav prop → rule fields are empty strings
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ExampleFoundWithoutRule_ShouldReturnEmptyRuleFields()
@@ -114,7 +114,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample
             QACollector.LogTestCase("Pronunciation Example - Get Detail", new TestCaseDetail
             {
                 FunctionGroup     = "GetExampleDetail",
-                TestCaseID        = "TC-PE-GD-03",
+                TestCaseID        = "GetExampleDetail_03",
                 Description       = "Example found but PronunciationRule nav prop is null → DTO rule fields empty",
                 ExpectedResult    = "RuleName/Description/Content = empty string",
                 StatusRound1      = "Passed",
@@ -125,7 +125,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PE-GD-04 | N | Example found with PronunciationRule nav prop → DTO fully mapped
+        // GetExampleDetail_04 | N | Example found with PronunciationRule nav prop → DTO fully mapped
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ExampleFoundWithRule_ShouldMapRuleFieldsCorrectly()
@@ -149,7 +149,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample
             QACollector.LogTestCase("Pronunciation Example - Get Detail", new TestCaseDetail
             {
                 FunctionGroup     = "GetExampleDetail",
-                TestCaseID        = "TC-PE-GD-04",
+                TestCaseID        = "GetExampleDetail_04",
                 Description       = "Example found with PronunciationRule nav prop → DTO rule fields correctly mapped",
                 ExpectedResult    = "RuleName/Description/Content match entity navigation property",
                 StatusRound1      = "Passed",
@@ -160,7 +160,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PE-GD-05 | N | Happy path → IsSuccess=true, StatusCode=200, data mapped
+        // GetExampleDetail_05 | N | Happy path → IsSuccess=true, StatusCode=200, data mapped
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidExample_ShouldReturn200WithMappedDTO()
@@ -188,7 +188,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample
             QACollector.LogTestCase("Pronunciation Example - Get Detail", new TestCaseDetail
             {
                 FunctionGroup     = "GetExampleDetail",
-                TestCaseID        = "TC-PE-GD-05",
+                TestCaseID        = "GetExampleDetail_05",
                 Description       = "Happy path: valid ExampleId → Returns 200 with correctly mapped ExampleDetailDTO",
                 ExpectedResult    = "IsSuccess=true, StatusCode=200, all DTO fields mapped",
                 StatusRound1      = "Passed",
@@ -199,7 +199,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-PE-GD-06 | B | ExampleId = empty string → not found → Failure
+        // GetExampleDetail_06 | B | ExampleId = empty string → not found → Failure
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyExampleId_ShouldReturnFailure()
@@ -221,7 +221,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample
             QACollector.LogTestCase("Pronunciation Example - Get Detail", new TestCaseDetail
             {
                 FunctionGroup     = "GetExampleDetail",
-                TestCaseID        = "TC-PE-GD-06",
+                TestCaseID        = "GetExampleDetail_06",
                 Description       = "Boundary: ExampleId = empty string → repo returns null → Failure",
                 ExpectedResult    = "IsSuccess=false, GetDetailByIdAsync called with empty string",
                 StatusRound1      = "Passed",

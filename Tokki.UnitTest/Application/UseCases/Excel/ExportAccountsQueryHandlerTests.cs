@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -41,7 +41,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-EXA-01 | A | Repository returns null → DATA_NULL failure
+        // ExportAccounts_01 | A | Repository returns null → DATA_NULL failure
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_AccountsNull_ShouldReturnDataNullFailure()
@@ -62,7 +62,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Export Accounts", new TestCaseDetail
             {
                 FunctionGroup     = "ExportAccounts",
-                TestCaseID        = "TC-EXC-EXA-01",
+                TestCaseID        = "ExportAccounts_01",
                 Description       = "Repository returns null collection",
                 ExpectedResult    = "Return Failure DATA_NULL",
                 StatusRound1      = "Passed",
@@ -73,7 +73,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-EXA-02 | A | Repository returns empty list → export empty file
+        // ExportAccounts_02 | A | Repository returns empty list → export empty file
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_AccountsEmpty_ShouldExportEmptyFile()
@@ -99,7 +99,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Export Accounts", new TestCaseDetail
             {
                 FunctionGroup     = "ExportAccounts",
-                TestCaseID        = "TC-EXC-EXA-02",
+                TestCaseID        = "ExportAccounts_02",
                 Description       = "Repository returns empty collection, proceeds to generate file with headers only",
                 ExpectedResult    = "Return 200 with FileBytes",
                 StatusRound1      = "Passed",
@@ -110,7 +110,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-EXA-03 | N | Valid data → properly mapped and file exported
+        // ExportAccounts_03 | N | Valid data → properly mapped and file exported
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidData_ShouldReturnWrappedFileBytes()
@@ -139,7 +139,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Export Accounts", new TestCaseDetail
             {
                 FunctionGroup     = "ExportAccounts",
-                TestCaseID        = "TC-EXC-EXA-03",
+                TestCaseID        = "ExportAccounts_03",
                 Description       = "Valid data extraction translates to generated file bytes correctly",
                 ExpectedResult    = "Return 200 with FileBytes and Filename",
                 StatusRound1      = "Passed",
@@ -150,7 +150,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-EXA-04 | N | Null properties in data → ExportAsync still called
+        // ExportAccounts_04 | N | Null properties in data → ExportAsync still called
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NullPropertiesInData_ShouldFallbackSafely()
@@ -181,7 +181,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Export Accounts", new TestCaseDetail
             {
                 FunctionGroup     = "ExportAccounts",
-                TestCaseID        = "TC-EXC-EXA-04",
+                TestCaseID        = "ExportAccounts_04",
                 Description       = "Fields with null values still allow ExportAsync to be called",
                 ExpectedResult    = "Return 200, ExportAsync called once",
                 StatusRound1      = "Passed",
@@ -192,7 +192,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-EXA-05 | N | Password column is included in ignoredColumns
+        // ExportAccounts_05 | N | Password column is included in ignoredColumns
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_IgnoredColumnsSetup_ShouldExcludePassword()
@@ -224,7 +224,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Export Accounts", new TestCaseDetail
             {
                 FunctionGroup     = "ExportAccounts",
-                TestCaseID        = "TC-EXC-EXA-05",
+                TestCaseID        = "ExportAccounts_05",
                 Description       = "Password column is in ignored columns configuration list",
                 ExpectedResult    = "Return 200, ignoredList contains Password",
                 StatusRound1      = "Passed",
@@ -235,7 +235,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-EXA-06 | A | IExcelBaseService throws → return EXPORT_EXCEPTION
+        // ExportAccounts_06 | A | IExcelBaseService throws → return EXPORT_EXCEPTION
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ExcelExportThrows_ShouldReturnExceptionMessage()
@@ -264,7 +264,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Export Accounts", new TestCaseDetail
             {
                 FunctionGroup     = "ExportAccounts",
-                TestCaseID        = "TC-EXC-EXA-06",
+                TestCaseID        = "ExportAccounts_06",
                 Description       = "General exception occurs during core Excel byte manipulation",
                 ExpectedResult    = "Return Failure EXPORT_EXCEPTION",
                 StatusRound1      = "Passed",

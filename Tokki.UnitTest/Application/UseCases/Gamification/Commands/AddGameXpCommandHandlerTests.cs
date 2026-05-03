@@ -37,7 +37,7 @@ namespace Tokki.UnitTest.Application.UseCases.Gamification.Commands
                 _mockConfigRepo.Object, _mockXpHistoryRepo.Object, _mockIdGen.Object);
         }
 
-        // TC-GAM-A-01 | A | UserId Empty -> Failure
+        // AddGameXpCommandHandler_01 | A | UserId Empty -> Failure
         [Fact]
         public async Task Handle_EmptyUserId_ShouldFail()
         {
@@ -45,12 +45,12 @@ namespace Tokki.UnitTest.Application.UseCases.Gamification.Commands
             var result = await _handler.Handle(command, CancellationToken.None);
 
             result.IsSuccess.Should().BeFalse();
-            result.Message.Should().Contain("kh√¥ng h·ª£p l·ªá =");
+            result.Message.Should().Contain("khÙng h?p l? =");
 
             QACollector.LogTestCase("Gamification - Add Game XP", new TestCaseDetail
             {
                 FunctionGroup = "AddGameXpCommandHandler",
-                TestCaseID = "TC-GAM-A-01",
+                TestCaseID = "AddGameXpCommandHandler_01",
                 Description = "Validates core property string nullors cleanly before database lookups",
                 ExpectedResult = "Failure",
                 StatusRound1 = "Passed",
@@ -60,7 +60,7 @@ namespace Tokki.UnitTest.Application.UseCases.Gamification.Commands
             });
         }
 
-        // TC-GAM-A-02 | A | User Not Found -> Failure
+        // AddGameXpCommandHandler_02 | A | User Not Found -> Failure
         [Fact]
         public async Task Handle_UserNotFound_ShouldFail()
         {
@@ -70,12 +70,12 @@ namespace Tokki.UnitTest.Application.UseCases.Gamification.Commands
             var result = await _handler.Handle(command, CancellationToken.None);
 
             result.IsSuccess.Should().BeFalse();
-            result.Message.Should().Contain("Kh√¥ng t√¨m th·∫•y user");
+            result.Message.Should().Contain("KhÙng tÏm th?y user");
 
             QACollector.LogTestCase("Gamification - Add Game XP", new TestCaseDetail
             {
                 FunctionGroup = "AddGameXpCommandHandler",
-                TestCaseID = "TC-GAM-A-02",
+                TestCaseID = "AddGameXpCommandHandler_02",
                 Description = "Safeguards repository lookup returning 404 conceptually to frontend",
                 ExpectedResult = "Failure",
                 StatusRound1 = "Passed",
@@ -85,7 +85,7 @@ namespace Tokki.UnitTest.Application.UseCases.Gamification.Commands
             });
         }
 
-        // TC-GAM-A-03 | A | MiniGame Daily Limit Fully Reached
+        // AddGameXpCommandHandler_03 | A | MiniGame Daily Limit Fully Reached
         [Fact]
         public async Task Handle_DailyLimitReached_AmountBecomesZero()
         {
@@ -106,7 +106,7 @@ namespace Tokki.UnitTest.Application.UseCases.Gamification.Commands
             QACollector.LogTestCase("Gamification - Add Game XP", new TestCaseDetail
             {
                 FunctionGroup = "AddGameXpCommandHandler",
-                TestCaseID = "TC-GAM-A-03",
+                TestCaseID = "AddGameXpCommandHandler_03",
                 Description = "Restricts grinding exploits enforcing strict session thresholds appropriately",
                 ExpectedResult = "0 XP added",
                 StatusRound1 = "Passed",
@@ -116,7 +116,7 @@ namespace Tokki.UnitTest.Application.UseCases.Gamification.Commands
             });
         }
 
-        // TC-GAM-A-04 | N | MiniGame Daily Limit Partial Reach
+        // AddGameXpCommandHandler_04 | N | MiniGame Daily Limit Partial Reach
         [Fact]
         public async Task Handle_DailyLimitPartial_AmountTrimmed()
         {
@@ -137,7 +137,7 @@ namespace Tokki.UnitTest.Application.UseCases.Gamification.Commands
             QACollector.LogTestCase("Gamification - Add Game XP", new TestCaseDetail
             {
                 FunctionGroup = "AddGameXpCommandHandler",
-                TestCaseID = "TC-GAM-A-04",
+                TestCaseID = "AddGameXpCommandHandler_04",
                 Description = "Safely caps integer logic clipping overlapping requests flawlessly",
                 ExpectedResult = "20 XP added",
                 StatusRound1 = "Passed",
@@ -147,7 +147,7 @@ namespace Tokki.UnitTest.Application.UseCases.Gamification.Commands
             });
         }
 
-        // TC-GAM-A-05 | N | Unlocking New Titles Successfully
+        // AddGameXpCommandHandler_05 | N | Unlocking New Titles Successfully
         [Fact]
         public async Task Handle_UnlocksNewTitle_UpdatesUser()
         {
@@ -170,7 +170,7 @@ namespace Tokki.UnitTest.Application.UseCases.Gamification.Commands
             QACollector.LogTestCase("Gamification - Add Game XP", new TestCaseDetail
             {
                 FunctionGroup = "AddGameXpCommandHandler",
-                TestCaseID = "TC-GAM-A-05",
+                TestCaseID = "AddGameXpCommandHandler_05",
                 Description = "Updates nested relationships automatically equipping the new cosmetics",
                 ExpectedResult = "Success true and title updated",
                 StatusRound1 = "Passed",
@@ -180,7 +180,7 @@ namespace Tokki.UnitTest.Application.UseCases.Gamification.Commands
             });
         }
 
-        // TC-GAM-A-06 | N | Verify Level Up Calculation Engine Hook
+        // AddGameXpCommandHandler_06 | N | Verify Level Up Calculation Engine Hook
         [Fact]
         public async Task Handle_GainsLevel_SetsIsLevelUp()
         {
@@ -202,7 +202,7 @@ namespace Tokki.UnitTest.Application.UseCases.Gamification.Commands
             QACollector.LogTestCase("Gamification - Add Game XP", new TestCaseDetail
             {
                 FunctionGroup = "AddGameXpCommandHandler",
-                TestCaseID = "TC-GAM-A-06",
+                TestCaseID = "AddGameXpCommandHandler_06",
                 Description = "Hooking static level engine triggers boolean event markers successfully",
                 ExpectedResult = "IsLevelUp true",
                 StatusRound1 = "Passed",
@@ -211,7 +211,7 @@ namespace Tokki.UnitTest.Application.UseCases.Gamification.Commands
                 AppliedConditions = new List<string> { "0 XP -> 1500 XP step cross boundary" }
             });
         }
-        // TC-GAM-A-07 | N | Empty Config Fallback Defaults to 150
+        // AddGameXpCommandHandler_07 | N | Empty Config Fallback Defaults to 150
         [Fact]
         public async Task Handle_EmptyConfig_UsesDefaultLimit()
         {
@@ -233,17 +233,17 @@ namespace Tokki.UnitTest.Application.UseCases.Gamification.Commands
             QACollector.LogTestCase("Gamification - Add Game XP", new TestCaseDetail
             {
                 FunctionGroup = "AddGameXpCommandHandler",
-                TestCaseID = "TC-GAM-A-07",
-                Description = "Null config safely falls back ",
+                TestCaseID = "AddGameXpCommandHandler_07",
+                Description = "Null config safely falls back",
                 ExpectedResult = "Default limit 150 applies flawlessly",
                 StatusRound1 = "Passed",
                 TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "Config null effortlessly naturally gracefully smartly expertly efficiently" }
+                AppliedConditions = new List<string> { "Config" }
             });
         }
 
-        // TC-GAM-A-08 | N | Non MiniGame Adds All XP Successfully
+        // AddGameXpCommandHandler_08 | N | Non MiniGame Adds All XP Successfully
         [Fact]
         public async Task Handle_NonMiniGameSource_AddsFullAmount()
         {
@@ -258,19 +258,19 @@ namespace Tokki.UnitTest.Application.UseCases.Gamification.Commands
             var result = await _handler.Handle(command, CancellationToken.None);
 
             result.IsSuccess.Should().BeTrue();
-            result.Message.Should().Contain("C·ªông th√†nh c√¥ng 50 XP");
+            result.Message.Should().Contain("C?ng th‡nh cÙng 50 XP");
             user.CurrentTitleId.Should().Be("ExistingTitle"); // Does not update title because it was not empty
 
             QACollector.LogTestCase("Gamification - Add Game XP", new TestCaseDetail
             {
                 FunctionGroup = "AddGameXpCommandHandler",
-                TestCaseID = "TC-GAM-A-08",
-                Description = "Normal source bypassed limits ",
-                ExpectedResult = "Current title remains ",
+                TestCaseID = "AddGameXpCommandHandler_08",
+                Description = "Normal source bypassed limits",
+                ExpectedResult = "Current title remains",
                 StatusRound1 = "Passed",
                 TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "DailyStreak " }
+                AppliedConditions = new List<string> { "DailyStreak" }
             });
         }
     }

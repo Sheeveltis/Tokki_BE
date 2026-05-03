@@ -29,7 +29,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Commands
             _handler = new CreatePronunciationExampleCommandHandler(_mockRepo.Object, _mockRuleRepo.Object, _mockIdGen.Object);
         }
 
-        // TC-PRN-CPE-01 | A | Rule Not Found -> 404
+        // CreatePronunciationExampleCommandHandler_01 | A | Rule Not Found -> 404
         [Fact]
         public async Task Handle_RuleNotFound_ShouldReturn404()
         {
@@ -45,7 +45,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Commands
             QACollector.LogTestCase("Pronunciation Example - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreatePronunciationExampleCommandHandler",
-                TestCaseID = "TC-PRN-CPE-01",
+                TestCaseID = "CreatePronunciationExampleCommandHandler_01",
                 Description = "Validates parent requirement checking foreign rule key",
                 ExpectedResult = "404 Error",
                 StatusRound1 = "Passed",
@@ -55,7 +55,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Commands
             });
         }
 
-        // TC-PRN-CPE-02 | N | Entity Assigned Correct IDs
+        // CreatePronunciationExampleCommandHandler_02 | N | Entity Assigned Correct IDs
         [Fact]
         public async Task Handle_ValidInput_AssignsCorrectIds()
         {
@@ -71,7 +71,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Commands
             QACollector.LogTestCase("Pronunciation Example - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreatePronunciationExampleCommandHandler",
-                TestCaseID = "TC-PRN-CPE-02",
+                TestCaseID = "CreatePronunciationExampleCommandHandler_02",
                 Description = "Custom generated identities bridge mapping into output signals clearly",
                 ExpectedResult = "Success return ID",
                 StatusRound1 = "Passed",
@@ -81,7 +81,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Commands
             });
         }
 
-        // TC-PRN-CPE-03 | N | Tracks Audit Log Safely
+        // CreatePronunciationExampleCommandHandler_03 | N | Tracks Audit Log Safely
         [Fact]
         public async Task Handle_TrackersWork_Succeeds()
         {
@@ -100,7 +100,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Commands
             QACollector.LogTestCase("Pronunciation Example - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreatePronunciationExampleCommandHandler",
-                TestCaseID = "TC-PRN-CPE-03",
+                TestCaseID = "CreatePronunciationExampleCommandHandler_03",
                 Description = "Audit user strings match parameter binding",
                 ExpectedResult = "Correct CreateBy attribute",
                 StatusRound1 = "Passed",
@@ -110,7 +110,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Commands
             });
         }
 
-        // TC-PRN-CPE-04 | N | Invokes DB Operations Correctly
+        // CreatePronunciationExampleCommandHandler_04 | N | Invokes DB Operations Correctly
         [Fact]
         public async Task Handle_InvokesContextSaveChanges_Correctly()
         {
@@ -125,7 +125,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Commands
             QACollector.LogTestCase("Pronunciation Example - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreatePronunciationExampleCommandHandler",
-                TestCaseID = "TC-PRN-CPE-04",
+                TestCaseID = "CreatePronunciationExampleCommandHandler_04",
                 Description = "Persistence mechanics execute unconditionally on correct validations",
                 ExpectedResult = "Save execution verified",
                 StatusRound1 = "Passed",
@@ -135,7 +135,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Commands
             });
         }
 
-        // TC-PRN-CPE-05 | N | Full Properties Passed Perfectly
+        // CreatePronunciationExampleCommandHandler_05 | N | Full Properties Passed Perfectly
         [Fact]
         public async Task Handle_FullProperties_SucceedsValid()
         {
@@ -148,7 +148,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Commands
             var command = new CreatePronunciationExampleCommand 
             { 
                 PronunciationRuleId = "R1", TargetScript = "A", RawScript = "A_row", AudioUrl = "mp3", 
-                PhoneticScript = "Aa", Meaning = "Mnn", SortOrder = 1
+                PhoneticScript = "Aa", Meaning = "Mnn"
             };
             var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -159,7 +159,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Commands
             QACollector.LogTestCase("Pronunciation Example - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreatePronunciationExampleCommandHandler",
-                TestCaseID = "TC-PRN-CPE-05",
+                TestCaseID = "CreatePronunciationExampleCommandHandler_05",
                 Description = "All complex domain variables parse tightly filling structure variables flawlessly",
                 ExpectedResult = "Successful wide mapping",
                 StatusRound1 = "Passed",
@@ -169,7 +169,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Commands
             });
         }
         
-        // TC-PRN-CPE-06 | N | Null Audio Handled (Graceful Empty Strings allowed depending on model)
+        // CreatePronunciationExampleCommandHandler_06 | N | Null Audio Handled (Graceful Empty Strings allowed depending on model)
         [Fact]
         public async Task Handle_OptionalFields_ProceedsSafely()
         {
@@ -184,7 +184,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Commands
             QACollector.LogTestCase("Pronunciation Example - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreatePronunciationExampleCommandHandler",
-                TestCaseID = "TC-PRN-CPE-06",
+                TestCaseID = "CreatePronunciationExampleCommandHandler_06",
                 Description = "Accepts barebones partial structures letting fluent validator manage data validation previously",
                 ExpectedResult = "Success Code 201",
                 StatusRound1 = "Passed",

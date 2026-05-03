@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -79,7 +79,7 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap.Commands
             QACollector.LogTestCase("Roadmap - Generate Roadmap", new TestCaseDetail
             {
                 FunctionGroup     = "GenerateRoadmapCommandHandler",
-                TestCaseID        = "TC-RDM-GRC-01",
+                TestCaseID        = "GenerateRoadmapCommandHandler_01",
                 Description       = "Fails if an active roadmap exists",
                 ExpectedResult    = "400 Failure",
                 StatusRound1      = "Passed",
@@ -109,7 +109,7 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap.Commands
             QACollector.LogTestCase("Roadmap - Generate Roadmap", new TestCaseDetail
             {
                 FunctionGroup     = "GenerateRoadmapCommandHandler",
-                TestCaseID        = "TC-RDM-GRC-02",
+                TestCaseID        = "GenerateRoadmapCommandHandler_02",
                 Description       = "No active roadmap smoothly starts background",
                 ExpectedResult    = "202 Success",
                 StatusRound1      = "Passed",

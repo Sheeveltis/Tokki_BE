@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -23,7 +23,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             return new UpdateMyLevelCommandHandler(_accountRepoMock.Object);
         }
 
-        // TC-ACC-UML-01 | A | User Not Found -> 404
+        // UpdateMyLevelCommandHandler_01 | A | User Not Found -> 404
         [Fact]
         public async Task Handle_UserNotFound_ShouldReturn404()
         {
@@ -38,7 +38,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Update My Level", new TestCaseDetail
             {
                 FunctionGroup = "UpdateMyLevelCommandHandler",
-                TestCaseID = "TC-ACC-UML-01",
+                TestCaseID = "UpdateMyLevelCommandHandler_01",
                 Description = "User not found returns 404",
                 ExpectedResult = "404 UserNotFound",
                 StatusRound1 = "Passed",
@@ -48,7 +48,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-UML-02 | A | Inactive User -> 403
+        // UpdateMyLevelCommandHandler_02 | A | Inactive User -> 403
         [Fact]
         public async Task Handle_InactiveUser_ShouldReturn403()
         {
@@ -65,7 +65,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Update My Level", new TestCaseDetail
             {
                 FunctionGroup = "UpdateMyLevelCommandHandler",
-                TestCaseID = "TC-ACC-UML-02",
+                TestCaseID = "UpdateMyLevelCommandHandler_02",
                 Description = "Inactive user fails checks",
                 ExpectedResult = "403 AccountInActive",
                 StatusRound1 = "Passed",
@@ -75,7 +75,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-UML-03 | A | Banned User -> 403
+        // UpdateMyLevelCommandHandler_03 | A | Banned User -> 403
         [Fact]
         public async Task Handle_BannedUser_ShouldReturn403()
         {
@@ -92,7 +92,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Update My Level", new TestCaseDetail
             {
                 FunctionGroup = "UpdateMyLevelCommandHandler",
-                TestCaseID = "TC-ACC-UML-03",
+                TestCaseID = "UpdateMyLevelCommandHandler_03",
                 Description = "Banned user fails checks",
                 ExpectedResult = "403 AccountBanned",
                 StatusRound1 = "Passed",
@@ -102,7 +102,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-UML-04 | A | Locked User -> 403
+        // UpdateMyLevelCommandHandler_04 | A | Locked User -> 403
         [Fact]
         public async Task Handle_LockedUser_ShouldReturn403()
         {
@@ -119,7 +119,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Update My Level", new TestCaseDetail
             {
                 FunctionGroup = "UpdateMyLevelCommandHandler",
-                TestCaseID = "TC-ACC-UML-04",
+                TestCaseID = "UpdateMyLevelCommandHandler_04",
                 Description = "Locked user fails checks",
                 ExpectedResult = "403 AccountLocked",
                 StatusRound1 = "Passed",
@@ -129,7 +129,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-UML-05 | A | Invalid Level Enum Cast -> 400
+        // UpdateMyLevelCommandHandler_05 | A | Invalid Level Enum Cast -> 400
         [Fact]
         public async Task Handle_InvalidLevelEnum_ShouldReturn400()
         {
@@ -145,7 +145,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Update My Level", new TestCaseDetail
             {
                 FunctionGroup = "UpdateMyLevelCommandHandler",
-                TestCaseID = "TC-ACC-UML-05",
+                TestCaseID = "UpdateMyLevelCommandHandler_05",
                 Description = "Fails inner handler validation if valid int violates enum constraints",
                 ExpectedResult = "400 Invalid Level",
                 StatusRound1 = "Passed",
@@ -155,7 +155,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-UML-06 | N | Valid Level Mapping -> 200
+        // UpdateMyLevelCommandHandler_06 | N | Valid Level Mapping -> 200
         [Fact]
         public async Task Handle_ValidLevel_ShouldUpdateLevelAndReturn200()
         {
@@ -174,7 +174,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Update My Level", new TestCaseDetail
             {
                 FunctionGroup = "UpdateMyLevelCommandHandler",
-                TestCaseID = "TC-ACC-UML-06",
+                TestCaseID = "UpdateMyLevelCommandHandler_06",
                 Description = "Succesfully changes TopicLevel",
                 ExpectedResult = "200 Success + Level casted",
                 StatusRound1 = "Passed",
@@ -184,7 +184,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-UML-07 | N | Null Level Mapping -> Sets Level to null -> 200
+        // UpdateMyLevelCommandHandler_07 | N | Null Level Mapping -> Sets Level to null -> 200
         [Fact]
         public async Task Handle_NullLevel_ShouldSetLevelToNullAndReturn200()
         {
@@ -203,7 +203,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Update My Level", new TestCaseDetail
             {
                 FunctionGroup = "UpdateMyLevelCommandHandler",
-                TestCaseID = "TC-ACC-UML-07",
+                TestCaseID = "UpdateMyLevelCommandHandler_07",
                 Description = "Allows removing a level completely",
                 ExpectedResult = "200 Success + Level becomes null",
                 StatusRound1 = "Passed",

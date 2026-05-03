@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -24,7 +24,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-SUB-01 | A | Empty QuestionBankIds → 400
+        // SubmitQuestionBankForApproval_01 | A | Empty QuestionBankIds → 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyIds_ShouldReturn400()
@@ -46,7 +46,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Submit For Approval", new TestCaseDetail
             {
                 FunctionGroup     = "SubmitQuestionBankForApproval",
-                TestCaseID        = "TC-QB-SUB-01",
+                TestCaseID        = "SubmitQuestionBankForApproval_01",
                 Description       = "Empty QuestionBankIds → 400 ValidationFailed",
                 ExpectedResult    = "IsSuccess=false, StatusCode=400",
                 StatusRound1      = "Passed",
@@ -57,7 +57,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-SUB-02 | A | QB ID not found → 404
+        // SubmitQuestionBankForApproval_02 | A | QB ID not found → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_IdNotFound_ShouldReturn404()
@@ -80,7 +80,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Submit For Approval", new TestCaseDetail
             {
                 FunctionGroup     = "SubmitQuestionBankForApproval",
-                TestCaseID        = "TC-QB-SUB-02",
+                TestCaseID        = "SubmitQuestionBankForApproval_02",
                 Description       = "QuestionBankId not found → 404 QuestionBankNotFound",
                 ExpectedResult    = "IsSuccess=false, StatusCode=404",
                 StatusRound1      = "Passed",
@@ -91,7 +91,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-SUB-03 | A | QB not in Draft or Rejected → 400
+        // SubmitQuestionBankForApproval_03 | A | QB not in Draft or Rejected → 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ActiveQB_ShouldReturn400()
@@ -115,7 +115,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Submit For Approval", new TestCaseDetail
             {
                 FunctionGroup     = "SubmitQuestionBankForApproval",
-                TestCaseID        = "TC-QB-SUB-03",
+                TestCaseID        = "SubmitQuestionBankForApproval_03",
                 Description       = "Active QB cannot be submitted (not Draft/Rejected) → 400",
                 ExpectedResult    = "IsSuccess=false, StatusCode=400",
                 StatusRound1      = "Passed",
@@ -126,7 +126,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-SUB-04 | N | Draft QB → submitted to PendingApproval, 200
+        // SubmitQuestionBankForApproval_04 | N | Draft QB → submitted to PendingApproval, 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DraftQB_ShouldSubmitAndReturn200()
@@ -153,7 +153,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Submit For Approval", new TestCaseDetail
             {
                 FunctionGroup     = "SubmitQuestionBankForApproval",
-                TestCaseID        = "TC-QB-SUB-04",
+                TestCaseID        = "SubmitQuestionBankForApproval_04",
                 Description       = "Draft QB → submitted, status=PendingApproval, UpdateAsync+SaveChanges called, 200",
                 ExpectedResult    = "IsSuccess=true, StatusCode=200, Data contains QB id",
                 StatusRound1      = "Passed",
@@ -164,7 +164,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-SUB-05 | N | Rejected QB → re-submitted to PendingApproval, 200
+        // SubmitQuestionBankForApproval_05 | N | Rejected QB → re-submitted to PendingApproval, 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RejectedQB_ShouldResubmitAndReturn200()
@@ -189,7 +189,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Submit For Approval", new TestCaseDetail
             {
                 FunctionGroup     = "SubmitQuestionBankForApproval",
-                TestCaseID        = "TC-QB-SUB-05",
+                TestCaseID        = "SubmitQuestionBankForApproval_05",
                 Description       = "Rejected QB → re-submitted to PendingApproval, ApprovedBy reset, 200",
                 ExpectedResult    = "IsSuccess=true, StatusCode=200, Data contains QB id",
                 StatusRound1      = "Passed",
@@ -200,7 +200,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-SUB-06 | N | ApprovedBy and ApprovedDate reset on resubmit
+        // SubmitQuestionBankForApproval_06 | N | ApprovedBy and ApprovedDate reset on resubmit
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RejectedQB_ShouldResetAuditFields()
@@ -226,7 +226,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Submit For Approval", new TestCaseDetail
             {
                 FunctionGroup     = "SubmitQuestionBankForApproval",
-                TestCaseID        = "TC-QB-SUB-06",
+                TestCaseID        = "SubmitQuestionBankForApproval_06",
                 Description       = "Resubmit resets ApprovedBy and ApprovedDate to null",
                 ExpectedResult    = "UpdateAsync called with ApprovedBy=null, ApprovedDate=null",
                 StatusRound1      = "Passed",

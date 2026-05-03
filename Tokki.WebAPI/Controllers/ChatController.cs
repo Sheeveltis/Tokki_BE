@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -9,6 +9,9 @@ using Tokki.Application.UseCases.LiveChat.Commands.JoinSupportChat;
 using Tokki.Application.UseCases.LiveChat.Queries.GetChatHistory;
 using Tokki.Application.UseCases.LiveChat.Queries.GetMyRooms;
 using Tokki.Application.UseCases.LiveChat.Queries.GetPendingSupports;
+using Tokki.Application.UseCases.LiveChat.Queries.GetActiveSupportRoom;
+using Tokki.Application.UseCases.LiveChat.Queries.GetClosedSupportRooms;
+using Tokki.Application.UseCases.LiveChat.Queries.GetAllActiveSupports;
 using Tokki.WebAPI.Hubs;
 
 namespace Tokki.WebAPI.Controllers
@@ -74,6 +77,31 @@ namespace Tokki.WebAPI.Controllers
             var result = await _sender.Send(new GetChatHistoryQuery { RoomId = roomId });
             return StatusCode(result.StatusCode, result);
         }
+        
+        [HttpGet("support/active-all")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetActiveSupportsForAdmin()
+        {
+            var result = await _sender.Send(new GetAllActiveSupportsQuery());
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpGet("support/active")]
+        public async Task<IActionResult> GetActiveSupportRoom()
+        {
+            var userId = User.FindFirst("UserId")?.Value
+                         ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var result = await _sender.Send(new GetActiveSupportRoomQuery { UserId = userId! });
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpGet("support/history")]
+        public async Task<IActionResult> GetSupportHistory([FromQuery] int days = 7, [FromQuery] string? search = null)
+        {
+            var result = await _sender.Send(new GetClosedSupportRoomsQuery { Days = days, Search = search });
+            return StatusCode(result.StatusCode, result);
+        }
 
         [HttpPut("support/{roomId}/close")]
         public async Task<IActionResult> CloseSupportChat(string roomId)
@@ -87,12 +115,6 @@ namespace Tokki.WebAPI.Controllers
             };
 
             var result = await _sender.Send(command);
-
-            if (result.IsSuccess)
-            {
-                await _hubContext.Clients.Group(roomId).SendAsync("RoomClosed", roomId);
-            }
-
             return StatusCode(result.StatusCode, result);
         }
     }

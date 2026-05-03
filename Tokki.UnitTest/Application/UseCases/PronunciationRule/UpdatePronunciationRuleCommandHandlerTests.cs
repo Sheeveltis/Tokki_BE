@@ -21,9 +21,9 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
                 (repo ?? MockPronunciationRuleRepository.GetMock()).Object);
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-PR-UPD-01 | A | RuleId not found → 404 Failure
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdatePronunciationRule_01 | A | RuleId not found ? 404 Failure
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_RuleNotFound_ShouldReturn404Failure()
         {
@@ -33,8 +33,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             var command = new UpdatePronunciationRuleCommand
             {
                 PronunciationRuleId = "RULE-NOTEXIST",
-                RuleName            = "New Name",
-                SortOrder           = 1
+                RuleName            = "New Name"
             };
 
             // Act
@@ -48,8 +47,8 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation Rule - Update", new TestCaseDetail
             {
                 FunctionGroup     = "UpdatePronunciationRule",
-                TestCaseID        = "TC-PR-UPD-01",
-                Description       = "PronunciationRuleId does not exist → return 404 Failure",
+                TestCaseID        = "UpdatePronunciationRule_01",
+                Description       = "PronunciationRuleId does not exist ? return 404 Failure",
                 ExpectedResult    = "IsSuccess=false, StatusCode=404",
                 StatusRound1      = "Passed",
                 TestCaseType      = "A",
@@ -58,14 +57,14 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-PR-UPD-02 | A | RuleName duplicate (excluding self) → 400 Failure
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdatePronunciationRule_02 | A | RuleName duplicate (excluding self) ? 400 Failure
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_DuplicateRuleNameExcludingSelf_ShouldReturn400Failure()
         {
             // Arrange
-            var existingRule = MockPronunciationRuleRepository.GetSampleRule("RULE-001", "받침 발음");
+            var existingRule = MockPronunciationRuleRepository.GetSampleRule("RULE-001", "?? ??");
             var repo = MockPronunciationRuleRepository.GetMock(
                 getByIdResult: existingRule,
                 ruleNameExists: true);          // another rule has the same name
@@ -73,8 +72,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             var command = new UpdatePronunciationRuleCommand
             {
                 PronunciationRuleId = "RULE-001",
-                RuleName            = "연음 법칙", // name already taken by another rule
-                SortOrder           = 1
+                RuleName            = "?? ??" // name already taken by another rule
             };
 
             // Act
@@ -88,8 +86,8 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation Rule - Update", new TestCaseDetail
             {
                 FunctionGroup     = "UpdatePronunciationRule",
-                TestCaseID        = "TC-PR-UPD-02",
-                Description       = "RuleName already taken by another rule (excluding self) → return 400 Failure",
+                TestCaseID        = "UpdatePronunciationRule_02",
+                Description       = "RuleName already taken by another rule (excluding self) ? return 400 Failure",
                 ExpectedResult    = "IsSuccess=false, StatusCode=400",
                 StatusRound1      = "Passed",
                 TestCaseType      = "A",
@@ -98,9 +96,9 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-PR-UPD-03 | N | Happy path → returns true, StatusCode=200
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdatePronunciationRule_03 | N | Happy path ? returns true, StatusCode=200
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_ValidUpdate_ShouldReturnTrueWith200()
         {
@@ -116,7 +114,6 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
                 RuleName            = "Updated Rule Name",
                 Description         = "Updated description",
                 Content             = "Updated content",
-                SortOrder           = 5,
                 UpdateBy            = "ADMIN-001"
             };
 
@@ -132,8 +129,8 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation Rule - Update", new TestCaseDetail
             {
                 FunctionGroup     = "UpdatePronunciationRule",
-                TestCaseID        = "TC-PR-UPD-03",
-                Description       = "Happy path: rule found and new name unique → updates and returns true with 200",
+                TestCaseID        = "UpdatePronunciationRule_03",
+                Description       = "Happy path: rule found and new name unique ? updates and returns true with 200",
                 ExpectedResult    = "IsSuccess=true, StatusCode=200, Data=true",
                 StatusRound1      = "Passed",
                 TestCaseType      = "N",
@@ -142,9 +139,9 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-PR-UPD-04 | N | UpdateAsync and SaveChangesAsync each called exactly once
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdatePronunciationRule_04 | N | UpdateAsync and SaveChangesAsync each called exactly once
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_ValidUpdate_ShouldCallUpdateAndSaveOnce()
         {
@@ -157,8 +154,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             var command = new UpdatePronunciationRuleCommand
             {
                 PronunciationRuleId = existingRule.PronunciationRuleId,
-                RuleName            = "Unique New Name",
-                SortOrder           = 2
+                RuleName            = "Unique New Name"
             };
 
             // Act
@@ -172,8 +168,8 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation Rule - Update", new TestCaseDetail
             {
                 FunctionGroup     = "UpdatePronunciationRule",
-                TestCaseID        = "TC-PR-UPD-04",
-                Description       = "Happy path → UpdateAsync and SaveChangesAsync each called exactly once",
+                TestCaseID        = "UpdatePronunciationRule_04",
+                Description       = "Happy path ? UpdateAsync and SaveChangesAsync each called exactly once",
                 ExpectedResult    = "UpdateAsync Times.Once, SaveChangesAsync Times.Once",
                 StatusRound1      = "Passed",
                 TestCaseType      = "N",
@@ -182,9 +178,9 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-PR-UPD-05 | A | Repository throws on GetByIdAsync → exception propagates
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdatePronunciationRule_05 | A | Repository throws on GetByIdAsync ? exception propagates
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
         {
@@ -196,8 +192,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             var command = new UpdatePronunciationRuleCommand
             {
                 PronunciationRuleId = "RULE-001",
-                RuleName            = "Test",
-                SortOrder           = 1
+                RuleName            = "Test"
             };
 
             // Act
@@ -210,8 +205,8 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             QACollector.LogTestCase("Pronunciation Rule - Update", new TestCaseDetail
             {
                 FunctionGroup     = "UpdatePronunciationRule",
-                TestCaseID        = "TC-PR-UPD-05",
-                Description       = "Repository throws exception on GetByIdAsync → exception propagates",
+                TestCaseID        = "UpdatePronunciationRule_05",
+                Description       = "Repository throws exception on GetByIdAsync ? exception propagates",
                 ExpectedResult    = "InvalidOperationException thrown",
                 StatusRound1      = "Passed",
                 TestCaseType      = "A",
@@ -220,9 +215,9 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-PR-UPD-06 | B | RuleName with spaces → trimmed before IsRuleNameExistsAsync
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdatePronunciationRule_06 | B | RuleName with spaces ? trimmed before IsRuleNameExistsAsync
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_RuleNameWithSpaces_ShouldTrimBeforeDuplicateCheck()
         {
@@ -235,27 +230,26 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationRule
             var command = new UpdatePronunciationRuleCommand
             {
                 PronunciationRuleId = "RULE-001",
-                RuleName            = "  경음화  ",
-                SortOrder           = 1
+                RuleName            = "  ???"
             };
 
             // Act
             await handler.Handle(command, CancellationToken.None);
 
             // Assert: IsRuleNameExistsAsync called with trimmed name and excludeId
-            repo.Verify(x => x.IsRuleNameExistsAsync("경음화", "RULE-001"), Times.Once);
+            repo.Verify(x => x.IsRuleNameExistsAsync("???", "RULE-001"), Times.Once);
 
             // Excel Log
             QACollector.LogTestCase("Pronunciation Rule - Update", new TestCaseDetail
             {
                 FunctionGroup     = "UpdatePronunciationRule",
-                TestCaseID        = "TC-PR-UPD-06",
-                Description       = "Boundary: RuleName with leading/trailing spaces → trimmed before IsRuleNameExistsAsync call with excludeId",
-                ExpectedResult    = "IsRuleNameExistsAsync('경음화', 'RULE-001') called once",
+                TestCaseID        = "UpdatePronunciationRule_06",
+                Description       = "Boundary: RuleName with leading/trailing spaces ? trimmed before IsRuleNameExistsAsync call with excludeId",
+                ExpectedResult    = "IsRuleNameExistsAsync('???', 'RULE-001') called once",
                 StatusRound1      = "Passed",
                 TestCaseType      = "B",
                 TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "RuleName = '  경음화  '", "Trim() applied", "excludeId = PronunciationRuleId" }
+                AppliedConditions = new List<string> { "RuleName = '  ???  '", "Trim() applied", "excludeId = PronunciationRuleId" }
             });
         }
     }

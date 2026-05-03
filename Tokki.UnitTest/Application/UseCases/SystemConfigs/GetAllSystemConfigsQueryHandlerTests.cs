@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -10,6 +10,7 @@ using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.SystemConfigs.DTOs;
 using Tokki.Application.UseCases.SystemConfigs.Queries.GetAll;
 using Tokki.Domain.Entities;
+using Tokki.Domain.Enums;
 using Tokki.UnitTest.Utilities;
 using Xunit;
 
@@ -21,7 +22,7 @@ namespace Tokki.UnitTest.Application.UseCases.SystemConfigs
             List<SystemConfig>? items = null, int total = 0)
         {
             var m = new Mock<ISystemConfigRepository>();
-            m.Setup(x => x.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>()))
+            m.Setup(x => x.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<SystemConfigType?>()))
              .ReturnsAsync((items ?? new List<SystemConfig>(), total));
             return m;
         }
@@ -39,7 +40,7 @@ namespace Tokki.UnitTest.Application.UseCases.SystemConfigs
             new SystemConfig { Key = "MAINTENANCE",  Value = "false", Description = "Maintenance mode",   DataType = "bool",   IsActive = false }
         };
 
-        // TC-SYS-GALL-01 | N | Happy path: 3 configs → PagedResult Count=3
+        // GetAllSystemConfigs_01 | N | Happy path: 3 configs → PagedResult Count=3
         [Fact]
         public async Task Handle_RepoReturnsConfigs_ShouldReturn200WithPagedResult()
         {
@@ -49,10 +50,10 @@ namespace Tokki.UnitTest.Application.UseCases.SystemConfigs
             result.StatusCode.Should().Be(200);
             result.Data!.Items.Should().HaveCount(3);
             result.Data.TotalCount.Should().Be(3);
-            QACollector.LogTestCase("SystemConfig - Get All", new TestCaseDetail { FunctionGroup = "GetAllSystemConfigs", TestCaseID = "TC-SYS-GALL-01", Description = "3 configs → PagedResult Count=3, TotalCount=3", ExpectedResult = "IsSuccess=true, Items.Count=3, TotalCount=3", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetPagedAsync returns 3 items" } });
+            QACollector.LogTestCase("SystemConfig - Get All", new TestCaseDetail { FunctionGroup = "GetAllSystemConfigs", TestCaseID = "GetAllSystemConfigs_01", Description = "3 configs → PagedResult Count=3, TotalCount=3", ExpectedResult = "IsSuccess=true, Items.Count=3, TotalCount=3", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetPagedAsync returns 3 items" } });
         }
 
-        // TC-SYS-GALL-02 | N | Config fields mapped to DTO correctly
+        // GetAllSystemConfigs_02 | N | Config fields mapped to DTO correctly
         [Fact]
         public async Task Handle_RepoReturnsConfigs_DtoFieldsMappedCorrectly()
         {
@@ -62,20 +63,20 @@ namespace Tokki.UnitTest.Application.UseCases.SystemConfigs
             result.Data!.Items[0].Key.Should().Be("TEST_KEY");
             result.Data.Items[0].Value.Should().Be("test_val");
             result.Data.Items[0].IsActive.Should().BeTrue();
-            QACollector.LogTestCase("SystemConfig - Get All", new TestCaseDetail { FunctionGroup = "GetAllSystemConfigs", TestCaseID = "TC-SYS-GALL-02", Description = "SystemConfig entity mapped to SystemConfigDto correctly", ExpectedResult = "Key='TEST_KEY', Value='test_val', IsActive=true", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Entity fields mapped to DTO" } });
+            QACollector.LogTestCase("SystemConfig - Get All", new TestCaseDetail { FunctionGroup = "GetAllSystemConfigs", TestCaseID = "GetAllSystemConfigs_02", Description = "SystemConfig entity mapped to SystemConfigDto correctly", ExpectedResult = "Key='TEST_KEY', Value='test_val', IsActive=true", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Entity fields mapped to DTO" } });
         }
 
-        // TC-SYS-GALL-03 | B | GetPagedAsync called with correct page params
+        // GetAllSystemConfigs_03 | B | GetPagedAsync called with correct page params
         [Fact]
         public async Task Handle_WithPaging_GetPagedCalledWithCorrectParams()
         {
             var repo = GetRepoMock();
             await CreateHandler(repo).Handle(MakeQuery(page: 2, size: 5), CancellationToken.None);
-            repo.Verify(x => x.GetPagedAsync(2, 5), Times.Once);
-            QACollector.LogTestCase("SystemConfig - Get All", new TestCaseDetail { FunctionGroup = "GetAllSystemConfigs", TestCaseID = "TC-SYS-GALL-03", Description = "GetPagedAsync called with PageNumber=2, PageSize=5", ExpectedResult = "Times.Once with params (2,5)", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Paging params forwarded correctly" } });
+            repo.Verify(x => x.GetPagedAsync(2, 5, It.IsAny<SystemConfigType?>()), Times.Once);
+            QACollector.LogTestCase("SystemConfig - Get All", new TestCaseDetail { FunctionGroup = "GetAllSystemConfigs", TestCaseID = "GetAllSystemConfigs_03", Description = "GetPagedAsync called with PageNumber=2, PageSize=5", ExpectedResult = "Times.Once with params (2,5)", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Paging params forwarded correctly" } });
         }
 
-        // TC-SYS-GALL-04 | N | Empty list → 200 with empty PagedResult
+        // GetAllSystemConfigs_04 | N | Empty list → 200 with empty PagedResult
         [Fact]
         public async Task Handle_NoConfigs_ShouldReturn200WithEmptyPage()
         {
@@ -83,10 +84,10 @@ namespace Tokki.UnitTest.Application.UseCases.SystemConfigs
             result.IsSuccess.Should().BeTrue();
             result.Data!.Items.Should().BeEmpty();
             result.Data.TotalCount.Should().Be(0);
-            QACollector.LogTestCase("SystemConfig - Get All", new TestCaseDetail { FunctionGroup = "GetAllSystemConfigs", TestCaseID = "TC-SYS-GALL-04", Description = "No configs → 200 with empty paged result", ExpectedResult = "IsSuccess=true, Items=[], TotalCount=0", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "No system configs exist" } });
+            QACollector.LogTestCase("SystemConfig - Get All", new TestCaseDetail { FunctionGroup = "GetAllSystemConfigs", TestCaseID = "GetAllSystemConfigs_04", Description = "No configs → 200 with empty paged result", ExpectedResult = "IsSuccess=true, Items=[], TotalCount=0", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "No system configs exist" } });
         }
 
-        // TC-SYS-GALL-05 | N | Paged metadata (PageNumber, PageSize) correct
+        // GetAllSystemConfigs_05 | N | Paged metadata (PageNumber, PageSize) correct
         [Fact]
         public async Task Handle_WithPage3Size20_PagingMetadataCorrect()
         {
@@ -95,10 +96,10 @@ namespace Tokki.UnitTest.Application.UseCases.SystemConfigs
             result.Data!.PageNumber.Should().Be(3);
             result.Data.PageSize.Should().Be(20);
             result.Data.TotalCount.Should().Be(100);
-            QACollector.LogTestCase("SystemConfig - Get All", new TestCaseDetail { FunctionGroup = "GetAllSystemConfigs", TestCaseID = "TC-SYS-GALL-05", Description = "Paging metadata: Page=3, Size=20, TotalCount=100", ExpectedResult = "PageNumber=3, PageSize=20, TotalCount=100", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "TotalCount=100, page 3 of 20" } });
+            QACollector.LogTestCase("SystemConfig - Get All", new TestCaseDetail { FunctionGroup = "GetAllSystemConfigs", TestCaseID = "GetAllSystemConfigs_05", Description = "Paging metadata: Page=3, Size=20, TotalCount=100", ExpectedResult = "PageNumber=3, PageSize=20, TotalCount=100", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "TotalCount=100, page 3 of 20" } });
         }
 
-        // TC-SYS-GALL-06 | N | IsActive=false configs included in result
+        // GetAllSystemConfigs_06 | N | IsActive=false configs included in result
         [Fact]
         public async Task Handle_ConfigsIncludeInactive_AllReturnedInList()
         {
@@ -110,7 +111,7 @@ namespace Tokki.UnitTest.Application.UseCases.SystemConfigs
             var result = await CreateHandler(GetRepoMock(configs, total: 2)).Handle(MakeQuery(), CancellationToken.None);
             result.Data!.Items.Should().HaveCount(2);
             result.Data.Items.Any(x => !x.IsActive).Should().BeTrue();
-            QACollector.LogTestCase("SystemConfig - Get All", new TestCaseDetail { FunctionGroup = "GetAllSystemConfigs", TestCaseID = "TC-SYS-GALL-06", Description = "Inactive configs included in results (no filter by IsActive)", ExpectedResult = "Items.Count=2 (including inactive)", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Both active and inactive returned" } });
+            QACollector.LogTestCase("SystemConfig - Get All", new TestCaseDetail { FunctionGroup = "GetAllSystemConfigs", TestCaseID = "GetAllSystemConfigs_06", Description = "Inactive configs included in results (no filter by IsActive)", ExpectedResult = "Items.Count=2 (including inactive)", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Both active and inactive returned" } });
         }
     }
 }

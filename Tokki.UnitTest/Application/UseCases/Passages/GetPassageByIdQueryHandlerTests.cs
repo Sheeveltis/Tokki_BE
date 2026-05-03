@@ -28,13 +28,13 @@ namespace Tokki.UnitTest.Application.UseCases.Passages
         {
             PassageId = id,
             Title     = "Korean Grammar",
-            Content   = "이것은 내용입니다.",
+            Content   = "??? ?????.",
             Status    = PassageStatus.Active,
             MediaType = PassageMediaType.Text,
             CreatedAt = new DateTime(2025, 1, 15)
         };
 
-        // TC-01: Not found → 404
+        // TC-01: Not found ? 404
         [Fact]
         public async Task Handle_NotFound_ShouldReturn404()
         {
@@ -49,15 +49,15 @@ namespace Tokki.UnitTest.Application.UseCases.Passages
 
             QACollector.LogTestCase("Passage - Get By Id", new TestCaseDetail
             {
-                FunctionGroup = "GetPassageById", TestCaseID = "TC-PAS-GID-01",
-                Description = "Passage not found → 404",
+                FunctionGroup = "GetPassageById", TestCaseID = "GetPassageById_01",
+                Description = "Passage not found ? 404",
                 ExpectedResult = "Return 404 PassageNotFound", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string> { "passage == null => 404" }
             });
         }
 
-        // TC-02: Happy path → 200 DTO mapped
+        // TC-02: Happy path ? 200 DTO mapped
         [Fact]
         public async Task Handle_Found_ShouldReturn200WithDto()
         {
@@ -78,8 +78,8 @@ namespace Tokki.UnitTest.Application.UseCases.Passages
 
             QACollector.LogTestCase("Passage - Get By Id", new TestCaseDetail
             {
-                FunctionGroup = "GetPassageById", TestCaseID = "TC-PAS-GID-02",
-                Description = "Passage found → 200, DTO fields mapped correctly",
+                FunctionGroup = "GetPassageById", TestCaseID = "GetPassageById_02",
+                Description = "Passage found ? 200, DTO fields mapped correctly",
                 ExpectedResult = "Return 200, DTO mapped", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string> { "passage found => dto mapped => 200" }
@@ -95,14 +95,14 @@ namespace Tokki.UnitTest.Application.UseCases.Passages
                 .ReturnsAsync((Passage?)null);
 
             await CreateHandler(repo)
-                .Handle(new GetPassageByIdQuery { PassageId = "  P-001  " }, CancellationToken.None);
+                .Handle(new GetPassageByIdQuery { PassageId = "  P-001" }, CancellationToken.None);
 
             repo.Verify(x => x.GetByIdAsync("P-001", It.IsAny<CancellationToken>()), Times.Once);
 
             QACollector.LogTestCase("Passage - Get By Id", new TestCaseDetail
             {
-                FunctionGroup = "GetPassageById", TestCaseID = "TC-PAS-GID-03",
-                Description = "PassageId with whitespace → trimmed before repo call",
+                FunctionGroup = "GetPassageById", TestCaseID = "GetPassageById_03",
+                Description = "PassageId with whitespace ? trimmed before repo call",
                 ExpectedResult = "GetByIdAsync('P-001') called", StatusRound1 = "Passed",
                 TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string> { "request.PassageId.Trim() used" }
@@ -134,8 +134,8 @@ namespace Tokki.UnitTest.Application.UseCases.Passages
 
             QACollector.LogTestCase("Passage - Get By Id", new TestCaseDetail
             {
-                FunctionGroup = "GetPassageById", TestCaseID = "TC-PAS-GID-04",
-                Description = "Audio passage → AudioUrl and MediaType=Audio in DTO",
+                FunctionGroup = "GetPassageById", TestCaseID = "GetPassageById_04",
+                Description = "Audio passage ? AudioUrl and MediaType=Audio in DTO",
                 ExpectedResult = "Return 200, AudioUrl and MediaType correct", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string> { "type=Audio => AudioUrl mapped" }
@@ -167,15 +167,15 @@ namespace Tokki.UnitTest.Application.UseCases.Passages
 
             QACollector.LogTestCase("Passage - Get By Id", new TestCaseDetail
             {
-                FunctionGroup = "GetPassageById", TestCaseID = "TC-PAS-GID-05",
-                Description = "Image passage → ImageUrl and MediaType=Image in DTO",
+                FunctionGroup = "GetPassageById", TestCaseID = "GetPassageById_05",
+                Description = "Image passage ? ImageUrl and MediaType=Image in DTO",
                 ExpectedResult = "Return 200, ImageUrl set", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string> { "type=Image => ImageUrl mapped" }
             });
         }
 
-        // TC-06: Repository throws → 500
+        // TC-06: Repository throws ? 500
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldReturn500()
         {
@@ -191,8 +191,8 @@ namespace Tokki.UnitTest.Application.UseCases.Passages
 
             QACollector.LogTestCase("Passage - Get By Id", new TestCaseDetail
             {
-                FunctionGroup = "GetPassageById", TestCaseID = "TC-PAS-GID-06",
-                Description = "Repository throws → catch → 500",
+                FunctionGroup = "GetPassageById", TestCaseID = "GetPassageById_06",
+                Description = "Repository throws ? catch ? 500",
                 ExpectedResult = "Return 500 ServerError", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string> { "GetByIdAsync throws => 500" }

@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -37,7 +37,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments
         };
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CMU-01 | A | Comment not found → 404
+        // Update_Comment_01 | A | Comment not found → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_CommentNotFound_ShouldReturn404()
@@ -58,7 +58,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments
             QACollector.LogTestCase("Comment - Update", new TestCaseDetail
             {
                 FunctionGroup     = "Update Comment",
-                TestCaseID        = "TC-CMU-01",
+                TestCaseID        = "Update_Comment_01",
                 Description       = "Attempt to update a comment with an ID that does not exist",
                 ExpectedResult    = "Return 404 CommentNotFound",
                 StatusRound1      = "Passed",
@@ -69,7 +69,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CMU-02 | A | Comment is soft-deleted → 404
+        // Update_Comment_02 | A | Comment is soft-deleted → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_CommentIsDeleted_ShouldReturn404()
@@ -91,7 +91,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments
             QACollector.LogTestCase("Comment - Update", new TestCaseDetail
             {
                 FunctionGroup     = "Update Comment",
-                TestCaseID        = "TC-CMU-02",
+                TestCaseID        = "Update_Comment_02",
                 Description       = "Update a comment that has been soft-deleted (IsDeleted = true)",
                 ExpectedResult    = "Return 404 CommentNotFound",
                 StatusRound1      = "Passed",
@@ -102,7 +102,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CMU-03 | A | Wrong UserId → 403 Forbidden
+        // Update_Comment_03 | A | Wrong UserId → 403 Forbidden
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_WrongUser_ShouldReturn403()
@@ -124,7 +124,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments
             QACollector.LogTestCase("Comment - Update", new TestCaseDetail
             {
                 FunctionGroup     = "Update Comment",
-                TestCaseID        = "TC-CMU-03",
+                TestCaseID        = "Update_Comment_03",
                 Description       = "User tries to edit another user's comment",
                 ExpectedResult    = "Return 403 Forbidden",
                 StatusRound1      = "Passed",
@@ -135,7 +135,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CMU-04 | N | Valid update → 200 with updated content
+        // Update_Comment_04 | N | Valid update → 200 with updated content
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidRequest_ShouldReturn200WithUpdatedContent()
@@ -159,7 +159,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments
             QACollector.LogTestCase("Comment - Update", new TestCaseDetail
             {
                 FunctionGroup     = "Update Comment",
-                TestCaseID        = "TC-CMU-04",
+                TestCaseID        = "Update_Comment_04",
                 Description       = "Valid update request from the comment author",
                 ExpectedResult    = "Return 200 with updated CommentDTO",
                 StatusRound1      = "Passed",
@@ -170,7 +170,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CMU-05 | N | Comment.Content mutated in memory
+        // Update_Comment_05 | N | Comment.Content mutated in memory
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidRequest_ShouldMutateCommentContent()
@@ -192,7 +192,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments
             QACollector.LogTestCase("Comment - Update", new TestCaseDetail
             {
                 FunctionGroup     = "Update Comment",
-                TestCaseID        = "TC-CMU-05",
+                TestCaseID        = "Update_Comment_05",
                 Description       = "Verify the entity's Content property is mutated before SaveChanges",
                 ExpectedResult    = "comment.Content = 'Mutated!' in memory after handler runs",
                 StatusRound1      = "Passed",
@@ -203,7 +203,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CMU-06 | A | SaveChanges throws exception → 500
+        // Update_Comment_06 | A | SaveChanges throws exception → 500
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SaveChangesThrows_ShouldPropagateException()
@@ -224,7 +224,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments
             QACollector.LogTestCase("Comment - Update", new TestCaseDetail
             {
                 FunctionGroup     = "Update Comment",
-                TestCaseID        = "TC-CMU-06",
+                TestCaseID        = "Update_Comment_06",
                 Description       = "SaveChangesAsync throws an exception during persistence",
                 ExpectedResult    = "Exception propagates up for global middleware to handle",
                 StatusRound1      = "Passed",

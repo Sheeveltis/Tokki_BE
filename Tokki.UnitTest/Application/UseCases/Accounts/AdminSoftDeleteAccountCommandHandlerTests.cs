@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -33,7 +33,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-SDA-01 | A | Missing AdminUserId → 401
+        // Admin_Soft_Delete_Account_01 | A | Missing AdminUserId → 401
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_MissingAdminUserId_ShouldReturn401()
@@ -52,7 +52,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Admin Soft Delete", new TestCaseDetail
             {
                 FunctionGroup = "Admin Soft Delete Account",
-                TestCaseID = "TC-SDA-01",
+                TestCaseID = "Admin_Soft_Delete_Account_01",
                 Description = "AdminUserId is null or empty → unauthorized",
                 ExpectedResult = "Return 401 Unauthorized",
                 StatusRound1 = "Passed",
@@ -63,7 +63,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-SDA-02 | A | Missing TargetUserId → 400
+        // Admin_Soft_Delete_Account_02 | A | Missing TargetUserId → 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_MissingTargetUserId_ShouldReturn400()
@@ -82,7 +82,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Admin Soft Delete", new TestCaseDetail
             {
                 FunctionGroup = "Admin Soft Delete Account",
-                TestCaseID = "TC-SDA-02",
+                TestCaseID = "Admin_Soft_Delete_Account_02",
                 Description = "TargetUserId is whitespace → bad request",
                 ExpectedResult = "Return 400 TargetUserIdRequired",
                 StatusRound1 = "Passed",
@@ -93,7 +93,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-SDA-03 | A | Admin tries to disable their own account → 400
+        // Admin_Soft_Delete_Account_03 | A | Admin tries to disable their own account → 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_AdminDisablesSelf_ShouldReturn400()
@@ -112,7 +112,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Admin Soft Delete", new TestCaseDetail
             {
                 FunctionGroup = "Admin Soft Delete Account",
-                TestCaseID = "TC-SDA-03",
+                TestCaseID = "Admin_Soft_Delete_Account_03",
                 Description = "Admin tries to disable their own account",
                 ExpectedResult = "Return 400 CannotDisableSelf",
                 StatusRound1 = "Passed",
@@ -123,7 +123,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-SDA-04 | A | Target user not found → 404
+        // Admin_Soft_Delete_Account_04 | A | Target user not found → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_TargetUserNotFound_ShouldReturn404()
@@ -142,7 +142,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Admin Soft Delete", new TestCaseDetail
             {
                 FunctionGroup = "Admin Soft Delete Account",
-                TestCaseID = "TC-SDA-04",
+                TestCaseID = "Admin_Soft_Delete_Account_04",
                 Description = "Target user does not exist in the system",
                 ExpectedResult = "Return 404 UserNotFoundById",
                 StatusRound1 = "Passed",
@@ -153,7 +153,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-SDA-05 | A | Target user already Inactive → 400
+        // Admin_Soft_Delete_Account_05 | A | Target user already Inactive → 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_TargetAlreadyInactive_ShouldReturn400()
@@ -175,7 +175,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Admin Soft Delete", new TestCaseDetail
             {
                 FunctionGroup = "Admin Soft Delete Account",
-                TestCaseID = "TC-SDA-05",
+                TestCaseID = "Admin_Soft_Delete_Account_05",
                 Description = "Target account is already Inactive",
                 ExpectedResult = "Return 400 AccountAlreadyInactive",
                 StatusRound1 = "Passed",
@@ -186,7 +186,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-SDA-06 | N | Valid request → Status = Inactive, return 200
+        // Admin_Soft_Delete_Account_06 | N | Valid request → Status = Inactive, return 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidRequest_ShouldSetInactiveAndReturn200()
@@ -215,7 +215,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Admin Soft Delete", new TestCaseDetail
             {
                 FunctionGroup = "Admin Soft Delete Account",
-                TestCaseID = "TC-SDA-06",
+                TestCaseID = "Admin_Soft_Delete_Account_06",
                 Description = "Valid admin disables an active user account",
                 ExpectedResult = "Status = Inactive, return 200 success message",
                 StatusRound1 = "Passed",

@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -32,7 +32,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-DEL-01 | A | No token → 401
+        // Delete_Vocabulary_01 | A | No token → 401
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_Unauthorized_ShouldReturn401()
@@ -52,7 +52,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Vocabulary",
-                TestCaseID        = "TC-VOCAB-DEL-01",
+                TestCaseID        = "Delete_Vocabulary_01",
                 Description       = "Delete vocabulary without authentication token",
                 ExpectedResult    = "Return 401 Unauthorized",
                 StatusRound1      = "Passed",
@@ -63,7 +63,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-DEL-02 | A | Vocab not found → 404
+        // Delete_Vocabulary_02 | A | Vocab not found → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_VocabNotFound_ShouldReturn404()
@@ -84,7 +84,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Vocabulary",
-                TestCaseID        = "TC-VOCAB-DEL-02",
+                TestCaseID        = "Delete_Vocabulary_02",
                 Description       = "Delete vocabulary with non-existing ID",
                 ExpectedResult    = "Return 404 VocabularyNotFound",
                 StatusRound1      = "Passed",
@@ -95,7 +95,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-DEL-03 | A | Vocab already Deleted → 400
+        // Delete_Vocabulary_03 | A | Vocab already Deleted → 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_VocabAlreadyDeleted_ShouldReturn400()
@@ -117,7 +117,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Vocabulary",
-                TestCaseID        = "TC-VOCAB-DEL-03",
+                TestCaseID        = "Delete_Vocabulary_03",
                 Description       = "Delete previously deleted vocabulary (Status = Deleted)",
                 ExpectedResult    = "Return 400 VocabularyAlreadyDeleted",
                 StatusRound1      = "Passed",
@@ -128,7 +128,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-DEL-04 | N | Valid Active vocab → soft delete cascade → 200
+        // Delete_Vocabulary_04 | N | Valid Active vocab → soft delete cascade → 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidVocab_ShouldSoftDeleteCascadeAndReturn200()
@@ -154,7 +154,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Vocabulary",
-                TestCaseID        = "TC-VOCAB-DEL-04",
+                TestCaseID        = "Delete_Vocabulary_04",
                 Description       = "Delete valid vocab → soft delete cascades to Topics and Examples",
                 ExpectedResult    = "Vocab + Topics + Examples all Status = Deleted, return 200",
                 StatusRound1      = "Passed",
@@ -165,7 +165,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-DEL-05 | N | Vocab without children → soft delete vocab only → 200
+        // Delete_Vocabulary_05 | N | Vocab without children → soft delete vocab only → 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_VocabWithNoChildren_ShouldSoftDeleteAndReturn200()
@@ -189,7 +189,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Vocabulary",
-                TestCaseID        = "TC-VOCAB-DEL-05",
+                TestCaseID        = "Delete_Vocabulary_05",
                 Description       = "Delete vocab with no topic/example children → soft delete vocab only",
                 ExpectedResult    = "Vocab.Status = Deleted, return 200",
                 StatusRound1      = "Passed",
@@ -200,7 +200,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-DEL-06 | A | Repository throws → 500
+        // Delete_Vocabulary_06 | A | Repository throws → 500
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldReturn500()
@@ -225,7 +225,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Vocabulary",
-                TestCaseID        = "TC-VOCAB-DEL-06",
+                TestCaseID        = "Delete_Vocabulary_06",
                 Description       = "Repository.UpdateAsync throws exception → return 500",
                 ExpectedResult    = "Return 500 Server Error",
                 StatusRound1      = "Passed",

@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -49,7 +49,7 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
         private static Topic SampleTopic(TopicStatus status = TopicStatus.Draft) =>
             new Topic { TopicId = "T-001", TopicName = "Korean Grammar", Status = status };
 
-        // TC-TOPIC-SUBM-01 | A | No auth user → 401
+        // SubmitTopicForApproval_01 | A | No auth user → 401
         [Fact]
         public async Task Handle_NoAuthUser_ShouldReturn401()
         {
@@ -57,10 +57,10 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
                 .Handle(new SubmitTopicForApprovalCommand { TopicId = "T-001" }, CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(401);
-            QACollector.LogTestCase("Topic - Submit For Approval", new TestCaseDetail { FunctionGroup = "SubmitTopicForApproval", TestCaseID = "TC-TOPIC-SUBM-01", Description = "No auth user → 401", ExpectedResult = "IsSuccess=false, 401", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "No claim" } });
+            QACollector.LogTestCase("Topic - Submit For Approval", new TestCaseDetail { FunctionGroup = "SubmitTopicForApproval", TestCaseID = "SubmitTopicForApproval_01", Description = "No auth user → 401", ExpectedResult = "IsSuccess=false, 401", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "No claim" } });
         }
 
-        // TC-TOPIC-SUBM-02 | A | Topic not found → 404
+        // SubmitTopicForApproval_02 | A | Topic not found → 404
         [Fact]
         public async Task Handle_TopicNotFound_ShouldReturn404()
         {
@@ -68,10 +68,10 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
                 .Handle(new SubmitTopicForApprovalCommand { TopicId = "MISSING" }, CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(404);
-            QACollector.LogTestCase("Topic - Submit For Approval", new TestCaseDetail { FunctionGroup = "SubmitTopicForApproval", TestCaseID = "TC-TOPIC-SUBM-02", Description = "Topic not found → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetByIdAsync returns null" } });
+            QACollector.LogTestCase("Topic - Submit For Approval", new TestCaseDetail { FunctionGroup = "SubmitTopicForApproval", TestCaseID = "SubmitTopicForApproval_02", Description = "Topic not found → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetByIdAsync returns null" } });
         }
 
-        // TC-TOPIC-SUBM-03 | A | Non-Draft topic → 400
+        // SubmitTopicForApproval_03 | A | Non-Draft topic → 400
         [Fact]
         public async Task Handle_TopicNotDraft_ShouldReturn400()
         {
@@ -79,10 +79,10 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
                 .Handle(new SubmitTopicForApprovalCommand { TopicId = "T-001" }, CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            QACollector.LogTestCase("Topic - Submit For Approval", new TestCaseDetail { FunctionGroup = "SubmitTopicForApproval", TestCaseID = "TC-TOPIC-SUBM-03", Description = "Non-Draft submit → 400", ExpectedResult = "IsSuccess=false, 400", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Only Draft can be submitted" } });
+            QACollector.LogTestCase("Topic - Submit For Approval", new TestCaseDetail { FunctionGroup = "SubmitTopicForApproval", TestCaseID = "SubmitTopicForApproval_03", Description = "Non-Draft submit → 400", ExpectedResult = "IsSuccess=false, 400", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Only Draft can be submitted" } });
         }
 
-        // TC-TOPIC-SUBM-04 | N | Draft → PendingApproval, 200
+        // SubmitTopicForApproval_04 | N | Draft → PendingApproval, 200
         [Fact]
         public async Task Handle_DraftTopic_ShouldSetPendingApprovalAndReturn200()
         {
@@ -92,10 +92,10 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
             topic.Status.Should().Be(TopicStatus.PendingApproval);
-            QACollector.LogTestCase("Topic - Submit For Approval", new TestCaseDetail { FunctionGroup = "SubmitTopicForApproval", TestCaseID = "TC-TOPIC-SUBM-04", Description = "Draft → PendingApproval, 200", ExpectedResult = "IsSuccess=true, 200, Status=PendingApproval", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Draft→PendingApproval" } });
+            QACollector.LogTestCase("Topic - Submit For Approval", new TestCaseDetail { FunctionGroup = "SubmitTopicForApproval", TestCaseID = "SubmitTopicForApproval_04", Description = "Draft → PendingApproval, 200", ExpectedResult = "IsSuccess=true, 200, Status=PendingApproval", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Draft→PendingApproval" } });
         }
 
-        // TC-TOPIC-SUBM-05 | B | UpdateAsync and SaveChangesAsync called once
+        // SubmitTopicForApproval_05 | B | UpdateAsync and SaveChangesAsync called once
         [Fact]
         public async Task Handle_ValidRequest_UpdateAndSaveCalledOnce()
         {
@@ -103,10 +103,10 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
             await CreateHandler(repo: repo).Handle(new SubmitTopicForApprovalCommand { TopicId = "T-001" }, CancellationToken.None);
             repo.Verify(x => x.UpdateAsync(It.IsAny<Topic>()), Times.Once);
             repo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
-            QACollector.LogTestCase("Topic - Submit For Approval", new TestCaseDetail { FunctionGroup = "SubmitTopicForApproval", TestCaseID = "TC-TOPIC-SUBM-05", Description = "UpdateAsync and SaveChangesAsync called once", ExpectedResult = "Both Times.Once", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Persist calls verified" } });
+            QACollector.LogTestCase("Topic - Submit For Approval", new TestCaseDetail { FunctionGroup = "SubmitTopicForApproval", TestCaseID = "SubmitTopicForApproval_05", Description = "UpdateAsync and SaveChangesAsync called once", ExpectedResult = "Both Times.Once", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Persist calls verified" } });
         }
 
-        // TC-TOPIC-SUBM-06 | A | Already PendingApproval → 400
+        // SubmitTopicForApproval_06 | A | Already PendingApproval → 400
         [Fact]
         public async Task Handle_AlreadyPendingApproval_ShouldReturn400()
         {
@@ -114,7 +114,7 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
                 .Handle(new SubmitTopicForApprovalCommand { TopicId = "T-001" }, CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            QACollector.LogTestCase("Topic - Submit For Approval", new TestCaseDetail { FunctionGroup = "SubmitTopicForApproval", TestCaseID = "TC-TOPIC-SUBM-06", Description = "Already PendingApproval → 400", ExpectedResult = "IsSuccess=false, 400", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Not Draft status" } });
+            QACollector.LogTestCase("Topic - Submit For Approval", new TestCaseDetail { FunctionGroup = "SubmitTopicForApproval", TestCaseID = "SubmitTopicForApproval_06", Description = "Already PendingApproval → 400", ExpectedResult = "IsSuccess=false, 400", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Not Draft status" } });
         }
     }
 }

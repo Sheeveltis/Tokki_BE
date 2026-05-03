@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -47,17 +47,17 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
         private static GetStudyVocabsQuery MakeQuery(string topicId = "T-001", string userId = "U-001", int count = 5) =>
             new GetStudyVocabsQuery { TopicId = topicId, UserId = userId, Count = count };
 
-        // TC-TOPIC-GVOC-01 | A | No vocabs in topic → 404
+        // GetStudyVocabs_01 | A | No vocabs in topic → 404
         [Fact]
         public async Task Handle_NoVocabsInTopic_ShouldReturn404()
         {
             var result = await CreateHandler(GetTopicMock(new List<Tokki.Domain.Entities.Vocabulary>())).Handle(MakeQuery(), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(404);
-            QACollector.LogTestCase("Topic - Get Study Vocabs", new TestCaseDetail { FunctionGroup = "GetStudyVocabs", TestCaseID = "TC-TOPIC-GVOC-01", Description = "No vocabs in topic → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetVocabulariesByTopicIdAsync returns empty" } });
+            QACollector.LogTestCase("Topic - Get Study Vocabs", new TestCaseDetail { FunctionGroup = "GetStudyVocabs", TestCaseID = "GetStudyVocabs_01", Description = "No vocabs in topic → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetVocabulariesByTopicIdAsync returns empty" } });
         }
 
-        // TC-TOPIC-GVOC-02 | N | No learned vocabs → all unlearned returned (up to Count)
+        // GetStudyVocabs_02 | N | No learned vocabs → all unlearned returned (up to Count)
         [Fact]
         public async Task Handle_NoneLearnedYet_ShouldReturnUnlearnedVocabs()
         {
@@ -66,10 +66,10 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
                 .Handle(MakeQuery(count: 3), CancellationToken.None);
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().HaveCount(3);
-            QACollector.LogTestCase("Topic - Get Study Vocabs", new TestCaseDetail { FunctionGroup = "GetStudyVocabs", TestCaseID = "TC-TOPIC-GVOC-02", Description = "No learned vocabs → 3 unlearned returned (Count=3)", ExpectedResult = "IsSuccess=true, Data.Count=3", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "unlearned filtered to Count" } });
+            QACollector.LogTestCase("Topic - Get Study Vocabs", new TestCaseDetail { FunctionGroup = "GetStudyVocabs", TestCaseID = "GetStudyVocabs_02", Description = "No learned vocabs → 3 unlearned returned (Count=3)", ExpectedResult = "IsSuccess=true, Data.Count=3", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "unlearned filtered to Count" } });
         }
 
-        // TC-TOPIC-GVOC-03 | N | All vocabs learned → fallback to random all vocabs
+        // GetStudyVocabs_03 | N | All vocabs learned → fallback to random all vocabs
         [Fact]
         public async Task Handle_AllVocabsLearned_FallbackToRandomAll()
         {
@@ -79,10 +79,10 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
                 .Handle(MakeQuery(count: 2), CancellationToken.None);
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().HaveCount(2); // fallback pulls from all
-            QACollector.LogTestCase("Topic - Get Study Vocabs", new TestCaseDetail { FunctionGroup = "GetStudyVocabs", TestCaseID = "TC-TOPIC-GVOC-03", Description = "All learned → fallback to random all, Count=2", ExpectedResult = "IsSuccess=true, Data.Count=2", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "unlearnedVocabs.Count==0 → fallback" } });
+            QACollector.LogTestCase("Topic - Get Study Vocabs", new TestCaseDetail { FunctionGroup = "GetStudyVocabs", TestCaseID = "GetStudyVocabs_03", Description = "All learned → fallback to random all, Count=2", ExpectedResult = "IsSuccess=true, Data.Count=2", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "unlearnedVocabs.Count==0 → fallback" } });
         }
 
-        // TC-TOPIC-GVOC-04 | N | DTO fields mapped correctly (VocabularyId, Text, Pronunciation)
+        // GetStudyVocabs_04 | N | DTO fields mapped correctly (VocabularyId, Text, Pronunciation)
         [Fact]
         public async Task Handle_ValidRequest_DtoFieldsMappedCorrectly()
         {
@@ -92,27 +92,27 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
             dto.VocabularyId.Should().Be("V-001");
             dto.Text.Should().Be("안녕");
             dto.Pronunciation.Should().Be("[an-nyeong]");
-            QACollector.LogTestCase("Topic - Get Study Vocabs", new TestCaseDetail { FunctionGroup = "GetStudyVocabs", TestCaseID = "TC-TOPIC-GVOC-04", Description = "DTO fields: VocabularyId, Text, Pronunciation mapped", ExpectedResult = "All fields correct", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Vocabulary entity→VocabBasicInfoDTO" } });
+            QACollector.LogTestCase("Topic - Get Study Vocabs", new TestCaseDetail { FunctionGroup = "GetStudyVocabs", TestCaseID = "GetStudyVocabs_04", Description = "DTO fields: VocabularyId, Text, Pronunciation mapped", ExpectedResult = "All fields correct", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Vocabulary entity→VocabBasicInfoDTO" } });
         }
 
-        // TC-TOPIC-GVOC-05 | B | GetVocabulariesByTopicIdAsync called with correct topicId
+        // GetStudyVocabs_05 | B | GetVocabulariesByTopicIdAsync called with correct topicId
         [Fact]
         public async Task Handle_WithTopicId_RepoCalledWithCorrectTopicId()
         {
             var repo = GetTopicMock(SampleVocabs());
             await CreateHandler(repo).Handle(MakeQuery("T-XYZ"), CancellationToken.None);
             repo.Verify(x => x.GetVocabulariesByTopicIdAsync("T-XYZ"), Times.Once);
-            QACollector.LogTestCase("Topic - Get Study Vocabs", new TestCaseDetail { FunctionGroup = "GetStudyVocabs", TestCaseID = "TC-TOPIC-GVOC-05", Description = "GetVocabulariesByTopicIdAsync called with 'T-XYZ'", ExpectedResult = "Times.Once with correct ID", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "TopicId forwarded" } });
+            QACollector.LogTestCase("Topic - Get Study Vocabs", new TestCaseDetail { FunctionGroup = "GetStudyVocabs", TestCaseID = "GetStudyVocabs_05", Description = "GetVocabulariesByTopicIdAsync called with 'T-XYZ'", ExpectedResult = "Times.Once with correct ID", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "TopicId forwarded" } });
         }
 
-        // TC-TOPIC-GVOC-06 | N | Count parameter respected
+        // GetStudyVocabs_06 | N | Count parameter respected
         [Fact]
         public async Task Handle_Count2_ResultHasMaxCount2()
         {
             var result = await CreateHandler(GetTopicMock(SampleVocabs(10)), GetProgressMock())
                 .Handle(MakeQuery(count: 2), CancellationToken.None);
             result.Data.Should().HaveCount(2);
-            QACollector.LogTestCase("Topic - Get Study Vocabs", new TestCaseDetail { FunctionGroup = "GetStudyVocabs", TestCaseID = "TC-TOPIC-GVOC-06", Description = "Count=2 limits result to 2 items", ExpectedResult = "Data.Count=2", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { ".Take(Count) applied" } });
+            QACollector.LogTestCase("Topic - Get Study Vocabs", new TestCaseDetail { FunctionGroup = "GetStudyVocabs", TestCaseID = "GetStudyVocabs_06", Description = "Count=2 limits result to 2 items", ExpectedResult = "Data.Count=2", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { ".Take(Count) applied" } });
         }
     }
 }

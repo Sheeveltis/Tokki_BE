@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -31,7 +31,7 @@ namespace Tokki.UnitTest.Application.UseCases.SystemConfigs
         private static SystemConfig SampleConfig(string key = "SITE_NAME") =>
             new SystemConfig { Key = key, Value = "Old Value", Description = "Old desc", IsActive = false };
 
-        // TC-SYS-UPD-01 | N | Happy path: config found → updated and 200
+        // UpdateSystemConfig_01 | N | Happy path: config found → updated and 200
         [Fact]
         public async Task Handle_ConfigFound_ShouldReturn200WithKey()
         {
@@ -41,20 +41,20 @@ namespace Tokki.UnitTest.Application.UseCases.SystemConfigs
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
             result.Data.Should().Be("SITE_NAME");
-            QACollector.LogTestCase("SystemConfig - Update", new TestCaseDetail { FunctionGroup = "UpdateSystemConfig", TestCaseID = "TC-SYS-UPD-01", Description = "Config found → 200, Data=Key", ExpectedResult = "IsSuccess=true, 200, Data='SITE_NAME'", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Config exists", "updated successfully" } });
+            QACollector.LogTestCase("SystemConfig - Update", new TestCaseDetail { FunctionGroup = "UpdateSystemConfig", TestCaseID = "UpdateSystemConfig_01", Description = "Config found → 200, Data=Key", ExpectedResult = "IsSuccess=true, 200, Data='SITE_NAME'", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Config exists", "updated successfully" } });
         }
 
-        // TC-SYS-UPD-02 | A | Config not found → failure
+        // UpdateSystemConfig_02 | A | Config not found → failure
         [Fact]
         public async Task Handle_ConfigNotFound_ShouldReturnFailure()
         {
             var repo   = GetRepoMock(config: null);
             var result = await CreateHandler(repo).Handle(MakeCommand("MISSING_KEY"), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
-            QACollector.LogTestCase("SystemConfig - Update", new TestCaseDetail { FunctionGroup = "UpdateSystemConfig", TestCaseID = "TC-SYS-UPD-02", Description = "Config not found → failure (ConfigNotFound)", ExpectedResult = "IsSuccess=false", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetByKeyAsync returns null" } });
+            QACollector.LogTestCase("SystemConfig - Update", new TestCaseDetail { FunctionGroup = "UpdateSystemConfig", TestCaseID = "UpdateSystemConfig_02", Description = "Config not found → failure (ConfigNotFound)", ExpectedResult = "IsSuccess=false", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetByKeyAsync returns null" } });
         }
 
-        // TC-SYS-UPD-03 | N | Value and Description updated correctly
+        // UpdateSystemConfig_03 | N | Value and Description updated correctly
         [Fact]
         public async Task Handle_ConfigFound_ValueAndDescriptionUpdated()
         {
@@ -63,10 +63,10 @@ namespace Tokki.UnitTest.Application.UseCases.SystemConfigs
             await CreateHandler(repo).Handle(new UpdateSystemConfigCommand { Key = "SITE_NAME", Value = "Tokki App", Description = "New desc", IsActive = true }, CancellationToken.None);
             config.Value.Should().Be("Tokki App");
             config.Description.Should().Be("New desc");
-            QACollector.LogTestCase("SystemConfig - Update", new TestCaseDetail { FunctionGroup = "UpdateSystemConfig", TestCaseID = "TC-SYS-UPD-03", Description = "Value='Tokki App' and Description='New desc' updated", ExpectedResult = "Config.Value and Description updated", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Value and Description mutated on entity" } });
+            QACollector.LogTestCase("SystemConfig - Update", new TestCaseDetail { FunctionGroup = "UpdateSystemConfig", TestCaseID = "UpdateSystemConfig_03", Description = "Value='Tokki App' and Description='New desc' updated", ExpectedResult = "Config.Value and Description updated", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Value and Description mutated on entity" } });
         }
 
-        // TC-SYS-UPD-04 | N | IsActive toggled correctly
+        // UpdateSystemConfig_04 | N | IsActive toggled correctly
         [Fact]
         public async Task Handle_ConfigFound_IsActiveUpdatedToFalse()
         {
@@ -74,27 +74,27 @@ namespace Tokki.UnitTest.Application.UseCases.SystemConfigs
             var repo   = GetRepoMock(config);
             await CreateHandler(repo).Handle(MakeCommand(isActive: false), CancellationToken.None);
             config.IsActive.Should().BeFalse();
-            QACollector.LogTestCase("SystemConfig - Update", new TestCaseDetail { FunctionGroup = "UpdateSystemConfig", TestCaseID = "TC-SYS-UPD-04", Description = "IsActive toggled to false", ExpectedResult = "Config.IsActive=false", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "IsActive=false in request" } });
+            QACollector.LogTestCase("SystemConfig - Update", new TestCaseDetail { FunctionGroup = "UpdateSystemConfig", TestCaseID = "UpdateSystemConfig_04", Description = "IsActive toggled to false", ExpectedResult = "Config.IsActive=false", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "IsActive=false in request" } });
         }
 
-        // TC-SYS-UPD-05 | B | SaveChangesAsync called once on success
+        // UpdateSystemConfig_05 | B | SaveChangesAsync called once on success
         [Fact]
         public async Task Handle_ConfigFound_SaveChangesCalledOnce()
         {
             var repo = GetRepoMock(SampleConfig());
             await CreateHandler(repo).Handle(MakeCommand(), CancellationToken.None);
             repo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
-            QACollector.LogTestCase("SystemConfig - Update", new TestCaseDetail { FunctionGroup = "UpdateSystemConfig", TestCaseID = "TC-SYS-UPD-05", Description = "SaveChangesAsync called once on successful update", ExpectedResult = "Times.Once", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Save called after mutation" } });
+            QACollector.LogTestCase("SystemConfig - Update", new TestCaseDetail { FunctionGroup = "UpdateSystemConfig", TestCaseID = "UpdateSystemConfig_05", Description = "SaveChangesAsync called once on successful update", ExpectedResult = "Times.Once", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Save called after mutation" } });
         }
 
-        // TC-SYS-UPD-06 | B | Config not found → SaveChangesAsync never called
+        // UpdateSystemConfig_06 | B | Config not found → SaveChangesAsync never called
         [Fact]
         public async Task Handle_ConfigNotFound_SaveChangesNeverCalled()
         {
             var repo = GetRepoMock(config: null);
             await CreateHandler(repo).Handle(MakeCommand("MISSING"), CancellationToken.None);
             repo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
-            QACollector.LogTestCase("SystemConfig - Update", new TestCaseDetail { FunctionGroup = "UpdateSystemConfig", TestCaseID = "TC-SYS-UPD-06", Description = "Config not found → early return, SaveChangesAsync never called", ExpectedResult = "Times.Never", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Guard returns before SaveChanges" } });
+            QACollector.LogTestCase("SystemConfig - Update", new TestCaseDetail { FunctionGroup = "UpdateSystemConfig", TestCaseID = "UpdateSystemConfig_06", Description = "Config not found → early return, SaveChangesAsync never called", ExpectedResult = "Times.Never", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Guard returns before SaveChanges" } });
         }
     }
 }

@@ -34,7 +34,7 @@ namespace Tokki.UnitTest.Application.UseCases.Passages
             MediaType = Tokki.Domain.Enums.PassageMediaType.Text
         };
 
-        // TC-01: Duplicate title → 409
+        // TC-01: Duplicate title ? 409
         [Fact]
         public async Task Handle_DuplicateTitle_ShouldReturn409()
         {
@@ -48,15 +48,15 @@ namespace Tokki.UnitTest.Application.UseCases.Passages
 
             QACollector.LogTestCase("Passage - Create", new TestCaseDetail
             {
-                FunctionGroup = "CreatePassage", TestCaseID = "TC-PAS-CRE-01",
-                Description = "Duplicate title → 409 Conflict",
+                FunctionGroup = "CreatePassage", TestCaseID = "CreatePassage_01",
+                Description = "Duplicate title ? 409 Conflict",
                 ExpectedResult = "Return 409 PassageTitleDuplicated", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string> { "IsTitleExistsAsync == true => 409" }
             });
         }
 
-        // TC-02: Happy path Text type → 201
+        // TC-02: Happy path Text type ? 201
         [Fact]
         public async Task Handle_ValidTextPassage_ShouldReturn201WithId()
         {
@@ -76,15 +76,15 @@ namespace Tokki.UnitTest.Application.UseCases.Passages
 
             QACollector.LogTestCase("Passage - Create", new TestCaseDetail
             {
-                FunctionGroup = "CreatePassage", TestCaseID = "TC-PAS-CRE-02",
-                Description = "Valid Text passage → AddAsync, SaveChanges, Return 201 with generated ID",
+                FunctionGroup = "CreatePassage", TestCaseID = "CreatePassage_02",
+                Description = "Valid Text passage ? AddAsync, SaveChanges, Return 201 with generated ID",
                 ExpectedResult = "Return 201, Data='PASS-NEW'", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string> { "title unique, type=Text => 201" }
             });
         }
 
-        // TC-03: Image passage type → 201
+        // TC-03: Image passage type ? 201
         [Fact]
         public async Task Handle_ValidImagePassage_ShouldReturn201()
         {
@@ -107,15 +107,15 @@ namespace Tokki.UnitTest.Application.UseCases.Passages
 
             QACollector.LogTestCase("Passage - Create", new TestCaseDetail
             {
-                FunctionGroup = "CreatePassage", TestCaseID = "TC-PAS-CRE-03",
-                Description = "Valid Image passage with ImageUrl → 201",
+                FunctionGroup = "CreatePassage", TestCaseID = "CreatePassage_03",
+                Description = "Valid Image passage with ImageUrl ? 201",
                 ExpectedResult = "Return 201", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string> { "type=Image, ImageUrl set => 201" }
             });
         }
 
-        // TC-04: Audio passage type → 201
+        // TC-04: Audio passage type ? 201
         [Fact]
         public async Task Handle_ValidAudioPassage_ShouldReturn201()
         {
@@ -138,15 +138,15 @@ namespace Tokki.UnitTest.Application.UseCases.Passages
 
             QACollector.LogTestCase("Passage - Create", new TestCaseDetail
             {
-                FunctionGroup = "CreatePassage", TestCaseID = "TC-PAS-CRE-04",
-                Description = "Valid Audio passage with AudioUrl → 201",
+                FunctionGroup = "CreatePassage", TestCaseID = "CreatePassage_04",
+                Description = "Valid Audio passage with AudioUrl ? 201",
                 ExpectedResult = "Return 201", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string> { "type=Audio, AudioUrl set => 201" }
             });
         }
 
-        // TC-05: AddAsync throws → 500
+        // TC-05: AddAsync throws ? 500
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldReturn500()
         {
@@ -161,8 +161,8 @@ namespace Tokki.UnitTest.Application.UseCases.Passages
 
             QACollector.LogTestCase("Passage - Create", new TestCaseDetail
             {
-                FunctionGroup = "CreatePassage", TestCaseID = "TC-PAS-CRE-05",
-                Description = "AddAsync throws → catch → 500 ServerError",
+                FunctionGroup = "CreatePassage", TestCaseID = "CreatePassage_05",
+                Description = "AddAsync throws ? catch ? 500 ServerError",
                 ExpectedResult = "Return 500 Failure", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string> { "AddAsync throws => 500" }
@@ -180,7 +180,7 @@ namespace Tokki.UnitTest.Application.UseCases.Passages
 
             var cmd = new CreatePassageCommand
             {
-                Title     = "  Trimmed Title  ",
+                Title     = "  Trimmed Title",
                 Content   = "content",
                 MediaType = Tokki.Domain.Enums.PassageMediaType.Text
             };
@@ -192,8 +192,8 @@ namespace Tokki.UnitTest.Application.UseCases.Passages
 
             QACollector.LogTestCase("Passage - Create", new TestCaseDetail
             {
-                FunctionGroup = "CreatePassage", TestCaseID = "TC-PAS-CRE-06",
-                Description = "Title with leading/trailing whitespace → trimmed before check",
+                FunctionGroup = "CreatePassage", TestCaseID = "CreatePassage_06",
+                Description = "Title with leading/trailing whitespace ? trimmed before check",
                 ExpectedResult = "IsTitleExistsAsync called with 'Trimmed Title'", StatusRound1 = "Passed",
                 TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string> { "request.Title.Trim() used" }

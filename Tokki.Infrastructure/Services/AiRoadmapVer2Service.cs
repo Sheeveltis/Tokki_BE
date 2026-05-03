@@ -29,7 +29,7 @@ namespace Tokki.Infrastructure.Services
             List<string> questionTypeIds, 
             CurrentTopikLevel currentLevel, 
             TargetAimLevel targetLevel, 
-            List<QuestionTypeMenuDto> typeMenu, 
+            List<QuestionTypeMenuItem> typeMenu, 
             CancellationToken token = default)
         {
             _logger.LogInformation("Sắp xếp trình tự cho {Count} điểm yếu.", questionTypeIds.Count);
@@ -68,8 +68,8 @@ namespace Tokki.Infrastructure.Services
             int totalWeeks,
             List<string> focusTypeIds, 
             List<string> deferredTypeIds, 
-            List<QuestionTypeMenuDto> weakTypeInfos, 
-            List<QuestionTypeMenuDto> fullMenu, 
+            List<QuestionTypeMenuItem> weakTypeInfos, 
+            List<QuestionTypeMenuItem> fullMenu, 
             CancellationToken token = default)
         {
             var focusDetails = string.Join("\n", weakTypeInfos.Select(f => $"- {f.Code}: {f.Name} ({f.Skill}) [ID: {f.QuestionTypeId}]"));

@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using System;
 using System.Collections.Generic;
 using Tokki.Application.Common.Helpers;
@@ -22,7 +22,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             QACollector.LogTestCase("Helper - Hangul Decompose", new TestCaseDetail
             {
                 FunctionGroup     = "HangulHelper",
-                TestCaseID        = "TC-HLP-HAN-01",
+                TestCaseID        = "HangulHelper_01",
                 Description       = "Valid Hangul character is correctly decomposed",
                 ExpectedResult    = "Returns exact Initial, Vowel, Final Jamo",
                 StatusRound1      = "Passed",
@@ -44,7 +44,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             QACollector.LogTestCase("Helper - Hangul Decompose", new TestCaseDetail
             {
                 FunctionGroup     = "HangulHelper",
-                TestCaseID        = "TC-HLP-HAN-02",
+                TestCaseID        = "HangulHelper_02",
                 Description       = "Non Hangul character fallback",
                 ExpectedResult    = "Returns initial=self, vowel=' ', final='\\0'",
                 StatusRound1      = "Passed",

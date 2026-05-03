@@ -1,4 +1,4 @@
-﻿using Tokki.Domain.Entities;
+using Tokki.Domain.Entities;
 
 namespace Tokki.Application.IRepositories
 {
@@ -15,6 +15,12 @@ namespace Tokki.Application.IRepositories
 
         // 4. Lấy danh sách phòng Support đang chờ (Chưa có nhân viên, IsSupport=true, IsClosed=false)
         Task<List<ChatRoom>> GetPendingSupportRoomsAsync(CancellationToken token = default);
+
+        // 4b. Lấy danh sách phòng Support đã đóng (Phục vụ Admin/Staff xem lại)
+        Task<List<ChatRoom>> GetClosedSupportRoomsAsync(int days, string? search, CancellationToken token = default);
+
+        // 4c. Lấy TẤT CẢ phòng Support đang mở (Dành cho Admin giám sát)
+        Task<List<ChatRoom>> GetActiveSupportRoomsForAdminAsync(CancellationToken token = default);
 
         // 5. Các hàm thao tác ghi (Create/Update)
         Task AddRoomAsync(ChatRoom room);

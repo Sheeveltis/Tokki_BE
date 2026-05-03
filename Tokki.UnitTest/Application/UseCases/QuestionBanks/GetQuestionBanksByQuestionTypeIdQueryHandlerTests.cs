@@ -23,9 +23,9 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
                 (qbRepo ?? MockQuestionBankRepository.GetMock()).Object);
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-QB-GBT-01 | A | Empty QuestionTypeId → 400
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // GetQuestionBanksByQuestionTypeId_01 | A | Empty QuestionTypeId ? 400
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_EmptyQuestionTypeId_ShouldReturn400()
         {
@@ -43,8 +43,8 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Get By TypeId", new TestCaseDetail
             {
                 FunctionGroup     = "GetQuestionBanksByQuestionTypeId",
-                TestCaseID        = "TC-QB-GBT-01",
-                Description       = "Empty QuestionTypeId → 400 ValidationFailed",
+                TestCaseID        = "GetQuestionBanksByQuestionTypeId_01",
+                Description       = "Empty QuestionTypeId ? 400 ValidationFailed",
                 ExpectedResult    = "IsSuccess=false, StatusCode=400",
                 StatusRound1      = "Passed",
                 TestCaseType      = "A",
@@ -53,9 +53,9 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-QB-GBT-02 | N | Happy path → list of DTOs returned, 200
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // GetQuestionBanksByQuestionTypeId_02 | N | Happy path ? list of DTOs returned, 200
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_ValidTypeId_ShouldReturn200WithList()
         {
@@ -77,8 +77,8 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Get By TypeId", new TestCaseDetail
             {
                 FunctionGroup     = "GetQuestionBanksByQuestionTypeId",
-                TestCaseID        = "TC-QB-GBT-02",
-                Description       = "Happy path: valid QuestionTypeId → 200 with mapped DTO list",
+                TestCaseID        = "GetQuestionBanksByQuestionTypeId_02",
+                Description       = "Happy path: valid QuestionTypeId ? 200 with mapped DTO list",
                 ExpectedResult    = "IsSuccess=true, StatusCode=200, Data.Count=3",
                 StatusRound1      = "Passed",
                 TestCaseType      = "N",
@@ -87,9 +87,9 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-QB-GBT-03 | N | No QBs for type → empty list, 200
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // GetQuestionBanksByQuestionTypeId_03 | N | No QBs for type ? empty list, 200
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_NoQBsForType_ShouldReturnEmptyList()
         {
@@ -108,8 +108,8 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Get By TypeId", new TestCaseDetail
             {
                 FunctionGroup     = "GetQuestionBanksByQuestionTypeId",
-                TestCaseID        = "TC-QB-GBT-03",
-                Description       = "No QBs for given QuestionTypeId → empty list with IsSuccess=true",
+                TestCaseID        = "GetQuestionBanksByQuestionTypeId_03",
+                Description       = "No QBs for given QuestionTypeId ? empty list with IsSuccess=true",
                 ExpectedResult    = "IsSuccess=true, Data=[]",
                 StatusRound1      = "Passed",
                 TestCaseType      = "N",
@@ -118,9 +118,9 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-QB-GBT-04 | N | CreateBy filter applied in handler
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // GetQuestionBanksByQuestionTypeId_04 | N | CreateBy filter applied in handler
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_CreateByFilter_ShouldFilterResultsInHandler()
         {
@@ -146,8 +146,8 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Get By TypeId", new TestCaseDetail
             {
                 FunctionGroup     = "GetQuestionBanksByQuestionTypeId",
-                TestCaseID        = "TC-QB-GBT-04",
-                Description       = "CreateBy filter applied in handler → only STAFF-001 QBs returned",
+                TestCaseID        = "GetQuestionBanksByQuestionTypeId_04",
+                Description       = "CreateBy filter applied in handler ? only STAFF-001 QBs returned",
                 ExpectedResult    = "Data.Count=1, Data[0].CreateBy='STAFF-001'",
                 StatusRound1      = "Passed",
                 TestCaseType      = "N",
@@ -156,9 +156,9 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-QB-GBT-05 | A | Repository throws → exception propagates
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // GetQuestionBanksByQuestionTypeId_05 | A | Repository throws ? exception propagates
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
         {
@@ -181,8 +181,8 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Get By TypeId", new TestCaseDetail
             {
                 FunctionGroup     = "GetQuestionBanksByQuestionTypeId",
-                TestCaseID        = "TC-QB-GBT-05",
-                Description       = "Repository throws exception → propagates to caller",
+                TestCaseID        = "GetQuestionBanksByQuestionTypeId_05",
+                Description       = "Repository throws exception ? propagates to caller",
                 ExpectedResult    = "InvalidOperationException thrown",
                 StatusRound1      = "Passed",
                 TestCaseType      = "A",
@@ -191,16 +191,16 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-QB-GBT-06 | B | QuestionTypeId trimmed before repo call
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // GetQuestionBanksByQuestionTypeId_06 | B | QuestionTypeId trimmed before repo call
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_QuestionTypeIdWithSpaces_ShouldTrimBeforeRepoCall()
         {
             // Arrange
             var qbRepo  = MockQuestionBankRepository.GetMock(returnedByTypeId: new List<QuestionBank>());
             var handler = CreateHandler(qbRepo);
-            var query   = new GetQuestionBanksByQuestionTypeIdQuery { QuestionTypeId = "  QT-001  " };
+            var query   = new GetQuestionBanksByQuestionTypeIdQuery { QuestionTypeId = "  QT-001" };
 
             // Act
             await handler.Handle(query, CancellationToken.None);
@@ -214,8 +214,8 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Get By TypeId", new TestCaseDetail
             {
                 FunctionGroup     = "GetQuestionBanksByQuestionTypeId",
-                TestCaseID        = "TC-QB-GBT-06",
-                Description       = "Boundary: QuestionTypeId with spaces → trimmed before GetByQuestionTypeIdAsync call",
+                TestCaseID        = "GetQuestionBanksByQuestionTypeId_06",
+                Description       = "Boundary: QuestionTypeId with spaces ? trimmed before GetByQuestionTypeIdAsync call",
                 ExpectedResult    = "GetByQuestionTypeIdAsync('QT-001',...) called Times.Once",
                 StatusRound1      = "Passed",
                 TestCaseType      = "B",

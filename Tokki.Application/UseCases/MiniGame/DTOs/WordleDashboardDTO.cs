@@ -20,7 +20,7 @@ namespace Tokki.Application.UseCases.MiniGame.DTOs
         public int WordLength { get; set; } 
         public bool IsWon { get; set; }
         public int AttemptCount { get; set; }
-        public int MaxAttempts { get; set; } = 6;
+        public int MaxAttempts { get; set; } 
         public List<WordleAttemptDTO> Attempts { get; set; } = new();
     }
 

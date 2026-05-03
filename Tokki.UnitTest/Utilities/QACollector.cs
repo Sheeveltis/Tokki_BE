@@ -213,7 +213,55 @@ namespace Tokki.UnitTest.Utilities
                 ? (double)fullyPassedFunctions / summary.TotalSystemFunctions * 100
                 : 0;
 
+            // Sanitize "Soft Delete" -> "Delete" before returning
+            foreach (var f in summary.Functions)
+            {
+                f.FunctionName = SanitizeText(f.FunctionName);
+                if (f.SheetName != "N/A") f.SheetName = SanitizeText(f.SheetName);
+                f.Description = CleanGarbageText(SanitizeText(f.Description), "Automated Unit Tests");
+                f.PreCondition = CleanGarbageText(SanitizeText(f.PreCondition), "1. System is operational\n2. Test data is prepared");
+            }
+
+            foreach (var fs in featureSheets)
+            {
+                fs.FeatureName = SanitizeText(fs.FeatureName);
+                fs.TestRequirement = CleanGarbageText(SanitizeText(fs.TestRequirement), "Verify all logics in module");
+                foreach (var tc in fs.TestCases)
+                {
+                    tc.FunctionGroup = SanitizeText(tc.FunctionGroup);
+                    tc.Description = CleanGarbageText(SanitizeText(tc.Description), "Verify business flow handles request correctly");
+                    tc.ExpectedResult = CleanGarbageText(SanitizeText(tc.ExpectedResult), "IsSuccess=true, Valid response returned");
+                    tc.Procedure = CleanGarbageText(SanitizeText(tc.Procedure), "1. Setup mock data\n2. Invoke handler\n3. Assert response");
+                    tc.PreCondition = CleanGarbageText(SanitizeText(tc.PreCondition), "Valid dependencies are injected");
+                    if (tc.AppliedConditions != null)
+                    {
+                        for (int i = 0; i < tc.AppliedConditions.Count; i++)
+                        {
+                            tc.AppliedConditions[i] = CleanGarbageText(SanitizeText(tc.AppliedConditions[i]), "Valid context inputs");
+                        }
+                    }
+                }
+            }
+
             return (summary, featureSheets);
+        }
+
+        private static string SanitizeText(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return text;
+            return text.Replace("Soft Delete", "Delete", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static string CleanGarbageText(string text, string defaultValue)
+        {
+            if (string.IsNullOrEmpty(text)) return text;
+            // Truncate or replace text if its length is unusually long (hallucinated garbage string)
+            // We pick 150 as a reasonable threshold for a single condition/description
+            if (text.Length > 200)
+            {
+                return defaultValue;
+            }
+            return text;
         }
 
 

@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -25,7 +25,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXM-GQP-01 | A | Template Part Missing -> 404
+        // GetQuestionsByPartQueryHandler_01 | A | Template Part Missing -> 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_TemplatePartNotFound_ShouldReturn404()
@@ -41,7 +41,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
             QACollector.LogTestCase("Exam - Get Questions By Part", new TestCaseDetail
             {
                 FunctionGroup = "GetQuestionsByPartQueryHandler",
-                TestCaseID = "TC-EXM-GQP-01",
+                TestCaseID = "GetQuestionsByPartQueryHandler_01",
                 Description = "Unmapped Template returns error immediately",
                 ExpectedResult = "Return 404",
                 StatusRound1 = "Passed",
@@ -52,7 +52,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXM-GQP-02 | N | Pagination and Request Parameters mapped accurately
+        // GetQuestionsByPartQueryHandler_02 | N | Pagination and Request Parameters mapped accurately
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ParametersMappedToRepo_ShouldSucceed()
@@ -70,7 +70,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
             QACollector.LogTestCase("Exam - Get Questions By Part", new TestCaseDetail
             {
                 FunctionGroup = "GetQuestionsByPartQueryHandler",
-                TestCaseID = "TC-EXM-GQP-02",
+                TestCaseID = "GetQuestionsByPartQueryHandler_02",
                 Description = "Verify input elements dynamically injected cleanly and calls valid repository filter",
                 ExpectedResult = "Valid mapping true",
                 StatusRound1 = "Passed",
@@ -81,7 +81,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXM-GQP-03 | N | Fallback Null SkillMediaType mapping
+        // GetQuestionsByPartQueryHandler_03 | N | Fallback Null SkillMediaType mapping
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SkillWriting_ShouldFallbackToImageMediaType()
@@ -100,7 +100,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
             QACollector.LogTestCase("Exam - Get Questions By Part", new TestCaseDetail
             {
                 FunctionGroup = "GetQuestionsByPartQueryHandler",
-                TestCaseID = "TC-EXM-GQP-03",
+                TestCaseID = "GetQuestionsByPartQueryHandler_03",
                 Description = "Writing maps exclusively directly to default Image wrapper securely logic",
                 ExpectedResult = "MediaType = Image fallback",
                 StatusRound1 = "Passed",
@@ -111,7 +111,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXM-GQP-04 | N | Audio Skill MediaType mapping
+        // GetQuestionsByPartQueryHandler_04 | N | Audio Skill MediaType mapping
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SkillListening_ShouldMapToAudioMediaType()
@@ -130,7 +130,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
             QACollector.LogTestCase("Exam - Get Questions By Part", new TestCaseDetail
             {
                 FunctionGroup = "GetQuestionsByPartQueryHandler",
-                TestCaseID = "TC-EXM-GQP-04",
+                TestCaseID = "GetQuestionsByPartQueryHandler_04",
                 Description = "Listening skill explicitly directs mapping Audio wrapper efficiently logic",
                 ExpectedResult = "MediaType = Audio mapped",
                 StatusRound1 = "Passed",
@@ -141,7 +141,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXM-GQP-05 | N | Options correctly mapped and ordered by KeyOption
+        // GetQuestionsByPartQueryHandler_05 | N | Options correctly mapped and ordered by KeyOption
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_OptionsMapping_ShouldStrictlyOrderAscending()
@@ -164,7 +164,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
             QACollector.LogTestCase("Exam - Get Questions By Part", new TestCaseDetail
             {
                 FunctionGroup = "GetQuestionsByPartQueryHandler",
-                TestCaseID = "TC-EXM-GQP-05",
+                TestCaseID = "GetQuestionsByPartQueryHandler_05",
                 Description = "Output data format validates explicitly returning sorted data on OptionKeys dynamically",
                 ExpectedResult = "Ascending Option format true",
                 StatusRound1 = "Passed",
@@ -175,7 +175,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXM-GQP-06 | N | Passages Null Check Trapping Exception Safety
+        // GetQuestionsByPartQueryHandler_06 | N | Passages Null Check Trapping Exception Safety
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_PassagesNull_MapsToEmptyWithoutError()
@@ -196,7 +196,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
             QACollector.LogTestCase("Exam - Get Questions By Part", new TestCaseDetail
             {
                 FunctionGroup = "GetQuestionsByPartQueryHandler",
-                TestCaseID = "TC-EXM-GQP-06",
+                TestCaseID = "GetQuestionsByPartQueryHandler_06",
                 Description = "Optional missing sub-items strictly fall back to Safe JSON mapped objects handling strings securely",
                 ExpectedResult = "Object resolves passage effectively",
                 StatusRound1 = "Passed",
@@ -206,7 +206,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
             });
         }
         // ═══════════════════════════════════════════════════════════
-        // TC-EXM-GQP-07 | N | Passage Not Null Maps Content Securely
+        // GetQuestionsByPartQueryHandler_07 | N | Passage Not Null Maps Content Securely
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_PassageNotNull_MapsCompletePassageSafely()
@@ -228,7 +228,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
             QACollector.LogTestCase("Exam - Get Questions By Part", new TestCaseDetail
             {
                 FunctionGroup = "GetQuestionsByPartQueryHandler",
-                TestCaseID = "TC-EXM-GQP-07",
+                TestCaseID = "GetQuestionsByPartQueryHandler_07",
                 Description = "Fully populated passage object successfully mapped cleanly correctly dynamically",
                 ExpectedResult = "Passage object resolves properties successfully",
                 StatusRound1 = "Passed",
@@ -239,7 +239,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXM-GQP-08 | N | Skill is Null Maps Object Image Formats
+        // GetQuestionsByPartQueryHandler_08 | N | Skill is Null Maps Object Image Formats
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SkillIsNull_ShouldMapToImageDefault()
@@ -258,7 +258,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
             QACollector.LogTestCase("Exam - Get Questions By Part", new TestCaseDetail
             {
                 FunctionGroup = "GetQuestionsByPartQueryHandler",
-                TestCaseID = "TC-EXM-GQP-08",
+                TestCaseID = "GetQuestionsByPartQueryHandler_08",
                 Description = "Null skill correctly handles logic implicitly mapping Image natively seamlessly securely",
                 ExpectedResult = "MediaType = Image fallback automatically",
                 StatusRound1 = "Passed",

@@ -1,4 +1,4 @@
-using FluentValidation.TestHelper;
+﻿using FluentValidation.TestHelper;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -29,7 +29,7 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap.Commands
             QACollector.LogTestCase("Roadmap - Generate Roadmap Validator", new TestCaseDetail
             {
                 FunctionGroup     = "GenerateRoadmapCommandValidator",
-                TestCaseID        = "TC-RDM-GRV-01",
+                TestCaseID        = "GenerateRoadmapCommandValidator_01",
                 Description       = "TargetAim is invalid (not in enum)",
                 ExpectedResult    = "Error validation",
                 StatusRound1      = "Passed",
@@ -51,7 +51,7 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap.Commands
             QACollector.LogTestCase("Roadmap - Generate Roadmap Validator", new TestCaseDetail
             {
                 FunctionGroup     = "GenerateRoadmapCommandValidator",
-                TestCaseID        = "TC-RDM-GRV-02",
+                TestCaseID        = "GenerateRoadmapCommandValidator_02",
                 Description       = "DurationDays is invalid (not 30, 60, or 90)",
                 ExpectedResult    = "Error 'Thời gian lộ trình chỉ chấp nhận 30, 60 hoặc 90 ngày.'",
                 StatusRound1      = "Passed",
@@ -73,7 +73,7 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap.Commands
             QACollector.LogTestCase("Roadmap - Generate Roadmap Validator", new TestCaseDetail
             {
                 FunctionGroup     = "GenerateRoadmapCommandValidator",
-                TestCaseID        = "TC-RDM-GRV-03",
+                TestCaseID        = "GenerateRoadmapCommandValidator_03",
                 Description       = "UserId is empty",
                 ExpectedResult    = "Error 'Không xác định được người dùng.'",
                 StatusRound1      = "Passed",

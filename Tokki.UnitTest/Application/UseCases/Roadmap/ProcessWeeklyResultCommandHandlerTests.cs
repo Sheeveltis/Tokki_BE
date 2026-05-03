@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -50,7 +50,7 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             Exam            = new Tokki.Domain.Entities.Exam { ExamId = examId, ExamTemplate = new ExamTemplate { TemplateParts = new List<TemplatePart>() } }
         };
 
-        // TC-RM-PWR-01 | A | UserExam not found → 404
+        // ProcessWeeklyResult_01 | A | UserExam not found → 404
         [Fact]
         public async Task Handle_UserExamNotFound_ShouldReturn404()
         {
@@ -59,10 +59,10 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             var result = await CreateHandler(examRepo: examRepo).Handle(new ProcessWeeklyResultCommand { UserId = "USER-001", UserExamId = "UE-MISSING" }, CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(404);
-            QACollector.LogTestCase("Roadmap - Process Weekly Result", new TestCaseDetail { FunctionGroup = "ProcessWeeklyResult", TestCaseID = "TC-RM-PWR-01", Description = "UserExam not found → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetByIdAsync returns null" } });
+            QACollector.LogTestCase("Roadmap - Process Weekly Result", new TestCaseDetail { FunctionGroup = "ProcessWeeklyResult", TestCaseID = "ProcessWeeklyResult_01", Description = "UserExam not found → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetByIdAsync returns null" } });
         }
 
-        // TC-RM-PWR-02 | A | Exam belongs to different user → 403
+        // ProcessWeeklyResult_02 | A | Exam belongs to different user → 403
         [Fact]
         public async Task Handle_WrongUser_ShouldReturn403()
         {
@@ -72,10 +72,10 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             var result = await CreateHandler(examRepo: examRepo).Handle(new ProcessWeeklyResultCommand { UserId = "OTHER-USER", UserExamId = "UE-001" }, CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(403);
-            QACollector.LogTestCase("Roadmap - Process Weekly Result", new TestCaseDetail { FunctionGroup = "ProcessWeeklyResult", TestCaseID = "TC-RM-PWR-02", Description = "Wrong user → 403", ExpectedResult = "IsSuccess=false, 403", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "session.UserId != request.UserId" } });
+            QACollector.LogTestCase("Roadmap - Process Weekly Result", new TestCaseDetail { FunctionGroup = "ProcessWeeklyResult", TestCaseID = "ProcessWeeklyResult_02", Description = "Wrong user → 403", ExpectedResult = "IsSuccess=false, 403", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "session.UserId != request.UserId" } });
         }
 
-        // TC-RM-PWR-03 | A | Exam status not Completed → 400
+        // ProcessWeeklyResult_03 | A | Exam status not Completed → 400
         [Fact]
         public async Task Handle_ExamNotCompleted_ShouldReturn400()
         {
@@ -86,10 +86,10 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             var result = await CreateHandler(examRepo: examRepo).Handle(new ProcessWeeklyResultCommand { UserId = "USER-001", UserExamId = "UE-001" }, CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            QACollector.LogTestCase("Roadmap - Process Weekly Result", new TestCaseDetail { FunctionGroup = "ProcessWeeklyResult", TestCaseID = "TC-RM-PWR-03", Description = "Exam not Completed → 400", ExpectedResult = "IsSuccess=false, 400", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Status=InProgress (not Completed)" } });
+            QACollector.LogTestCase("Roadmap - Process Weekly Result", new TestCaseDetail { FunctionGroup = "ProcessWeeklyResult", TestCaseID = "ProcessWeeklyResult_03", Description = "Exam not Completed → 400", ExpectedResult = "IsSuccess=false, 400", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Status=InProgress (not Completed)" } });
         }
 
-        // TC-RM-PWR-04 | A | No active roadmap → 404
+        // ProcessWeeklyResult_04 | A | No active roadmap → 404
         [Fact]
         public async Task Handle_NoActiveRoadmap_ShouldReturn404()
         {
@@ -100,10 +100,10 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             var result = await CreateHandler(roadmapRepo: roadmapRepo, examRepo: examRepo).Handle(new ProcessWeeklyResultCommand { UserId = "USER-001", UserExamId = "UE-001" }, CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(404);
-            QACollector.LogTestCase("Roadmap - Process Weekly Result", new TestCaseDetail { FunctionGroup = "ProcessWeeklyResult", TestCaseID = "TC-RM-PWR-04", Description = "No active roadmap → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetActiveRoadmapByUserIdAsync returns null" } });
+            QACollector.LogTestCase("Roadmap - Process Weekly Result", new TestCaseDetail { FunctionGroup = "ProcessWeeklyResult", TestCaseID = "ProcessWeeklyResult_04", Description = "No active roadmap → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetActiveRoadmapByUserIdAsync returns null" } });
         }
 
-        // TC-RM-PWR-05 | A | Exam week not matching roadmap → 400
+        // ProcessWeeklyResult_05 | A | Exam week not matching roadmap → 400
         [Fact]
         public async Task Handle_ExamWeekNotInRoadmap_ShouldReturn400()
         {
@@ -116,10 +116,10 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             var result = await CreateHandler(roadmapRepo: roadmapRepo, examRepo: examRepo).Handle(new ProcessWeeklyResultCommand { UserId = "USER-001", UserExamId = "UE-001" }, CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            QACollector.LogTestCase("Roadmap - Process Weekly Result", new TestCaseDetail { FunctionGroup = "ProcessWeeklyResult", TestCaseID = "TC-RM-PWR-05", Description = "Exam not in current roadmap weeks → 400", ExpectedResult = "IsSuccess=false, 400", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "No week with matching WeeklyExamId" } });
+            QACollector.LogTestCase("Roadmap - Process Weekly Result", new TestCaseDetail { FunctionGroup = "ProcessWeeklyResult", TestCaseID = "ProcessWeeklyResult_05", Description = "Exam not in current roadmap weeks → 400", ExpectedResult = "IsSuccess=false, 400", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "No week with matching WeeklyExamId" } });
         }
 
-        // TC-RM-PWR-06 | N | Exam matched → score calculated and success returned
+        // ProcessWeeklyResult_06 | N | Exam matched → score calculated and success returned
         [Fact]
         public async Task Handle_ValidRequest_ShouldReturnSuccessWithScorePercent()
         {
@@ -140,9 +140,9 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
             result.Data!.ScorePercent.Should().Be(0); // score=0, maxScore=0 → 0%
-            QACollector.LogTestCase("Roadmap - Process Weekly Result", new TestCaseDetail { FunctionGroup = "ProcessWeeklyResult", TestCaseID = "TC-RM-PWR-06", Description = "Valid request, exam in roadmap → success with ScorePercent=0 (no template parts)", ExpectedResult = "IsSuccess=true, ScorePercent=0", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Exam matched in roadmap", "no template parts → 0%" } });
+            QACollector.LogTestCase("Roadmap - Process Weekly Result", new TestCaseDetail { FunctionGroup = "ProcessWeeklyResult", TestCaseID = "ProcessWeeklyResult_06", Description = "Valid request, exam in roadmap → success with ScorePercent=0 (no template parts)", ExpectedResult = "IsSuccess=true, ScorePercent=0", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Exam matched in roadmap", "no template parts → 0%" } });
         }
-        // TC-RM-PWR-07 | N | Correct Answers > 80% (Mastered) -> Weakness updated
+        // ProcessWeeklyResult_07 | N | Correct Answers > 80% (Mastered) -> Weakness updated
         [Fact]
         public async Task Handle_MasteryOverridesWeakness_Correctly()
         {
@@ -176,10 +176,10 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             // Score = 1/1 = 100% -> Is Weakness = false, Fixed
             weakRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
 
-            QACollector.LogTestCase("Roadmap - Process Weekly Result", new TestCaseDetail { FunctionGroup = "ProcessWeeklyResult", TestCaseID = "TC-RM-PWR-07", Description = "Mastery score correctly updates old weakness to fixed", ExpectedResult = "Updates cleanly", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Answers 100% correct overrides fail" } });
+            QACollector.LogTestCase("Roadmap - Process Weekly Result", new TestCaseDetail { FunctionGroup = "ProcessWeeklyResult", TestCaseID = "ProcessWeeklyResult_07", Description = "Mastery score correctly updates old weakness to fixed", ExpectedResult = "Updates cleanly", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Answers 100% correct overrides fail" } });
         }
 
-        // TC-RM-PWR-08 | N | Failed < 50% -> Status 0 -> new Weakness
+        // ProcessWeeklyResult_08 | N | Failed < 50% -> Status 0 -> new Weakness
         [Fact]
         public async Task Handle_FailedAnswers_AddsNewWeakness()
         {
@@ -213,7 +213,7 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             result.Data!.WeakTypeIds.Should().Contain("QT-FAIL");
             weakRepo.Verify(x => x.AddAsync(It.IsAny<UserWeakness>(), It.IsAny<CancellationToken>()), Times.Once);
 
-            QACollector.LogTestCase("Roadmap - Process Weekly Result", new TestCaseDetail { FunctionGroup = "ProcessWeeklyResult", TestCaseID = "TC-RM-PWR-08", Description = "Fails properly generate new UserWeakness tracking record", ExpectedResult = "Adds cleanly gracefully", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Answers incorrect adds weakness" } });
+            QACollector.LogTestCase("Roadmap - Process Weekly Result", new TestCaseDetail { FunctionGroup = "ProcessWeeklyResult", TestCaseID = "ProcessWeeklyResult_08", Description = "Fails properly generate new UserWeakness tracking record", ExpectedResult = "Adds cleanly gracefully", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Answers incorrect adds weakness" } });
         }
     }
 }

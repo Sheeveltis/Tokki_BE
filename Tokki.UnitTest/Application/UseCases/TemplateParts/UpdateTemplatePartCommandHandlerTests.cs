@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using System;
@@ -59,37 +59,37 @@ namespace Tokki.UnitTest.Application.UseCases.TemplateParts
             QuestionTypeId = "QT-01"
         };
 
-        // TC-TP-UPD-01 | A | Part not found → failure
+        // UpdateTemplatePart_01 | A | Part not found → failure
         [Fact]
         public async Task Handle_PartNotFound_ShouldReturnFailure()
         {
             var repo   = GetRepoMock(null);
             var result = await CreateHandler(repo).Handle(MakeCommand("MISSING"), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
-            QACollector.LogTestCase("TemplatePart - Update", new TestCaseDetail { FunctionGroup = "UpdateTemplatePart", TestCaseID = "TC-TP-UPD-01", Description = "Part not found → failure (TemplatePartNotFound)", ExpectedResult = "IsSuccess=false", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetByIdAsync returns null" } });
+            QACollector.LogTestCase("TemplatePart - Update", new TestCaseDetail { FunctionGroup = "UpdateTemplatePart", TestCaseID = "UpdateTemplatePart_01", Description = "Part not found → failure (TemplatePartNotFound)", ExpectedResult = "IsSuccess=false", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetByIdAsync returns null" } });
         }
 
-        // TC-TP-UPD-02 | A | QuestionFrom > QuestionTo → invalid range failure
+        // UpdateTemplatePart_02 | A | QuestionFrom > QuestionTo → invalid range failure
         [Fact]
         public async Task Handle_InvalidRange_ShouldReturnFailure()
         {
             var repo   = GetRepoMock(SamplePart());
             var result = await CreateHandler(repo).Handle(MakeCommand(from: 10, to: 5), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
-            QACollector.LogTestCase("TemplatePart - Update", new TestCaseDetail { FunctionGroup = "UpdateTemplatePart", TestCaseID = "TC-TP-UPD-02", Description = "QuestionFrom(10) > QuestionTo(5) → TemplatePartInvalidRange", ExpectedResult = "IsSuccess=false", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "QuestionFrom > QuestionTo guard" } });
+            QACollector.LogTestCase("TemplatePart - Update", new TestCaseDetail { FunctionGroup = "UpdateTemplatePart", TestCaseID = "UpdateTemplatePart_02", Description = "QuestionFrom(10) > QuestionTo(5) → TemplatePartInvalidRange", ExpectedResult = "IsSuccess=false", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "QuestionFrom > QuestionTo guard" } });
         }
 
-        // TC-TP-UPD-03 | A | Range overlaps another part → failure
+        // UpdateTemplatePart_03 | A | Range overlaps another part → failure
         [Fact]
         public async Task Handle_RangeOverlap_ShouldReturnFailure()
         {
             var repo   = GetRepoMock(SamplePart(), overlap: true);
             var result = await CreateHandler(repo).Handle(MakeCommand(), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
-            QACollector.LogTestCase("TemplatePart - Update", new TestCaseDetail { FunctionGroup = "UpdateTemplatePart", TestCaseID = "TC-TP-UPD-03", Description = "Range overlaps → TemplatePartRangeOverlap", ExpectedResult = "IsSuccess=false", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "IsQuestionRangeOverlapAsync returns true" } });
+            QACollector.LogTestCase("TemplatePart - Update", new TestCaseDetail { FunctionGroup = "UpdateTemplatePart", TestCaseID = "UpdateTemplatePart_03", Description = "Range overlaps → TemplatePartRangeOverlap", ExpectedResult = "IsSuccess=false", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "IsQuestionRangeOverlapAsync returns true" } });
         }
 
-        // TC-TP-UPD-04 | N | Happy path → 200 with part ID
+        // UpdateTemplatePart_04 | N | Happy path → 200 with part ID
         [Fact]
         public async Task Handle_ValidRequest_ShouldReturn200WithPartId()
         {
@@ -98,10 +98,10 @@ namespace Tokki.UnitTest.Application.UseCases.TemplateParts
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
             result.Data.Should().Be("TP-001");
-            QACollector.LogTestCase("TemplatePart - Update", new TestCaseDetail { FunctionGroup = "UpdateTemplatePart", TestCaseID = "TC-TP-UPD-04", Description = "Valid update → 200, Data='TP-001'", ExpectedResult = "IsSuccess=true, 200", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "All guards pass, part updated" } });
+            QACollector.LogTestCase("TemplatePart - Update", new TestCaseDetail { FunctionGroup = "UpdateTemplatePart", TestCaseID = "UpdateTemplatePart_04", Description = "Valid update → 200, Data='TP-001'", ExpectedResult = "IsSuccess=true, 200", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "All guards pass, part updated" } });
         }
 
-        // TC-TP-UPD-05 | N | Part fields updated correctly
+        // UpdateTemplatePart_05 | N | Part fields updated correctly
         [Fact]
         public async Task Handle_ValidRequest_PartFieldsUpdatedCorrectly()
         {
@@ -122,10 +122,10 @@ namespace Tokki.UnitTest.Application.UseCases.TemplateParts
             part.QuestionFrom.Should().Be(3);
             part.QuestionTo.Should().Be(7);
             part.Mark.Should().Be(5);
-            QACollector.LogTestCase("TemplatePart - Update", new TestCaseDetail { FunctionGroup = "UpdateTemplatePart", TestCaseID = "TC-TP-UPD-05", Description = "Part fields all updated correctly on entity", ExpectedResult = "Entity fields mutated", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "PartTitle, Skill, From, To, Mark updated" } });
+            QACollector.LogTestCase("TemplatePart - Update", new TestCaseDetail { FunctionGroup = "UpdateTemplatePart", TestCaseID = "UpdateTemplatePart_05", Description = "Part fields all updated correctly on entity", ExpectedResult = "Entity fields mutated", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "PartTitle, Skill, From, To, Mark updated" } });
         }
 
-        // TC-TP-UPD-06 | A | Repository throws on UpdateAsync → failure returned
+        // UpdateTemplatePart_06 | A | Repository throws on UpdateAsync → failure returned
         [Fact]
         public async Task Handle_RepoThrowsOnUpdate_ShouldReturnServerError()
         {
@@ -135,7 +135,7 @@ namespace Tokki.UnitTest.Application.UseCases.TemplateParts
             repo.Setup(x => x.UpdateAsync(It.IsAny<TemplatePart>())).ThrowsAsync(new Exception("DB error"));
             var result = await CreateHandler(repo).Handle(MakeCommand(), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
-            QACollector.LogTestCase("TemplatePart - Update", new TestCaseDetail { FunctionGroup = "UpdateTemplatePart", TestCaseID = "TC-TP-UPD-06", Description = "UpdateAsync throws → failure (ServerError)", ExpectedResult = "IsSuccess=false", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Exception caught in try-catch" } });
+            QACollector.LogTestCase("TemplatePart - Update", new TestCaseDetail { FunctionGroup = "UpdateTemplatePart", TestCaseID = "UpdateTemplatePart_06", Description = "UpdateAsync throws → failure (ServerError)", ExpectedResult = "IsSuccess=false", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Exception caught in try-catch" } });
         }
     }
 }

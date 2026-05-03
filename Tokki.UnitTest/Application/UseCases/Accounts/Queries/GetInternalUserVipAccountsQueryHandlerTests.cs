@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -36,7 +36,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Queries
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-ACC-GIV-01 | N | Returns Only User and Vip Roles
+        // GetInternalUserVipAccountsQueryHandler_01 | N | Returns Only User and Vip Roles
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ShouldFilterOnlyUserAndVipRoles()
@@ -54,7 +54,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Queries
             QACollector.LogTestCase("Account - Get VIP Accounts", new TestCaseDetail
             {
                 FunctionGroup = "GetInternalUserVipAccountsQueryHandler",
-                TestCaseID = "TC-ACC-GIV-01",
+                TestCaseID = "GetInternalUserVipAccountsQueryHandler_01",
                 Description = "Filters out roles other than User and Vip",
                 ExpectedResult = "Return 3 accounts",
                 StatusRound1 = "Passed",
@@ -65,7 +65,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Queries
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-ACC-GIV-02 | N | Status Filter
+        // GetInternalUserVipAccountsQueryHandler_02 | N | Status Filter
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_StatusFilter_ShouldApply()
@@ -83,7 +83,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Queries
             QACollector.LogTestCase("Account - Get VIP Accounts", new TestCaseDetail
             {
                 FunctionGroup = "GetInternalUserVipAccountsQueryHandler",
-                TestCaseID = "TC-ACC-GIV-02",
+                TestCaseID = "GetInternalUserVipAccountsQueryHandler_02",
                 Description = "Filters correctly by status",
                 ExpectedResult = "Return 1 account with banned status",
                 StatusRound1 = "Passed",
@@ -94,7 +94,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Queries
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-ACC-GIV-03 | N | Name, Email, Phone Filters
+        // GetInternalUserVipAccountsQueryHandler_03 | N | Name, Email, Phone Filters
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_TextFilters_ShouldApply()
@@ -112,7 +112,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Queries
             QACollector.LogTestCase("Account - Get VIP Accounts", new TestCaseDetail
             {
                 FunctionGroup = "GetInternalUserVipAccountsQueryHandler",
-                TestCaseID = "TC-ACC-GIV-03",
+                TestCaseID = "GetInternalUserVipAccountsQueryHandler_03",
                 Description = "Filters correctly by text inputs",
                 ExpectedResult = "Return 1 matching account",
                 StatusRound1 = "Passed",
@@ -123,7 +123,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Queries
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-ACC-GIV-04 | N | Vip Status Filter Active
+        // GetInternalUserVipAccountsQueryHandler_04 | N | Vip Status Filter Active
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_VipStatusActive_ShouldReturnOnlyActiveVip()
@@ -141,7 +141,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Queries
             QACollector.LogTestCase("Account - Get VIP Accounts", new TestCaseDetail
             {
                 FunctionGroup = "GetInternalUserVipAccountsQueryHandler",
-                TestCaseID = "TC-ACC-GIV-04",
+                TestCaseID = "GetInternalUserVipAccountsQueryHandler_04",
                 Description = "Filters active VIP users",
                 ExpectedResult = "Return users with future VIP dates",
                 StatusRound1 = "Passed",
@@ -152,7 +152,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Queries
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-ACC-GIV-05 | N | Vip Status NoVip
+        // GetInternalUserVipAccountsQueryHandler_05 | N | Vip Status NoVip
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_VipStatusNoVip_ShouldReturnUsersWithNoDate()
@@ -170,7 +170,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Queries
             QACollector.LogTestCase("Account - Get VIP Accounts", new TestCaseDetail
             {
                 FunctionGroup = "GetInternalUserVipAccountsQueryHandler",
-                TestCaseID = "TC-ACC-GIV-05",
+                TestCaseID = "GetInternalUserVipAccountsQueryHandler_05",
                 Description = "Filters Non-VIP users",
                 ExpectedResult = "Return users with null VIP dates",
                 StatusRound1 = "Passed",
@@ -181,7 +181,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Queries
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-ACC-GIV-06 | B | Empty Data Case
+        // GetInternalUserVipAccountsQueryHandler_06 | B | Empty Data Case
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyData_ShouldReturnEmptyPagedResult()
@@ -199,7 +199,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Queries
             QACollector.LogTestCase("Account - Get VIP Accounts", new TestCaseDetail
             {
                 FunctionGroup = "GetInternalUserVipAccountsQueryHandler",
-                TestCaseID = "TC-ACC-GIV-06",
+                TestCaseID = "GetInternalUserVipAccountsQueryHandler_06",
                 Description = "Returns empty list safely if repository is empty",
                 ExpectedResult = "Return 0 length items",
                 StatusRound1 = "Passed",

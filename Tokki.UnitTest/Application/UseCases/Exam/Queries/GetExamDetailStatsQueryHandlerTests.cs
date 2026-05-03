@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -23,7 +23,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXM-GDS-01 | A | Exam NotFound
+        // GetExamDetailStatsQueryHandler_01 | A | Exam NotFound
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ExamNotFound_ShouldReturnFailure()
@@ -40,7 +40,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
             QACollector.LogTestCase("Exam - Get Detail Stats", new TestCaseDetail
             {
                 FunctionGroup = "GetExamDetailStatsQueryHandler",
-                TestCaseID = "TC-EXM-GDS-01",
+                TestCaseID = "GetExamDetailStatsQueryHandler_01",
                 Description = "Missing Exam Returns Failure immediately",
                 ExpectedResult = "Return 400 Failure Error",
                 StatusRound1 = "Passed",
@@ -51,7 +51,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXM-GDS-02 | N | Blank Skill Durations parsing safe
+        // GetExamDetailStatsQueryHandler_02 | N | Blank Skill Durations parsing safe
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_BlankSkillDurations_ShouldMapEmptyDictionary()
@@ -69,7 +69,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
             QACollector.LogTestCase("Exam - Get Detail Stats", new TestCaseDetail
             {
                 FunctionGroup = "GetExamDetailStatsQueryHandler",
-                TestCaseID = "TC-EXM-GDS-02",
+                TestCaseID = "GetExamDetailStatsQueryHandler_02",
                 Description = "Empty JSON Strings do not crash app but map to empty container",
                 ExpectedResult = "Empty dict result",
                 StatusRound1 = "Passed",
@@ -80,7 +80,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXM-GDS-03 | N | Valid Skill Durations Json
+        // GetExamDetailStatsQueryHandler_03 | N | Valid Skill Durations Json
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidSkillDurations_ShouldMapProperly()
@@ -98,7 +98,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
             QACollector.LogTestCase("Exam - Get Detail Stats", new TestCaseDetail
             {
                 FunctionGroup = "GetExamDetailStatsQueryHandler",
-                TestCaseID = "TC-EXM-GDS-03",
+                TestCaseID = "GetExamDetailStatsQueryHandler_03",
                 Description = "Stored mapped JSON resolves correctly securely",
                 ExpectedResult = "Valid mapping logic verified",
                 StatusRound1 = "Passed",
@@ -109,7 +109,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXM-GDS-04 | N | Parts & Scores calculate dynamically correctly
+        // GetExamDetailStatsQueryHandler_04 | N | Parts & Scores calculate dynamically correctly
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_PartsCalculation_ShouldSumProperly()
@@ -135,7 +135,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
             QACollector.LogTestCase("Exam - Get Detail Stats", new TestCaseDetail
             {
                 FunctionGroup = "GetExamDetailStatsQueryHandler",
-                TestCaseID = "TC-EXM-GDS-04",
+                TestCaseID = "GetExamDetailStatsQueryHandler_04",
                 Description = "Nested extraction logic evaluates successfully bounding properties exactly and assigning Marks",
                 ExpectedResult = "Calculations correct",
                 StatusRound1 = "Passed",
@@ -146,7 +146,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXM-GDS-05 | N | Averages Floating Math Rounding verified
+        // GetExamDetailStatsQueryHandler_05 | N | Averages Floating Math Rounding verified
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_Averages_ShouldMathRoundCorrectly()
@@ -164,7 +164,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
             QACollector.LogTestCase("Exam - Get Detail Stats", new TestCaseDetail
             {
                 FunctionGroup = "GetExamDetailStatsQueryHandler",
-                TestCaseID = "TC-EXM-GDS-05",
+                TestCaseID = "GetExamDetailStatsQueryHandler_05",
                 Description = "Averages check round logic math limits correctly preventing format crashes",
                 ExpectedResult = "Rounded Math results verify",
                 StatusRound1 = "Passed",
@@ -175,7 +175,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXM-GDS-06 | B | Empty Template Parts List
+        // GetExamDetailStatsQueryHandler_06 | B | Empty Template Parts List
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyParts_SkipsAggregationSafely()
@@ -193,7 +193,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Queries
             QACollector.LogTestCase("Exam - Get Detail Stats", new TestCaseDetail
             {
                 FunctionGroup = "GetExamDetailStatsQueryHandler",
-                TestCaseID = "TC-EXM-GDS-06",
+                TestCaseID = "GetExamDetailStatsQueryHandler_06",
                 Description = "Missing nested configurations skip parts arrays without exception safely",
                 ExpectedResult = "Empty skills mapping successfully done gracefully",
                 StatusRound1 = "Passed",

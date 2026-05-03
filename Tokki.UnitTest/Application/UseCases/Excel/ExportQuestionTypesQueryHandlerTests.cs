@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -55,7 +55,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         };
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-EXQT-01 | A | Repository throws → exception caught → failure
+        // ExportQuestionTypes_01 | A | Repository throws → exception caught → failure
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldReturnExportError()
@@ -77,7 +77,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Export Question Types", new TestCaseDetail
             {
                 FunctionGroup     = "ExportQuestionTypes",
-                TestCaseID        = "TC-EXC-EXQT-01",
+                TestCaseID        = "ExportQuestionTypes_01",
                 Description       = "Repository throws exception during GetAllAsync",
                 ExpectedResult    = "Return Failure EXPORT_ERROR",
                 StatusRound1      = "Passed",
@@ -88,7 +88,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-EXQT-02 | A | Repository returns empty list → exports empty file
+        // ExportQuestionTypes_02 | A | Repository returns empty list → exports empty file
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyData_ShouldExportEmptyFile()
@@ -113,7 +113,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Export Question Types", new TestCaseDetail
             {
                 FunctionGroup     = "ExportQuestionTypes",
-                TestCaseID        = "TC-EXC-EXQT-02",
+                TestCaseID        = "ExportQuestionTypes_02",
                 Description       = "Repository returns empty collection, proceeds to generate file with headers",
                 ExpectedResult    = "Return 200 with FileBytes",
                 StatusRound1      = "Passed",
@@ -124,7 +124,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-EXQT-03 | N | Valid data → properly mapped and file exported
+        // ExportQuestionTypes_03 | N | Valid data → properly mapped and file exported
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidData_ShouldMapAndExportCorrectly()
@@ -150,7 +150,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Export Question Types", new TestCaseDetail
             {
                 FunctionGroup     = "ExportQuestionTypes",
-                TestCaseID        = "TC-EXC-EXQT-03",
+                TestCaseID        = "ExportQuestionTypes_03",
                 Description       = "Valid QuestionType list correctly mapped to DTO and exported",
                 ExpectedResult    = "Return 200 with correct FileBytes and FileName",
                 StatusRound1      = "Passed",
@@ -161,7 +161,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-EXQT-04 | N | Enum properties are converted to String properly
+        // ExportQuestionTypes_04 | N | Enum properties are converted to String properly
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidData_EnumPropertiesMappedAsStrings()
@@ -195,7 +195,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Export Question Types", new TestCaseDetail
             {
                 FunctionGroup     = "ExportQuestionTypes",
-                TestCaseID        = "TC-EXC-EXQT-04",
+                TestCaseID        = "ExportQuestionTypes_04",
                 Description       = "Enum properties (ExamType, Skill, Difficulty) are converted to string via .ToString()",
                 ExpectedResult    = "DTO enum fields equal enum name strings",
                 StatusRound1      = "Passed",
@@ -206,7 +206,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-EXQT-05 | N | FileName contains QuestionTypes prefix and .xlsx
+        // ExportQuestionTypes_05 | N | FileName contains QuestionTypes prefix and .xlsx
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidData_FileNameHasCorrectPrefix()
@@ -232,7 +232,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Export Question Types", new TestCaseDetail
             {
                 FunctionGroup     = "ExportQuestionTypes",
-                TestCaseID        = "TC-EXC-EXQT-05",
+                TestCaseID        = "ExportQuestionTypes_05",
                 Description       = "FileName follows the QuestionTypes_{timestamp}.xlsx format",
                 ExpectedResult    = "FileName starts with 'QuestionTypes_' and ends with '.xlsx'",
                 StatusRound1      = "Passed",
@@ -243,7 +243,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-EXQT-06 | A | ExcelBaseService throws → return EXPORT_ERROR
+        // ExportQuestionTypes_06 | A | ExcelBaseService throws → return EXPORT_ERROR
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ExcelServiceThrows_ShouldReturnExportError()
@@ -272,7 +272,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Export Question Types", new TestCaseDetail
             {
                 FunctionGroup     = "ExportQuestionTypes",
-                TestCaseID        = "TC-EXC-EXQT-06",
+                TestCaseID        = "ExportQuestionTypes_06",
                 Description       = "ExcelBaseService throws exception during export",
                 ExpectedResult    = "Return Failure EXPORT_ERROR with message",
                 StatusRound1      = "Passed",

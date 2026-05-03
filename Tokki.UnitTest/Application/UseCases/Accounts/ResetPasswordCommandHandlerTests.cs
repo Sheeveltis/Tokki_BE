@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using FluentValidation;
 using Moq;
 using System;
@@ -35,7 +35,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RPW-01 | A | Email not found → 404
+        // Reset_Password_Forgot_01 | A | Email not found → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_UserNotFound_ShouldReturn404()
@@ -53,7 +53,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Reset Password", new TestCaseDetail
             {
                 FunctionGroup     = "Reset Password (Forgot)",
-                TestCaseID        = "TC-RPW-01",
+                TestCaseID        = "Reset_Password_Forgot_01",
                 Description       = "Email does not exist in the system",
                 ExpectedResult    = "Return 404 UserNotFound",
                 StatusRound1      = "Passed",
@@ -64,7 +64,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RPW-02 | N | Valid email, locked account → reset clears lock, return 200
+        // Reset_Password_Forgot_02 | N | Valid email, locked account → reset clears lock, return 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidEmail_LockedAccount_ShouldResetAndClearLock()
@@ -97,7 +97,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Reset Password", new TestCaseDetail
             {
                 FunctionGroup     = "Reset Password (Forgot)",
-                TestCaseID        = "TC-RPW-02",
+                TestCaseID        = "Reset_Password_Forgot_02",
                 Description       = "Valid email, account was locked → new password hashed, lock cleared, return 200",
                 ExpectedResult    = "Return 200, PasswordHash updated, FailedLoginCount = 0, LockedUntil = null",
                 StatusRound1      = "Passed",
@@ -116,7 +116,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RPW-03 | N | Valid email, clean account → password changed, return 200
+        // Reset_Password_Forgot_03 | N | Valid email, clean account → password changed, return 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidEmail_NormalAccount_ShouldUpdatePasswordAndReturn200()
@@ -146,7 +146,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Reset Password", new TestCaseDetail
             {
                 FunctionGroup     = "Reset Password (Forgot)",
-                TestCaseID        = "TC-RPW-03",
+                TestCaseID        = "Reset_Password_Forgot_03",
                 Description       = "Valid email, account has no lock → password resets successfully",
                 ExpectedResult    = "Return 200, PasswordHash updated with new password",
                 StatusRound1      = "Passed",
@@ -162,7 +162,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RPW-04 | N | UpdateUserAsync and SaveChangesAsync each called exactly once
+        // Reset_Password_Forgot_04 | N | UpdateUserAsync and SaveChangesAsync each called exactly once
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidEmail_ShouldCallUpdateUserAsyncOnce()
@@ -183,7 +183,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Reset Password", new TestCaseDetail
             {
                 FunctionGroup     = "Reset Password (Forgot)",
-                TestCaseID        = "TC-RPW-04",
+                TestCaseID        = "Reset_Password_Forgot_04",
                 Description       = "Valid email → UpdateUserAsync and SaveChangesAsync each called exactly once",
                 ExpectedResult    = "UpdateUserAsync called 1 time, SaveChangesAsync called 1 time",
                 StatusRound1      = "Passed",
@@ -199,7 +199,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RPW-05 | B | Old password hash is completely replaced by new hash
+        // Reset_Password_Forgot_05 | B | Old password hash is completely replaced by new hash
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidEmail_ShouldNotVerifyWithOldPassword()
@@ -234,7 +234,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Reset Password", new TestCaseDetail
             {
                 FunctionGroup     = "Reset Password (Forgot)",
-                TestCaseID        = "TC-RPW-05",
+                TestCaseID        = "Reset_Password_Forgot_05",
                 Description       = "After reset, old password no longer valid; new hash is different from old one",
                 ExpectedResult    = "Old password BCrypt.Verify = false, new password BCrypt.Verify = true, hash changed",
                 StatusRound1      = "Passed",
@@ -250,7 +250,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RPW-06 | N | Admin account can also reset password via this handler → 200
+        // Reset_Password_Forgot_06 | N | Admin account can also reset password via this handler → 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_AdminAccount_ShouldResetPasswordAndReturn200()
@@ -281,7 +281,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Reset Password", new TestCaseDetail
             {
                 FunctionGroup     = "Reset Password (Forgot)",
-                TestCaseID        = "TC-RPW-06",
+                TestCaseID        = "Reset_Password_Forgot_06",
                 Description       = "Admin account password reset works the same as a regular user",
                 ExpectedResult    = "Return 200, Admin's PasswordHash updated, FailedLoginCount reset to 0",
                 StatusRound1      = "Passed",

@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -63,7 +63,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         //  CREATE QUESTION OPTION
         // ═════════════════════════════════════════════════════════
 
-        // TC-QB-OC-01 | A | QB not found → 404
+        // CreateQuestionOption_01 | A | QB not found → 404
         [Fact]
         public async Task CreateOption_QBNotFound_ShouldReturn404()
         {
@@ -86,7 +86,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank Option - Create", new TestCaseDetail
             {
                 FunctionGroup     = "CreateQuestionOption",
-                TestCaseID        = "TC-QB-OC-01",
+                TestCaseID        = "CreateQuestionOption_01",
                 Description       = "QB not found → 404 QuestionBankNotFound",
                 ExpectedResult    = "IsSuccess=false, StatusCode=404",
                 StatusRound1      = "Passed",
@@ -96,7 +96,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             });
         }
 
-        // TC-QB-OC-02 | A | QB not Draft → 403
+        // CreateQuestionOption_02 | A | QB not Draft → 403
         [Fact]
         public async Task CreateOption_QBNotDraft_ShouldReturn403()
         {
@@ -121,7 +121,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank Option - Create", new TestCaseDetail
             {
                 FunctionGroup     = "CreateQuestionOption",
-                TestCaseID        = "TC-QB-OC-02",
+                TestCaseID        = "CreateQuestionOption_02",
                 Description       = "QB not in Draft status → 403 Forbidden",
                 ExpectedResult    = "IsSuccess=false, StatusCode=403",
                 StatusRound1      = "Passed",
@@ -131,7 +131,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             });
         }
 
-        // TC-QB-OC-03 | A | Writing skill → 400
+        // CreateQuestionOption_03 | A | Writing skill → 400
         [Fact]
         public async Task CreateOption_WritingSkill_ShouldReturn400()
         {
@@ -154,7 +154,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank Option - Create", new TestCaseDetail
             {
                 FunctionGroup     = "CreateQuestionOption",
-                TestCaseID        = "TC-QB-OC-03",
+                TestCaseID        = "CreateQuestionOption_03",
                 Description       = "Writing skill QB: cannot add options → 400",
                 ExpectedResult    = "IsSuccess=false, StatusCode=400",
                 StatusRound1      = "Passed",
@@ -164,7 +164,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             });
         }
 
-        // TC-QB-OC-04 | A | Already 4 options → 400
+        // CreateQuestionOption_04 | A | Already 4 options → 400
         [Fact]
         public async Task CreateOption_MaxOptions_ShouldReturn400()
         {
@@ -192,7 +192,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank Option - Create", new TestCaseDetail
             {
                 FunctionGroup     = "CreateQuestionOption",
-                TestCaseID        = "TC-QB-OC-04",
+                TestCaseID        = "CreateQuestionOption_04",
                 Description       = "Already 4 options → cannot add more → 400",
                 ExpectedResult    = "IsSuccess=false, StatusCode=400",
                 StatusRound1      = "Passed",
@@ -202,7 +202,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             });
         }
 
-        // TC-QB-OC-05 | N | Happy path: Reading, < 4 options → option created, 201
+        // CreateQuestionOption_05 | N | Happy path: Reading, < 4 options → option created, 201
         [Fact]
         public async Task CreateOption_ValidReadingQB_ShouldReturn201()
         {
@@ -235,7 +235,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank Option - Create", new TestCaseDetail
             {
                 FunctionGroup     = "CreateQuestionOption",
-                TestCaseID        = "TC-QB-OC-05",
+                TestCaseID        = "CreateQuestionOption_05",
                 Description       = "Happy path: valid option added to Draft Reading QB, AddAsync+SaveChanges called, 201",
                 ExpectedResult    = "IsSuccess=true, StatusCode=201",
                 StatusRound1      = "Passed",
@@ -245,7 +245,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             });
         }
 
-        // TC-QB-OC-06 | A | Duplicate KeyOption → 400
+        // CreateQuestionOption_06 | A | Duplicate KeyOption → 400
         [Fact]
         public async Task CreateOption_DuplicateKey_ShouldReturn400()
         {
@@ -275,7 +275,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank Option - Create", new TestCaseDetail
             {
                 FunctionGroup     = "CreateQuestionOption",
-                TestCaseID        = "TC-QB-OC-06",
+                TestCaseID        = "CreateQuestionOption_06",
                 Description       = "Duplicate KeyOption in QB → 400",
                 ExpectedResult    = "IsSuccess=false, StatusCode=400",
                 StatusRound1      = "Passed",
@@ -289,7 +289,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         //  DELETE QUESTION OPTION
         // ═════════════════════════════════════════════════════════
 
-        // TC-QB-OD-01 | A | QB not found → 404
+        // DeleteQuestionOption_01 | A | QB not found → 404
         [Fact]
         public async Task DeleteOption_QBNotFound_ShouldReturn404()
         {
@@ -308,7 +308,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank Option - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteQuestionOption",
-                TestCaseID        = "TC-QB-OD-01",
+                TestCaseID        = "DeleteQuestionOption_01",
                 Description       = "QB not found → 404 QuestionBankNotFound",
                 ExpectedResult    = "IsSuccess=false, StatusCode=404",
                 StatusRound1      = "Passed",
@@ -318,7 +318,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             });
         }
 
-        // TC-QB-OD-02 | A | QB not Draft → 403
+        // DeleteQuestionOption_02 | A | QB not Draft → 403
         [Fact]
         public async Task DeleteOption_QBNotDraft_ShouldReturn403()
         {
@@ -339,7 +339,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank Option - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteQuestionOption",
-                TestCaseID        = "TC-QB-OD-02",
+                TestCaseID        = "DeleteQuestionOption_02",
                 Description       = "QB not in Draft → 403 (only Draft can delete options)",
                 ExpectedResult    = "IsSuccess=false, StatusCode=403",
                 StatusRound1      = "Passed",
@@ -349,7 +349,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             });
         }
 
-        // TC-QB-OD-03 | A | Option not found in QB → 404
+        // DeleteQuestionOption_03 | A | Option not found in QB → 404
         [Fact]
         public async Task DeleteOption_OptionNotFound_ShouldReturn404()
         {
@@ -369,7 +369,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank Option - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteQuestionOption",
-                TestCaseID        = "TC-QB-OD-03",
+                TestCaseID        = "DeleteQuestionOption_03",
                 Description       = "OptionId not in QB.QuestionOptions → 404 QuestionOptionNotFound",
                 ExpectedResult    = "IsSuccess=false, StatusCode=404",
                 StatusRound1      = "Passed",
@@ -379,7 +379,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             });
         }
 
-        // TC-QB-OD-04 | N | Happy path: valid option deleted, 200
+        // DeleteQuestionOption_04 | N | Happy path: valid option deleted, 200
         [Fact]
         public async Task DeleteOption_ValidOption_ShouldReturn200()
         {
@@ -403,7 +403,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank Option - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteQuestionOption",
-                TestCaseID        = "TC-QB-OD-04",
+                TestCaseID        = "DeleteQuestionOption_04",
                 Description       = "Happy path: option found and deleted, DeleteAsync+SaveChanges called, 200",
                 ExpectedResult    = "IsSuccess=true, StatusCode=200",
                 StatusRound1      = "Passed",
@@ -417,7 +417,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         //  UPDATE QUESTION OPTION
         // ═════════════════════════════════════════════════════════
 
-        // TC-QB-OU-01 | A | QB not found → 404
+        // UpdateQuestionOption_01 | A | QB not found → 404
         [Fact]
         public async Task UpdateOption_QBNotFound_ShouldReturn404()
         {
@@ -437,7 +437,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank Option - Update", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateQuestionOption",
-                TestCaseID        = "TC-QB-OU-01",
+                TestCaseID        = "UpdateQuestionOption_01",
                 Description       = "QB not found → 404",
                 ExpectedResult    = "IsSuccess=false, StatusCode=404",
                 StatusRound1      = "Passed",
@@ -447,7 +447,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             });
         }
 
-        // TC-QB-OU-02 | A | OptionId not found → 404
+        // UpdateQuestionOption_02 | A | OptionId not found → 404
         [Fact]
         public async Task UpdateOption_OptionNotFound_ShouldReturn404()
         {
@@ -468,7 +468,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank Option - Update", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateQuestionOption",
-                TestCaseID        = "TC-QB-OU-02",
+                TestCaseID        = "UpdateQuestionOption_02",
                 Description       = "OptionId not found in QB → 404 QuestionOptionNotFound",
                 ExpectedResult    = "IsSuccess=false, StatusCode=404",
                 StatusRound1      = "Passed",
@@ -478,7 +478,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             });
         }
 
-        // TC-QB-OU-03 | N | Happy path: update option content, 200
+        // UpdateQuestionOption_03 | N | Happy path: update option content, 200
         [Fact]
         public async Task UpdateOption_ValidUpdate_ShouldReturn200()
         {
@@ -508,7 +508,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank Option - Update", new TestCaseDetail
             {
                 FunctionGroup     = "UpdateQuestionOption",
-                TestCaseID        = "TC-QB-OU-03",
+                TestCaseID        = "UpdateQuestionOption_03",
                 Description       = "Happy path: content updated, UpdateAsync+SaveChanges called, 200",
                 ExpectedResult    = "IsSuccess=true, StatusCode=200",
                 StatusRound1      = "Passed",

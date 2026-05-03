@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Tokki.Application.IRepositories;
 using Tokki.Domain.Entities;
 using Tokki.Infrastructure.Data;
@@ -51,6 +51,34 @@ namespace Tokki.Infrastructure.Repositories
                             && !r.IsClosed
                             && r.Members.Count == 1)
                 .OrderBy(r => r.CreatedAt) 
+                .ToListAsync(token);
+        }
+
+        public async Task<List<ChatRoom>> GetClosedSupportRoomsAsync(int days, string? search, CancellationToken token = default)
+        {
+            var cutoffDate = DateTime.UtcNow.AddDays(-days);
+            var query = _context.ChatRooms
+                .Include(r => r.Members)
+                .ThenInclude(m => m.User)
+                .Where(r => r.IsSupport && r.IsClosed && r.CreatedAt >= cutoffDate);
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                query = query.Where(r => r.Members.Any(m => m.User.FullName.Contains(search)));
+            }
+
+            return await query
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync(token);
+        }
+
+        public async Task<List<ChatRoom>> GetActiveSupportRoomsForAdminAsync(CancellationToken token = default)
+        {
+            return await _context.ChatRooms
+                .Include(r => r.Members)
+                .ThenInclude(m => m.User)
+                .Where(r => r.IsSupport && !r.IsClosed)
+                .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync(token);
         }
 

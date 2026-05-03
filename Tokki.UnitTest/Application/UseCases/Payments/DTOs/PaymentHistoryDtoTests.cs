@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using System;
 using Tokki.Application.UseCases.Payments.Queries.GetPaymentHistory;
 using Tokki.Domain.Enums;
@@ -9,7 +9,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments.Queries
 {
     public class PaymentHistoryDtoTests
     {
-        // TC-PAY-PHD-01 | N | CurrentRemainingDays with Null Expiration Date -> Returns 0
+        // PaymentHistoryDto_01 | N | CurrentRemainingDays with Null Expiration Date -> Returns 0
         [Fact]
         public void CurrentRemainingDays_NullExpirationDate_ShouldReturn0()
         {
@@ -20,7 +20,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments.Queries
             QACollector.LogTestCase("Payments - Get History", new TestCaseDetail
             {
                 FunctionGroup = "PaymentHistoryDto",
-                TestCaseID = "TC-PAY-PHD-01",
+                TestCaseID = "PaymentHistoryDto_01",
                 Description = "Handling null VIP expiration gracefully",
                 ExpectedResult = "0",
                 StatusRound1 = "Passed",
@@ -30,7 +30,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments.Queries
             });
         }
 
-        // TC-PAY-PHD-02 | A | CurrentRemainingDays with Past Expiration Date -> Returns 0
+        // PaymentHistoryDto_02 | A | CurrentRemainingDays with Past Expiration Date -> Returns 0
         [Fact]
         public void CurrentRemainingDays_PastExpirationDate_ShouldReturn0()
         {
@@ -41,7 +41,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments.Queries
             QACollector.LogTestCase("Payments - Get History", new TestCaseDetail
             {
                 FunctionGroup = "PaymentHistoryDto",
-                TestCaseID = "TC-PAY-PHD-02",
+                TestCaseID = "PaymentHistoryDto_02",
                 Description = "Expired date returns 0 remaining days safely",
                 ExpectedResult = "0",
                 StatusRound1 = "Passed",
@@ -51,7 +51,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments.Queries
             });
         }
 
-        // TC-PAY-PHD-03 | N | CurrentRemainingDays with Future Date -> Returns Ceiling value
+        // PaymentHistoryDto_03 | N | CurrentRemainingDays with Future Date -> Returns Ceiling value
         [Fact]
         public void CurrentRemainingDays_FutureExpirationDate_ShouldReturnCeiling()
         {
@@ -62,7 +62,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments.Queries
             QACollector.LogTestCase("Payments - Get History", new TestCaseDetail
             {
                 FunctionGroup = "PaymentHistoryDto",
-                TestCaseID = "TC-PAY-PHD-03",
+                TestCaseID = "PaymentHistoryDto_03",
                 Description = "Ceiling mathematical approximation applies perfectly wrapping fractional days",
                 ExpectedResult = "2 days",
                 StatusRound1 = "Passed",
@@ -72,7 +72,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments.Queries
             });
         }
 
-        // TC-PAY-PHD-04 | N | StatusDisplay Pending -> 'Đang chờ thanh toán'
+        // PaymentHistoryDto_04 | N | StatusDisplay Pending -> 'Đang chờ thanh toán'
         [Fact]
         public void StatusDisplay_Pending_ShouldFormatString()
         {
@@ -83,7 +83,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments.Queries
             QACollector.LogTestCase("Payments - Get History", new TestCaseDetail
             {
                 FunctionGroup = "PaymentHistoryDto",
-                TestCaseID = "TC-PAY-PHD-04",
+                TestCaseID = "PaymentHistoryDto_04",
                 Description = "Status Enum correctly routes to standard text definition",
                 ExpectedResult = "Đang chờ thanh toán",
                 StatusRound1 = "Passed",
@@ -93,7 +93,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments.Queries
             });
         }
 
-        // TC-PAY-PHD-05 | N | StatusDisplay Paid -> 'Thành công'
+        // PaymentHistoryDto_05 | N | StatusDisplay Paid -> 'Thành công'
         [Fact]
         public void StatusDisplay_Paid_ShouldFormatString()
         {
@@ -104,7 +104,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments.Queries
             QACollector.LogTestCase("Payments - Get History", new TestCaseDetail
             {
                 FunctionGroup = "PaymentHistoryDto",
-                TestCaseID = "TC-PAY-PHD-05",
+                TestCaseID = "PaymentHistoryDto_05",
                 Description = "Status Enum correctly routes to standard text definition",
                 ExpectedResult = "Thành công",
                 StatusRound1 = "Passed",
@@ -114,7 +114,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments.Queries
             });
         }
 
-        // TC-PAY-PHD-06 | N | StatusDisplay Failed -> 'Thất bại'
+        // PaymentHistoryDto_06 | N | StatusDisplay Failed -> 'Thất bại'
         [Fact]
         public void StatusDisplay_Failed_ShouldFormatStringFallback()
         {
@@ -125,7 +125,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments.Queries
             QACollector.LogTestCase("Payments - Get History", new TestCaseDetail
             {
                 FunctionGroup = "PaymentHistoryDto",
-                TestCaseID = "TC-PAY-PHD-06",
+                TestCaseID = "PaymentHistoryDto_06",
                 Description = "Status Enum correctly falls back to failed condition text definition",
                 ExpectedResult = "Thất bại",
                 StatusRound1 = "Passed",

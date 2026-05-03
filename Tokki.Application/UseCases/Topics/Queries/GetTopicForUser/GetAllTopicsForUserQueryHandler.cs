@@ -1,10 +1,12 @@
-﻿using MediatR;
+using MediatR;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.Topics.DTOs;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Topics.Queries.GetTopicForUser
 {
@@ -12,19 +14,26 @@ namespace Tokki.Application.UseCases.Topics.Queries.GetTopicForUser
     {
         private readonly ITopicRepository _topicRepository;
         private readonly IUserTopicProgressRepository _progressRepository;
+        private readonly IEnumConfigRepository _enumConfigRepository;
 
         public GetAllTopicsForUserQueryHandler(
             ITopicRepository topicRepository,
-            IUserTopicProgressRepository progressRepository)
+            IUserTopicProgressRepository progressRepository,
+            IEnumConfigRepository enumConfigRepository)
         {
             _topicRepository = topicRepository;
             _progressRepository = progressRepository;
+            _enumConfigRepository = enumConfigRepository;
         }
 
         public async Task<OperationResult<PagedResult<UserTopicDto>>> Handle(GetAllTopicsForUserQuery request, CancellationToken cancellationToken)
         {
-            var (items, totalCount) = await _topicRepository.GetVocabTopicsPagedForUserAsync( 
-                request.PageNumber, request.PageSize, request.SearchTerm, request.Level );
+            var (items, totalCount) = await _topicRepository.GetVocabTopicsPagedForUserAsync(
+                request.PageNumber, request.PageSize, request.SearchTerm, request.Level);
+
+            // Lấy danh sách config cho TopicLevel từ DB
+            var levelConfigs = await _enumConfigRepository.GetByGroupAsync(EnumGroup.TopicLevel);
+
             var dtos = new List<UserTopicDto>();
             foreach (var topic in items)
             {
@@ -42,12 +51,17 @@ namespace Tokki.Application.UseCases.Topics.Queries.GetTopicForUser
                 }
                 bool isLearned = (progressPercent == 100);
 
+                // Tìm nhãn tương ứng từ config
+                var levelInfo = levelConfigs.FirstOrDefault(x => x.Value == topic.Level);
+
                 dtos.Add(new UserTopicDto
                 {
                     TopicId = topic.TopicId,
                     TopicName = topic.TopicName,
                     Description = topic.Description,
                     Level = topic.Level,
+                    LevelLabel = levelInfo?.Label,
+                    LevelKey = levelInfo?.Key,
                     ImgUrl = topic.ImgUrl,
                     VocabularyCount = totalVocab,
                     Status = topic.Status,

@@ -15,7 +15,7 @@ namespace Tokki.Application.IRepositories
         Task AddAsync(SystemConfig config);
         Task AddRangeAsync(IEnumerable<SystemConfig> configs);
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
-        Task<(List<SystemConfig> Items, int TotalCount)> GetPagedAsync(int pageNumber, int pageSize, Tokki.Domain.Enums.SystemConfigType? configType = null);
+        Task<(List<SystemConfig> Items, int TotalCount)> GetPagedAsync(int pageNumber, int pageSize, Tokki.Domain.Enums.SystemConfigType? configType = null, string? searchTerm = null, bool? isActive = null);
         Task<string?> GetValueByKeyAsync(string key);
         Task<SystemConfig?> FirstOrDefaultAsync(Expression<Func<SystemConfig, bool>> predicate, CancellationToken cancellationToken = default);
     }

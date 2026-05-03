@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -70,7 +70,7 @@ namespace Tokki.UnitTest.Application.UseCases.FavoriteVocabulary
 
             QACollector.LogTestCase("Favorite Vocabulary - Add", new TestCaseDetail
             {
-                FunctionGroup = "AddFavoriteVocabulary", TestCaseID = "TC-FAV-ADD-01",
+                FunctionGroup = "AddFavoriteVocabulary", TestCaseID = "AddFavoriteVocabulary_01",
                 Description = "No user context → 401 Unauthorized",
                 ExpectedResult = "Return 401 Failure", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -95,7 +95,7 @@ namespace Tokki.UnitTest.Application.UseCases.FavoriteVocabulary
 
             QACollector.LogTestCase("Favorite Vocabulary - Add", new TestCaseDetail
             {
-                FunctionGroup = "AddFavoriteVocabulary", TestCaseID = "TC-FAV-ADD-02",
+                FunctionGroup = "AddFavoriteVocabulary", TestCaseID = "AddFavoriteVocabulary_02",
                 Description = "VocabularyId not found → 404",
                 ExpectedResult = "Return 404 Failure", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -120,7 +120,7 @@ namespace Tokki.UnitTest.Application.UseCases.FavoriteVocabulary
 
             QACollector.LogTestCase("Favorite Vocabulary - Add", new TestCaseDetail
             {
-                FunctionGroup = "AddFavoriteVocabulary", TestCaseID = "TC-FAV-ADD-03",
+                FunctionGroup = "AddFavoriteVocabulary", TestCaseID = "AddFavoriteVocabulary_03",
                 Description = "Vocab is Pending (not Active) → 404",
                 ExpectedResult = "Return 404 Failure", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -149,7 +149,7 @@ namespace Tokki.UnitTest.Application.UseCases.FavoriteVocabulary
 
             QACollector.LogTestCase("Favorite Vocabulary - Add", new TestCaseDetail
             {
-                FunctionGroup = "AddFavoriteVocabulary", TestCaseID = "TC-FAV-ADD-04",
+                FunctionGroup = "AddFavoriteVocabulary", TestCaseID = "AddFavoriteVocabulary_04",
                 Description = "Already favorited → idempotent 200 without re-inserting",
                 ExpectedResult = "Return 200, AddAsync NOT called", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -182,7 +182,7 @@ namespace Tokki.UnitTest.Application.UseCases.FavoriteVocabulary
 
             QACollector.LogTestCase("Favorite Vocabulary - Add", new TestCaseDetail
             {
-                FunctionGroup = "AddFavoriteVocabulary", TestCaseID = "TC-FAV-ADD-05",
+                FunctionGroup = "AddFavoriteVocabulary", TestCaseID = "AddFavoriteVocabulary_05",
                 Description = "Valid new favorite → AddAsync called, Return 200",
                 ExpectedResult = "Return 200, AddAsync called once", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -215,7 +215,7 @@ namespace Tokki.UnitTest.Application.UseCases.FavoriteVocabulary
 
             QACollector.LogTestCase("Favorite Vocabulary - Add", new TestCaseDetail
             {
-                FunctionGroup = "AddFavoriteVocabulary", TestCaseID = "TC-FAV-ADD-06",
+                FunctionGroup = "AddFavoriteVocabulary", TestCaseID = "AddFavoriteVocabulary_06",
                 Description = "AddAsync throws (race condition/DB error) → 400 Failure",
                 ExpectedResult = "Return 400 Failure", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

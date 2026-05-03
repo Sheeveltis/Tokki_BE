@@ -1,4 +1,4 @@
-﻿using Microsoft.CognitiveServices.Speech.Diagnostics.Logging;
+using Microsoft.CognitiveServices.Speech.Diagnostics.Logging;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,7 +47,7 @@ namespace Tokki.Infrastructure.Repositories
       int pageSize,
       string? searchTerm = null,
       TopicStatus? status = null,
-      TopicLevel? level = null)
+      int? level = null)
         {
             var query = _context.Topics
                 .Include(t => t.VocabularyTopics)
@@ -133,7 +133,7 @@ namespace Tokki.Infrastructure.Repositories
             await _context.SaveChangesAsync(cancellationToken);
         }
         public async Task<(List<Topic> items, int totalCount)> GetVocabTopicsPagedForUserAsync(
-            int pageNumber, int pageSize, string? searchTerm = null, TopicLevel? level = null)
+            int pageNumber, int pageSize, string? searchTerm = null, int? level = null)
         {
             var query = _context.Topics
                 .Include(t => t.VocabularyTopics)
@@ -162,7 +162,7 @@ namespace Tokki.Infrastructure.Repositories
 
             return (items, totalCount);
         }
-        public async Task<(List<Topic> Items, int TotalCount)> GetPagedForUserAsync(int pageNumber, int pageSize, string? searchTerm = null, TopicLevel? level = null)
+        public async Task<(List<Topic> Items, int TotalCount)> GetPagedForUserAsync(int pageNumber, int pageSize, string? searchTerm = null, int? level = null)
         {
             var query = _context.Topics
                 .Include(t => t.VocabularyTopics)
@@ -308,7 +308,7 @@ namespace Tokki.Infrastructure.Repositories
             int pageSize,
             string? searchTerm,
             TopicStatus? status,
-            TopicLevel? level)
+            int? level)
         {
             var query = _context.Topics
                 .Where(t => t.TopicType == TopicType.VocabStudy) // ✅ filter VocabStudy từ DB

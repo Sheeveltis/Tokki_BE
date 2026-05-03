@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -56,7 +56,7 @@ namespace Tokki.UnitTest.Application.UseCases.Passages
 
             QACollector.LogTestCase("Passage - Get List", new TestCaseDetail
             {
-                FunctionGroup = "GetPassages", TestCaseID = "TC-PAS-LST-01",
+                FunctionGroup = "GetPassages", TestCaseID = "GetPassages_01",
                 Description = "No passages exist → 200 empty paged result",
                 ExpectedResult = "Return 200, Items=[]", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -86,7 +86,7 @@ namespace Tokki.UnitTest.Application.UseCases.Passages
 
             QACollector.LogTestCase("Passage - Get List", new TestCaseDetail
             {
-                FunctionGroup = "GetPassages", TestCaseID = "TC-PAS-LST-02",
+                FunctionGroup = "GetPassages", TestCaseID = "GetPassages_02",
                 Description = "2 passages → DTOs mapped with correct PassageId and MediaType",
                 ExpectedResult = "Return 200, Items.Count=2", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -111,7 +111,7 @@ namespace Tokki.UnitTest.Application.UseCases.Passages
 
             QACollector.LogTestCase("Passage - Get List", new TestCaseDetail
             {
-                FunctionGroup = "GetPassages", TestCaseID = "TC-PAS-LST-03",
+                FunctionGroup = "GetPassages", TestCaseID = "GetPassages_03",
                 Description = "Filter by MediaType=Audio → Repo called with Audio filter",
                 ExpectedResult = "Return 200, 1 Audio passage", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -135,7 +135,7 @@ namespace Tokki.UnitTest.Application.UseCases.Passages
 
             QACollector.LogTestCase("Passage - Get List", new TestCaseDetail
             {
-                FunctionGroup = "GetPassages", TestCaseID = "TC-PAS-LST-04",
+                FunctionGroup = "GetPassages", TestCaseID = "GetPassages_04",
                 Description = "Filter by Status=Hidden → Repo called with Hidden status",
                 ExpectedResult = "Return 200, repo called with Hidden", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -160,7 +160,7 @@ namespace Tokki.UnitTest.Application.UseCases.Passages
 
             QACollector.LogTestCase("Passage - Get List", new TestCaseDetail
             {
-                FunctionGroup = "GetPassages", TestCaseID = "TC-PAS-LST-05",
+                FunctionGroup = "GetPassages", TestCaseID = "GetPassages_05",
                 Description = "SearchTerm='Korean' → passed to repo, return matched results",
                 ExpectedResult = "Return 200, 1 result", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -187,7 +187,7 @@ namespace Tokki.UnitTest.Application.UseCases.Passages
 
             QACollector.LogTestCase("Passage - Get List", new TestCaseDetail
             {
-                FunctionGroup = "GetPassages", TestCaseID = "TC-PAS-LST-06",
+                FunctionGroup = "GetPassages", TestCaseID = "GetPassages_06",
                 Description = "Page 2 of 12, PageSize=5 → TotalPages=3, CurrentPage=2",
                 ExpectedResult = "TotalPages=3, CurrentPage=2, TotalCount=12", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -82,7 +82,7 @@ namespace Tokki.Application.UseCases.Vocabulary.Queries.GetAllForManager
                     .ToList();
 
                 // An toàn: chỉ set khi đúng 1 level
-                TopicLevel? singleLevel = levels.Count == 1 ? levels[0] : (TopicLevel?)null;
+                int? singleLevel = levels.Count == 1 ? levels[0] : (int?)null;
 
                 vocabularyDtos.Add(new VocabularyForGetAll
                 {

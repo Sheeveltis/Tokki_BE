@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.SignalR;
 using Tokki.Application.IServices;
 using Tokki.Domain.Entities;
 using Tokki.WebAPI.Hubs;
@@ -17,6 +17,10 @@ namespace Tokki.WebAPI.Services
         public async Task SendMessageToRoomAsync(string roomId, ChatMessage message)
         {
             await _hubContext.Clients.Group(roomId).SendAsync("ReceiveMessage", message);
+        }
+        public async Task NotifyRoomClosedAsync(string roomId)
+        {
+            await _hubContext.Clients.Group(roomId).SendAsync("RoomClosed", roomId);
         }
     }
 }

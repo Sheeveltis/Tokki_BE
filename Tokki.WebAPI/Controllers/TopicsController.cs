@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -43,7 +43,7 @@ namespace Tokki.WebAPI.Controllers
             [FromQuery] int pageSize = 10,
             [FromQuery] string? searchTerm = null,
             [FromQuery] TopicStatus? status = null,
-            [FromQuery] TopicLevel? level = null)
+            [FromQuery] int? level = null)
         {
             var query = new GetAllTopicsQuery
             {
@@ -65,7 +65,7 @@ namespace Tokki.WebAPI.Controllers
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10,
             [FromQuery] string? searchTerm = null,
-            [FromQuery] TopicLevel? level = null)
+            [FromQuery] int? level = null)
         {
             var userId = User.FindFirst("UserId")?.Value
                         ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

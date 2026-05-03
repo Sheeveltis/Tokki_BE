@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -33,7 +33,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
         };
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-WDL-PUB-01 | 404 | Submission not found → Failure
+        // PublishWordleSentence_01 | 404 | Submission not found → Failure
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SubmissionNotFound_ShouldReturn404()
@@ -56,7 +56,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             QACollector.LogTestCase("MiniGame - Publish Wordle", new TestCaseDetail
             {
                 FunctionGroup     = "PublishWordleSentence",
-                TestCaseID        = "TC-WDL-PUB-01",
+                TestCaseID        = "PublishWordleSentence_01",
                 Description       = "SubmissionId does not exist → 404 Failure",
                 ExpectedResult    = "Return 404, message contains 'Không tìm thấy'",
                 StatusRound1      = "Passed",
@@ -67,7 +67,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-WDL-PUB-02 | 403 | User is not the owner → Failure
+        // PublishWordleSentence_02 | 403 | User is not the owner → Failure
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_UserNotOwner_ShouldReturn403()
@@ -92,7 +92,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             QACollector.LogTestCase("MiniGame - Publish Wordle", new TestCaseDetail
             {
                 FunctionGroup     = "PublishWordleSentence",
-                TestCaseID        = "TC-WDL-PUB-02",
+                TestCaseID        = "PublishWordleSentence_02",
                 Description       = "UserId does not match submission.UserId → 403 Forbidden",
                 ExpectedResult    = "Return 403, message contains 'không có quyền'",
                 StatusRound1      = "Passed",
@@ -103,7 +103,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-WDL-PUB-03 | 200 | Valid owner makes public → IsPublic = true
+        // PublishWordleSentence_03 | 200 | Valid owner makes public → IsPublic = true
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidOwner_MakePublic_ShouldSetIsPublicTrue()
@@ -130,7 +130,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             QACollector.LogTestCase("MiniGame - Publish Wordle", new TestCaseDetail
             {
                 FunctionGroup     = "PublishWordleSentence",
-                TestCaseID        = "TC-WDL-PUB-03",
+                TestCaseID        = "PublishWordleSentence_03",
                 Description       = "Owner requests IsPublic=true → submission updated and saved",
                 ExpectedResult    = "Return 200, submission.IsPublic = true, SaveChanges called",
                 StatusRound1      = "Passed",
@@ -141,7 +141,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-WDL-PUB-04 | 200 | Owner sets IsAnonymous = true
+        // PublishWordleSentence_04 | 200 | Owner sets IsAnonymous = true
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidOwner_SetAnonymous_ShouldSetIsAnonymousTrue()
@@ -166,7 +166,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             QACollector.LogTestCase("MiniGame - Publish Wordle", new TestCaseDetail
             {
                 FunctionGroup     = "PublishWordleSentence",
-                TestCaseID        = "TC-WDL-PUB-04",
+                TestCaseID        = "PublishWordleSentence_04",
                 Description       = "Owner sets IsAnonymous=true → flag persisted",
                 ExpectedResult    = "Return 200, submission.IsAnonymous = true",
                 StatusRound1      = "Passed",
@@ -177,7 +177,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-WDL-PUB-05 | 200 | Owner unpublishes (IsPublic = false)
+        // PublishWordleSentence_05 | 200 | Owner unpublishes (IsPublic = false)
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidOwner_Unpublish_ShouldSetIsPublicFalse()
@@ -202,7 +202,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             QACollector.LogTestCase("MiniGame - Publish Wordle", new TestCaseDetail
             {
                 FunctionGroup     = "PublishWordleSentence",
-                TestCaseID        = "TC-WDL-PUB-05",
+                TestCaseID        = "PublishWordleSentence_05",
                 Description       = "Owner unpublishes previously public submission → IsPublic = false",
                 ExpectedResult    = "Return 200, submission.IsPublic = false",
                 StatusRound1      = "Passed",
@@ -213,7 +213,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-WDL-PUB-06 | 500 | SaveChanges throws → exception propagates
+        // PublishWordleSentence_06 | 500 | SaveChanges throws → exception propagates
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SaveChangesThrows_ShouldPropagateException()
@@ -235,7 +235,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame
             QACollector.LogTestCase("MiniGame - Publish Wordle", new TestCaseDetail
             {
                 FunctionGroup     = "PublishWordleSentence",
-                TestCaseID        = "TC-WDL-PUB-06",
+                TestCaseID        = "PublishWordleSentence_06",
                 Description       = "SaveChangesAsync throws → exception propagates unhandled",
                 ExpectedResult    = "Throws Exception",
                 StatusRound1      = "Passed",

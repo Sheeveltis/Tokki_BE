@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -36,7 +36,7 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
             QACollector.LogTestCase("VipPackage - Delete", new TestCaseDetail
             {
                 FunctionGroup = "Delete Vip Package",
-                TestCaseID = "TC-VIP-DEL-01",
+                TestCaseID = "Delete_Vip_Package_01",
                 Description = "Delete VIP package with non-existing ID",
                 ExpectedResult = "Return Failure VipPackageNotFound",
                 StatusRound1 = "Passed",
@@ -77,7 +77,7 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
             QACollector.LogTestCase("VipPackage - Delete", new TestCaseDetail
             {
                 FunctionGroup = "Delete Vip Package",
-                TestCaseID = "TC-VIP-DEL-02",
+                TestCaseID = "Delete_Vip_Package_02",
                 Description = "Delete a valid VIP Active package → IsActive = false (soft delete), return Success",
                 ExpectedResult = "Return Success, IsActive = false, UpdateAsync called once",
                 StatusRound1 = "Passed",
@@ -112,7 +112,7 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
             QACollector.LogTestCase("VipPackage - Delete", new TestCaseDetail
             {
                 FunctionGroup = "Delete Vip Package",
-                TestCaseID = "TC-VIP-DEL-03",
+                TestCaseID = "Delete_Vip_Package_03",
                 Description = "Delete the VIP package with IsActive = false → idempotent, still return Success",
                 ExpectedResult = "Return Success, IsActive hold = false",
                 StatusRound1 = "Passed",
@@ -147,7 +147,7 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
             QACollector.LogTestCase("VipPackage - Delete", new TestCaseDetail
             {
                 FunctionGroup = "Delete Vip Package",
-                TestCaseID = "TC-VIP-DEL-04",
+                TestCaseID = "Delete_Vip_Package_04",
                 Description = "GetByIdAsync is invoked with the exact Id from the command",
                 ExpectedResult = "GetByIdAsync(\"PKG-XYZ\") called once",
                 StatusRound1 = "Passed",
@@ -190,7 +190,7 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
             QACollector.LogTestCase("VipPackage - Delete", new TestCaseDetail
             {
                 FunctionGroup = "Delete Vip Package",
-                TestCaseID = "TC-VIP-DEL-05",
+                TestCaseID = "Delete_Vip_Package_05",
                 Description = "UpdateAsync receives the same package object with IsActive=false",
                 ExpectedResult = "UpdateAsync called with package.Id=\"PKG-001\" and IsActive=false",
                 StatusRound1 = "Passed",
@@ -226,7 +226,7 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
             QACollector.LogTestCase("VipPackage - Delete", new TestCaseDetail
             {
                 FunctionGroup = "Delete Vip Package",
-                TestCaseID = "TC-VIP-DEL-06",
+                TestCaseID = "Delete_Vip_Package_06",
                 Description = "Delete flow must never call AddAsync",
                 ExpectedResult = "IsSuccess=true, AddAsync Times.Never",
                 StatusRound1 = "Passed",

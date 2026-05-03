@@ -1,222 +1,563 @@
 ﻿using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Application.UseCases.Roadmap.DTOs;
+using Tokki.Application.UseCases.UserExam.Queries.GetExamAnalysis;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
 {
     public class GenerateNextWeekCommandHandler
-        : IRequestHandler<GenerateNextWeekCommand, OperationResult<GenerateNextWeekResult>>
+        : IRequestHandler<GenerateNextWeekCommand, OperationResult<string>>
     {
         private readonly IUserRoadmapRepository _repository;
-        private readonly IAiRoadmapService _aiRoadmapService;
-        private readonly IExamAssemblyService _examAssemblyService;
-        private readonly IRoadmapKnowledgeProfileRepository _knowledgeProfileRepository; 
         private readonly IIdGeneratorService _idGeneratorService;
-        private readonly ILogger<GenerateNextWeekCommandHandler> _logger; 
-        private const int MaxConsecutiveFail = 2;
-        private const double MasteryThreshold = 80.0;
+        private readonly IRoadmapProgressService _progressService;
+        private readonly IServiceScopeFactory _scopeFactory;
+        private readonly ILogger<GenerateNextWeekCommandHandler> _logger;
+        private const int MaxQuestionTypesPerWeek = 5;
 
         public GenerateNextWeekCommandHandler(
             IUserRoadmapRepository repository,
-            IAiRoadmapService aiRoadmapService,
-            IExamAssemblyService examAssemblyService,
-            IRoadmapKnowledgeProfileRepository knowledgeProfileRepository, 
             IIdGeneratorService idGeneratorService,
+            IRoadmapProgressService progressService,
+            IServiceScopeFactory scopeFactory,
             ILogger<GenerateNextWeekCommandHandler> logger)
         {
             _repository = repository;
-            _aiRoadmapService = aiRoadmapService;
-            _examAssemblyService = examAssemblyService;
-            _knowledgeProfileRepository = knowledgeProfileRepository;
             _idGeneratorService = idGeneratorService;
+            _progressService = progressService;
+            _scopeFactory = scopeFactory;
             _logger = logger;
         }
 
-        public async Task<OperationResult<GenerateNextWeekResult>> Handle(
+        public async Task<OperationResult<string>> Handle(
             GenerateNextWeekCommand request,
             CancellationToken cancellationToken)
         {
-            var currentWeek = await _repository.GetWeekByIdAsync(request.FinishedWeekId, cancellationToken);
+            _logger.LogInformation("Chuyển tuần cho người dùng: {UserId}, Tuần hiện tại: {WeekId}",
+                request.UserId, request.FinishedWeekId);
 
-            if (currentWeek == null)
-                return OperationResult<GenerateNextWeekResult>.Failure("Không tìm thấy tuần tương ứng", 404);
-            if (!string.IsNullOrEmpty(currentWeek.WeeklyExamId))
+            var initialCheckWeek = await _repository
+                .GetWeekByIdAsync(request.FinishedWeekId, cancellationToken);
+
+            if (initialCheckWeek == null)
+                return OperationResult<string>.Failure("Không tìm thấy dữ liệu học", 404);
+
+            if (initialCheckWeek.UserRoadmap.UserId != request.UserId)
+                return OperationResult<string>.Failure("Không có quyền truy cập.", 403);
+
+            if (!string.IsNullOrEmpty(initialCheckWeek.WeeklyExamId))
             {
                 var examSubmitted = await _repository.GetUserExamByExamIdAsync(
-                    currentWeek.WeeklyExamId, request.UserId, cancellationToken);
+                    initialCheckWeek.WeeklyExamId, request.UserId, cancellationToken);
 
                 if (examSubmitted == null)
-                    return OperationResult<GenerateNextWeekResult>.Failure(
-                        "Bạn cần hoàn thành bài kiểm tra cuối tuần trước khi mở tuần mới.", 400);
-            }
-            if (currentWeek.UserRoadmap.UserId != request.UserId)
-                return OperationResult<GenerateNextWeekResult>.Failure("Bạn không có quyền thao tác.", 403);
-
-            var roadmap = currentWeek.UserRoadmap;
-            int nextWeekIndex = currentWeek.WeekIndex + 1;
-
-            var nextWeek = await _repository.GetWeekByIndexAsync(
-                roadmap.UserRoadmapId, nextWeekIndex, cancellationToken);
-
-            currentWeek.Status = RoadmapWeekStatus.Completed;
-
-            if (nextWeek == null)
-            {
-                await _repository.SaveChangesAsync(cancellationToken);
-                return OperationResult<GenerateNextWeekResult>.Failure("Bạn đã hoàn thành!", 200);
+                    return OperationResult<string>.Failure(
+                        "Bạn cần hoàn thành bài kiểm tra cuối tuần trước khi qua tuần mới.", 400);
             }
 
-            int scorePercent = 0;
-            List<string> failedThisWeek = new();   
-            List<string> persistentFail = new();  
-            List<string> reviewTypes = new();
-            var weakTypeInfos = new List<QuestionTypeMenuItem>();
-            var questionTypeMenu = new List<QuestionTypeMenuItem>();
-
-            if (!string.IsNullOrEmpty(currentWeek.WeeklyExamId))
+            var jobId = _idGeneratorService.GenerateCustom(15);
+            _progressService.Set(jobId, new RoadmapProgressState
             {
-                var userExam = await _repository.GetUserExamByExamIdAsync(
-                    currentWeek.WeeklyExamId, request.UserId, cancellationToken);
+                JobId = jobId,
+                Percent = 5,
+                Step = "Khởi tạo tiến trình chuyển tuần và tối ưu hóa lộ trình..."
+            });
 
-                if (userExam != null)
+            _ = Task.Run(async () =>
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var sp = scope.ServiceProvider;
+
+                var roadmapRepo = sp.GetRequiredService<IUserRoadmapRepository>();
+                var weaknessRepo = sp.GetRequiredService<IUserWeaknessRepository>();
+                var aiService = sp.GetRequiredService<IAiRoadmapService>();
+                var assemblyService = sp.GetRequiredService<IExamAssemblyService>();
+                var knowledgeRepo = sp.GetRequiredService<IRoadmapKnowledgeProfileRepository>();
+                var idGen = sp.GetRequiredService<IIdGeneratorService>();
+                var med = sp.GetRequiredService<IMediator>();
+                var progress = sp.GetRequiredService<IRoadmapProgressService>();
+
+                try
                 {
-                    var examQuestions = await _repository.GetExamQuestionsForGradingAsync(
-                        currentWeek.WeeklyExamId, cancellationToken);
+                    var currentWeek = await roadmapRepo
+                        .GetWeekByIdAsync(request.FinishedWeekId, CancellationToken.None);
+                    if (currentWeek == null) return;
 
-                    int maxScore = examQuestions.Sum(q => q.Score);
-                    scorePercent = maxScore > 0
-                        ? (int)Math.Round((double)userExam.Score / maxScore * 100)
-                        : 0;
+                    var roadmap = currentWeek.UserRoadmap;
 
-                    var allProfiles = await _knowledgeProfileRepository
-                        .GetByRoadmapIdAsync(roadmap.UserRoadmapId, cancellationToken);
-
-                    foreach (var profile in allProfiles.Where(p => p.IsWeakness))
+                    progress.Set(jobId, new RoadmapProgressState
                     {
-                        if (profile.ConsecutiveFailWeeks >= MaxConsecutiveFail)
+                        JobId = jobId,
+                        Percent = 20,
+                        Step = "Đang đánh giá kết quả học tập tuần trước để điều chỉnh lộ trình..."
+                    });
+
+                    var deferredTypes = await EvaluateLastWeekPerformanceAsync(
+                        currentWeek, knowledgeRepo, weaknessRepo, idGen, med, CancellationToken.None);
+
+                    int nextWeekIndex = currentWeek.WeekIndex + 1;
+                    var nextWeek = await roadmapRepo
+                        .GetWeekByIndexAsync(roadmap.UserRoadmapId, nextWeekIndex, CancellationToken.None);
+                    currentWeek.Status = RoadmapWeekStatus.Completed;
+
+                    if (nextWeek == null)
+                    {
+                        await roadmapRepo.SaveChangesAsync(CancellationToken.None);
+                        progress.Set(jobId, new RoadmapProgressState
                         {
-                            persistentFail.Add(profile.QuestionTypeId);
-                        }
-                        else if (profile.ConsecutiveFailWeeks == 1
-                            && profile.LastEvaluatedWeekIndex == currentWeek.WeekIndex)
-                        {
-                            reviewTypes.Add(profile.QuestionTypeId);
-                        }
+                            JobId = jobId,
+                            Percent = 100,
+                            IsCompleted = true,
+                            Step = "Chúc mừng! Bạn đã hoàn thành toàn bộ lộ trình học tập của mình."
+                        });
+                        return;
                     }
-                    var allWeakIds = reviewTypes.Union(persistentFail).ToList();
 
-                    weakTypeInfos = allWeakIds.Any()
-                        ? await _repository.GetQuestionTypeMenuAsync(allWeakIds, cancellationToken)
-                        : new List<QuestionTypeMenuItem>();
+                    var allRoadmapWeaknesses = (await weaknessRepo.GetByUserIdAsync(request.UserId, CancellationToken.None))
+                        .Where(w => w.RoadmapId == roadmap.UserRoadmapId)
+                        .ToList();
 
-                    var allLevelTypeIds = await _repository
-                        .GetValidQuestionTypeIdsByLevelAsync(roadmap.CurrentLevel, cancellationToken);
+                    bool isExpansionPhase = allRoadmapWeaknesses.Any()
+                        && allRoadmapWeaknesses.All(w => w.Status == 2);
 
-                    questionTypeMenu = await _repository
-                        .GetQuestionTypeMenuAsync(allLevelTypeIds, cancellationToken);
+                    if (isExpansionPhase)
+                    {
+                        progress.Set(jobId, new RoadmapProgressState
+                        {
+                            JobId = jobId,
+                            Percent = 40,
+                            Step = "Hoàn thành hết điểm yếu! Đang chuẩn bị giai đoạn mở rộng kiến thức..."
+                        });
+
+                        var examType = (roadmap.TargetAim == TargetAimLevel.Topik_I_Level1
+                            || roadmap.TargetAim == TargetAimLevel.Topik_I_Level2)
+                            ? ExamType.TopikI : ExamType.TopikII;
+
+                        var originalWeaknessTypeIds = allRoadmapWeaknesses
+                            .Select(w => w.QuestionTypeId).ToList();
+
+                        var expansionResults = await roadmapRepo.GetExpansionQuestionTypeIdsAsync(
+                            examType,
+                            originalWeaknessTypeIds,
+                            roadmap.LastCoveredTypeOrderIndex,
+                            MaxQuestionTypesPerWeek,
+                            CancellationToken.None);
+
+                        if (!expansionResults.Any())
+                        {
+                            await roadmapRepo.SaveChangesAsync(CancellationToken.None);
+                            progress.Set(jobId, new RoadmapProgressState
+                            {
+                                JobId = jobId,
+                                Percent = 100,
+                                IsCompleted = true,
+                                Step = "Chúc mừng! Bạn đã khám phá toàn bộ kiến thức TOPIK trong lộ trình này!"
+                            });
+                            return;
+                        }
+
+                        var expansionTypeIds = expansionResults.Select(r => r.QuestionTypeId).ToList();
+                        int newLastCoveredIndex = expansionResults.Max(r => r.OrderIndex);
+
+                        progress.Set(jobId, new RoadmapProgressState
+                        {
+                            JobId = jobId,
+                            Percent = 60,
+                            Step = "AI đang thiết kế nội dung giai đoạn mở rộng..."
+                        });
+
+                        var expansionTypeInfos = await roadmapRepo.GetQuestionTypeMenuAsync(expansionTypeIds, CancellationToken.None);
+                        var expansionallValidTypeIds = await roadmapRepo.GetValidQuestionTypeIdsByLevelAsync(roadmap.CurrentLevel, CancellationToken.None);
+                        var expansionfullMenu = await roadmapRepo.GetQuestionTypeMenuAsync(expansionallValidTypeIds, CancellationToken.None);
+
+                        var expansionaiPlan = await aiService.GenerateExpansionWeekPlanAsync(
+                            roadmap.TargetAim,
+                            roadmap.CurrentLevel,
+                            nextWeekIndex,
+                            expansionTypeIds,
+                            originalWeaknessTypeIds,
+                            expansionTypeInfos,
+                            expansionfullMenu);
+
+                        if (expansionaiPlan == null || !expansionaiPlan.Weeks.Any())
+                        {
+                            progress.Set(jobId, new RoadmapProgressState
+                            {
+                                JobId = jobId,
+                                IsError = true,
+                                ErrorMessage = "AI không thể thiết kế nội dung mở rộng lúc này."
+                            });
+                            return;
+                        }
+
+                        progress.Set(jobId, new RoadmapProgressState
+                        {
+                            JobId = jobId,
+                            Percent = 80,
+                            Step = "Đang tạo đề thi tổng hợp và lưu trữ tuần mở rộng..."
+                        });
+
+                        var expansionExamResult = await assemblyService.GenerateTopikStyleExamAsync(
+                            request.UserId, nextWeekIndex, originalWeaknessTypeIds, examType, CancellationToken.None);
+
+                        string? expansionExamId = expansionExamResult.IsSuccess ? expansionExamResult.Data : null;
+
+                        await SaveExpansionWeekTasksAsync(
+                            nextWeek, expansionaiPlan.Weeks.First(), expansionTypeIds, expansionExamId,
+                            request.UserId, roadmapRepo, idGen, expansionallValidTypeIds, CancellationToken.None);
+
+                        roadmap.LastCoveredTypeOrderIndex = newLastCoveredIndex;
+                        await roadmapRepo.SaveChangesAsync(CancellationToken.None);
+
+                        progress.Set(jobId, new RoadmapProgressState
+                        {
+                            JobId = jobId,
+                            Percent = 100,
+                            IsCompleted = true,
+                            Step = "Tuần mở rộng đã sẵn sàng! Hãy khám phá các dạng bài mới nhé!"
+                        });
+                        return;
+                    }
+
+                    progress.Set(jobId, new RoadmapProgressState
+                    {
+                        JobId = jobId,
+                        Percent = 40,
+                        Step = "Đang lựa chọn các dạng bài trong tầm phù hợp với năng lực hiện tại..."
+                    });
+
+                    var nextTypes = await SelectTypesForNextWeekAsync(
+                        roadmap.UserRoadmapId, request.UserId, weaknessRepo, CancellationToken.None);
+
+                    if (nextTypes.Count < MaxQuestionTypesPerWeek)
+                    {
+                        await FillWithDefaultTypesAsync(
+                            nextTypes, roadmap.CurrentLevel, roadmapRepo, CancellationToken.None);
+                    }
+
+                    progress.Set(jobId, new RoadmapProgressState
+                    {
+                        JobId = jobId,
+                        Percent = 60,
+                        Step = "AI đang thiết kế nội dung bài học chi tiết cho tuần tiếp theo..."
+                    });
+
+                    var weakTypeInfos = await roadmapRepo.GetQuestionTypeMenuAsync(nextTypes, CancellationToken.None);
+                    var allValidTypeIds = await roadmapRepo.GetValidQuestionTypeIdsByLevelAsync(roadmap.CurrentLevel, CancellationToken.None);
+                    var fullMenu = await roadmapRepo.GetQuestionTypeMenuAsync(allValidTypeIds, CancellationToken.None);
+
+                    int totalWeeks = (int)Math.Ceiling((roadmap.EndDate - roadmap.StartDate).TotalDays / 7);
+
+                    var aiPlan = await aiService.GenerateNextWeekPlanAsync(
+                        roadmap.TargetAim,
+                        roadmap.CurrentLevel,
+                        nextWeekIndex,
+                        totalWeeks,
+                        nextTypes,
+                        deferredTypes,
+                        weakTypeInfos,
+                        fullMenu);
+
+                    if (aiPlan == null || !aiPlan.Weeks.Any())
+                    {
+                        progress.Set(jobId, new RoadmapProgressState
+                        {
+                            JobId = jobId,
+                            IsError = true,
+                            ErrorMessage = "AI không thể thiết kế nội dung cho tuần mới lúc này."
+                        });
+                        return;
+                    }
+
+                    progress.Set(jobId, new RoadmapProgressState
+                    {
+                        JobId = jobId,
+                        Percent = 85,
+                        Step = "Đang chuẩn bị bài thi tổng hợp và lưu trữ dữ liệu tuần mới..."
+                    });
+
+                    await SaveNextWeekTasksAsync(
+                        nextWeek, aiPlan.Weeks.First(), nextTypes,
+                        roadmap.TargetAim, request.UserId,
+                        roadmapRepo, assemblyService, idGen, allValidTypeIds, CancellationToken.None);
+
+                    progress.Set(jobId, new RoadmapProgressState
+                    {
+                        JobId = jobId,
+                        Percent = 100,
+                        IsCompleted = true,
+                        Step = "Tiến trình tối ưu lộ trình hoàn tất. Tuần học mới đã sẵn sàng!"
+                    });
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Lỗi khi chuyển tuần cho User {UserId}", request.UserId);
+                    progress.Set(jobId, new RoadmapProgressState
+                    {
+                        JobId = jobId,
+                        IsError = true,
+                        ErrorMessage = "Đã xảy ra lỗi trong quá trình xử lý tuần học mới."
+                    });
+                }
+            });
+
+            return OperationResult<string>.Success(jobId, 202,
+                "Đang bắt đầu phân tích dữ liệu và thiết kế tuần học mới...");
+        }
+
+        private async Task<List<string>> EvaluateLastWeekPerformanceAsync(
+            RoadmapWeek currentWeek,
+            IRoadmapKnowledgeProfileRepository knowledgeRepo,
+            IUserWeaknessRepository weaknessRepo,
+            IIdGeneratorService idGen,
+            IMediator med,
+            CancellationToken token)
+        {
+            var deferredTypes = new List<string>();
+            if (string.IsNullOrEmpty(currentWeek.WeeklyExamId)) return deferredTypes;
+
+            var analysis = await med.Send(new GetExamAnalysisQuery(currentWeek.WeeklyExamId), token);
+            if (!analysis.IsSuccess || analysis.Data == null) return deferredTypes;
+
+            var allAnalysis = analysis.Data.ReadingAnalysis
+                .Concat(analysis.Data.ListeningAnalysis)
+                .Concat(analysis.Data.WritingAnalysis)
+                .ToList();
+
+            var weekTypeIds = currentWeek.DailyTasks
+                .Where(t => t.QuestionTypeId != null)
+                .Select(t => t.QuestionTypeId!)
+                .Distinct().ToList();
+
+            var currentRoadmapWeaknesses = (await weaknessRepo
+                .GetByUserIdAsync(currentWeek.UserRoadmap.UserId, token))
+                .Where(w => w.RoadmapId == currentWeek.UserRoadmapId)
+                .ToList();
+
+            int maxPriority = currentRoadmapWeaknesses.Any()
+                ? currentRoadmapWeaknesses.Max(w => w.Priority) : 0;
+
+            foreach (var typeId in weekTypeIds)
+            {
+                var stat = allAnalysis.FirstOrDefault(a => a.QuestionTypeId == typeId);
+                bool isPassed = stat != null && !stat.IsWeakness;
+
+                var profile = await knowledgeRepo.GetAsync(currentWeek.UserRoadmapId, typeId, token);
+                if (profile == null)
+                {
+                    profile = new RoadmapKnowledgeProfile
+                    {
+                        ProfileId = idGen.GenerateCustom(15),
+                        UserRoadmapId = currentWeek.UserRoadmapId,
+                        QuestionTypeId = typeId,
+                        IsWeakness = !isPassed,
+                        ConsecutiveFailWeeks = isPassed ? 0 : 1,
+                        LastEvaluatedWeekIndex = currentWeek.WeekIndex
+                    };
+                    await knowledgeRepo.AddAsync(profile, token);
+                }
+                else
+                {
+                    profile.IsWeakness = !isPassed;
+                    profile.ConsecutiveFailWeeks = isPassed ? 0 : profile.ConsecutiveFailWeeks + 1;
+                    profile.LastEvaluatedWeekIndex = currentWeek.WeekIndex;
+                }
+
+                var userWeakness = currentRoadmapWeaknesses.FirstOrDefault(w => w.QuestionTypeId == typeId);
+                if (userWeakness == null)
+                {
+                    userWeakness = new UserWeakness
+                    {
+                        Id = idGen.GenerateCustom(15),
+                        UserId = currentWeek.UserRoadmap.UserId,
+                        RoadmapId = currentWeek.UserRoadmapId,
+                        QuestionTypeId = typeId,
+                        Status = 0,
+                        Priority = ++maxPriority,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    await weaknessRepo.AddAsync(userWeakness, token);
+                    currentRoadmapWeaknesses.Add(userWeakness);
+                }
+
+                if (isPassed)
+                    userWeakness.Status = 2;
+                else
+                    userWeakness.Status = 1; // Ver2: luôn reset về 1 nếu fail
+
+                if (profile.ConsecutiveFailWeeks >= 2)
+                {
+                    userWeakness.Priority = ++maxPriority;
+                    deferredTypes.Add(typeId);
                 }
             }
-            bool hasWarning = persistentFail.Any();
-            string? warningMessage = hasWarning
-                ? $"Bạn vẫn chưa nắm vững {persistentFail.Count} dạng câu hỏi sau 2 tuần luyện tập: " +
-                  $"{string.Join(", ", persistentFail)}. " +
-                  $"Hãy dành thêm thời gian tự ôn luyện các dạng này ngoài lộ trình nhé!"
-                : null;
 
-            var aiPlan = await _aiRoadmapService.GenerateNextWeekPlanAsync(
-                roadmap.TargetAim,
-                roadmap.CurrentLevel,
-                nextWeekIndex,
-                scorePercent,
-                reviewTypes,      
-                persistentFail,   
-                new List<string>(),
-                weakTypeInfos,   
-                questionTypeMenu
-            );
+            await knowledgeRepo.SaveChangesAsync(token);
+            await weaknessRepo.SaveChangesAsync(token);
+            return deferredTypes;
+        }
 
-            if (aiPlan == null || !aiPlan.Weeks.Any())
-                return OperationResult<GenerateNextWeekResult>.Failure("AI không thể tạo tuần tiếp theo.", 500);
+        private async Task<List<string>> SelectTypesForNextWeekAsync(
+            string roadmapId, string userId,
+            IUserWeaknessRepository weaknessRepo, CancellationToken token)
+        {
+            var weaknesses = await weaknessRepo.GetByUserIdAsync(userId, token);
+            var currentRoadmapWeaknesses = weaknesses
+                .Where(w => w.RoadmapId == roadmapId)
+                .ToList();
 
-            var weekData = aiPlan.Weeks.First();
+            return currentRoadmapWeaknesses
+                .Where(w => w.Status == 0 || w.Status == 1)
+                .OrderBy(w => w.Priority)
+                .Select(w => w.QuestionTypeId)
+                .Take(MaxQuestionTypesPerWeek)
+                .ToList();
+        }
+
+        private async Task FillWithDefaultTypesAsync(
+            List<string> types, CurrentTopikLevel level,
+            IUserRoadmapRepository roadmapRepo, CancellationToken token)
+        {
+            var fallbackIds = await roadmapRepo.GetValidQuestionTypeIdsByLevelAsync(level, token);
+            var extras = fallbackIds.Except(types).Take(MaxQuestionTypesPerWeek - types.Count);
+            types.AddRange(extras);
+        }
+
+        private async Task SaveExpansionWeekTasksAsync(
+            RoadmapWeek nextWeek,
+            AiWeekPlan weekData,
+            List<string> expansionTypeIds,
+            string? expansionExamId,
+            string userId,
+            IUserRoadmapRepository roadmapRepo,
+            IIdGeneratorService idGen,
+            List<string> allValidTypeIds,
+            CancellationToken token)
+        {
             nextWeek.WeekFocusGoal = weekData.WeekGoal;
             nextWeek.Status = RoadmapWeekStatus.InProgress;
+            nextWeek.WeeklyExamId = expansionExamId;
             nextWeek.DailyTasks.Clear();
-
-            var weeklyScope = weekData.Days
-                .SelectMany(d => d.Tasks)
-                .Where(t => t.TaskType == "VirtualQuiz" && !string.IsNullOrEmpty(t.QuestionTypeId))
-                .Select(t => t.QuestionTypeId!)
-                .Distinct()
-                .ToList();
 
             foreach (var dayDto in weekData.Days)
             {
                 foreach (var taskDto in dayDto.Tasks)
                 {
-                    var taskId = _idGeneratorService.GenerateCustom(15);
-                    var taskEntity = new RoadmapDailyTask
+                    var taskEnum = RoadmapTaskType.LearnTheory;
+                    Enum.TryParse(taskDto.TaskType, true, out taskEnum);
+                    if (taskEnum == RoadmapTaskType.WeeklyExam) continue;
+
+                    string? finalQTypeId = taskDto.QuestionTypeId;
+                    if (string.IsNullOrWhiteSpace(finalQTypeId) ||
+                        finalQTypeId.Equals("null", StringComparison.OrdinalIgnoreCase))
+                        finalQTypeId = null;
+
+                    if (finalQTypeId != null && !allValidTypeIds.Contains(finalQTypeId))
                     {
-                        TaskId = taskId,
+                        _logger.LogWarning(
+                            "Expansion AI returned invalid QuestionTypeId: {InvalidId} for User {UserId}. Setting to null.",
+                            finalQTypeId, userId);
+                        finalQTypeId = null;
+                    }
+
+                    nextWeek.DailyTasks.Add(new RoadmapDailyTask
+                    {
+                        TaskId = idGen.GenerateCustom(15),
                         RoadmapWeekId = nextWeek.RoadmapWeekId,
                         DayIndex = dayDto.DayIndex,
                         Title = taskDto.Title,
                         AiGeneratedContent = taskDto.Content,
-                        IsCompleted = false
+                        IsCompleted = false,
+                        QuestionTypeId = finalQTypeId,
+                        TaskType = taskEnum
+                    });
+                }
+            }
+
+            if (!string.IsNullOrEmpty(expansionExamId))
+            {
+                nextWeek.DailyTasks.Add(new RoadmapDailyTask
+                {
+                    TaskId = idGen.GenerateCustom(15),
+                    RoadmapWeekId = nextWeek.RoadmapWeekId,
+                    DayIndex = 7,
+                    Title = $"Kiểm tra tổng hợp toàn bộ kỹ năng (Tuần {nextWeek.WeekIndex})",
+                    TaskType = RoadmapTaskType.WeeklyExam,
+                    ExamId = expansionExamId,
+                    IsCompleted = false
+                });
+            }
+
+            await roadmapRepo.SaveChangesAsync(token);
+        }
+
+        private async Task SaveNextWeekTasksAsync(
+            RoadmapWeek nextWeek,
+            AiWeekPlan weekData,
+            List<string> types,
+            TargetAimLevel target,
+            string userId,
+            IUserRoadmapRepository roadmapRepo,
+            IExamAssemblyService assemblyService,
+            IIdGeneratorService idGen,
+            List<string> allValidTypeIds,
+            CancellationToken token)
+        {
+            nextWeek.WeekFocusGoal = weekData.WeekGoal;
+            nextWeek.Status = RoadmapWeekStatus.InProgress;
+            nextWeek.DailyTasks.Clear();
+
+            foreach (var dayDto in weekData.Days)
+            {
+                foreach (var taskDto in dayDto.Tasks)
+                {
+                    string? finalQTypeId = taskDto.QuestionTypeId;
+                    if (string.IsNullOrWhiteSpace(finalQTypeId) ||
+                        finalQTypeId.Equals("null", StringComparison.OrdinalIgnoreCase))
+                        finalQTypeId = null;
+
+                    if (finalQTypeId != null && !allValidTypeIds.Contains(finalQTypeId))
+                    {
+                        _logger.LogWarning(
+                            "AI returned invalid QuestionTypeId: {InvalidId} for User {UserId}. Setting to null.",
+                            finalQTypeId, userId);
+                        finalQTypeId = null;
+                    }
+
+                    var taskEnum = RoadmapTaskType.LearnTheory;
+                    Enum.TryParse(taskDto.TaskType, true, out taskEnum);
+
+                    var taskEntity = new RoadmapDailyTask
+                    {
+                        TaskId = idGen.GenerateCustom(15),
+                        RoadmapWeekId = nextWeek.RoadmapWeekId,
+                        DayIndex = dayDto.DayIndex,
+                        Title = taskDto.Title,
+                        AiGeneratedContent = taskDto.Content,
+                        IsCompleted = false,
+                        QuestionTypeId = finalQTypeId,
+                        TaskType = taskEnum
                     };
 
-                    if (taskDto.TaskType == "LearnTheory")
+                    if (taskEnum == RoadmapTaskType.WeeklyExam)
                     {
-                        taskEntity.TaskType = RoadmapTaskType.LearnTheory;
-                        if (!string.IsNullOrEmpty(taskDto.GrammarId))
-                            taskEntity.GrammarId = taskDto.GrammarId;
-                    }
-                    else if (taskDto.TaskType == "VirtualQuiz")
-                    {
-                        taskEntity.TaskType = RoadmapTaskType.VirtualQuiz;
-                        if (!string.IsNullOrEmpty(taskDto.QuestionTypeId))
-                            taskEntity.QuestionTypeId = taskDto.QuestionTypeId;
-                    }
-                    else if (taskDto.TaskType == "WeeklyExam")
-                    {
-                        taskEntity.TaskType = RoadmapTaskType.WeeklyExam;
+                        var examType = (target == TargetAimLevel.Topik_I_Level1
+                            || target == TargetAimLevel.Topik_I_Level2)
+                            ? ExamType.TopikI : ExamType.TopikII;
 
-                        if (weeklyScope.Any())
+                        var examResult = await assemblyService.GenerateWeeklyExamFromScopeAsync(
+                            userId, nextWeek.WeekIndex, types, examType, token);
+
+                        if (examResult.IsSuccess)
                         {
-                            var (isValid, insufficientTypes) = await _examAssemblyService
-                                .ValidateQuestionAvailabilityAsync(weeklyScope, cancellationToken);
-
-                            if (isValid)
-                            {
-                                var examType = (roadmap.TargetAim == TargetAimLevel.Topik_I_Level1
-                                    || roadmap.TargetAim == TargetAimLevel.Topik_I_Level2)
-                                    ? ExamType.TopikI
-                                    : ExamType.TopikII;
-                                var examResult = await _examAssemblyService
-                                    .GenerateWeeklyExamFromScopeAsync(
-                                        request.UserId,
-                                        nextWeekIndex,
-                                        weeklyScope,
-                                        examType,
-                                        cancellationToken);
-
-                                if (examResult.IsSuccess)
-                                {
-                                    taskEntity.ExamId = examResult.Data;
-                                    nextWeek.WeeklyExamId = examResult.Data;
-                                }
-                            }
-                            else
-                            {
-                                _logger.LogWarning(
-                                    "Bỏ qua tạo weekly exam tuần {Week} — các dạng không đủ câu: {Types}",
-                                    nextWeekIndex, string.Join(", ", insufficientTypes));
-                            }
+                            taskEntity.ExamId = examResult.Data;
+                            nextWeek.WeeklyExamId = examResult.Data;
                         }
                     }
 
@@ -224,17 +565,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
                 }
             }
 
-            await _repository.SaveChangesAsync(cancellationToken);
-
-            var result = new GenerateNextWeekResult
-            {
-                IsGenerated = true,
-                HasWarning = hasWarning,
-                WarningMessage = warningMessage,
-                PersistentWeakTypeIds = persistentFail
-            };
-
-            return OperationResult<GenerateNextWeekResult>.Success(result);
+            await roadmapRepo.SaveChangesAsync(token);
         }
     }
 }

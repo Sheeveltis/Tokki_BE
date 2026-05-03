@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -19,7 +19,7 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
         private static GetRoadmapQueryHandler CreateHandler(Mock<IUserRoadmapRepository>? repo = null)
             => new GetRoadmapQueryHandler((repo ?? MockUserRoadmapRepository.GetMock()).Object);
 
-        // TC-RM-GRM-01 | A | No active roadmap → 404
+        // GetRoadmap_01 | A | No active roadmap → 404
         [Fact]
         public async Task Handle_NoActiveRoadmap_ShouldReturn404()
         {
@@ -27,10 +27,10 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             var result = await CreateHandler(repo).Handle(new GetRoadmapQuery("USER-001"), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(404);
-            QACollector.LogTestCase("Roadmap - Get", new TestCaseDetail { FunctionGroup = "GetRoadmap", TestCaseID = "TC-RM-GRM-01", Description = "No active roadmap → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetActiveRoadmapByUserIdAsync returns null" } });
+            QACollector.LogTestCase("Roadmap - Get", new TestCaseDetail { FunctionGroup = "GetRoadmap", TestCaseID = "GetRoadmap_01", Description = "No active roadmap → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetActiveRoadmapByUserIdAsync returns null" } });
         }
 
-        // TC-RM-GRM-02 | N | Active roadmap → RoadmapViewModel returned with correct fields
+        // GetRoadmap_02 | N | Active roadmap → RoadmapViewModel returned with correct fields
         [Fact]
         public async Task Handle_ActiveRoadmap_ShouldReturnViewModelWithCorrectId()
         {
@@ -41,10 +41,10 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             result.Data.Should().NotBeNull();
             result.Data!.UserRoadmapId.Should().Be("RM-001");
             result.Data.Assessment.Should().Be("Good start");
-            QACollector.LogTestCase("Roadmap - Get", new TestCaseDetail { FunctionGroup = "GetRoadmap", TestCaseID = "TC-RM-GRM-02", Description = "Active roadmap → ViewModel returned with UserRoadmapId and Assessment", ExpectedResult = "IsSuccess=true, UserRoadmapId='RM-001'", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Active roadmap found", "ViewModel fields mapped" } });
+            QACollector.LogTestCase("Roadmap - Get", new TestCaseDetail { FunctionGroup = "GetRoadmap", TestCaseID = "GetRoadmap_02", Description = "Active roadmap → ViewModel returned with UserRoadmapId and Assessment", ExpectedResult = "IsSuccess=true, UserRoadmapId='RM-001'", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Active roadmap found", "ViewModel fields mapped" } });
         }
 
-        // TC-RM-GRM-03 | N | Roadmap with weeks → weeks ordered and mapped
+        // GetRoadmap_03 | N | Roadmap with weeks → weeks ordered and mapped
         [Fact]
         public async Task Handle_RoadmapWithWeeks_ShouldReturnOrderedWeeks()
         {
@@ -56,10 +56,10 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             result.Data!.Weeks.Should().HaveCount(2);
             result.Data.Weeks[0].WeekIndex.Should().Be(1);
             result.Data.Weeks[1].WeekIndex.Should().Be(2);
-            QACollector.LogTestCase("Roadmap - Get", new TestCaseDetail { FunctionGroup = "GetRoadmap", TestCaseID = "TC-RM-GRM-03", Description = "Weeks ordered by WeekIndex ascending", ExpectedResult = "Weeks[0].WeekIndex=1, Weeks[1].WeekIndex=2", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "2 weeks out of order", "sorted by WeekIndex" } });
+            QACollector.LogTestCase("Roadmap - Get", new TestCaseDetail { FunctionGroup = "GetRoadmap", TestCaseID = "GetRoadmap_03", Description = "Weeks ordered by WeekIndex ascending", ExpectedResult = "Weeks[0].WeekIndex=1, Weeks[1].WeekIndex=2", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "2 weeks out of order", "sorted by WeekIndex" } });
         }
 
-        // TC-RM-GRM-04 | N | Week ProgressPercent calculated correctly
+        // GetRoadmap_04 | N | Week ProgressPercent calculated correctly
         [Fact]
         public async Task Handle_WeekWithTasks_ShouldCalculateProgressPercent()
         {
@@ -79,10 +79,10 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             var repo   = MockUserRoadmapRepository.GetMock(activeRoadmap: roadmap);
             var result = await CreateHandler(repo).Handle(new GetRoadmapQuery("USER-001"), CancellationToken.None);
             result.Data!.Weeks[0].ProgressPercent.Should().Be(50);
-            QACollector.LogTestCase("Roadmap - Get", new TestCaseDetail { FunctionGroup = "GetRoadmap", TestCaseID = "TC-RM-GRM-04", Description = "2/4 completed tasks → ProgressPercent=50", ExpectedResult = "ProgressPercent=50", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "2 completed, 2 incomplete tasks", "50%" } });
+            QACollector.LogTestCase("Roadmap - Get", new TestCaseDetail { FunctionGroup = "GetRoadmap", TestCaseID = "GetRoadmap_04", Description = "2/4 completed tasks → ProgressPercent=50", ExpectedResult = "ProgressPercent=50", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "2 completed, 2 incomplete tasks", "50%" } });
         }
 
-        // TC-RM-GRM-05 | B | Empty week → ProgressPercent=0
+        // GetRoadmap_05 | B | Empty week → ProgressPercent=0
         [Fact]
         public async Task Handle_EmptyWeek_ShouldHaveProgressPercentZero()
         {
@@ -91,17 +91,17 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             var repo   = MockUserRoadmapRepository.GetMock(activeRoadmap: roadmap);
             var result = await CreateHandler(repo).Handle(new GetRoadmapQuery("USER-001"), CancellationToken.None);
             result.Data!.Weeks[0].ProgressPercent.Should().Be(0);
-            QACollector.LogTestCase("Roadmap - Get", new TestCaseDetail { FunctionGroup = "GetRoadmap", TestCaseID = "TC-RM-GRM-05", Description = "Empty week (no tasks) → ProgressPercent=0", ExpectedResult = "ProgressPercent=0", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "No tasks in week", "guard: 0 tasks → 0%" } });
+            QACollector.LogTestCase("Roadmap - Get", new TestCaseDetail { FunctionGroup = "GetRoadmap", TestCaseID = "GetRoadmap_05", Description = "Empty week (no tasks) → ProgressPercent=0", ExpectedResult = "ProgressPercent=0", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "No tasks in week", "guard: 0 tasks → 0%" } });
         }
 
-        // TC-RM-GRM-06 | B | GetActiveRoadmapByUserIdAsync called with correct UserId
+        // GetRoadmap_06 | B | GetActiveRoadmapByUserIdAsync called with correct UserId
         [Fact]
         public async Task Handle_ValidQuery_GetActiveRoadmapCalledWithCorrectUserId()
         {
             var repo = MockUserRoadmapRepository.GetMock(activeRoadmap: null);
             await CreateHandler(repo).Handle(new GetRoadmapQuery("USER-SPECIFIC"), CancellationToken.None);
             repo.Verify(x => x.GetActiveRoadmapByUserIdAsync("USER-SPECIFIC", It.IsAny<CancellationToken>()), Times.Once);
-            QACollector.LogTestCase("Roadmap - Get", new TestCaseDetail { FunctionGroup = "GetRoadmap", TestCaseID = "TC-RM-GRM-06", Description = "GetActiveRoadmapByUserIdAsync called with correct UserId", ExpectedResult = "Verify Times.Once", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "UserId passed correctly" } });
+            QACollector.LogTestCase("Roadmap - Get", new TestCaseDetail { FunctionGroup = "GetRoadmap", TestCaseID = "GetRoadmap_06", Description = "GetActiveRoadmapByUserIdAsync called with correct UserId", ExpectedResult = "Verify Times.Once", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "UserId passed correctly" } });
         }
     }
 }

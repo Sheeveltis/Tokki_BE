@@ -130,14 +130,14 @@ namespace Tokki.Application.UseCases.RoadmapVer2.Commands.GenerateNextWeek
                         totalWeeks,
                         nextTypes,
                         deferredTypes,
-                        weakTypeInfos.Select(x => new QuestionTypeMenuDto
+                        weakTypeInfos.Select(x => new QuestionTypeMenuItem
                         {
                             QuestionTypeId = x.QuestionTypeId,
                             Code = x.Code,
                             Name = x.Name,
                             Skill = x.Skill
                         }).ToList(),
-                        fullMenu.Select(x => new QuestionTypeMenuDto
+                        fullMenu.Select(x => new QuestionTypeMenuItem
                         {
                             QuestionTypeId = x.QuestionTypeId,
                             Code = x.Code,

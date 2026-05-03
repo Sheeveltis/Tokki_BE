@@ -151,6 +151,8 @@ namespace Tokki.Infrastructure
             services.AddScoped<IPdfService, PdfService>();
             services.AddScoped<IUserXpHistoryRepository, UserXpHistoryRepository>();
             services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
+            services.AddScoped<IEnumConfigRepository, EnumConfigRepository>();
+            services.AddScoped<ITopikLevelConfigRepository, TopikLevelConfigRepository>();
             return services;
         }
     }

@@ -15,9 +15,9 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
 {
     public class ChangePasswordCommandHandlerTests
     {
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
         // FACTORY
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
         private static ChangePasswordCommandHandler CreateHandler(
             Mock<IAccountRepository>? accountRepo = null)
             => new((accountRepo ?? MockAccountRepository.GetMock()).Object);
@@ -31,9 +31,9 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             return m;
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-CPW-01 | A | Email not found → 404
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // Change_Password_01 | A | Email not found ? 404
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_UserNotFound_ShouldReturn404()
         {
@@ -50,7 +50,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Change Password", new TestCaseDetail
             {
                 FunctionGroup     = "Change Password",
-                TestCaseID        = "TC-CPW-01",
+                TestCaseID        = "Change_Password_01",
                 Description       = "Email does not exist in the system",
                 ExpectedResult    = "Return 404 UserNotFound",
                 StatusRound1      = "Passed",
@@ -60,13 +60,13 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-CPW-02 | A | Wrong old password → 400 InvalidCredentials
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // Change_Password_02 | A | Wrong old password ? 400 InvalidCredentials
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_WrongOldPassword_ShouldReturn400()
         {
-            var user = MockAccountRepository.GetActiveUser(); // hashed "ValidPass123!"
+            var user = MockAccountRepository.GetActiveUser(); // hashed"ValidPass123!"
 
             var result = await CreateHandler(BuildRepoWithUser(user)).Handle(new ChangePasswordCommand
             {
@@ -81,7 +81,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Change Password", new TestCaseDetail
             {
                 FunctionGroup     = "Change Password",
-                TestCaseID        = "TC-CPW-02",
+                TestCaseID        = "Change_Password_02",
                 Description       = "Old password does not match the stored BCrypt hash",
                 ExpectedResult    = "Return 400 InvalidCredentials",
                 StatusRound1      = "Passed",
@@ -91,9 +91,9 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-CPW-03 | N | Correct old password → new hash set, lock reset, return 200
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // Change_Password_03 | N | Correct old password ? new hash set, lock reset, return 200
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_CorrectOldPassword_ShouldUpdateHashAndReturn200()
         {
@@ -120,7 +120,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
 
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
-            result.Data.Should().Be("Đổi mật khẩu thành công!");
+            result.Data.Should().Be("�?i m?t kh?u th�nh c�ng!");
             BCrypt.Net.BCrypt.Verify(newPassword, captured!.PasswordHash).Should().BeTrue();
             captured.FailedLoginCount.Should().Be(0);
             captured.LockedUntil.Should().BeNull();
@@ -128,8 +128,8 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Change Password", new TestCaseDetail
             {
                 FunctionGroup     = "Change Password",
-                TestCaseID        = "TC-CPW-03",
-                Description       = "Correct old password → new hash, FailedLoginCount and LockedUntil reset",
+                TestCaseID        = "Change_Password_03",
+                Description       = "Correct old password ? new hash, FailedLoginCount and LockedUntil reset",
                 ExpectedResult    = "Return 200, new hash set, FailedLoginCount = 0, LockedUntil = null",
                 StatusRound1      = "Passed",
                 TestCaseType      = "N",
@@ -145,9 +145,9 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-CPW-04 | N | UpdateUserAsync called exactly once on success
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // Change_Password_04 | N | UpdateUserAsync called exactly once on success
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_Success_ShouldCallUpdateAndSaveOnce()
         {
@@ -170,24 +170,24 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Change Password", new TestCaseDetail
             {
                 FunctionGroup     = "Change Password",
-                TestCaseID        = "TC-CPW-04",
-                Description       = "Successful change → UpdateUserAsync and SaveChangesAsync each called exactly once",
-                ExpectedResult    = "UpdateUserAsync × 1, SaveChangesAsync × 1",
+                TestCaseID        = "Change_Password_04",
+                Description       = "Successful change ? UpdateUserAsync and SaveChangesAsync each called exactly once",
+                ExpectedResult    = "UpdateUserAsync � 1, SaveChangesAsync � 1",
                 StatusRound1      = "Passed",
                 TestCaseType      = "N",
                 TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string>
                 {
                     "BCrypt.Verify = true",
-                    "UpdateUserAsync called × 1",
-                    "SaveChangesAsync called × 1"
+                    "UpdateUserAsync called � 1",
+                    "SaveChangesAsync called � 1"
                 }
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-CPW-05 | B | Old password must NOT verify with the new hash
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // Change_Password_05 | B | Old password must NOT verify with the new hash
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_Success_OldPasswordShouldNotMatchNewHash()
         {
@@ -216,7 +216,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Change Password", new TestCaseDetail
             {
                 FunctionGroup     = "Change Password",
-                TestCaseID        = "TC-CPW-05",
+                TestCaseID        = "Change_Password_05",
                 Description       = "After change, old password must fail BCrypt.Verify; new password must pass",
                 ExpectedResult    = "Old password BCrypt.Verify = false, New password BCrypt.Verify = true",
                 StatusRound1      = "Passed",
@@ -224,19 +224,19 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
                 TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
                 AppliedConditions = new List<string>
                 {
-                    "OldPassword → BCrypt.Verify = false on new hash",
-                    "NewPassword → BCrypt.Verify = true on new hash"
+                    "OldPassword ? BCrypt.Verify = false on new hash",
+                    "NewPassword ? BCrypt.Verify = true on new hash"
                 }
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-CPW-06 | A | Wrong old password → UpdateUserAsync NOT called
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // Change_Password_06 | A | Wrong old password ? UpdateUserAsync NOT called
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_WrongOldPassword_ShouldNotCallUpdate()
         {
-            var user = MockAccountRepository.GetActiveUser(); // hashed "ValidPass123!"
+            var user = MockAccountRepository.GetActiveUser(); // hashed"ValidPass123!"
             var mockRepo = BuildRepoWithUser(user);
 
             await CreateHandler(mockRepo).Handle(new ChangePasswordCommand
@@ -252,9 +252,9 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Change Password", new TestCaseDetail
             {
                 FunctionGroup     = "Change Password",
-                TestCaseID        = "TC-CPW-06",
-                Description       = "Wrong old password → no update or save should be called",
-                ExpectedResult    = "UpdateUserAsync × 0, SaveChangesAsync × 0",
+                TestCaseID        = "Change_Password_06",
+                Description       = "Wrong old password ? no update or save should be called",
+                ExpectedResult    = "UpdateUserAsync � 0, SaveChangesAsync � 0",
                 StatusRound1      = "Passed",
                 TestCaseType      = "A",
                 TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),

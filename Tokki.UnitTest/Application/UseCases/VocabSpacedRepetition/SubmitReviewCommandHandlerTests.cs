@@ -53,7 +53,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabSpacedRepetition
             QACollector.LogTestCase("VocabSR - Submit Review", new TestCaseDetail
             {
                 FunctionGroup = "Submit Review",
-                TestCaseID = "TC-SR-01",
+                TestCaseID = "Submit_Review_01",
                 Description = "Submit review with VocabularyId does not exist in the system",
                 ExpectedResult = "Return 400 VocabularyNotFound",
                 StatusRound1 = "Passed",
@@ -104,7 +104,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabSpacedRepetition
             QACollector.LogTestCase("VocabSR - Submit Review", new TestCaseDetail
             {
                 FunctionGroup = "Submit Review",
-                TestCaseID = "TC-SR-02",
+                TestCaseID = "Submit_Review_02",
                 Description = "First time reviewing vocab: no progress yet, correct answer → create new progress and increase BoxLevel",
                 ExpectedResult = "New progress created, IsMastered = false, return 200",
                 StatusRound1 = "Passed",
@@ -153,7 +153,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabSpacedRepetition
             QACollector.LogTestCase("VocabSR - Submit Review", new TestCaseDetail
             {
                 FunctionGroup = "Submit Review",
-                TestCaseID = "TC-SR-03",
+                TestCaseID = "Submit_Review_03",
                 Description = "BoxLevel = Mastered, Streak = 1, correct answer → Streak reaches 2 → IsMastered = true, IntervalDays = 90",
                 ExpectedResult = "IsMastered = true, Streak = 2, IntervalDays = 90, return 200",
                 StatusRound1 = "Passed",
@@ -202,7 +202,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabSpacedRepetition
             QACollector.LogTestCase("VocabSR - Submit Review", new TestCaseDetail
             {
                 FunctionGroup = "Submit Review",
-                TestCaseID = "TC-SR-04",
+                TestCaseID = "Submit_Review_04",
                 Description = "BoxLevel = Learning (minimum), wrong answer → BoxLevel remains Learning, Streak reset = 0",
                 ExpectedResult = "BoxLevel = Learning, Streak = 0, return 200",
                 StatusRound1 = "Passed",
@@ -258,7 +258,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabSpacedRepetition
             QACollector.LogTestCase("VocabSR - Submit Review", new TestCaseDetail
             {
                 FunctionGroup = "Submit Review",
-                TestCaseID = "TC-SR-05",
+                TestCaseID = "Submit_Review_05",
                 Description = "IsMastered = true, wrong answer → IsMastered = false, BoxLevel decreases by 1 level",
                 ExpectedResult = "IsMastered = false, BoxLevel = Advanced, Streak = 0, return 200",
                 StatusRound1 = "Passed",
@@ -314,7 +314,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabSpacedRepetition
             QACollector.LogTestCase("VocabSR - Submit Review", new TestCaseDetail
             {
                 FunctionGroup = "Submit Review",
-                TestCaseID = "TC-SR-06",
+                TestCaseID = "Submit_Review_06",
                 Description = "BoxLevel = Reviewing, correct answer → BoxLevel increases to Mastering → IntervalDays = 7",
                 ExpectedResult = "BoxLevel = Mastering, IntervalDays = 7, NextReviewAt ≈ now + 7 days",
                 StatusRound1 = "Passed",

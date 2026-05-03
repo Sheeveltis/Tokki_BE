@@ -145,7 +145,7 @@ namespace Tokki.Application.UseCases.RoadmapVer2.Commands.GenerateRoadmap
                             weaknesses, 
                             currentLevel, 
                             request.TargetAim, 
-                            weakTypeInfos.Select(x => new QuestionTypeMenuDto
+                            weakTypeInfos.Select(x => new QuestionTypeMenuItem
                             {
                                 QuestionTypeId = x.QuestionTypeId,
                                 Code = x.Code,
@@ -185,14 +185,14 @@ namespace Tokki.Application.UseCases.RoadmapVer2.Commands.GenerateRoadmap
                         totalWeeks,
                         week1Types,
                         new List<string>(), 
-                        weakTypeInfos.Where(w => week1Types.Contains(w.QuestionTypeId)).Select(x => new QuestionTypeMenuDto
+                        weakTypeInfos.Where(w => week1Types.Contains(w.QuestionTypeId)).Select(x => new QuestionTypeMenuItem
                         {
                             QuestionTypeId = x.QuestionTypeId,
                             Code = x.Code,
                             Name = x.Name,
                             Skill = x.Skill
                         }).ToList(),
-                        fullMenu.Select(x => new QuestionTypeMenuDto
+                        fullMenu.Select(x => new QuestionTypeMenuItem
                         {
                             QuestionTypeId = x.QuestionTypeId,
                             Code = x.Code,

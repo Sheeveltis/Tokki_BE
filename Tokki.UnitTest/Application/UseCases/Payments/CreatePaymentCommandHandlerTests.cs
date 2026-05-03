@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -47,7 +47,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
         };
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-PAY-CRT-01 | 404 | VipPackage not found → Failure
+        // CreatePayment_01 | 404 | VipPackage not found → Failure
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_VipPackageNotFound_ShouldReturn404()
@@ -66,7 +66,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             QACollector.LogTestCase("Payments - Create Payment", new TestCaseDetail
             {
                 FunctionGroup     = "CreatePayment",
-                TestCaseID        = "TC-PAY-CRT-01",
+                TestCaseID        = "CreatePayment_01",
                 Description       = "VipPackageId does not exist in repository → 404 Failure",
                 ExpectedResult    = "Return 404 VipPackageNotFound",
                 StatusRound1      = "Passed",
@@ -77,7 +77,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-PAY-CRT-02 | 400 | VipPackage inactive → Failure
+        // CreatePayment_02 | 400 | VipPackage inactive → Failure
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_VipPackageInactive_ShouldReturn400()
@@ -97,7 +97,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             QACollector.LogTestCase("Payments - Create Payment", new TestCaseDetail
             {
                 FunctionGroup     = "CreatePayment",
-                TestCaseID        = "TC-PAY-CRT-02",
+                TestCaseID        = "CreatePayment_02",
                 Description       = "VipPackage.IsActive = false → 400 VipPackageInactive",
                 ExpectedResult    = "Return 400 VipPackageInactive",
                 StatusRound1      = "Passed",
@@ -108,7 +108,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-PAY-CRT-03 | 201 | Happy path → Payment created, QR URL returned
+        // CreatePayment_03 | 201 | Happy path → Payment created, QR URL returned
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidPackage_ShouldCreatePaymentAndReturnQrUrl()
@@ -145,7 +145,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             QACollector.LogTestCase("Payments - Create Payment", new TestCaseDetail
             {
                 FunctionGroup     = "CreatePayment",
-                TestCaseID        = "TC-PAY-CRT-03",
+                TestCaseID        = "CreatePayment_03",
                 Description       = "Valid active package → Payment created and QR URL returned",
                 ExpectedResult    = "Return 201, PaymentId='PAY-ABC123', PaymentUrl=QR link",
                 StatusRound1      = "Passed",
@@ -156,7 +156,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-PAY-CRT-04 | 201 | Payment amount matches VipPackage price
+        // CreatePayment_04 | 201 | Payment amount matches VipPackage price
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidPackage_PaymentAmountShouldMatchPackagePrice()
@@ -191,7 +191,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             QACollector.LogTestCase("Payments - Create Payment", new TestCaseDetail
             {
                 FunctionGroup     = "CreatePayment",
-                TestCaseID        = "TC-PAY-CRT-04",
+                TestCaseID        = "CreatePayment_04",
                 Description       = "Payment.Amount must equal VipPackage.Price (199,000)",
                 ExpectedResult    = "Payment.Amount = 199000, UserId and VipPackageId correctly set",
                 StatusRound1      = "Passed",
@@ -202,7 +202,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-PAY-CRT-05 | 500 | AddAsync throws → exception propagates
+        // CreatePayment_05 | 500 | AddAsync throws → exception propagates
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_AddAsyncThrows_ShouldPropagateException()
@@ -229,7 +229,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             QACollector.LogTestCase("Payments - Create Payment", new TestCaseDetail
             {
                 FunctionGroup     = "CreatePayment",
-                TestCaseID        = "TC-PAY-CRT-05",
+                TestCaseID        = "CreatePayment_05",
                 Description       = "AddAsync throws → exception propagates unhandled",
                 ExpectedResult    = "Throws Exception",
                 StatusRound1      = "Passed",
@@ -240,7 +240,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-PAY-CRT-06 | 201 | GenerateQrUrl called with correct paymentId
+        // CreatePayment_06 | 201 | GenerateQrUrl called with correct paymentId
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidPackage_ShouldCallGenerateQrUrlWithPaymentId()
@@ -269,7 +269,7 @@ namespace Tokki.UnitTest.Application.UseCases.Payments
             QACollector.LogTestCase("Payments - Create Payment", new TestCaseDetail
             {
                 FunctionGroup     = "CreatePayment",
-                TestCaseID        = "TC-PAY-CRT-06",
+                TestCaseID        = "CreatePayment_06",
                 Description       = "GenerateQrUrl called with paymentId from IdGenerator and correct amount",
                 ExpectedResult    = "GenerateQrUrl(paymentId='PAYID-001', amount=99000) called once",
                 StatusRound1      = "Passed",

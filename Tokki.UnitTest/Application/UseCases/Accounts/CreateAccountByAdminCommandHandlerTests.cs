@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -73,7 +73,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             };
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CAA-01 | A | Duplicate email → 409
+        // Create_Account_By_Admin_01 | A | Duplicate email → 409
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DuplicateEmail_ShouldReturn409()
@@ -90,7 +90,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Create By Admin", new TestCaseDetail
             {
                 FunctionGroup = "Create Account By Admin",
-                TestCaseID = "TC-CAA-01",
+                TestCaseID = "Create_Account_By_Admin_01",
                 Description = "Email already registered in the system",
                 ExpectedResult = "Return 409 EmailDuplicated",
                 StatusRound1 = "Passed",
@@ -101,7 +101,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CAA-02 | A | Duplicate phone number → 409
+        // Create_Account_By_Admin_02 | A | Duplicate phone number → 409
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DuplicatePhone_ShouldReturn409()
@@ -119,7 +119,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Create By Admin", new TestCaseDetail
             {
                 FunctionGroup = "Create Account By Admin",
-                TestCaseID = "TC-CAA-02",
+                TestCaseID = "Create_Account_By_Admin_02",
                 Description = "Phone number already registered in the system",
                 ExpectedResult = "Return 409 PhoneNumberDuplicated",
                 StatusRound1 = "Passed",
@@ -130,7 +130,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CAA-03 | A | Default password config not found → 500
+        // Create_Account_By_Admin_03 | A | Default password config not found → 500
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DefaultPasswordConfigMissing_ShouldReturn500()
@@ -147,7 +147,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Create By Admin", new TestCaseDetail
             {
                 FunctionGroup = "Create Account By Admin",
-                TestCaseID = "TC-CAA-03",
+                TestCaseID = "Create_Account_By_Admin_03",
                 Description = "Default password config is missing for the role",
                 ExpectedResult = "Return 500 ServerError",
                 StatusRound1 = "Passed",
@@ -162,7 +162,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CAA-04 | N | Valid Staff account → 201
+        // Create_Account_By_Admin_04 | N | Valid Staff account → 201
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidStaffAccount_ShouldReturn201()
@@ -177,7 +177,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Create By Admin", new TestCaseDetail
             {
                 FunctionGroup = "Create Account By Admin",
-                TestCaseID = "TC-CAA-04",
+                TestCaseID = "Create_Account_By_Admin_04",
                 Description = "Valid staff account created successfully, email notification sent",
                 ExpectedResult = "Return 201, UserId in Data, account saved, email sent",
                 StatusRound1 = "Passed",
@@ -195,7 +195,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CAA-05 | N | Valid Admin account → 201
+        // Create_Account_By_Admin_05 | N | Valid Admin account → 201
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidAdminAccount_ShouldReturn201()
@@ -209,7 +209,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Create By Admin", new TestCaseDetail
             {
                 FunctionGroup = "Create Account By Admin",
-                TestCaseID = "TC-CAA-05",
+                TestCaseID = "Create_Account_By_Admin_05",
                 Description = "Valid admin account created successfully",
                 ExpectedResult = "Return 201, UserId in Data",
                 StatusRound1 = "Passed",
@@ -226,7 +226,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CAA-06 | N | No phone provided → 201 (optional phone)
+        // Create_Account_By_Admin_06 | N | No phone provided → 201 (optional phone)
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NoPhone_ShouldSkipPhoneCheckAndReturn201()
@@ -240,7 +240,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts
             QACollector.LogTestCase("Account - Create By Admin", new TestCaseDetail
             {
                 FunctionGroup = "Create Account By Admin",
-                TestCaseID = "TC-CAA-06",
+                TestCaseID = "Create_Account_By_Admin_06",
                 Description = "Phone number is optional, creation succeeds without it",
                 ExpectedResult = "Return 201, phone check skipped",
                 StatusRound1 = "Passed",

@@ -38,14 +38,14 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
                 new Mock<ILogger<CreateVocabularyCommandHandler>>().Object);
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-CRE-01 | A | No token → 401
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // Create_Vocabulary_01 | A | No token ? 401
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_Unauthorized_ShouldReturn401()
         {
             // Arrange
-            var command = new CreateVocabularyCommand { Text = "안녕", Definition = "Hello" };
+            var command = new CreateVocabularyCommand { Text = "??", Definition = "Hello" };
             var handler = CreateHandler(unauthorized: true);
 
             // Act
@@ -59,7 +59,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Create", new TestCaseDetail
             {
                 FunctionGroup     = "Create Vocabulary",
-                TestCaseID        = "TC-VOCAB-CRE-01",
+                TestCaseID        = "Create_Vocabulary_01",
                 Description       = "Create vocabulary without authentication token",
                 ExpectedResult    = "Return 401 Unauthorized",
                 StatusRound1      = "Passed",
@@ -69,14 +69,14 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-CRE-02 | A | Duplicate Text + Definition → 400
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // Create_Vocabulary_02 | A | Duplicate Text + Definition ? 400
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_DuplicateTextAndDefinition_ShouldReturn400()
         {
             // Arrange
-            var command = new CreateVocabularyCommand { Text = "안녕하세요", Definition = "Hello" };
+            var command = new CreateVocabularyCommand { Text = "?????", Definition = "Hello" };
             var mockVocabRepo = MockVocabularyRepository.GetMock(
                 returnedByText: new List<Tokki.Domain.Entities.Vocabulary>
                 {
@@ -95,7 +95,7 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Create", new TestCaseDetail
             {
                 FunctionGroup     = "Create Vocabulary",
-                TestCaseID        = "TC-VOCAB-CRE-02",
+                TestCaseID        = "Create_Vocabulary_02",
                 Description       = "Create vocabulary with Text + Definition that already exists",
                 ExpectedResult    = "Return 400 Vocabulary.Duplicated",
                 StatusRound1      = "Passed",
@@ -105,20 +105,20 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-CRE-03 | N | Valid data → 201 with audio URL
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // Create_Vocabulary_03 | N | Valid data ? 201 with audio URL
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_ValidData_ShouldReturn201WithAudioUrl()
         {
             // Arrange
             var command = new CreateVocabularyCommand
             {
-                Text       = "새로운 단어",
+                Text       = "??? ??",
                 Definition = "New words",
                 Examples   = new List<VocabularyExampleDto>
                 {
-                    new VocabularyExampleDto { Sentence = "새로운 단어예요.", Translation = "This is a new word." }
+                    new VocabularyExampleDto { Sentence = "??? ????.", Translation = "This is a new word." }
                 }
             };
             var mockVocabRepo = MockVocabularyRepository.GetMock(
@@ -150,8 +150,8 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Create", new TestCaseDetail
             {
                 FunctionGroup     = "Create Vocabulary",
-                TestCaseID        = "TC-VOCAB-CRE-03",
-                Description       = "Create valid vocabulary with example and audio → created successfully",
+                TestCaseID        = "Create_Vocabulary_03",
+                Description       = "Create valid vocabulary with example and audio ? created successfully",
                 ExpectedResult    = "Return 201, AudioURL is set",
                 StatusRound1      = "Passed",
                 TestCaseType      = "N",
@@ -160,14 +160,14 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-CRE-04 | A | TTS fails → 201 with null AudioURL
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // Create_Vocabulary_04 | A | TTS fails ? 201 with null AudioURL
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_TtsServiceFails_ShouldStillReturn201WithNullAudio()
         {
             // Arrange
-            var command = new CreateVocabularyCommand { Text = "새로운 단어", Definition = "New words" };
+            var command = new CreateVocabularyCommand { Text = "??? ??", Definition = "New words" };
             var mockVocabRepo = MockVocabularyRepository.GetMock(
                 returnedByText: new List<Tokki.Domain.Entities.Vocabulary>());
 
@@ -189,8 +189,8 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Create", new TestCaseDetail
             {
                 FunctionGroup     = "Create Vocabulary",
-                TestCaseID        = "TC-VOCAB-CRE-04",
-                Description       = "TTS service error → vocab still created with AudioURL = null",
+                TestCaseID        = "Create_Vocabulary_04",
+                Description       = "TTS service error ? vocab still created with AudioURL = null",
                 ExpectedResult    = "Return 201, AudioURL = null",
                 StatusRound1      = "Passed",
                 TestCaseType      = "A",
@@ -199,20 +199,20 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-CRE-05 | N | Same text but different definition → 201 (allowed)
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // Create_Vocabulary_05 | N | Same text but different definition ? 201 (allowed)
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_SameTextDifferentDefinition_ShouldReturn201()
         {
             // Arrange
-            // "은행" = bank (financial) exists; creating "은행" = ginkgo tree is new
-            var command = new CreateVocabularyCommand { Text = "은행", Definition = "Ginkgo tree" };
+            // "??" = bank (financial) exists; creating"??" = ginkgo tree is new
+            var command = new CreateVocabularyCommand { Text = "??", Definition = "Ginkgo tree" };
             var existingVocab = MockVocabularyRepository.GetSampleVocabulary();
-            existingVocab.Text       = "은행";
+            existingVocab.Text       = "??";
             existingVocab.Definition = "Bank";
 
-            // returnedByText contains "은행 - Bank" but "은행 - Ginkgo tree" does NOT match
+            // returnedByText contains"?? - Bank" but"?? - Ginkgo tree" does NOT match
             var mockVocabRepo = MockVocabularyRepository.GetMock(
                 returnedByText: new List<Tokki.Domain.Entities.Vocabulary> { existingVocab });
 
@@ -222,15 +222,15 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             var result = await handler.Handle(command, CancellationToken.None);
 
             // Assert
-            // Handler compares both Text AND Definition; different Definition → allowed
+            // Handler compares both Text AND Definition; different Definition ? allowed
             result.StatusCode.Should().BeOneOf(201, 400); // depends on handler logic
 
             // Excel Log
             QACollector.LogTestCase("Vocabulary - Create", new TestCaseDetail
             {
                 FunctionGroup     = "Create Vocabulary",
-                TestCaseID        = "TC-VOCAB-CRE-05",
-                Description       = "Create vocab with same Text but different Definition (homonym) → check duplicate logic",
+                TestCaseID        = "Create_Vocabulary_05",
+                Description       = "Create vocab with same Text but different Definition (homonym) ? check duplicate logic",
                 ExpectedResult    = "Allow creation (201) when Definition differs, or 400 when same Text is enough to block",
                 StatusRound1      = "Passed",
                 TestCaseType      = "B",
@@ -239,14 +239,14 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-VOCAB-CRE-06 | A | Repository throws exception → 500
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // Create_Vocabulary_06 | A | Repository throws exception ? 500
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldReturn500()
         {
             // Arrange
-            var command = new CreateVocabularyCommand { Text = "단어", Definition = "Word" };
+            var command = new CreateVocabularyCommand { Text = "??", Definition = "Word" };
             var mockVocabRepo = MockVocabularyRepository.GetMock(
                 returnedByText: new List<Tokki.Domain.Entities.Vocabulary>());
             mockVocabRepo.Setup(x => x.AddAsync(It.IsAny<Tokki.Domain.Entities.Vocabulary>()))
@@ -265,8 +265,8 @@ namespace Tokki.UnitTest.Application.UseCases.Vocabulary
             QACollector.LogTestCase("Vocabulary - Create", new TestCaseDetail
             {
                 FunctionGroup     = "Create Vocabulary",
-                TestCaseID        = "TC-VOCAB-CRE-06",
-                Description       = "Repository.AddAsync throws exception → rollback → 500",
+                TestCaseID        = "Create_Vocabulary_06",
+                Description       = "Repository.AddAsync throws exception ? rollback ? 500",
                 ExpectedResult    = "Transaction rollback, return 500",
                 StatusRound1      = "Passed",
                 TestCaseType      = "A",

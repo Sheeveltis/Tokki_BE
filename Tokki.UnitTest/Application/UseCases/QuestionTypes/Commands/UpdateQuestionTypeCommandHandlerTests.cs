@@ -20,9 +20,9 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes.Commands.UpdateQuest
 
         private UpdateQuestionTypeCommandHandler CreateHandler() => new(_repoMock.Object);
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-QT-UP-01 | A | NotFound -> Failure
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdateQuestionTypeCommandHandler_01 | A | NotFound -> Failure
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_NotFound_ShouldReturnFailure()
         {
@@ -34,12 +34,12 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes.Commands.UpdateQuest
             var result = await handler.Handle(command, CancellationToken.None);
 
             result.IsSuccess.Should().BeFalse();
-            result.Message.Should().Contain("Không tìm thấy");
+            result.Message.Should().Contain("Kh�ng t�m th?y");
 
             QACollector.LogTestCase("Question Type - Update", new TestCaseDetail
             {
                 FunctionGroup = "UpdateQuestionTypeCommandHandler",
-                TestCaseID = "TC-QT-UP-01",
+                TestCaseID = "UpdateQuestionTypeCommandHandler_01",
                 Description = "Returns error if question type is not found",
                 ExpectedResult = "Return generic failure",
                 StatusRound1 = "Passed",
@@ -49,9 +49,9 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes.Commands.UpdateQuest
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-QT-UP-02 | A | NameExists -> Failure
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdateQuestionTypeCommandHandler_02 | A | NameExists -> Failure
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_NameExists_ShouldReturnFailure()
         {
@@ -65,12 +65,12 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes.Commands.UpdateQuest
             var result = await handler.Handle(command, CancellationToken.None);
 
             result.IsSuccess.Should().BeFalse();
-            result.Message.Should().Contain("Tên loại câu hỏi đã tồn tại");
+            result.Message.Should().Contain("T�n lo?i c�u h?i d� t?n t?i");
 
             QACollector.LogTestCase("Question Type - Update", new TestCaseDetail
             {
                 FunctionGroup = "UpdateQuestionTypeCommandHandler",
-                TestCaseID = "TC-QT-UP-02",
+                TestCaseID = "UpdateQuestionTypeCommandHandler_02",
                 Description = "Returns error if new name is duplicated",
                 ExpectedResult = "Return generic failure",
                 StatusRound1 = "Passed",
@@ -80,9 +80,9 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes.Commands.UpdateQuest
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-QT-UP-03 | A | CodeExists -> Failure
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdateQuestionTypeCommandHandler_03 | A | CodeExists -> Failure
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_CodeExists_ShouldReturnFailure()
         {
@@ -96,12 +96,12 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes.Commands.UpdateQuest
             var result = await handler.Handle(command, CancellationToken.None);
 
             result.IsSuccess.Should().BeFalse();
-            result.Message.Should().Contain("Mã code đã tồn tại");
+            result.Message.Should().Contain("M� code d� t?n t?i");
 
             QACollector.LogTestCase("Question Type - Update", new TestCaseDetail
             {
                 FunctionGroup = "UpdateQuestionTypeCommandHandler",
-                TestCaseID = "TC-QT-UP-03",
+                TestCaseID = "UpdateQuestionTypeCommandHandler_03",
                 Description = "Returns error if new code is duplicated",
                 ExpectedResult = "Return generic failure",
                 StatusRound1 = "Passed",
@@ -111,9 +111,9 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes.Commands.UpdateQuest
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-QT-UP-04 | N | Swallows "string" updates -> Partial Update
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdateQuestionTypeCommandHandler_04 | N | Swallows"string" updates -> Partial Update
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_IgnoreStringPlaceholders_ShouldPartialUpdate()
         {
@@ -141,7 +141,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes.Commands.UpdateQuest
             QACollector.LogTestCase("Question Type - Update", new TestCaseDetail
             {
                 FunctionGroup = "UpdateQuestionTypeCommandHandler",
-                TestCaseID = "TC-QT-UP-04",
+                TestCaseID = "UpdateQuestionTypeCommandHandler_04",
                 Description = "Ignores 'string' placeholders from Swagger defaults",
                 ExpectedResult = "Return 200, fields unmodified",
                 StatusRound1 = "Passed",
@@ -151,9 +151,9 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes.Commands.UpdateQuest
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-QT-UP-05 | N | Change Only Enums -> Success
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdateQuestionTypeCommandHandler_05 | N | Change Only Enums -> Success
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_ChangeEnums_ShouldUpdateEnumsCorrectly()
         {
@@ -181,7 +181,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes.Commands.UpdateQuest
             QACollector.LogTestCase("Question Type - Update", new TestCaseDetail
             {
                 FunctionGroup = "UpdateQuestionTypeCommandHandler",
-                TestCaseID = "TC-QT-UP-05",
+                TestCaseID = "UpdateQuestionTypeCommandHandler_05",
                 Description = "Updates enums and status correctly",
                 ExpectedResult = "Return 200",
                 StatusRound1 = "Passed",
@@ -191,9 +191,9 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes.Commands.UpdateQuest
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-QT-UP-06 | N | Full Update -> Success
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // UpdateQuestionTypeCommandHandler_06 | N | Full Update -> Success
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_FullUpdate_ShouldUpdateEverythingAndSave()
         {
@@ -225,7 +225,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes.Commands.UpdateQuest
             QACollector.LogTestCase("Question Type - Update", new TestCaseDetail
             {
                 FunctionGroup = "UpdateQuestionTypeCommandHandler",
-                TestCaseID = "TC-QT-UP-06",
+                TestCaseID = "UpdateQuestionTypeCommandHandler_06",
                 Description = "Full proper update saves to DB successfully",
                 ExpectedResult = "Return 200",
                 StatusRound1 = "Passed",

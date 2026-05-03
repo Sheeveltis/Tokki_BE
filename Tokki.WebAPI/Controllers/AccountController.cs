@@ -221,18 +221,19 @@ namespace Tokki.WebAPI.Controllers
 
         [HttpGet("current-role")]
         [Authorize]
-        public IActionResult GetCurrentRole()
+        public async Task<IActionResult> GetCurrentRole()
         {
-            var roleString = User.FindFirstValue("role") ?? User.FindFirstValue(ClaimTypes.Role);
-            if (string.IsNullOrEmpty(roleString))
-                return NotFound(new { message = "Không tìm thấy thông tin quyền trong Token." });
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(new { message = "Token không hợp lệ hoặc thiếu thông tin định danh." });
 
-            if (Enum.TryParse<AccountRole>(roleString, out var roleEnum))
-            {
-                return Ok(new { role = (int)roleEnum });
-            }
+            var query = new GetUserProfileQuery(userId);
+            var result = await _sender.Send(query);
 
-            return BadRequest(new { message = "Quyền trong Token không hợp lệ." });
+            if (!result.IsSuccess)
+                return StatusCode(result.StatusCode, result);
+
+            return Ok(new { role = (int)result.Data!.Role });
         }
 
         [HttpGet("me/aim-level")]

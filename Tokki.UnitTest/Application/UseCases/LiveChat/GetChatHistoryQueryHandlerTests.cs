@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -20,7 +20,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             return new GetChatHistoryQueryHandler((chatRepo ?? new Mock<IChatRepository>()).Object);
         }
 
-        // TC-LCH-GCH-01 | N | Repo returns null
+        // GetChatHistory_01 | N | Repo returns null
         [Fact]
         public async Task Handle_MessagesNull_ShouldReturnEmptyList()
         {
@@ -35,7 +35,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
 
             QACollector.LogTestCase("LiveChat - Get Chat History", new TestCaseDetail
             {
-                FunctionGroup = "GetChatHistory", TestCaseID = "TC-LCH-GCH-01",
+                FunctionGroup = "GetChatHistory", TestCaseID = "GetChatHistory_01",
                 Description = "Repository resolves safely null for history payload mapping softly",
                 ExpectedResult = "Return 200 with empty initialized List", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -43,7 +43,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             });
         }
 
-        // TC-LCH-GCH-02 | N | Repo returns empty
+        // GetChatHistory_02 | N | Repo returns empty
         [Fact]
         public async Task Handle_MessagesEmpty_ShouldReturnEmptyList()
         {
@@ -58,7 +58,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
 
             QACollector.LogTestCase("LiveChat - Get Chat History", new TestCaseDetail
             {
-                FunctionGroup = "GetChatHistory", TestCaseID = "TC-LCH-GCH-02",
+                FunctionGroup = "GetChatHistory", TestCaseID = "GetChatHistory_02",
                 Description = "Returns successfully wrapping empty domain list mappings properly",
                 ExpectedResult = "Return 200, empty list", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -66,7 +66,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             });
         }
 
-        // TC-LCH-GCH-03 | N | Verify sort order
+        // GetChatHistory_03 | N | Verify sort order
         [Fact]
         public async Task Handle_ValidMessages_ShouldSortByCreatedAt()
         {
@@ -90,7 +90,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
 
             QACollector.LogTestCase("LiveChat - Get Chat History", new TestCaseDetail
             {
-                FunctionGroup = "GetChatHistory", TestCaseID = "TC-LCH-GCH-03",
+                FunctionGroup = "GetChatHistory", TestCaseID = "GetChatHistory_03",
                 Description = "Extracted list is predictably parsed by LINQ dynamically ordering items",
                 ExpectedResult = "Return 200 mapped strictly ascending by CreatedAt", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -98,7 +98,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             });
         }
 
-        // TC-LCH-GCH-04 | N | Verify identical dates boundary
+        // GetChatHistory_04 | N | Verify identical dates boundary
         [Fact]
         public async Task Handle_IdenticalTimestamps_ShouldSortSafely()
         {
@@ -115,7 +115,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
 
             QACollector.LogTestCase("LiveChat - Get Chat History", new TestCaseDetail
             {
-                FunctionGroup = "GetChatHistory", TestCaseID = "TC-LCH-GCH-04",
+                FunctionGroup = "GetChatHistory", TestCaseID = "GetChatHistory_04",
                 Description = "Same timestamp objects sorted stably mapping appropriately",
                 ExpectedResult = "Return 200 valid unchanged mapping count = 2", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -123,7 +123,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             });
         }
 
-        // TC-LCH-GCH-05 | A | Repo throws exception
+        // GetChatHistory_05 | A | Repo throws exception
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldCatchWrapper()
         {
@@ -138,7 +138,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
 
             QACollector.LogTestCase("LiveChat - Get Chat History", new TestCaseDetail
             {
-                FunctionGroup = "GetChatHistory", TestCaseID = "TC-LCH-GCH-05",
+                FunctionGroup = "GetChatHistory", TestCaseID = "GetChatHistory_05",
                 Description = "Fallback catch limits stack bleeding returning soft error output message natively",
                 ExpectedResult = "Return Failure string wrapper softly", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -146,7 +146,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
             });
         }
 
-        // TC-LCH-GCH-06 | A | Assert empty history doesn't mutate object
+        // GetChatHistory_06 | A | Assert empty history doesn't mutate object
         [Fact]
         public async Task Handle_ObjectReference_ShouldReturnNewList()
         {
@@ -160,7 +160,7 @@ namespace Tokki.UnitTest.Application.UseCases.LiveChat
 
             QACollector.LogTestCase("LiveChat - Get Chat History", new TestCaseDetail
             {
-                FunctionGroup = "GetChatHistory", TestCaseID = "TC-LCH-GCH-06",
+                FunctionGroup = "GetChatHistory", TestCaseID = "GetChatHistory_06",
                 Description = "Checks the empty instantiation branch does not reuse mapping",
                 ExpectedResult = "NotBeSameAs matches correctly instance logic string", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

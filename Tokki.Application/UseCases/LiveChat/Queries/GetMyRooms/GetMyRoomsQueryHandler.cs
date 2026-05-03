@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,6 +39,15 @@ namespace Tokki.Application.UseCases.LiveChat.Queries.GetMyRooms
                     }
                 }
 
+                string? staffName = null;
+                if (room.IsSupport)
+                {
+                    // Tìm member là staff (giả sử staff vào sau hoặc check role nếu cần)
+                    // Ở đây đơn giản lấy người không phải chủ phòng (nếu chủ phòng là user)
+                    var staffMember = room.Members.FirstOrDefault(m => m.User.Role == Tokki.Domain.Enums.AccountRole.Staff || m.User.Role == Tokki.Domain.Enums.AccountRole.Admin);
+                    staffName = staffMember?.User.FullName;
+                }
+
                 dtos.Add(new ChatRoomDTO
                 {
                     ChatRoomId = room.ChatRoomId,
@@ -46,6 +55,8 @@ namespace Tokki.Application.UseCases.LiveChat.Queries.GetMyRooms
                     RoomAvatar = displayAvatar,
                     IsSupport = room.IsSupport,
                     IsGroup = room.IsGroup,
+                    IsClosed = room.IsClosed,
+                    StaffName = staffName,
                     CreatedAt = room.CreatedAt
                 });
             }

@@ -15,15 +15,17 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Queries
     public class GetPagedPronunciationExamplesQueryHandlerTests
     {
         private readonly Mock<IPronunciationExampleRepository> _mockRepo;
+        private readonly Mock<IUserPronunciationExampleProgressRepository> _mockProgressRepo;
         private readonly GetPagedPronunciationExamplesQueryHandler _handler;
 
         public GetPagedPronunciationExamplesQueryHandlerTests()
         {
             _mockRepo = new Mock<IPronunciationExampleRepository>();
-            _handler = new GetPagedPronunciationExamplesQueryHandler(_mockRepo.Object);
+            _mockProgressRepo = new Mock<IUserPronunciationExampleProgressRepository>();
+            _handler = new GetPagedPronunciationExamplesQueryHandler(_mockRepo.Object, _mockProgressRepo.Object);
         }
 
-        // TC-PRN-GPE-01 | A | RuleId null -> 400
+        // GetPagedPronunciationExamplesQueryHandler_01 | A | RuleId null -> 400
         [Fact]
         public async Task Handle_RuleIdNull_Returns400()
         {
@@ -36,7 +38,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Queries
             QACollector.LogTestCase("Pronunciation Example - Get Paged", new TestCaseDetail
             {
                 FunctionGroup = "GetPagedPronunciationExamplesQueryHandler",
-                TestCaseID = "TC-PRN-GPE-01",
+                TestCaseID = "GetPagedPronunciationExamplesQueryHandler_01",
                 Description = "Mandates filtering key restricting unbounded queries natively limiting load efficiently",
                 ExpectedResult = "400 rule id missing error",
                 StatusRound1 = "Passed",
@@ -46,7 +48,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Queries
             });
         }
 
-        // TC-PRN-GPE-02 | A | RuleId empty -> 400
+        // GetPagedPronunciationExamplesQueryHandler_02 | A | RuleId empty -> 400
         [Fact]
         public async Task Handle_RuleIdEmpty_Returns400()
         {
@@ -59,7 +61,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Queries
             QACollector.LogTestCase("Pronunciation Example - Get Paged", new TestCaseDetail
             {
                 FunctionGroup = "GetPagedPronunciationExamplesQueryHandler",
-                TestCaseID = "TC-PRN-GPE-02",
+                TestCaseID = "GetPagedPronunciationExamplesQueryHandler_02",
                 Description = "Mandates filtering checking whitespaces enforcing clear mappings preventing empty list returns",
                 ExpectedResult = "400 formatting key invalid error structure",
                 StatusRound1 = "Passed",
@@ -69,7 +71,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Queries
             });
         }
 
-        // TC-PRN-GPE-03 | N | Paging mapping
+        // GetPagedPronunciationExamplesQueryHandler_03 | N | Paging mapping
         [Fact]
         public async Task Handle_PagingLogic_MapsReturnPerfectly()
         {
@@ -79,7 +81,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Queries
             };
             var tuple = (entities, 50);
 
-            _mockRepo.Setup(x => x.GetPagedAsync("R1", 2, 10, "A", It.IsAny<CancellationToken>()))
+            _mockRepo.Setup(x => x.GetPagedAsync("R1", 2, 10, "A", It.IsAny<Tokki.Domain.Enums.PronunciationDifficulty?>(), It.IsAny<CancellationToken>()))
                      .ReturnsAsync(tuple);
 
             var query = new GetPagedPronunciationExamplesQuery { PronunciationRuleId = "R1", PageNumber = 2, PageSize = 10, SearchTerm = "A" };
@@ -93,7 +95,7 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Queries
             QACollector.LogTestCase("Pronunciation Example - Get Paged", new TestCaseDetail
             {
                 FunctionGroup = "GetPagedPronunciationExamplesQueryHandler",
-                TestCaseID = "TC-PRN-GPE-03",
+                TestCaseID = "GetPagedPronunciationExamplesQueryHandler_03",
                 Description = "Parses complex tuples resolving into PagedResult models standardizing format",
                 ExpectedResult = "Mapped count values structure",
                 StatusRound1 = "Passed",
@@ -103,25 +105,25 @@ namespace Tokki.UnitTest.Application.UseCases.PronunciationExample.Queries
             });
         }
 
-        // TC-PRN-GPE-04,5,6 logic mappings ...
+        // GetPagedPronunciationExamplesQueryHandler_04,5,6 logic mappings ...
         [Fact] public async Task Handle_EdgeMapping1() { 
-            _mockRepo.Setup(x => x.GetPagedAsync("R1", 1, 10, "", default)).ReturnsAsync((new List<Domain.Entities.PronunciationExample>(), 0));
+            _mockRepo.Setup(x => x.GetPagedAsync("R1", 1, 10, "", It.IsAny<Tokki.Domain.Enums.PronunciationDifficulty?>(), It.IsAny<CancellationToken>())).ReturnsAsync((new List<Domain.Entities.PronunciationExample>(), 0));
             var r = await _handler.Handle(new GetPagedPronunciationExamplesQuery{PronunciationRuleId="R1"}, default);
             r.Data.TotalCount.Should().Be(0);
-            QACollector.LogTestCase("Pronunciation Example - Get Paged", new TestCaseDetail { FunctionGroup="GetPagedPronunciationExamplesQueryHandler", TestCaseID="TC-PRN-GPE-04", Description="Blank mapped", ExpectedResult="0 Items", StatusRound1="Passed", TestCaseType="N", TestDate=DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions=new List<string>{"Blank array format checks mappings limits"} });
+            QACollector.LogTestCase("Pronunciation Example - Get Paged", new TestCaseDetail { FunctionGroup="GetPagedPronunciationExamplesQueryHandler", TestCaseID="GetPagedPronunciationExamplesQueryHandler_04", Description="Blank mapped", ExpectedResult="0 Items", StatusRound1="Passed", TestCaseType="N", TestDate=DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions=new List<string>{"Blank array format checks mappings limits"} });
         }
         [Fact] public async Task Handle_EdgeMapping2() { 
-            _mockRepo.Setup(x => x.GetPagedAsync("R1", 1, 10, "", default)).ReturnsAsync((new List<Domain.Entities.PronunciationExample>(), 0));
+            _mockRepo.Setup(x => x.GetPagedAsync("R1", 1, 10, "", It.IsAny<Tokki.Domain.Enums.PronunciationDifficulty?>(), It.IsAny<CancellationToken>())).ReturnsAsync((new List<Domain.Entities.PronunciationExample>(), 0));
             var r = await _handler.Handle(new GetPagedPronunciationExamplesQuery{PronunciationRuleId="R1"}, default);
             r.Data.HasNextPage.Should().BeFalse();
-            QACollector.LogTestCase("Pronunciation Example - Get Paged", new TestCaseDetail { FunctionGroup="GetPagedPronunciationExamplesQueryHandler", TestCaseID="TC-PRN-GPE-05", Description="Checks boolean property flags HasNextPages", ExpectedResult="Flags boolean check limits", StatusRound1="Passed", TestCaseType="N", TestDate=DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions=new List<string>{"Has Next Paged false limit"} });
+            QACollector.LogTestCase("Pronunciation Example - Get Paged", new TestCaseDetail { FunctionGroup="GetPagedPronunciationExamplesQueryHandler", TestCaseID="GetPagedPronunciationExamplesQueryHandler_05", Description="Checks boolean property flags HasNextPages", ExpectedResult="Flags boolean check limits", StatusRound1="Passed", TestCaseType="N", TestDate=DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions=new List<string>{"Has Next Paged false limit"} });
         }
         [Fact] public async Task Handle_EdgeMapping3() { 
             var entities = new List<Domain.Entities.PronunciationExample> { new Domain.Entities.PronunciationExample() };
-            _mockRepo.Setup(x => x.GetPagedAsync("R1", 1, 1, "", default)).ReturnsAsync((entities, 5));
+            _mockRepo.Setup(x => x.GetPagedAsync("R1", 1, 1, "", It.IsAny<Tokki.Domain.Enums.PronunciationDifficulty?>(), It.IsAny<CancellationToken>())).ReturnsAsync((entities, 5));
             var r = await _handler.Handle(new GetPagedPronunciationExamplesQuery{PronunciationRuleId="R1", PageSize=1}, default);
             r.Data.HasNextPage.Should().BeTrue();
-            QACollector.LogTestCase("Pronunciation Example - Get Paged", new TestCaseDetail { FunctionGroup="GetPagedPronunciationExamplesQueryHandler", TestCaseID="TC-PRN-GPE-06", Description="Checks boolean property true limit pagination markers flawlessly", ExpectedResult="True Flag limits boundaries sets perfectly", StatusRound1="Passed", TestCaseType="N", TestDate=DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions=new List<string>{"Paging True Limits checks models bounds"} });
+            QACollector.LogTestCase("Pronunciation Example - Get Paged", new TestCaseDetail { FunctionGroup="GetPagedPronunciationExamplesQueryHandler", TestCaseID="GetPagedPronunciationExamplesQueryHandler_06", Description="Checks boolean property true limit pagination markers flawlessly", ExpectedResult="True Flag limits boundaries sets perfectly", StatusRound1="Passed", TestCaseType="N", TestDate=DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions=new List<string>{"Paging True Limits checks models bounds"} });
         }
     }
 }

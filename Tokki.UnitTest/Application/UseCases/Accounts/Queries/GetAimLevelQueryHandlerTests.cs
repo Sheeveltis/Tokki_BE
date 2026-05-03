@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -22,7 +22,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Queries
             return new GetAimLevelQueryHandler(_accountRepoMock.Object);
         }
 
-        // TC-ACC-GAL-01 | A | User Not Found -> 404
+        // GetAimLevelQueryHandler_01 | A | User Not Found -> 404
         [Fact]
         public async Task Handle_UserNotFound_ShouldReturn404()
         {
@@ -38,7 +38,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Queries
             QACollector.LogTestCase("Account - Get Aim Level", new TestCaseDetail
             {
                 FunctionGroup = "GetAimLevelQueryHandler",
-                TestCaseID = "TC-ACC-GAL-01",
+                TestCaseID = "GetAimLevelQueryHandler_01",
                 Description = "User not found returns 404",
                 ExpectedResult = "404 Null user",
                 StatusRound1 = "Passed",
@@ -48,7 +48,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Queries
             });
         }
 
-        // TC-ACC-GAL-02 | N | Happy Path -> Null Aim Level -> 200
+        // GetAimLevelQueryHandler_02 | N | Happy Path -> Null Aim Level -> 200
         [Fact]
         public async Task Handle_NullAimLevel_ShouldReturn200WithNullData()
         {
@@ -65,7 +65,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Queries
             QACollector.LogTestCase("Account - Get Aim Level", new TestCaseDetail
             {
                 FunctionGroup = "GetAimLevelQueryHandler",
-                TestCaseID = "TC-ACC-GAL-02",
+                TestCaseID = "GetAimLevelQueryHandler_02",
                 Description = "Returns 200 even if AimLevel is null",
                 ExpectedResult = "200 Success + null",
                 StatusRound1 = "Passed",
@@ -75,7 +75,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Queries
             });
         }
 
-        // TC-ACC-GAL-03 | N | Happy Path -> Aim Level 1 -> 200
+        // GetAimLevelQueryHandler_03 | N | Happy Path -> Aim Level 1 -> 200
         [Fact]
         public async Task Handle_Level1_ShouldReturn200WithCorrectData()
         {
@@ -92,7 +92,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Queries
             QACollector.LogTestCase("Account - Get Aim Level", new TestCaseDetail
             {
                 FunctionGroup = "GetAimLevelQueryHandler",
-                TestCaseID = "TC-ACC-GAL-03",
+                TestCaseID = "GetAimLevelQueryHandler_03",
                 Description = "Returns 200 with AimLevel 1 casted to TopicLevel",
                 ExpectedResult = "200 Success + Level 1",
                 StatusRound1 = "Passed",
@@ -102,7 +102,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Queries
             });
         }
 
-        // TC-ACC-GAL-04 | N | Happy Path -> Aim Level 6 -> 200
+        // GetAimLevelQueryHandler_04 | N | Happy Path -> Aim Level 6 -> 200
         [Fact]
         public async Task Handle_Level6_ShouldReturn200WithCorrectData()
         {
@@ -119,7 +119,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Queries
             QACollector.LogTestCase("Account - Get Aim Level", new TestCaseDetail
             {
                 FunctionGroup = "GetAimLevelQueryHandler",
-                TestCaseID = "TC-ACC-GAL-04",
+                TestCaseID = "GetAimLevelQueryHandler_04",
                 Description = "Returns 200 with AimLevel 6 casted to TopicLevel",
                 ExpectedResult = "200 Success + Level 6",
                 StatusRound1 = "Passed",
@@ -129,7 +129,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Queries
             });
         }
 
-        // TC-ACC-GAL-05 | B | Exact UserId passed to GetByIdAsync
+        // GetAimLevelQueryHandler_05 | B | Exact UserId passed to GetByIdAsync
         [Fact]
         public async Task Handle_ShouldCallGetByIdAsyncWithUserId()
         {
@@ -144,7 +144,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Queries
             QACollector.LogTestCase("Account - Get Aim Level", new TestCaseDetail
             {
                 FunctionGroup = "GetAimLevelQueryHandler",
-                TestCaseID = "TC-ACC-GAL-05",
+                TestCaseID = "GetAimLevelQueryHandler_05",
                 Description = "Verifies Repository is injected with precise User ID",
                 ExpectedResult = "Verify Times.Once",
                 StatusRound1 = "Passed",
@@ -154,7 +154,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Queries
             });
         }
 
-        // TC-ACC-GAL-06 | B | Correct Success Message
+        // GetAimLevelQueryHandler_06 | B | Correct Success Message
         [Fact]
         public async Task Handle_Success_ShouldReturnExpectedMessage()
         {
@@ -169,7 +169,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Queries
             QACollector.LogTestCase("Account - Get Aim Level", new TestCaseDetail
             {
                 FunctionGroup = "GetAimLevelQueryHandler",
-                TestCaseID = "TC-ACC-GAL-06",
+                TestCaseID = "GetAimLevelQueryHandler_06",
                 Description = "Success branch returns expected message",
                 ExpectedResult = "'Lấy Aim Level thành công.'",
                 StatusRound1 = "Passed",

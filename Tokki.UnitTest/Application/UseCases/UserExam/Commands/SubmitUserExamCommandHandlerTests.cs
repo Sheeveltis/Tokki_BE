@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Hangfire;
 using Moq;
 using System;
@@ -26,7 +26,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-UEX-SUB-01 | A | Session NotFound
+        // SubmitUserExamCommandHandler_01 | A | Session NotFound
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SessionNotFound_ShouldReturn404()
@@ -43,7 +43,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam.Commands
             QACollector.LogTestCase("UserExam - Submit", new TestCaseDetail
             {
                 FunctionGroup = "SubmitUserExamCommandHandler",
-                TestCaseID = "TC-UEX-SUB-01",
+                TestCaseID = "SubmitUserExamCommandHandler_01",
                 Description = "Unmatched session blocks submit",
                 ExpectedResult = "Return 404",
                 StatusRound1 = "Passed",
@@ -54,7 +54,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-UEX-SUB-02 | A | UserId Mismatch
+        // SubmitUserExamCommandHandler_02 | A | UserId Mismatch
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_UserIdMismatch_ShouldReturn403()
@@ -72,7 +72,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam.Commands
             QACollector.LogTestCase("UserExam - Submit", new TestCaseDetail
             {
                 FunctionGroup = "SubmitUserExamCommandHandler",
-                TestCaseID = "TC-UEX-SUB-02",
+                TestCaseID = "SubmitUserExamCommandHandler_02",
                 Description = "Reject submission natively if requested by different user",
                 ExpectedResult = "Return 403 Forbidden",
                 StatusRound1 = "Passed",
@@ -83,7 +83,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-UEX-SUB-03 | A | Status Already Completed
+        // SubmitUserExamCommandHandler_03 | A | Status Already Completed
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_StatusAlreadyCompleted_ShouldReturn400()
@@ -101,7 +101,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam.Commands
             QACollector.LogTestCase("UserExam - Submit", new TestCaseDetail
             {
                 FunctionGroup = "SubmitUserExamCommandHandler",
-                TestCaseID = "TC-UEX-SUB-03",
+                TestCaseID = "SubmitUserExamCommandHandler_03",
                 Description = "Rejects secondary submission payloads on same session",
                 ExpectedResult = "Return 400 Bad Request",
                 StatusRound1 = "Passed",
@@ -112,7 +112,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-UEX-SUB-04 | N | Normal Submission Clamped Limits within Boundaries
+        // SubmitUserExamCommandHandler_04 | N | Normal Submission Clamped Limits within Boundaries
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_Submit_ShouldCalculateCorrectScoreAndTime()
@@ -147,7 +147,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam.Commands
             QACollector.LogTestCase("UserExam - Submit", new TestCaseDetail
             {
                 FunctionGroup = "SubmitUserExamCommandHandler",
-                TestCaseID = "TC-UEX-SUB-04",
+                TestCaseID = "SubmitUserExamCommandHandler_04",
                 Description = "Scoring checks valid correct properties and properly sums bounds",
                 ExpectedResult = "Return valid score",
                 StatusRound1 = "Passed",
@@ -158,7 +158,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-UEX-SUB-05 | B | Submitted Extremely Late Over Maximum Duration Limit
+        // SubmitUserExamCommandHandler_05 | B | Submitted Extremely Late Over Maximum Duration Limit
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_Timeout_Submit_ShouldClampTime()
@@ -184,7 +184,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam.Commands
             QACollector.LogTestCase("UserExam - Submit", new TestCaseDetail
             {
                 FunctionGroup = "SubmitUserExamCommandHandler",
-                TestCaseID = "TC-UEX-SUB-05",
+                TestCaseID = "SubmitUserExamCommandHandler_05",
                 Description = "Elapsed limits over bounds aggressively are clamped to absolute Exam max Duration logically",
                 ExpectedResult = "Return 60 capped TimeSpent",
                 StatusRound1 = "Passed",
@@ -195,7 +195,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-UEX-SUB-06 | N | Background Job Trigger Validation
+        // SubmitUserExamCommandHandler_06 | N | Background Job Trigger Validation
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EnsureBackgroundJobScheduled()
@@ -216,7 +216,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam.Commands
             QACollector.LogTestCase("UserExam - Submit", new TestCaseDetail
             {
                 FunctionGroup = "SubmitUserExamCommandHandler",
-                TestCaseID = "TC-UEX-SUB-06",
+                TestCaseID = "SubmitUserExamCommandHandler_06",
                 Description = "Verifies execution flow does not interrupt on JSON deserializaton updates",
                 ExpectedResult = "List Appends effectively",
                 StatusRound1 = "Passed",

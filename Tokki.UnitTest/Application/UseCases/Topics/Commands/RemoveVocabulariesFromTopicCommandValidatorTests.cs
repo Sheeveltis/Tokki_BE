@@ -1,4 +1,4 @@
-using FluentValidation.TestHelper;
+﻿using FluentValidation.TestHelper;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -30,7 +30,7 @@ namespace Tokki.UnitTest.Application.UseCases.Topics.Commands
             QACollector.LogTestCase("Topic - Remove Vocabularies", new TestCaseDetail
             {
                 FunctionGroup     = "RemoveVocabulariesFromTopicCommandValidator",
-                TestCaseID        = "TC-TOP-RVFT-01",
+                TestCaseID        = "RemoveVocabulariesFromTopicCommandValidator_01",
                 Description       = "Empty TopicId",
                 ExpectedResult    = "Error 'ID chủ đề không được để trống.'",
                 StatusRound1      = "Passed",
@@ -52,7 +52,7 @@ namespace Tokki.UnitTest.Application.UseCases.Topics.Commands
             QACollector.LogTestCase("Topic - Remove Vocabularies", new TestCaseDetail
             {
                 FunctionGroup     = "RemoveVocabulariesFromTopicCommandValidator",
-                TestCaseID        = "TC-TOP-RVFT-02",
+                TestCaseID        = "RemoveVocabulariesFromTopicCommandValidator_02",
                 Description       = "VocabularyIds is null",
                 ExpectedResult    = "Error 'Danh sách từ vựng không được để trống.'",
                 StatusRound1      = "Passed",
@@ -74,7 +74,7 @@ namespace Tokki.UnitTest.Application.UseCases.Topics.Commands
             QACollector.LogTestCase("Topic - Remove Vocabularies", new TestCaseDetail
             {
                 FunctionGroup     = "RemoveVocabulariesFromTopicCommandValidator",
-                TestCaseID        = "TC-TOP-RVFT-03",
+                TestCaseID        = "RemoveVocabulariesFromTopicCommandValidator_03",
                 Description       = "VocabularyIds is empty list",
                 ExpectedResult    = "Error 'Danh sách từ vựng không được để trống.'",
                 StatusRound1      = "Passed",
@@ -96,7 +96,7 @@ namespace Tokki.UnitTest.Application.UseCases.Topics.Commands
             QACollector.LogTestCase("Topic - Remove Vocabularies", new TestCaseDetail
             {
                 FunctionGroup     = "RemoveVocabulariesFromTopicCommandValidator",
-                TestCaseID        = "TC-TOP-RVFT-04",
+                TestCaseID        = "RemoveVocabulariesFromTopicCommandValidator_04",
                 Description       = "VocabularyIds contains empty element",
                 ExpectedResult    = "Error 'ID từ vựng không hợp lệ.'",
                 StatusRound1      = "Passed",
@@ -117,7 +117,7 @@ namespace Tokki.UnitTest.Application.UseCases.Topics.Commands
             QACollector.LogTestCase("Topic - Remove Vocabularies", new TestCaseDetail
             {
                 FunctionGroup     = "RemoveVocabulariesFromTopicCommandValidator",
-                TestCaseID        = "TC-TOP-RVFT-05",
+                TestCaseID        = "RemoveVocabulariesFromTopicCommandValidator_05",
                 Description       = "Valid parameters",
                 ExpectedResult    = "No errors",
                 StatusRound1      = "Passed",
@@ -138,7 +138,7 @@ namespace Tokki.UnitTest.Application.UseCases.Topics.Commands
             QACollector.LogTestCase("Topic - Remove Vocabularies", new TestCaseDetail
             {
                 FunctionGroup     = "RemoveVocabulariesFromTopicCommandValidator",
-                TestCaseID        = "TC-TOP-RVFT-06",
+                TestCaseID        = "RemoveVocabulariesFromTopicCommandValidator_06",
                 Description       = "Valid parameters with multiple ids",
                 ExpectedResult    = "No errors",
                 StatusRound1      = "Passed",

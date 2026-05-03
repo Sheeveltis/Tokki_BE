@@ -67,6 +67,13 @@ namespace Tokki.Application.UseCases.Payments.Commands.ProcessWebhook
 
                 if (payment.Status == PaymentStatus.Pending)
                 {
+                    if (payment.ExpiresAt <= DateTimeOffset.UtcNow)
+                    {
+                        payment.Status = PaymentStatus.Expired;
+                        await _paymentRepository.UpdateAsync(payment);
+                        _logger.LogWarning("Webhook đến nhưng Payment {Id} đã hết hạn.", payment.Id);
+                        return OperationResult<string>.Success("Payment đã hết hạn.");
+                    }
                     if (data.TransferAmount >= payment.Amount)
                     {
                         payment.Status = PaymentStatus.Paid;

@@ -16,17 +16,17 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
 {
     public class UpdateCategoryCommandHandlerTests
     {
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
         // FACTORY
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
         private static UpdateCategoryCommandHandler CreateHandler(Mock<ICategoryRepository>? repo = null)
         {
             return new UpdateCategoryCommandHandler((repo ?? MockCategoryRepository.GetMock()).Object);
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-UC-01 | A | CategoryNotFound → 404
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // Update_Category_01 | A | CategoryNotFound ? 404
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_CategoryNotFound_ShouldReturn404()
         {
@@ -40,7 +40,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
             QACollector.LogTestCase("Category - Update", new TestCaseDetail
             {
                 FunctionGroup     = "Update Category",
-                TestCaseID        = "TC-UC-01",
+                TestCaseID        = "Update_Category_01",
                 Description       = "Attempt to update a non-existent category",
                 ExpectedResult    = "Return 404 CategoryNotFound",
                 StatusRound1      = "Passed",
@@ -50,9 +50,9 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-UC-02 | A | Database Exception → 500
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // Update_Category_02 | A | Database Exception ? 500
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_DatabaseException_ShouldReturn500()
         {
@@ -72,7 +72,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
             QACollector.LogTestCase("Category - Update", new TestCaseDetail
             {
                 FunctionGroup     = "Update Category",
-                TestCaseID        = "TC-UC-02",
+                TestCaseID        = "Update_Category_02",
                 Description       = "Exception occurs during repository UpdateAsync",
                 ExpectedResult    = "Gracefully caught and returns 500 ServerError",
                 StatusRound1      = "Passed",
@@ -82,9 +82,9 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-UC-03 | N | Valid Update → 200
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // Update_Category_03 | N | Valid Update ? 200
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_ValidRequest_ShouldReturn200()
         {
@@ -103,7 +103,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
             QACollector.LogTestCase("Category - Update", new TestCaseDetail
             {
                 FunctionGroup     = "Update Category",
-                TestCaseID        = "TC-UC-03",
+                TestCaseID        = "Update_Category_03",
                 Description       = "Valid payload matching existing Category",
                 ExpectedResult    = "Return 200 Success and saves modifications",
                 StatusRound1      = "Passed",
@@ -113,9 +113,9 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-UC-04 | B | Null ID mapped to NotFound Logic  → 404
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // Update_Category_04 | B | Null ID mapped to NotFound Logic  ? 404
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_NullId_ShouldReturn404()
         {
@@ -128,7 +128,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
             QACollector.LogTestCase("Category - Update", new TestCaseDetail
             {
                 FunctionGroup     = "Update Category",
-                TestCaseID        = "TC-UC-04",
+                TestCaseID        = "Update_Category_04",
                 Description       = "Update payload is sent with mapped null Identifier",
                 ExpectedResult    = "Lookup fails, returns 404",
                 StatusRound1      = "Passed",
@@ -138,16 +138,16 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-UC-05 | N | Verify Slug Recalculation
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // Update_Category_05 | N | Verify Slug Recalculation
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_ValidUpdate_ShouldRecalculateSlug()
         {
             var category = MockCategoryRepository.GetSampleCategory();
             var mockRepo = MockCategoryRepository.GetMock(new List<Category> { category });
 
-            var command = new UpdateCategoryCommand { Id = "CAT-001", Name = "Nghệ Thuật Mới" };
+            var command = new UpdateCategoryCommand { Id = "CAT-001", Name = "Ngh? Thu?t M?i" };
             var result = await CreateHandler(mockRepo).Handle(command, CancellationToken.None);
 
             result.IsSuccess.Should().BeTrue();
@@ -156,7 +156,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
             QACollector.LogTestCase("Category - Update", new TestCaseDetail
             {
                 FunctionGroup     = "Update Category",
-                TestCaseID        = "TC-UC-05",
+                TestCaseID        = "Update_Category_05",
                 Description       = "Provide new name containing extended characters",
                 ExpectedResult    = "Slug should be regenerated referencing the new title",
                 StatusRound1      = "Passed",
@@ -166,9 +166,9 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // TC-UC-06 | N | Mutates correct pointer verification
-        // ═══════════════════════════════════════════════════════════
+        // -----------------------------------------------------------
+        // Update_Category_06 | N | Mutates correct pointer verification
+        // -----------------------------------------------------------
         [Fact]
         public async Task Handle_Update_ShouldModifyOriginalEntity()
         {
@@ -183,13 +183,13 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Commands
             QACollector.LogTestCase("Category - Update", new TestCaseDetail
             {
                 FunctionGroup     = "Update Category",
-                TestCaseID        = "TC-UC-06",
+                TestCaseID        = "Update_Category_06",
                 Description       = "Verifies standard object tracking pointer manipulation",
                 ExpectedResult    = "Original reference updates directly in memory before saving",
                 StatusRound1      = "Passed",
                 TestCaseType      = "N",
                 TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "EF Core tracking simulation valid execution" }
+                AppliedConditions = new List<string> { "EF Core" }
             });
         }
     }

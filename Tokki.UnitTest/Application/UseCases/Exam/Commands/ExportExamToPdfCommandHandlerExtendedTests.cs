@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -27,7 +27,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXM-EEV-04 | N | ShowExplanation applies correctly -> pdf generation triggered
+        // ExportExamToPdfCommandHandler_01 | N | ShowExplanation applies correctly -> pdf generation triggered
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ShowExplanation_ShouldTriggerCorrectFormatting()
@@ -62,7 +62,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Commands
             QACollector.LogTestCase("Exam - Export PDF", new TestCaseDetail
             {
                 FunctionGroup = "ExportExamToPdfCommandHandler",
-                TestCaseID = "TC-EXM-EEV-04",
+                TestCaseID = "ExportExamToPdfCommandHandler_01",
                 Description = "Passage handling and explanations successfully passed",
                 ExpectedResult = "Success, GeneratePdfFromHtml invoked",
                 StatusRound1 = "Passed",
@@ -73,7 +73,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Commands
         }
         
         // ═══════════════════════════════════════════════════════════
-        // TC-EXM-EEV-05 | N | MediaUrl Parsing for Image
+        // ExportExamToPdfCommandHandler_02 | N | MediaUrl Parsing for Image
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_WritingSkill_ShouldNotShowExplanation()
@@ -106,7 +106,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Commands
             QACollector.LogTestCase("Exam - Export PDF", new TestCaseDetail
             {
                 FunctionGroup = "ExportExamToPdfCommandHandler",
-                TestCaseID = "TC-EXM-EEV-05",
+                TestCaseID = "ExportExamToPdfCommandHandler_02",
                 Description = "Writing skill forcibly suppresses explanations internally",
                 ExpectedResult = "Success bytes",
                 StatusRound1 = "Passed",
@@ -117,7 +117,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-EXM-EEV-06 | N | Enum conversions and specific Topik II formatting
+        // ExportExamToPdfCommandHandler_03 | N | Enum conversions and specific Topik II formatting
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_TopikIIRenderingFormat()
@@ -151,7 +151,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam.Commands
             QACollector.LogTestCase("Exam - Export PDF", new TestCaseDetail
             {
                 FunctionGroup = "ExportExamToPdfCommandHandler",
-                TestCaseID = "TC-EXM-EEV-06",
+                TestCaseID = "ExportExamToPdfCommandHandler_03",
                 Description = "Title sanitization replaces invalid file chars and TOPKi II enum format works",
                 ExpectedResult = "Success, filename sanitized",
                 StatusRound1 = "Passed",

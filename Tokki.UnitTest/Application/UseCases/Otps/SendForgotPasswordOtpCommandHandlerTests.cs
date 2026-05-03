@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -60,7 +60,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Send Forgot Password", new TestCaseDetail
             {
-                FunctionGroup = "SendForgotPasswordOtp", TestCaseID = "TC-OTP-FPW-01",
+                FunctionGroup = "SendForgotPasswordOtp", TestCaseID = "SendForgotPasswordOtp_01",
                 Description = "Email not registered → UserNotFound failure",
                 ExpectedResult = "Return Failure UserNotFound", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -83,7 +83,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Send Forgot Password", new TestCaseDetail
             {
-                FunctionGroup = "SendForgotPasswordOtp", TestCaseID = "TC-OTP-FPW-02",
+                FunctionGroup = "SendForgotPasswordOtp", TestCaseID = "SendForgotPasswordOtp_02",
                 Description = "User is Banned → AccountBanned failure",
                 ExpectedResult = "Return Failure AccountBanned", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -110,7 +110,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Send Forgot Password", new TestCaseDetail
             {
-                FunctionGroup = "SendForgotPasswordOtp", TestCaseID = "TC-OTP-FPW-03",
+                FunctionGroup = "SendForgotPasswordOtp", TestCaseID = "SendForgotPasswordOtp_03",
                 Description = "Valid user → OTP saved to Redis key 'OTP:ResetPassword:{email}'",
                 ExpectedResult = "SetAsync called with correct key", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -136,7 +136,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Send Forgot Password", new TestCaseDetail
             {
-                FunctionGroup = "SendForgotPasswordOtp", TestCaseID = "TC-OTP-FPW-04",
+                FunctionGroup = "SendForgotPasswordOtp", TestCaseID = "SendForgotPasswordOtp_04",
                 Description = "Valid user → SendEmailAsync called, Return 200",
                 ExpectedResult = "Return 200, SendEmailAsync once", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -164,7 +164,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Send Forgot Password", new TestCaseDetail
             {
-                FunctionGroup = "SendForgotPasswordOtp", TestCaseID = "TC-OTP-FPW-05",
+                FunctionGroup = "SendForgotPasswordOtp", TestCaseID = "SendForgotPasswordOtp_05",
                 Description = "OTP_EXPIRATION_SECONDS=600 → SetAsync with TTL=600s",
                 ExpectedResult = "SetAsync(TTL=600s)", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -191,7 +191,7 @@ namespace Tokki.UnitTest.Application.UseCases.Otps
 
             QACollector.LogTestCase("OTP - Send Forgot Password", new TestCaseDetail
             {
-                FunctionGroup = "SendForgotPasswordOtp", TestCaseID = "TC-OTP-FPW-06",
+                FunctionGroup = "SendForgotPasswordOtp", TestCaseID = "SendForgotPasswordOtp_06",
                 Description = "Banned user → early return, Redis and Email never called",
                 ExpectedResult = "Redis.SetAsync Times.Never, SendEmailAsync Times.Never", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

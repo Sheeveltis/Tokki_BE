@@ -14,12 +14,14 @@ using Tokki.Application;
 using Tokki.Application.Common.Helpers;
 using Tokki.Application.Common.Helpers.ValidationVietnameseLanguageManager;
 using Tokki.Application.IServices;
+using Tokki.Application.UseCases.Roadmap.Constants;
 using Tokki.Infrastructure;
 using Tokki.Infrastructure.BackgroundJobs; // Nơi chứa class JwtSettings
 using Tokki.Infrastructure.Configurations;
 using Tokki.Infrastructure.Data;
 using Tokki.Infrastructure.Repositories;
 using Tokki.Infrastructure.Services;
+using Tokki.Infrastructure.Services.Roadmap;
 using Tokki.WebAPI.BackgroundServices;
 using Tokki.WebAPI.Hubs;
 using Tokki.WebAPI.Middlewares;
@@ -161,7 +163,8 @@ builder.Services.AddScoped<IUserRoadmapRepository, UserRoadmapRepository>();
 builder.Services.AddScoped<IExamAssemblyService, ExamAssemblyService>();
     builder.Services.AddMemoryCache();
     builder.Services.AddScoped<IRoadmapProgressService, RoadmapProgressService>();
-
+    builder.Services.AddScoped<ITopikLevelConfigService, TopikLevelConfigService>();
+    builder.Services.AddHostedService<PaymentExpiryWorker>();
     builder.Services.AddMemoryCache(options =>
 {
     //options.SizeLimit = 1024; // Giới hạn 1024 entries

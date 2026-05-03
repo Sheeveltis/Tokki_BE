@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -39,7 +39,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GUEX-01 | N | Empty history → 200 with empty items
+        // GetUserExams_01 | N | Empty history → 200 with empty items
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NoExamHistory_ShouldReturn200WithEmptyItems()
@@ -62,7 +62,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get List", new TestCaseDetail
             {
                 FunctionGroup     = "GetUserExams",
-                TestCaseID        = "TC-GUEX-01",
+                TestCaseID        = "GetUserExams_01",
                 Description       = "No exam history → 200 with empty Items list",
                 ExpectedResult    = "IsSuccess=true, Items=[], TotalCount=0",
                 StatusRound1      = "Passed",
@@ -73,7 +73,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GUEX-02 | N | Two exams found → 200 with count=2
+        // GetUserExams_02 | N | Two exams found → 200 with count=2
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_TwoExams_ShouldReturn200WithCount2()
@@ -101,7 +101,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get List", new TestCaseDetail
             {
                 FunctionGroup     = "GetUserExams",
-                TestCaseID        = "TC-GUEX-02",
+                TestCaseID        = "GetUserExams_02",
                 Description       = "2 exam sessions returned → Items.Count=2, TotalCount=2",
                 ExpectedResult    = "IsSuccess=true, Items.Count=2",
                 StatusRound1      = "Passed",
@@ -112,7 +112,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GUEX-03 | N | Paging metadata correct
+        // GetUserExams_03 | N | Paging metadata correct
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_PagedRequest_ShouldReturnCorrectMetadata()
@@ -140,7 +140,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get List", new TestCaseDetail
             {
                 FunctionGroup     = "GetUserExams",
-                TestCaseID        = "TC-GUEX-03",
+                TestCaseID        = "GetUserExams_03",
                 Description       = "Page=2, Size=5 → paging metadata returned correctly",
                 ExpectedResult    = "PageNumber=2, PageSize=5, TotalCount=20",
                 StatusRound1      = "Passed",
@@ -151,7 +151,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GUEX-04 | N | Filter by Status forwarded correctly
+        // GetUserExams_04 | N | Filter by Status forwarded correctly
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_FilterByStatus_ShouldForwardStatusToRepo()
@@ -179,7 +179,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get List", new TestCaseDetail
             {
                 FunctionGroup     = "GetUserExams",
-                TestCaseID        = "TC-GUEX-04",
+                TestCaseID        = "GetUserExams_04",
                 Description       = "Filter Status=Completed → repo called with Completed status",
                 ExpectedResult    = "GetPagedHistoryAsync called with Status=Completed",
                 StatusRound1      = "Passed",
@@ -190,7 +190,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GUEX-05 | N | Filter by ExamId forwarded correctly
+        // GetUserExams_05 | N | Filter by ExamId forwarded correctly
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_FilterByExamId_ShouldForwardExamIdToRepo()
@@ -218,7 +218,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get List", new TestCaseDetail
             {
                 FunctionGroup     = "GetUserExams",
-                TestCaseID        = "TC-GUEX-05",
+                TestCaseID        = "GetUserExams_05",
                 Description       = "Filter by ExamId → repo called with correct ExamId",
                 ExpectedResult    = "GetPagedHistoryAsync called with ExamId=EXAM-001",
                 StatusRound1      = "Passed",
@@ -229,7 +229,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GUEX-06 | E | Repository throws → exception propagates
+        // GetUserExams_06 | E | Repository throws → exception propagates
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
@@ -253,7 +253,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get List", new TestCaseDetail
             {
                 FunctionGroup     = "GetUserExams",
-                TestCaseID        = "TC-GUEX-06",
+                TestCaseID        = "GetUserExams_06",
                 Description       = "Repository throws exception → propagates",
                 ExpectedResult    = "Exception with 'DB timeout'",
                 StatusRound1      = "Passed",

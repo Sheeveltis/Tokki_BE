@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -33,7 +33,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RPT-CRE-01 | N | Happy path → report created, 200 success
+        // CreateReport_01 | N | Happy path → report created, 200 success
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidCommand_ShouldCreateReportAndReturnSuccessWithId()
@@ -64,7 +64,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             QACollector.LogTestCase("Report - Create", new TestCaseDetail
             {
                 FunctionGroup     = "CreateReport",
-                TestCaseID        = "TC-RPT-CRE-01",
+                TestCaseID        = "CreateReport_01",
                 Description       = "Happy path: valid command → Report created with Pending status, UserHasRead=true, returns report Id",
                 ExpectedResult    = "IsSuccess=true, Data='RPT-GEN-001', Status=Pending",
                 StatusRound1      = "Passed",
@@ -75,7 +75,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RPT-CRE-02 | N | With optional QuestionBankId → stored on entity
+        // CreateReport_02 | N | With optional QuestionBankId → stored on entity
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_WithQuestionBankId_ShouldStoreQuestionBankIdOnReport()
@@ -101,7 +101,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             QACollector.LogTestCase("Report - Create", new TestCaseDetail
             {
                 FunctionGroup     = "CreateReport",
-                TestCaseID        = "TC-RPT-CRE-02",
+                TestCaseID        = "CreateReport_02",
                 Description       = "QuestionBankId provided → stored on entity in AddAsync",
                 ExpectedResult    = "IsSuccess=true, entity.QuestionBankId='QB-001'",
                 StatusRound1      = "Passed",
@@ -112,7 +112,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RPT-CRE-03 | N | Generated ID is assigned to report
+        // CreateReport_03 | N | Generated ID is assigned to report
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_GeneratedIdAssignedToReport()
@@ -137,7 +137,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             QACollector.LogTestCase("Report - Create", new TestCaseDetail
             {
                 FunctionGroup     = "CreateReport",
-                TestCaseID        = "TC-RPT-CRE-03",
+                TestCaseID        = "CreateReport_03",
                 Description       = "Boundary: generated Id assigned to entity.Id and returned in Data",
                 ExpectedResult    = "Data='RPT-FIXED-ID', entity.Id='RPT-FIXED-ID'",
                 StatusRound1      = "Passed",
@@ -148,7 +148,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RPT-CRE-04 | A | Repository AddAsync throws → 500 failure
+        // CreateReport_04 | A | Repository AddAsync throws → 500 failure
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldReturnFailure()
@@ -172,7 +172,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             QACollector.LogTestCase("Report - Create", new TestCaseDetail
             {
                 FunctionGroup     = "CreateReport",
-                TestCaseID        = "TC-RPT-CRE-04",
+                TestCaseID        = "CreateReport_04",
                 Description       = "AddAsync throws → caught in try/catch → failure returned",
                 ExpectedResult    = "IsSuccess=false (AppErrors.ReportCreationFailed)",
                 StatusRound1      = "Passed",
@@ -183,7 +183,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RPT-CRE-05 | N | CreatedAt is set (not default DateTime)
+        // CreateReport_05 | N | CreatedAt is set (not default DateTime)
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidCommand_CreatedAtShouldBeSet()
@@ -207,7 +207,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             QACollector.LogTestCase("Report - Create", new TestCaseDetail
             {
                 FunctionGroup     = "CreateReport",
-                TestCaseID        = "TC-RPT-CRE-05",
+                TestCaseID        = "CreateReport_05",
                 Description       = "Boundary: entity.CreatedAt is set to approximately DateTime.UtcNow",
                 ExpectedResult    = "entity.CreatedAt within valid time range",
                 StatusRound1      = "Passed",
@@ -218,7 +218,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-RPT-CRE-06 | N | Null optional fields → stored as null
+        // CreateReport_06 | N | Null optional fields → stored as null
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NullOptionalFields_ShouldStoreNulls()
@@ -248,7 +248,7 @@ namespace Tokki.UnitTest.Application.UseCases.Reports
             QACollector.LogTestCase("Report - Create", new TestCaseDetail
             {
                 FunctionGroup     = "CreateReport",
-                TestCaseID        = "TC-RPT-CRE-06",
+                TestCaseID        = "CreateReport_06",
                 Description       = "Null optional fields (ImageUrl, QuestionBankId, VocabularyId) → stored as null on entity",
                 ExpectedResult    = "IsSuccess=true, optional fields null on entity",
                 StatusRound1      = "Passed",

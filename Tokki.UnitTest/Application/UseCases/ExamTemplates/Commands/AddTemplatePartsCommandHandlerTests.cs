@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -30,7 +30,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             _handler = new AddTemplatePartsCommandHandler(_mockTemplateRepo.Object, _mockIdGen.Object, _mockTypeRepo.Object);
         }
 
-        // TC-EXT-ATP-01 | A | Template Not Found
+        // AddTemplatePartsCommandHandler_01 | A | Template Not Found
         [Fact]
         public async Task Handle_TemplateNotFound_ShouldFail()
         {
@@ -46,7 +46,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             QACollector.LogTestCase("Exam Template - Create", new TestCaseDetail
             {
                 FunctionGroup = "AddTemplatePartsCommandHandler",
-                TestCaseID = "TC-EXT-ATP-01",
+                TestCaseID = "AddTemplatePartsCommandHandler_01",
                 Description = "Returns failure immediately if template record vanishes",
                 ExpectedResult = "Failure",
                 StatusRound1 = "Passed",
@@ -56,7 +56,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             });
         }
 
-        // TC-EXT-ATP-02 | A | Status Not Draft
+        // AddTemplatePartsCommandHandler_02 | A | Status Not Draft
         [Fact]
         public async Task Handle_StatusNotDraft_ShouldFail()
         {
@@ -73,7 +73,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             QACollector.LogTestCase("Exam Template - Create", new TestCaseDetail
             {
                 FunctionGroup = "AddTemplatePartsCommandHandler",
-                TestCaseID = "TC-EXT-ATP-02",
+                TestCaseID = "AddTemplatePartsCommandHandler_02",
                 Description = "Blocks structural alterations natively when outside of Draft contexts",
                 ExpectedResult = "Failure",
                 StatusRound1 = "Passed",
@@ -83,7 +83,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             });
         }
 
-        // TC-EXT-ATP-03 | A | Invalid Frame (From > To)
+        // AddTemplatePartsCommandHandler_03 | A | Invalid Frame (From > To)
         [Fact]
         public async Task Handle_InvalidRangeFromGtTo_ShouldFail()
         {
@@ -104,7 +104,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             QACollector.LogTestCase("Exam Template - Create", new TestCaseDetail
             {
                 FunctionGroup = "AddTemplatePartsCommandHandler",
-                TestCaseID = "TC-EXT-ATP-03",
+                TestCaseID = "AddTemplatePartsCommandHandler_03",
                 Description = "Denies inverted mathematical constraints preventing rendering logic crash loops later",
                 ExpectedResult = "Failure",
                 StatusRound1 = "Passed",
@@ -114,7 +114,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             });
         }
 
-        // TC-EXT-ATP-04 | A | Overlap Detect
+        // AddTemplatePartsCommandHandler_04 | A | Overlap Detect
         [Fact]
         public async Task Handle_OverlappingBounds_ShouldFail()
         {
@@ -139,7 +139,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             QACollector.LogTestCase("Exam Template - Create", new TestCaseDetail
             {
                 FunctionGroup = "AddTemplatePartsCommandHandler",
-                TestCaseID = "TC-EXT-ATP-04",
+                TestCaseID = "AddTemplatePartsCommandHandler_04",
                 Description = "Ensures disjoint array maps verifying boundaries precisely using Max/Min bounds intersections",
                 ExpectedResult = "Failure",
                 StatusRound1 = "Passed",
@@ -149,7 +149,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             });
         }
 
-        // TC-EXT-ATP-05 | A | QuestionType Skill Discord
+        // AddTemplatePartsCommandHandler_05 | A | QuestionType Skill Discord
         [Fact]
         public async Task Handle_MismatchedSkillTypes_ShouldFail()
         {
@@ -173,7 +173,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             QACollector.LogTestCase("Exam Template - Create", new TestCaseDetail
             {
                 FunctionGroup = "AddTemplatePartsCommandHandler",
-                TestCaseID = "TC-EXT-ATP-05",
+                TestCaseID = "AddTemplatePartsCommandHandler_05",
                 Description = "Prevents listening configurations forcing assignment into reading containers",
                 ExpectedResult = "Failure",
                 StatusRound1 = "Passed",
@@ -183,7 +183,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             });
         }
 
-        // TC-EXT-ATP-06 | N | Clean Addition Loop
+        // AddTemplatePartsCommandHandler_06 | N | Clean Addition Loop
         [Fact]
         public async Task Handle_ValidFlow_ShouldAddSuccessfully()
         {
@@ -210,7 +210,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             QACollector.LogTestCase("Exam Template - Create", new TestCaseDetail
             {
                 FunctionGroup = "AddTemplatePartsCommandHandler",
-                TestCaseID = "TC-EXT-ATP-06",
+                TestCaseID = "AddTemplatePartsCommandHandler_06",
                 Description = "Valid configuration appends appropriately parsing constraints gracefully",
                 ExpectedResult = "Success true",
                 StatusRound1 = "Passed",

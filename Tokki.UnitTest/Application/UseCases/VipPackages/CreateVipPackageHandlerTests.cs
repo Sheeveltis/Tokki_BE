@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -52,7 +52,7 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
             QACollector.LogTestCase("VipPackage - Create", new TestCaseDetail
             {
                 FunctionGroup = "Create Vip Package",
-                TestCaseID = "TC-VIP-CRE-01",
+                TestCaseID = "Create_Vip_Package_01",
                 Description = "Create VIP package with negative price (-1)",
                 ExpectedResult = "Return Failure VipPackageInvalidPrice",
                 StatusRound1 = "Passed",
@@ -84,7 +84,7 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
             QACollector.LogTestCase("VipPackage - Create", new TestCaseDetail
             {
                 FunctionGroup = "Create Vip Package",
-                TestCaseID = "TC-VIP-CRE-02",
+                TestCaseID = "Create_Vip_Package_02",
                 Description = "Create a VIP package with DurationDays = 0 (boundary: invalid minimum)",
                 ExpectedResult = "Return Failure VipPackageInvalidDuration",
                 StatusRound1 = "Passed",
@@ -141,7 +141,7 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
             QACollector.LogTestCase("VipPackage - Create", new TestCaseDetail
             {
                 FunctionGroup = "Create Vip Package",
-                TestCaseID = "TC-VIP-CRE-03",
+                TestCaseID = "Create_Vip_Package_03",
                 Description = "Create a valid VIP package → IsActive = false (not activated), return PackageId",
                 ExpectedResult = "Return Success, Data = PackageId, IsActive = false",
                 StatusRound1 = "Passed",
@@ -184,7 +184,7 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
             QACollector.LogTestCase("VipPackage - Create", new TestCaseDetail
             {
                 FunctionGroup = "Create Vip Package",
-                TestCaseID = "TC-VIP-CRE-04",
+                TestCaseID = "Create_Vip_Package_04",
                 Description = "AddAsync throws exception → catch block returns failure",
                 ExpectedResult = "IsSuccess=false (VipPackageCreationFailed)",
                 StatusRound1 = "Passed",
@@ -226,7 +226,7 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
             QACollector.LogTestCase("VipPackage - Create", new TestCaseDetail
             {
                 FunctionGroup = "Create Vip Package",
-                TestCaseID = "TC-VIP-CRE-05",
+                TestCaseID = "Create_Vip_Package_05",
                 Description = "Price = 0 is valid (boundary: condition is Price < 0)",
                 ExpectedResult = "IsSuccess=true, AddAsync called once",
                 StatusRound1 = "Passed",
@@ -269,7 +269,7 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
             QACollector.LogTestCase("VipPackage - Create", new TestCaseDetail
             {
                 FunctionGroup = "Create Vip Package",
-                TestCaseID = "TC-VIP-CRE-06",
+                TestCaseID = "Create_Vip_Package_06",
                 Description = "Create flow should never call UpdateAsync",
                 ExpectedResult = "IsSuccess=true, UpdateAsync never called",
                 StatusRound1 = "Passed",

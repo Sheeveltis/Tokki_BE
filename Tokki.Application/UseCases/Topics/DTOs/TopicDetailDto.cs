@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Tokki.Application.UseCases.Vocabulary.DTOs;
 using Tokki.Domain.Enums;
@@ -21,7 +21,9 @@ namespace Tokki.Application.UseCases.Topics.DTOs
         public string? ApprovedBy { get; set; }
         public DateTime? ApprovedDate { get; set; }
 
-        public TopicLevel Level { get; set; }
+        public int Level { get; set; }
+        public string? LevelLabel { get; set; }
+        public string? LevelKey { get; set; }
         public string? ImgUrl { get; set; }
         public TopicStatus Status { get; set; }
 

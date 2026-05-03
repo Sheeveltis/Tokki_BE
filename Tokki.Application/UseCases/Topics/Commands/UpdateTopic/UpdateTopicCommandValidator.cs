@@ -1,11 +1,12 @@
-﻿using FluentValidation;
+using FluentValidation;
+using Tokki.Application.IRepositories;
 using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Topics.Commands.UpdateTopic
 {
     public class UpdateTopicCommandValidator : AbstractValidator<UpdateTopicCommand>
     {
-        public UpdateTopicCommandValidator()
+        public UpdateTopicCommandValidator(IEnumConfigRepository enumConfigRepository)
         {
             RuleFor(x => x.TopicId)
                 .NotEmpty()
@@ -36,8 +37,11 @@ namespace Tokki.Application.UseCases.Topics.Commands.UpdateTopic
             When(x => x.Level.HasValue, () =>
             {
                 RuleFor(x => x.Level!.Value)
-                    .IsInEnum()
-                    .WithMessage("Level không hợp lệ.");
+                    .MustAsync(async (level, cancellation) =>
+                    {
+                        return await enumConfigRepository.FirstOrDefaultAsync(x => x.GroupCode == EnumGroup.TopicLevel && x.Value == level && x.IsActive) != null;
+                    })
+                    .WithMessage("Level không hợp lệ hoặc không tồn tại.");
             });
 
             When(x => x.Status.HasValue, () =>

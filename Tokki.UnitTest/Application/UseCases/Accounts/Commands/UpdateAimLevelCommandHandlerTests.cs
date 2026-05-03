@@ -22,7 +22,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             return new UpdateAimLevelCommandHandler(_accountRepoMock.Object);
         }
 
-        // TC-ACC-UAL-01 | A | UserId is null -> 400
+        // UpdateAimLevelCommandHandler_01 | A | UserId is null -> 400
         [Fact]
         public async Task Handle_NullUserId_ShouldReturnFailure400()
         {
@@ -36,7 +36,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Update Aim", new TestCaseDetail
             {
                 FunctionGroup = "UpdateAimLevelCommandHandler",
-                TestCaseID = "TC-ACC-UAL-01",
+                TestCaseID = "UpdateAimLevelCommandHandler_01",
                 Description = "Null UserId returns 400",
                 ExpectedResult = "400 UserId is required.",
                 StatusRound1 = "Passed",
@@ -46,7 +46,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-UAL-02 | A | UserId is empty -> 400
+        // UpdateAimLevelCommandHandler_02 | A | UserId is empty -> 400
         [Fact]
         public async Task Handle_EmptyUserId_ShouldReturnFailure400()
         {
@@ -59,7 +59,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Update Aim", new TestCaseDetail
             {
                 FunctionGroup = "UpdateAimLevelCommandHandler",
-                TestCaseID = "TC-ACC-UAL-02",
+                TestCaseID = "UpdateAimLevelCommandHandler_02",
                 Description = "Empty string UserId returns 400",
                 ExpectedResult = "400 UserId is required.",
                 StatusRound1 = "Passed",
@@ -69,7 +69,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-UAL-03 | A | User not found -> 404
+        // UpdateAimLevelCommandHandler_03 | A | User not found -> 404
         [Fact]
         public async Task Handle_UserNotFound_ShouldReturn404()
         {
@@ -85,7 +85,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - Update Aim", new TestCaseDetail
             {
                 FunctionGroup = "UpdateAimLevelCommandHandler",
-                TestCaseID = "TC-ACC-UAL-03",
+                TestCaseID = "UpdateAimLevelCommandHandler_03",
                 Description = "Non-existent user returns 404",
                 ExpectedResult = "404 User not found",
                 StatusRound1 = "Passed",
@@ -95,25 +95,25 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-UAL-04 | N | Happy Path -> Updates Level & 200
+        // UpdateAimLevelCommandHandler_04 | N | Happy Path -> Updates Level & 200
         [Fact]
         public async Task Handle_HappyPath_ShouldUpdateAimLevelAndReturn200()
         {
-            var user = new Account { UserId = "u1", AimLevel = Tokki.Domain.Enums.TopicLevel.Level1 };
+            var user = new Account { UserId = "u1", AimLevel = (int)TopicLevel.Level1 };
             _accountRepoMock.Setup(x => x.GetByIdAsync("u1")).ReturnsAsync(user);
             
             var handler = CreateHandler();
-            var result = await handler.Handle(new UpdateAimLevelCommand { UserId = "u1", AimLevel = (Tokki.Domain.Enums.TopicLevel)5 }, CancellationToken.None);
+            var result = await handler.Handle(new UpdateAimLevelCommand { UserId = "u1", AimLevel = 5 }, CancellationToken.None);
 
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
-            user.AimLevel.Should().Be((Tokki.Domain.Enums.TopicLevel)5);
+            user.AimLevel.Should().Be(5);
             user.UpdatedAt.Should().BeAfter(DateTime.MinValue);
 
             QACollector.LogTestCase("Account - Update Aim", new TestCaseDetail
             {
                 FunctionGroup = "UpdateAimLevelCommandHandler",
-                TestCaseID = "TC-ACC-UAL-04",
+                TestCaseID = "UpdateAimLevelCommandHandler_04",
                 Description = "Valid request mutates AimLevel to requested value",
                 ExpectedResult = "200 Success + AimLevel modified",
                 StatusRound1 = "Passed",
@@ -123,7 +123,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-UAL-05 | B | Test Repo UpdateUserAsync
+        // UpdateAimLevelCommandHandler_05 | B | Test Repo UpdateUserAsync
         [Fact]
         public async Task Handle_Success_ShouldCallUpdateUserAsync()
         {
@@ -131,14 +131,14 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             _accountRepoMock.Setup(x => x.GetByIdAsync("u1")).ReturnsAsync(user);
             
             var handler = CreateHandler();
-            await handler.Handle(new UpdateAimLevelCommand { UserId = "u1", AimLevel = (Tokki.Domain.Enums.TopicLevel)5 }, CancellationToken.None);
+            await handler.Handle(new UpdateAimLevelCommand { UserId = "u1", AimLevel = 5 }, CancellationToken.None);
 
-            _accountRepoMock.Verify(x => x.UpdateUserAsync(It.Is<Account>(a => a.AimLevel == (Tokki.Domain.Enums.TopicLevel)5)), Times.Once);
+            _accountRepoMock.Verify(x => x.UpdateUserAsync(It.Is<Account>(a => a.AimLevel == 5)), Times.Once);
 
             QACollector.LogTestCase("Account - Update Aim", new TestCaseDetail
             {
                 FunctionGroup = "UpdateAimLevelCommandHandler",
-                TestCaseID = "TC-ACC-UAL-05",
+                TestCaseID = "UpdateAimLevelCommandHandler_05",
                 Description = "Verifies UpdateUserAsync is invoked with mutated user",
                 ExpectedResult = "Times.Once",
                 StatusRound1 = "Passed",
@@ -148,7 +148,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-UAL-06 | B | Test Repo SaveChangesAsync
+        // UpdateAimLevelCommandHandler_06 | B | Test Repo SaveChangesAsync
         [Fact]
         public async Task Handle_Success_ShouldCallSaveChangesAsync()
         {
@@ -156,14 +156,14 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             _accountRepoMock.Setup(x => x.GetByIdAsync("u1")).ReturnsAsync(user);
             
             var handler = CreateHandler();
-            await handler.Handle(new UpdateAimLevelCommand { UserId = "u1", AimLevel = (Tokki.Domain.Enums.TopicLevel)5 }, CancellationToken.None);
+            await handler.Handle(new UpdateAimLevelCommand { UserId = "u1", AimLevel = 5 }, CancellationToken.None);
 
             _accountRepoMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
 
             QACollector.LogTestCase("Account - Update Aim", new TestCaseDetail
             {
                 FunctionGroup = "UpdateAimLevelCommandHandler",
-                TestCaseID = "TC-ACC-UAL-06",
+                TestCaseID = "UpdateAimLevelCommandHandler_06",
                 Description = "Verifies SaveChangesAsync is invoked after update",
                 ExpectedResult = "Times.Once",
                 StatusRound1 = "Passed",

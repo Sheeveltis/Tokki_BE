@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -71,47 +71,47 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
         private static RejectTopicCommand MakeCmd(string topicId = "T-001", string reason = "Content insufficient") =>
             new RejectTopicCommand { TopicId = topicId, RejectReason = reason };
 
-        // TC-TOPIC-RJCT-01 | A | No auth user → 401
+        // RejectTopic_01 | A | No auth user → 401
         [Fact]
         public async Task Handle_NoAuthUser_ShouldReturn401()
         {
             var result = await CreateHandler(http: GetHttpContextMock(null)).Handle(MakeCmd(), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(401);
-            QACollector.LogTestCase("Topic - Reject", new TestCaseDetail { FunctionGroup = "RejectTopic", TestCaseID = "TC-TOPIC-RJCT-01", Description = "No auth user → 401", ExpectedResult = "IsSuccess=false, 401", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "No NameIdentifier claim" } });
+            QACollector.LogTestCase("Topic - Reject", new TestCaseDetail { FunctionGroup = "RejectTopic", TestCaseID = "RejectTopic_01", Description = "No auth user → 401", ExpectedResult = "IsSuccess=false, 401", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "No NameIdentifier claim" } });
         }
 
-        // TC-TOPIC-RJCT-02 | A | Empty reject reason → 400
+        // RejectTopic_02 | A | Empty reject reason → 400
         [Fact]
         public async Task Handle_EmptyRejectReason_ShouldReturn400()
         {
             var result = await CreateHandler().Handle(MakeCmd(reason: ""), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            QACollector.LogTestCase("Topic - Reject", new TestCaseDetail { FunctionGroup = "RejectTopic", TestCaseID = "TC-TOPIC-RJCT-02", Description = "Empty RejectReason → 400", ExpectedResult = "IsSuccess=false, 400", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "RejectReason is required" } });
+            QACollector.LogTestCase("Topic - Reject", new TestCaseDetail { FunctionGroup = "RejectTopic", TestCaseID = "RejectTopic_02", Description = "Empty RejectReason → 400", ExpectedResult = "IsSuccess=false, 400", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "RejectReason is required" } });
         }
 
-        // TC-TOPIC-RJCT-03 | A | Topic not found → 404
+        // RejectTopic_03 | A | Topic not found → 404
         [Fact]
         public async Task Handle_TopicNotFound_ShouldReturn404()
         {
             var result = await CreateHandler(topicRepo: GetRepoMock(null)).Handle(MakeCmd(), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(404);
-            QACollector.LogTestCase("Topic - Reject", new TestCaseDetail { FunctionGroup = "RejectTopic", TestCaseID = "TC-TOPIC-RJCT-03", Description = "Topic not found → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetByIdAsync returns null" } });
+            QACollector.LogTestCase("Topic - Reject", new TestCaseDetail { FunctionGroup = "RejectTopic", TestCaseID = "RejectTopic_03", Description = "Topic not found → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetByIdAsync returns null" } });
         }
 
-        // TC-TOPIC-RJCT-04 | A | Topic not in PendingApproval (Draft) → 400
+        // RejectTopic_04 | A | Topic not in PendingApproval (Draft) → 400
         [Fact]
         public async Task Handle_TopicNotPendingApproval_ShouldReturn400()
         {
             var result = await CreateHandler(topicRepo: GetRepoMock(SampleTopic(TopicStatus.Draft))).Handle(MakeCmd(), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            QACollector.LogTestCase("Topic - Reject", new TestCaseDetail { FunctionGroup = "RejectTopic", TestCaseID = "TC-TOPIC-RJCT-04", Description = "Topic not PendingApproval → 400", ExpectedResult = "IsSuccess=false, 400", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Only PendingApproval can be rejected" } });
+            QACollector.LogTestCase("Topic - Reject", new TestCaseDetail { FunctionGroup = "RejectTopic", TestCaseID = "RejectTopic_04", Description = "Topic not PendingApproval → 400", ExpectedResult = "IsSuccess=false, 400", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Only PendingApproval can be rejected" } });
         }
 
-        // TC-TOPIC-RJCT-05 | N | Happy path → Status=Rejected, 200
+        // RejectTopic_05 | N | Happy path → Status=Rejected, 200
         [Fact]
         public async Task Handle_ValidRequest_ShouldSetRejectedStatusAndReturn200()
         {
@@ -120,10 +120,10 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
             topic.Status.Should().Be(TopicStatus.Rejected);
-            QACollector.LogTestCase("Topic - Reject", new TestCaseDetail { FunctionGroup = "RejectTopic", TestCaseID = "TC-TOPIC-RJCT-05", Description = "Valid request → Status=Rejected, 200", ExpectedResult = "IsSuccess=true, 200, Status=Rejected", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "PendingApproval→Rejected transition" } });
+            QACollector.LogTestCase("Topic - Reject", new TestCaseDetail { FunctionGroup = "RejectTopic", TestCaseID = "RejectTopic_05", Description = "Valid request → Status=Rejected, 200", ExpectedResult = "IsSuccess=true, 200, Status=Rejected", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "PendingApproval→Rejected transition" } });
         }
 
-        // TC-TOPIC-RJCT-06 | B | UpdateAsync and SaveChangesAsync called on reject
+        // RejectTopic_06 | B | UpdateAsync and SaveChangesAsync called on reject
         [Fact]
         public async Task Handle_ValidRequest_UpdateAndSaveCalledOnce()
         {
@@ -131,7 +131,7 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
             await CreateHandler(topicRepo: repo).Handle(MakeCmd(), CancellationToken.None);
             repo.Verify(x => x.UpdateAsync(It.IsAny<Topic>()), Times.Once);
             repo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
-            QACollector.LogTestCase("Topic - Reject", new TestCaseDetail { FunctionGroup = "RejectTopic", TestCaseID = "TC-TOPIC-RJCT-06", Description = "UpdateAsync and SaveChangesAsync called once", ExpectedResult = "Both Times.Once", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Persist calls verified" } });
+            QACollector.LogTestCase("Topic - Reject", new TestCaseDetail { FunctionGroup = "RejectTopic", TestCaseID = "RejectTopic_06", Description = "UpdateAsync and SaveChangesAsync called once", ExpectedResult = "Both Times.Once", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Persist calls verified" } });
         }
     }
 }

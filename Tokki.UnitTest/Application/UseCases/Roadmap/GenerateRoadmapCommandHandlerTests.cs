@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -87,7 +87,7 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             UserExamId  = string.Empty
         };
 
-        // TC-RM-GEN-01 | A | Active roadmap already exists → 400
+        // GenerateRoadmap_01 | A | Active roadmap already exists → 400
         [Fact]
         public async Task Handle_ActiveRoadmapExists_ShouldReturn400()
         {
@@ -98,7 +98,7 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             result.StatusCode.Should().Be(400);
             QACollector.LogTestCase("Roadmap - Generate Roadmap", new TestCaseDetail
             {
-                FunctionGroup = "GenerateRoadmap", TestCaseID = "TC-RM-GEN-01",
+                FunctionGroup = "GenerateRoadmap", TestCaseID = "GenerateRoadmap_01",
                 Description = "Active roadmap already exists → 400",
                 ExpectedResult = "IsSuccess=false, 400", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -106,7 +106,7 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             });
         }
 
-        // TC-RM-GEN-02 | N | No active roadmap → returns JobId (202) immediately (fire-and-forget)
+        // GenerateRoadmap_02 | N | No active roadmap → returns JobId (202) immediately (fire-and-forget)
         [Fact]
         public async Task Handle_NoActiveRoadmap_ShouldReturn202WithJobId()
         {
@@ -118,7 +118,7 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             result.Data.Should().NotBeNullOrEmpty();
             QACollector.LogTestCase("Roadmap - Generate Roadmap", new TestCaseDetail
             {
-                FunctionGroup = "GenerateRoadmap", TestCaseID = "TC-RM-GEN-02",
+                FunctionGroup = "GenerateRoadmap", TestCaseID = "GenerateRoadmap_02",
                 Description = "No active roadmap → 202 Accepted with non-empty JobId",
                 ExpectedResult = "IsSuccess=true, StatusCode=202, Data=JobId", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -126,7 +126,7 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             });
         }
 
-        // TC-RM-GEN-03 | N | JobId returned equals generated id from IIdGeneratorService
+        // GenerateRoadmap_03 | N | JobId returned equals generated id from IIdGeneratorService
         [Fact]
         public async Task Handle_NoActiveRoadmap_JobIdMatchesGeneratedId()
         {
@@ -136,7 +136,7 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             result.Data.Should().Be("FIXED-JOB-ID-123");
             QACollector.LogTestCase("Roadmap - Generate Roadmap", new TestCaseDetail
             {
-                FunctionGroup = "GenerateRoadmap", TestCaseID = "TC-RM-GEN-03",
+                FunctionGroup = "GenerateRoadmap", TestCaseID = "GenerateRoadmap_03",
                 Description = "JobId returned matches IIdGeneratorService output",
                 ExpectedResult = "Data == 'FIXED-JOB-ID-123'", StatusRound1 = "Passed", TestCaseType = "N",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -144,7 +144,7 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             });
         }
 
-        // TC-RM-GEN-04 | B | IRoadmapProgressService.Set called with initial state (Percent=0) before returning
+        // GenerateRoadmap_04 | B | IRoadmapProgressService.Set called with initial state (Percent=0) before returning
         [Fact]
         public async Task Handle_NoActiveRoadmap_ProgressSetCalledWithZeroPercent()
         {
@@ -159,7 +159,7 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
                 Times.AtLeastOnce);
             QACollector.LogTestCase("Roadmap - Generate Roadmap", new TestCaseDetail
             {
-                FunctionGroup = "GenerateRoadmap", TestCaseID = "TC-RM-GEN-04",
+                FunctionGroup = "GenerateRoadmap", TestCaseID = "GenerateRoadmap_04",
                 Description = "Boundary: IRoadmapProgressService.Set called with Percent=0 initially",
                 ExpectedResult = "Set(_, {Percent=0}) called at least once", StatusRound1 = "Passed", TestCaseType = "B",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -167,7 +167,7 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             });
         }
 
-        // TC-RM-GEN-05 | B | GetActiveRoadmapByUserIdAsync called with correct UserId
+        // GenerateRoadmap_05 | B | GetActiveRoadmapByUserIdAsync called with correct UserId
         [Fact]
         public async Task Handle_Command_GetActiveRoadmapCalledWithCorrectUserId()
         {
@@ -176,7 +176,7 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             repo.Verify(x => x.GetActiveRoadmapByUserIdAsync("USER-SPECIFIC", It.IsAny<CancellationToken>()), Times.Once);
             QACollector.LogTestCase("Roadmap - Generate Roadmap", new TestCaseDetail
             {
-                FunctionGroup = "GenerateRoadmap", TestCaseID = "TC-RM-GEN-05",
+                FunctionGroup = "GenerateRoadmap", TestCaseID = "GenerateRoadmap_05",
                 Description = "GetActiveRoadmapByUserIdAsync called with correct UserId",
                 ExpectedResult = "Times.Once with 'USER-SPECIFIC'", StatusRound1 = "Passed", TestCaseType = "B",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -184,7 +184,7 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             });
         }
 
-        // TC-RM-GEN-06 | A | Active roadmap exists → GetActiveRoadmapByUserIdAsync called once, no progress set
+        // GenerateRoadmap_06 | A | Active roadmap exists → GetActiveRoadmapByUserIdAsync called once, no progress set
         [Fact]
         public async Task Handle_ActiveRoadmapExists_NoProgressInitialized()
         {
@@ -197,7 +197,7 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             progress.Verify(x => x.Set(It.IsAny<string>(), It.IsAny<RoadmapProgressState>()), Times.Never);
             QACollector.LogTestCase("Roadmap - Generate Roadmap", new TestCaseDetail
             {
-                FunctionGroup = "GenerateRoadmap", TestCaseID = "TC-RM-GEN-06",
+                FunctionGroup = "GenerateRoadmap", TestCaseID = "GenerateRoadmap_06",
                 Description = "Active roadmap exists → early return, IRoadmapProgressService.Set never called",
                 ExpectedResult = "Times.Never for progress.Set", StatusRound1 = "Passed", TestCaseType = "A",
                 TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

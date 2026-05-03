@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -61,7 +61,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GLSD-01 | A | Session not found → 404
+        // GetListeningDetail_01 | A | Session not found → 404
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SessionNotFound_ShouldReturn404()
@@ -83,7 +83,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Listening Detail", new TestCaseDetail
             {
                 FunctionGroup     = "GetListeningDetail",
-                TestCaseID        = "TC-GLSD-01",
+                TestCaseID        = "GetListeningDetail_01",
                 Description       = "Session not found → 404",
                 ExpectedResult    = "IsSuccess=false, StatusCode=404",
                 StatusRound1      = "Passed",
@@ -94,7 +94,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GLSD-02 | A | Session still InProgress → 400
+        // GetListeningDetail_02 | A | Session still InProgress → 400
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SessionInProgress_ShouldReturn400()
@@ -118,7 +118,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Listening Detail", new TestCaseDetail
             {
                 FunctionGroup     = "GetListeningDetail",
-                TestCaseID        = "TC-GLSD-02",
+                TestCaseID        = "GetListeningDetail_02",
                 Description       = "Exam not submitted → 400",
                 ExpectedResult    = "IsSuccess=false, StatusCode=400",
                 StatusRound1      = "Passed",
@@ -129,7 +129,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GLSD-03 | A | No listening template parts → 400
+        // GetListeningDetail_03 | A | No listening template parts → 400
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NoListeningParts_ShouldReturn400()
@@ -153,7 +153,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Listening Detail", new TestCaseDetail
             {
                 FunctionGroup     = "GetListeningDetail",
-                TestCaseID        = "TC-GLSD-03",
+                TestCaseID        = "GetListeningDetail_03",
                 Description       = "No template parts for exam → 400",
                 ExpectedResult    = "IsSuccess=false, StatusCode=400",
                 StatusRound1      = "Passed",
@@ -164,7 +164,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GLSD-04 | N | Happy path → 200 with TotalQuestions and MaxScore
+        // GetListeningDetail_04 | N | Happy path → 200 with TotalQuestions and MaxScore
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidSession_ShouldReturn200WithQuestionCountAndMaxScore()
@@ -188,7 +188,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Listening Detail", new TestCaseDetail
             {
                 FunctionGroup     = "GetListeningDetail",
-                TestCaseID        = "TC-GLSD-04",
+                TestCaseID        = "GetListeningDetail_04",
                 Description       = "Part has 5 questions with Mark=1 → TotalQuestions=5, MaxScore=5",
                 ExpectedResult    = "IsSuccess=true, TotalQuestions=5, MaxScore=5",
                 StatusRound1      = "Passed",
@@ -199,7 +199,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GLSD-05 | N | Correct answer counted in Score
+        // GetListeningDetail_05 | N | Correct answer counted in Score
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_OneCorrectAnswer_ShouldCountInScore()
@@ -222,7 +222,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Listening Detail", new TestCaseDetail
             {
                 FunctionGroup     = "GetListeningDetail",
-                TestCaseID        = "TC-GLSD-05",
+                TestCaseID        = "GetListeningDetail_05",
                 Description       = "1 correct answer (IsCorrect=true) → CorrectAnswers=1, Score=1",
                 ExpectedResult    = "CorrectAnswers=1, Score=1",
                 StatusRound1      = "Passed",
@@ -233,7 +233,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GLSD-06 | E | Repository throws → exception propagates
+        // GetListeningDetail_06 | E | Repository throws → exception propagates
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
@@ -254,7 +254,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Listening Detail", new TestCaseDetail
             {
                 FunctionGroup     = "GetListeningDetail",
-                TestCaseID        = "TC-GLSD-06",
+                TestCaseID        = "GetListeningDetail_06",
                 Description       = "Repository throws → exception propagates",
                 ExpectedResult    = "Exception with 'DB failure'",
                 StatusRound1      = "Passed",
@@ -265,7 +265,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GLSD-07 | N | Null ExamTemplate or incorrect answer
+        // GetListeningDetail_07 | N | Null ExamTemplate or incorrect answer
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NullExamTemplate_ShouldReturn400()
@@ -285,7 +285,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Listening Detail", new TestCaseDetail
             {
                 FunctionGroup     = "GetListeningDetail",
-                TestCaseID        = "TC-GLSD-07",
+                TestCaseID        = "GetListeningDetail_07",
                 Description       = "Null templateParts branch check",
                 ExpectedResult    = "400 error",
                 StatusRound1      = "Passed",
@@ -296,7 +296,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-GLSD-08 | N | MediaType parsing branches
+        // GetListeningDetail_08 | N | MediaType parsing branches
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_MediaParsing_ShouldGroupCorrectly()
@@ -329,7 +329,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Get Listening Detail", new TestCaseDetail
             {
                 FunctionGroup     = "GetListeningDetail",
-                TestCaseID        = "TC-GLSD-08",
+                TestCaseID        = "GetListeningDetail_08",
                 Description       = "Check GetMediaType for Image and Unknown extensions and IsCorrect branches",
                 ExpectedResult    = "2 groups, SharedMediaType='Image' and 'Unknown', Score=0",
                 StatusRound1      = "Passed",

@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -33,17 +33,17 @@ namespace Tokki.UnitTest.Application.UseCases.Titles
             ColorHex    = "#GOLD"
         };
 
-        // TC-TITLE-GBI-01 | A | Title not found → 404 failure
+        // GetTitleById_01 | A | Title not found → 404 failure
         [Fact]
         public async Task Handle_TitleNotFound_ShouldReturn404Failure()
         {
             var result = await CreateHandler(GetRepoMock(null)).Handle(new GetTitleByIdQuery("MISSING"), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(404);
-            QACollector.LogTestCase("Title - Get By Id", new TestCaseDetail { FunctionGroup = "GetTitleById", TestCaseID = "TC-TITLE-GBI-01", Description = "Title not found → 404 failure", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetTitleByIdAsync returns null" } });
+            QACollector.LogTestCase("Title - Get By Id", new TestCaseDetail { FunctionGroup = "GetTitleById", TestCaseID = "GetTitleById_01", Description = "Title not found → 404 failure", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetTitleByIdAsync returns null" } });
         }
 
-        // TC-TITLE-GBI-02 | N | Happy path: title found → 200 with Title entity
+        // GetTitleById_02 | N | Happy path: title found → 200 with Title entity
         [Fact]
         public async Task Handle_TitleFound_ShouldReturn200WithTitle()
         {
@@ -52,10 +52,10 @@ namespace Tokki.UnitTest.Application.UseCases.Titles
             result.StatusCode.Should().Be(200);
             result.Data.Should().NotBeNull();
             result.Data!.TitleId.Should().Be("T-001");
-            QACollector.LogTestCase("Title - Get By Id", new TestCaseDetail { FunctionGroup = "GetTitleById", TestCaseID = "TC-TITLE-GBI-02", Description = "Title found → 200, Data.TitleId='T-001'", ExpectedResult = "IsSuccess=true, 200", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetTitleByIdAsync returns title" } });
+            QACollector.LogTestCase("Title - Get By Id", new TestCaseDetail { FunctionGroup = "GetTitleById", TestCaseID = "GetTitleById_02", Description = "Title found → 200, Data.TitleId='T-001'", ExpectedResult = "IsSuccess=true, 200", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetTitleByIdAsync returns title" } });
         }
 
-        // TC-TITLE-GBI-03 | N | All title fields present in result
+        // GetTitleById_03 | N | All title fields present in result
         [Fact]
         public async Task Handle_TitleFound_AllFieldsPresent()
         {
@@ -63,30 +63,30 @@ namespace Tokki.UnitTest.Application.UseCases.Titles
             result.Data!.Name.Should().Be("Bậc học giả");
             result.Data.RequirementQuantity.Should().Be(1000);
             result.Data.ColorHex.Should().Be("#GOLD");
-            QACollector.LogTestCase("Title - Get By Id", new TestCaseDetail { FunctionGroup = "GetTitleById", TestCaseID = "TC-TITLE-GBI-03", Description = "All fields (Name, XP, IsSystemGiven, ColorHex) present", ExpectedResult = "All fields correct", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Title entity returned directly" } });
+            QACollector.LogTestCase("Title - Get By Id", new TestCaseDetail { FunctionGroup = "GetTitleById", TestCaseID = "GetTitleById_03", Description = "All fields (Name, XP, IsSystemGiven, ColorHex) present", ExpectedResult = "All fields correct", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Title entity returned directly" } });
         }
 
-        // TC-TITLE-GBI-04 | B | GetTitleByIdAsync called with correct ID
+        // GetTitleById_04 | B | GetTitleByIdAsync called with correct ID
         [Fact]
         public async Task Handle_WithId_GetByIdCalledWithCorrectId()
         {
             var repo = GetRepoMock(SampleTitle("T-XYZ"));
             await CreateHandler(repo).Handle(new GetTitleByIdQuery("T-XYZ"), CancellationToken.None);
             repo.Verify(x => x.GetTitleByIdAsync("T-XYZ"), Times.Once);
-            QACollector.LogTestCase("Title - Get By Id", new TestCaseDetail { FunctionGroup = "GetTitleById", TestCaseID = "TC-TITLE-GBI-04", Description = "GetTitleByIdAsync called with 'T-XYZ'", ExpectedResult = "Times.Once with correct ID", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "ID forwarded to repo" } });
+            QACollector.LogTestCase("Title - Get By Id", new TestCaseDetail { FunctionGroup = "GetTitleById", TestCaseID = "GetTitleById_04", Description = "GetTitleByIdAsync called with 'T-XYZ'", ExpectedResult = "Times.Once with correct ID", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "ID forwarded to repo" } });
         }
 
-        // TC-TITLE-GBI-05 | N | Data is same reference as returned by repo
+        // GetTitleById_05 | N | Data is same reference as returned by repo
         [Fact]
         public async Task Handle_TitleFound_DataIsSameReference()
         {
             var title  = SampleTitle();
             var result = await CreateHandler(GetRepoMock(title)).Handle(new GetTitleByIdQuery("T-001"), CancellationToken.None);
             result.Data.Should().BeSameAs(title);
-            QACollector.LogTestCase("Title - Get By Id", new TestCaseDetail { FunctionGroup = "GetTitleById", TestCaseID = "TC-TITLE-GBI-05", Description = "Result.Data is same reference as repo entity (no cloning)", ExpectedResult = "Same reference", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Handler returns repo entity directly" } });
+            QACollector.LogTestCase("Title - Get By Id", new TestCaseDetail { FunctionGroup = "GetTitleById", TestCaseID = "GetTitleById_05", Description = "Result.Data is same reference as repo entity (no cloning)", ExpectedResult = "Same reference", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Handler returns repo entity directly" } });
         }
 
-        // TC-TITLE-GBI-06 | A | Repository throws → exception propagates
+        // GetTitleById_06 | A | Repository throws → exception propagates
         [Fact]
         public async Task Handle_RepoThrows_ShouldPropagateException()
         {
@@ -94,7 +94,7 @@ namespace Tokki.UnitTest.Application.UseCases.Titles
             repo.Setup(x => x.GetTitleByIdAsync(It.IsAny<string>())).ThrowsAsync(new Exception("DB error"));
             var act = async () => await CreateHandler(repo).Handle(new GetTitleByIdQuery("T-001"), CancellationToken.None);
             await act.Should().ThrowAsync<Exception>().WithMessage("DB error");
-            QACollector.LogTestCase("Title - Get By Id", new TestCaseDetail { FunctionGroup = "GetTitleById", TestCaseID = "TC-TITLE-GBI-06", Description = "Repository throws → exception propagates", ExpectedResult = "Exception thrown", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "No exception handling in handler" } });
+            QACollector.LogTestCase("Title - Get By Id", new TestCaseDetail { FunctionGroup = "GetTitleById", TestCaseID = "GetTitleById_06", Description = "Repository throws → exception propagates", ExpectedResult = "Exception thrown", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "No exception handling in handler" } });
         }
     }
 }

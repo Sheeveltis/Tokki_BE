@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Moq;
 using System;
@@ -59,7 +59,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-IMA-01 | N | Excel parsing returns format errors → FailureList
+        // ImportAccounts_01 | N | Excel parsing returns format errors → FailureList
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ExcelHasFormatErrors_ShouldAppendToFailureList()
@@ -89,7 +89,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Import Accounts", new TestCaseDetail
             {
                 FunctionGroup     = "ImportAccounts",
-                TestCaseID        = "TC-EXC-IMA-01",
+                TestCaseID        = "ImportAccounts_01",
                 Description       = "Base Excel parsing yields row errors which are appended to FailureList",
                 ExpectedResult    = "Return 200 with FailureList count = 1",
                 StatusRound1      = "Passed",
@@ -100,7 +100,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-IMA-02 | N | Missing required fields → fails that row
+        // ImportAccounts_02 | N | Missing required fields → fails that row
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_MissingRequiredFields_ShouldFailRow()
@@ -132,7 +132,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Import Accounts", new TestCaseDetail
             {
                 FunctionGroup     = "ImportAccounts",
-                TestCaseID        = "TC-EXC-IMA-02",
+                TestCaseID        = "ImportAccounts_02",
                 Description       = "Row has empty or null required fields (Email/FullName/Role/Password)",
                 ExpectedResult    = "Validation loop skips and adds to FailureList",
                 StatusRound1      = "Passed",
@@ -143,7 +143,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-IMA-03 | N | Duplicate emails in file → second occurrence fails
+        // ImportAccounts_03 | N | Duplicate emails in file → second occurrence fails
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DuplicateEmailsInFile_ShouldFailSecondRow()
@@ -184,7 +184,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Import Accounts", new TestCaseDetail
             {
                 FunctionGroup     = "ImportAccounts",
-                TestCaseID        = "TC-EXC-IMA-03",
+                TestCaseID        = "ImportAccounts_03",
                 Description       = "Two rows with same email → second fails processedEmailsInFile HashSet",
                 ExpectedResult    = "1 Success, 1 Failure due to duplicate in file",
                 StatusRound1      = "Passed",
@@ -195,7 +195,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-IMA-04 | N | Email already exists in Database → FailureList
+        // ImportAccounts_04 | N | Email already exists in Database → FailureList
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmailExistsInDatabase_ShouldFailRow()
@@ -227,7 +227,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Import Accounts", new TestCaseDetail
             {
                 FunctionGroup     = "ImportAccounts",
-                TestCaseID        = "TC-EXC-IMA-04",
+                TestCaseID        = "ImportAccounts_04",
                 Description       = "Email already in database → fails existingDbEmailsSet.Contains check",
                 ExpectedResult    = "1 Failure with message 'đã tồn tại trên hệ thống'",
                 StatusRound1      = "Passed",
@@ -238,7 +238,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-IMA-05 | N | Valid rows → hashed and inserted successfully
+        // ImportAccounts_05 | N | Valid rows → hashed and inserted successfully
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidRows_ShouldHashPasswordAndInsert()
@@ -279,7 +279,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Import Accounts", new TestCaseDetail
             {
                 FunctionGroup     = "ImportAccounts",
-                TestCaseID        = "TC-EXC-IMA-05",
+                TestCaseID        = "ImportAccounts_05",
                 Description       = "Valid rows are cryptographically hashed and bulk inserted to DB",
                 ExpectedResult    = "Return 200, AddRangeAsync and SaveChangesAsync both called",
                 StatusRound1      = "Passed",
@@ -290,7 +290,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-IMA-06 | A | Database save throws → Return Failure DB_ERROR
+        // ImportAccounts_06 | A | Database save throws → Return Failure DB_ERROR
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DatabaseThrowsException_ShouldReturnFailure()
@@ -329,7 +329,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Import Accounts", new TestCaseDetail
             {
                 FunctionGroup     = "ImportAccounts",
-                TestCaseID        = "TC-EXC-IMA-06",
+                TestCaseID        = "ImportAccounts_06",
                 Description       = "SaveChangesAsync throws exception → DB_ERROR failure returned",
                 ExpectedResult    = "Return Failure DB_ERROR with exception message",
                 StatusRound1      = "Passed",

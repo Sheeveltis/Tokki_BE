@@ -13,21 +13,20 @@ namespace Tokki.Application.IServices
             CurrentTopikLevel currentLevel,
             int durationDays,
             List<string> weaknesses,
-            List<QuestionTypeMenuItem> weakTypeInfos,    
+            List<QuestionTypeMenuItem> weakTypeInfos,
             List<QuestionTypeMenuItem> questionTypeMenu,
-            int typesPerWeek,   
-            int totalWeeks); 
+            int typesPerWeek,
+            int totalWeeks);
 
         Task<AiRoadmapResponse?> GenerateNextWeekPlanAsync(
             TargetAimLevel target,
             CurrentTopikLevel currentLevel,
             int nextWeekIndex,
-            int examScorePercent,
-            List<string> reviewTypes,
-            List<string> persistentFailTypes,
-            List<string> originalWeaknesses,
-            List<QuestionTypeMenuItem> weakTypeInfos,    
-            List<QuestionTypeMenuItem> questionTypeMenu);
+            int totalWeeks,
+            List<string> focusTypeIds,
+            List<string> deferredTypeIds,
+            List<QuestionTypeMenuItem> weakTypeInfos,
+            List<QuestionTypeMenuItem> fullMenu);
         Task<string?> GenerateEntranceFeedbackAsync(
             TargetAimLevel targetAim,
             int readingWeakCount,
@@ -37,5 +36,19 @@ namespace Tokki.Application.IServices
             List<string> listeningNames,
             List<string> writingNames,
             int recommendedDays);
+        Task<List<string>> SequenceWeaknessesAsync(
+            List<string> questionTypeIds,
+            CurrentTopikLevel currentLevel,
+            TargetAimLevel targetLevel,
+            List<QuestionTypeMenuItem> typeMenu,
+            CancellationToken token = default);
+        Task<AiRoadmapResponse?> GenerateExpansionWeekPlanAsync(
+            TargetAimLevel target,
+            CurrentTopikLevel currentLevel,
+            int nextWeekIndex,
+            List<string> expansionTypes,
+            List<string> originalWeaknessTypeIds,
+            List<QuestionTypeMenuItem> expansionTypeInfos,
+            List<QuestionTypeMenuItem> fullMenu);
     }
 }

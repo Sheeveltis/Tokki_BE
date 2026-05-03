@@ -1,4 +1,4 @@
-using FluentValidation.TestHelper;
+﻿using FluentValidation.TestHelper;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -30,7 +30,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam.Commands
             QACollector.LogTestCase("UserExam - Sync MCQ Progress Validator", new TestCaseDetail
             {
                 FunctionGroup     = "SyncMCQProgressCommandValidator",
-                TestCaseID        = "TC-UE-SMPV-01",
+                TestCaseID        = "SyncMCQProgressCommandValidator_01",
                 Description       = "Empty Answers list",
                 ExpectedResult    = "Error 'Danh sách đáp án không được để trống.'",
                 StatusRound1      = "Passed",
@@ -52,7 +52,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam.Commands
             QACollector.LogTestCase("UserExam - Sync MCQ Progress Validator", new TestCaseDetail
             {
                 FunctionGroup     = "SyncMCQProgressCommandValidator",
-                TestCaseID        = "TC-UE-SMPV-02",
+                TestCaseID        = "SyncMCQProgressCommandValidator_02",
                 Description       = "Answers is null",
                 ExpectedResult    = "Error 'Danh sách đáp án không được để trống.'",
                 StatusRound1      = "Passed",
@@ -77,7 +77,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam.Commands
             QACollector.LogTestCase("UserExam - Sync MCQ Progress Validator", new TestCaseDetail
             {
                 FunctionGroup     = "SyncMCQProgressCommandValidator",
-                TestCaseID        = "TC-UE-SMPV-03",
+                TestCaseID        = "SyncMCQProgressCommandValidator_03",
                 Description       = "Answers count > 100",
                 ExpectedResult    = "Error max count 100 limit breached",
                 StatusRound1      = "Passed",
@@ -102,7 +102,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam.Commands
             QACollector.LogTestCase("UserExam - Sync MCQ Progress Validator", new TestCaseDetail
             {
                 FunctionGroup     = "SyncMCQProgressCommandValidator",
-                TestCaseID        = "TC-UE-SMPV-04",
+                TestCaseID        = "SyncMCQProgressCommandValidator_04",
                 Description       = "Item with empty UserQuestionId",
                 ExpectedResult    = "Error 'ID câu hỏi người dùng không được để trống.'",
                 StatusRound1      = "Passed",
@@ -127,7 +127,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam.Commands
             QACollector.LogTestCase("UserExam - Sync MCQ Progress Validator", new TestCaseDetail
             {
                 FunctionGroup     = "SyncMCQProgressCommandValidator",
-                TestCaseID        = "TC-UE-SMPV-05",
+                TestCaseID        = "SyncMCQProgressCommandValidator_05",
                 Description       = "SelectedOptionId with only whitespaces",
                 ExpectedResult    = "Error 'ID lựa chọn không hợp lệ.'",
                 StatusRound1      = "Passed",
@@ -151,7 +151,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam.Commands
             QACollector.LogTestCase("UserExam - Sync MCQ Progress Validator", new TestCaseDetail
             {
                 FunctionGroup     = "SyncMCQProgressCommandValidator",
-                TestCaseID        = "TC-UE-SMPV-06",
+                TestCaseID        = "SyncMCQProgressCommandValidator_06",
                 Description       = "Null SelectedOptionId is valid for skipping/clearing",
                 ExpectedResult    = "No errors",
                 StatusRound1      = "Passed",

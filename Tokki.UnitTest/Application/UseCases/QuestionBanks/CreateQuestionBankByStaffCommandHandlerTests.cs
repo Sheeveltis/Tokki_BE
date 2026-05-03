@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -65,7 +65,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-CRS-01 | A | Empty QuestionTypeId → 400
+        // CreateQuestionBankByStaff_01 | A | Empty QuestionTypeId → 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyQuestionTypeId_ShouldReturn400()
@@ -84,7 +84,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Create By Staff", new TestCaseDetail
             {
                 FunctionGroup     = "CreateQuestionBankByStaff",
-                TestCaseID        = "TC-QB-CRS-01",
+                TestCaseID        = "CreateQuestionBankByStaff_01",
                 Description       = "Empty QuestionTypeId → 400 ValidationFailed",
                 ExpectedResult    = "IsSuccess=false, StatusCode=400",
                 StatusRound1      = "Passed",
@@ -95,7 +95,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-CRS-02 | A | QuestionType not found → 404
+        // CreateQuestionBankByStaff_02 | A | QuestionType not found → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_QuestionTypeNotFound_ShouldReturn404()
@@ -117,7 +117,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Create By Staff", new TestCaseDetail
             {
                 FunctionGroup     = "CreateQuestionBankByStaff",
-                TestCaseID        = "TC-QB-CRS-02",
+                TestCaseID        = "CreateQuestionBankByStaff_02",
                 Description       = "QuestionType not found → 404 QuestionTypeNotFound",
                 ExpectedResult    = "IsSuccess=false, StatusCode=404",
                 StatusRound1      = "Passed",
@@ -128,7 +128,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-CRS-03 | A | QuestionType inactive → 400
+        // CreateQuestionBankByStaff_03 | A | QuestionType inactive → 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_InactiveQuestionType_ShouldReturn400()
@@ -150,7 +150,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Create By Staff", new TestCaseDetail
             {
                 FunctionGroup     = "CreateQuestionBankByStaff",
-                TestCaseID        = "TC-QB-CRS-03",
+                TestCaseID        = "CreateQuestionBankByStaff_03",
                 Description       = "Inactive QuestionType → 400 ValidationFailed",
                 ExpectedResult    = "IsSuccess=false, StatusCode=400",
                 StatusRound1      = "Passed",
@@ -161,7 +161,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-CRS-04 | A | Listening skill but no MediaUrl → 400
+        // CreateQuestionBankByStaff_04 | A | Listening skill but no MediaUrl → 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ListeningWithoutMediaUrl_ShouldReturn400()
@@ -186,7 +186,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Create By Staff", new TestCaseDetail
             {
                 FunctionGroup     = "CreateQuestionBankByStaff",
-                TestCaseID        = "TC-QB-CRS-04",
+                TestCaseID        = "CreateQuestionBankByStaff_04",
                 Description       = "Listening skill without MediaUrl → 400",
                 ExpectedResult    = "IsSuccess=false, StatusCode=400",
                 StatusRound1      = "Passed",
@@ -197,7 +197,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-CRS-05 | N | Happy path: Reading skill → QB created as Draft, 201
+        // CreateQuestionBankByStaff_05 | N | Happy path: Reading skill → QB created as Draft, 201
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidReadingQuestion_ShouldCreateDraftAndReturn201()
@@ -236,7 +236,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Create By Staff", new TestCaseDetail
             {
                 FunctionGroup     = "CreateQuestionBankByStaff",
-                TestCaseID        = "TC-QB-CRS-05",
+                TestCaseID        = "CreateQuestionBankByStaff_05",
                 Description       = "Happy path: Reading QB created as Draft, AddAsync+SaveChanges called, 201 returned",
                 ExpectedResult    = "IsSuccess=true, StatusCode=201, Data='QB-NEW-001'",
                 StatusRound1      = "Passed",
@@ -247,7 +247,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-CRS-06 | N | Happy path: Writing skill → QB created, NO options added
+        // CreateQuestionBankByStaff_06 | N | Happy path: Writing skill → QB created, NO options added
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_WritingSkill_ShouldNotAddOptions()
@@ -279,7 +279,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Create By Staff", new TestCaseDetail
             {
                 FunctionGroup     = "CreateQuestionBankByStaff",
-                TestCaseID        = "TC-QB-CRS-06",
+                TestCaseID        = "CreateQuestionBankByStaff_06",
                 Description       = "Writing skill QB: AddRangeAsync never called (no options), 201 returned",
                 ExpectedResult    = "IsSuccess=true, StatusCode=201, AddRangeAsync Times.Never",
                 StatusRound1      = "Passed",
@@ -290,7 +290,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-CRS-07 | A | Repository throws → 500
+        // CreateQuestionBankByStaff_07 | A | Repository throws → 500
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldReturn500()
@@ -318,7 +318,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Create By Staff", new TestCaseDetail
             {
                 FunctionGroup     = "CreateQuestionBankByStaff",
-                TestCaseID        = "TC-QB-CRS-07",
+                TestCaseID        = "CreateQuestionBankByStaff_07",
                 Description       = "Repository AddAsync throws → caught → 500 ServerError",
                 ExpectedResult    = "IsSuccess=false, StatusCode=500",
                 StatusRound1      = "Passed",

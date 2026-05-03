@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -25,7 +25,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CMT-CR-01 | A | Blog Not Found -> 404
+        // CreateCommentCommandHandler_01 | A | Blog Not Found -> 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_BlogNotFound_ShouldReturn404()
@@ -43,7 +43,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments.Commands
             QACollector.LogTestCase("Comment - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreateCommentCommandHandler",
-                TestCaseID = "TC-CMT-CR-01",
+                TestCaseID = "CreateCommentCommandHandler_01",
                 Description = "Returns error if blog does not exist",
                 ExpectedResult = "Return 404 BlogNotFound",
                 StatusRound1 = "Passed",
@@ -54,7 +54,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CMT-CR-02 | A | Parent Comment Provided But Not Found -> 404
+        // CreateCommentCommandHandler_02 | A | Parent Comment Provided But Not Found -> 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ParentCommentNotFound_ShouldReturn404()
@@ -73,7 +73,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments.Commands
             QACollector.LogTestCase("Comment - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreateCommentCommandHandler",
-                TestCaseID = "TC-CMT-CR-02",
+                TestCaseID = "CreateCommentCommandHandler_02",
                 Description = "Returns error if parent comment ID provided but not found",
                 ExpectedResult = "Return 404 CommentNotFound",
                 StatusRound1 = "Passed",
@@ -84,7 +84,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CMT-CR-03 | N | Parent Comment Provided Has Null ParentId
+        // CreateCommentCommandHandler_03 | N | Parent Comment Provided Has Null ParentId
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ParentHasNoParent_ShouldAssignDirectParent()
@@ -105,7 +105,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments.Commands
             QACollector.LogTestCase("Comment - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreateCommentCommandHandler",
-                TestCaseID = "TC-CMT-CR-03",
+                TestCaseID = "CreateCommentCommandHandler_03",
                 Description = "Nested comment correctly assigns parent ID when parent has no parent",
                 ExpectedResult = "Return 201 Success",
                 StatusRound1 = "Passed",
@@ -116,7 +116,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CMT-CR-04 | N | Parent Comment Already Nested (Has Parent) -> Overrides ParentId To Root
+        // CreateCommentCommandHandler_04 | N | Parent Comment Already Nested (Has Parent) -> Overrides ParentId To Root
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NestedParent_ShouldFlattenToRootParent()
@@ -137,7 +137,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments.Commands
             QACollector.LogTestCase("Comment - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreateCommentCommandHandler",
-                TestCaseID = "TC-CMT-CR-04",
+                TestCaseID = "CreateCommentCommandHandler_04",
                 Description = "If replying to a reply, flattens mapping to root parent",
                 ExpectedResult = "Return 201 Success with changed ParentId",
                 StatusRound1 = "Passed",
@@ -148,7 +148,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CMT-CR-05 | N | No Parent ID Given -> Root Comment Creation
+        // CreateCommentCommandHandler_05 | N | No Parent ID Given -> Root Comment Creation
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NoParentGiven_ShouldCreateRootComment()
@@ -168,7 +168,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments.Commands
             QACollector.LogTestCase("Comment - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreateCommentCommandHandler",
-                TestCaseID = "TC-CMT-CR-05",
+                TestCaseID = "CreateCommentCommandHandler_05",
                 Description = "Creates a standard root comment when ParentId is null",
                 ExpectedResult = "Return 201 Success root comment",
                 StatusRound1 = "Passed",
@@ -179,7 +179,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments.Commands
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-CMT-CR-06 | E | Database Add Fails Throws Exception -> 500
+        // CreateCommentCommandHandler_06 | E | Database Add Fails Throws Exception -> 500
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DatabaseException_ShouldReturn500()
@@ -197,7 +197,7 @@ namespace Tokki.UnitTest.Application.UseCases.Comments.Commands
             QACollector.LogTestCase("Comment - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreateCommentCommandHandler",
-                TestCaseID = "TC-CMT-CR-06",
+                TestCaseID = "CreateCommentCommandHandler_06",
                 Description = "Catches general exception and returns 500 server error",
                 ExpectedResult = "Return 500 ServerError",
                 StatusRound1 = "Passed",

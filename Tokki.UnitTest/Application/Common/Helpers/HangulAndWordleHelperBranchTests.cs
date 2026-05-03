@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Tokki.Application.Common.Helpers;
 using Tokki.Application.UseCases.MiniGame.DTOs;
 using Tokki.UnitTest.Utilities;
@@ -29,7 +29,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
 
             QACollector.LogTestCase("Helper - Hangul Decompose", new TestCaseDetail
             {
-                FunctionGroup = "HangulHelper", TestCaseID = "TC-HH-01",
+                FunctionGroup = "HangulHelper", TestCaseID = "HangulHelper_01",
                 Description = "Hangul character '글' decomposes to ㄱ/ㅡ/ㄹ",
                 ExpectedResult = "Initial=ㄱ Vowel=ㅡ Final=ㄹ", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -48,7 +48,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
 
             QACollector.LogTestCase("Helper - Hangul Decompose", new TestCaseDetail
             {
-                FunctionGroup = "HangulHelper", TestCaseID = "TC-HH-02",
+                FunctionGroup = "HangulHelper", TestCaseID = "HangulHelper_02",
                 Description = "Non-Hangul char returns itself with empty vowel/final",
                 ExpectedResult = "Initial=char, Vowel=' ', Final=\\0", StatusRound1 = "Passed",
                 TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -67,7 +67,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
 
             QACollector.LogTestCase("Helper - Hangul Decompose", new TestCaseDetail
             {
-                FunctionGroup = "HangulHelper", TestCaseID = "TC-HH-03",
+                FunctionGroup = "HangulHelper", TestCaseID = "HangulHelper_03",
                 Description = "'가' has no patchim → Final is \\0",
                 ExpectedResult = "Final=\\0", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -133,7 +133,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
 
             QACollector.LogTestCase("Helper - Hangul SubJamos", new TestCaseDetail
             {
-                FunctionGroup = "HangulHelper", TestCaseID = "TC-SUBJAMO-SIMPLE",
+                FunctionGroup = "HangulHelper", TestCaseID = "HangulHelper_04",
                 Description = "Simple consonant falls into default case → single-element set",
                 ExpectedResult = "{ 'ㄱ' }", StatusRound1 = "Passed",
                 TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -157,7 +157,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
 
             QACollector.LogTestCase("Helper - Wordle", new TestCaseDetail
             {
-                FunctionGroup = "WordleHelper", TestCaseID = "TC-WH-01",
+                FunctionGroup = "WordleHelper", TestCaseID = "WordleHelper_01",
                 Description = "Identical target/guess → all blocks Green",
                 ExpectedResult = "All BlockColor=Green", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -178,7 +178,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
 
             QACollector.LogTestCase("Helper - Wordle", new TestCaseDetail
             {
-                FunctionGroup = "WordleHelper", TestCaseID = "TC-WH-02",
+                FunctionGroup = "WordleHelper", TestCaseID = "WordleHelper_02",
                 Description = "No matching jamos at all → all blocks Gray",
                 ExpectedResult = "All BlockColor=Gray", StatusRound1 = "Passed",
                 TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -198,7 +198,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
 
             QACollector.LogTestCase("Helper - Wordle", new TestCaseDetail
             {
-                FunctionGroup = "WordleHelper", TestCaseID = "TC-WH-03",
+                FunctionGroup = "WordleHelper", TestCaseID = "WordleHelper_03",
                 Description = "Same initial ㄱ, different vowel → InitialStatus=Green, Block=Yellow",
                 ExpectedResult = "InitialStatus=Green, BlockColor=Yellow", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -217,7 +217,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
 
             QACollector.LogTestCase("Helper - Wordle", new TestCaseDetail
             {
-                FunctionGroup = "WordleHelper", TestCaseID = "TC-WH-04",
+                FunctionGroup = "WordleHelper", TestCaseID = "WordleHelper_04",
                 Description = "Target has no patchim, guess has patchim → FinalStatus=Gray",
                 ExpectedResult = "FinalStatus=Gray", StatusRound1 = "Passed",
                 TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -236,7 +236,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
 
             QACollector.LogTestCase("Helper - Wordle", new TestCaseDetail
             {
-                FunctionGroup = "WordleHelper", TestCaseID = "TC-WH-05",
+                FunctionGroup = "WordleHelper", TestCaseID = "WordleHelper_05",
                 Description = "Compound final ㄺ shares ㄹ with guess final ㄹ → FinalStatus=Yellow",
                 ExpectedResult = "FinalStatus=Yellow", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),
@@ -255,7 +255,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
 
             QACollector.LogTestCase("Helper - Wordle", new TestCaseDetail
             {
-                FunctionGroup = "WordleHelper", TestCaseID = "TC-WH-06",
+                FunctionGroup = "WordleHelper", TestCaseID = "WordleHelper_06",
                 Description = "Compound vowel ㅘ shares ㅗ with guess vowel ㅗ → VowelStatus=Yellow",
                 ExpectedResult = "VowelStatus=Yellow", StatusRound1 = "Passed",
                 TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"),

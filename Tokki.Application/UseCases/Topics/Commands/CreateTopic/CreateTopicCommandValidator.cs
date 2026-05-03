@@ -1,10 +1,12 @@
-﻿using FluentValidation;
+using FluentValidation;
+using Tokki.Application.IRepositories;
+using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Topics.Commands.CreateTopic
 {
     public class CreateTopicCommandValidator : AbstractValidator<CreateTopicCommand>
     {
-        public CreateTopicCommandValidator()
+        public CreateTopicCommandValidator(IEnumConfigRepository enumConfigRepository)
         {
             RuleFor(x => x.TopicName)
                 .NotEmpty()
@@ -16,7 +18,11 @@ namespace Tokki.Application.UseCases.Topics.Commands.CreateTopic
                 .When(x => !string.IsNullOrEmpty(x.Description))
                 .WithName("Mô tả");
             RuleFor(x => x.Level)
-                .IsInEnum().WithMessage("Cấp độ không hợp lệ.")
+                .MustAsync(async (level, cancellation) =>
+                {
+                    return await enumConfigRepository.FirstOrDefaultAsync(x => x.GroupCode == EnumGroup.TopicLevel && x.Value == level && x.IsActive) != null;
+                })
+                .WithMessage("Cấp độ không hợp lệ hoặc không tồn tại.")
                 .WithName("Cấp độ");
 
         }

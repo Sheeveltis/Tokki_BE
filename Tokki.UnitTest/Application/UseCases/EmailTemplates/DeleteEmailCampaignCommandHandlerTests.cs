@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -46,7 +46,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Delete Campaign", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteEmailCampaign",
-                TestCaseID        = "TC-EMAIL-DCMP-01",
+                TestCaseID        = "DeleteEmailCampaign_01",
                 Description       = "JobId does not exist → Return 404",
                 ExpectedResult    = "Return 404 Failure 'Không tìm thấy campaign!'",
                 StatusRound1      = "Passed",
@@ -71,7 +71,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Delete Campaign", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteEmailCampaign",
-                TestCaseID        = "TC-EMAIL-DCMP-02",
+                TestCaseID        = "DeleteEmailCampaign_02",
                 Description       = "Job status is Sent (not Pending) → Return 400",
                 ExpectedResult    = "Return 400 Failure 'Chỉ được xóa campaign khi Pending'",
                 StatusRound1      = "Passed",
@@ -96,7 +96,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Delete Campaign", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteEmailCampaign",
-                TestCaseID        = "TC-EMAIL-DCMP-03",
+                TestCaseID        = "DeleteEmailCampaign_03",
                 Description       = "Job status is Processing → Return 400 (cannot delete)",
                 ExpectedResult    = "Return 400 Failure",
                 StatusRound1      = "Passed",
@@ -124,7 +124,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Delete Campaign", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteEmailCampaign",
-                TestCaseID        = "TC-EMAIL-DCMP-04",
+                TestCaseID        = "DeleteEmailCampaign_04",
                 Description       = "Pending job → SoftDeleteAsync called, Return 200",
                 ExpectedResult    = "Return 200, SoftDeleteAsync called once",
                 StatusRound1      = "Passed",
@@ -152,7 +152,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Delete Campaign", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteEmailCampaign",
-                TestCaseID        = "TC-EMAIL-DCMP-05",
+                TestCaseID        = "DeleteEmailCampaign_05",
                 Description       = "Audit fields UpdatedBy and UpdatedAt set on deletion",
                 ExpectedResult    = "job.UpdatedBy = 'ADMIN-001', job.UpdatedAt updated",
                 StatusRound1      = "Passed",
@@ -174,7 +174,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email - Delete Campaign", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteEmailCampaign",
-                TestCaseID        = "TC-EMAIL-DCMP-06",
+                TestCaseID        = "DeleteEmailCampaign_06",
                 Description       = "Repository throws → exception propagates",
                 ExpectedResult    = "Throws Exception",
                 StatusRound1      = "Passed",

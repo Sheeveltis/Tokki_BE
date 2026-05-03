@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -49,7 +49,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-ADD-01 | A | Excel returns null → ExcelNoValidDataFound
+        // AddVocabByExcel_01 | A | Excel returns null → ExcelNoValidDataFound
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ExcelReturnsNull_ShouldReturnFailure()
@@ -71,7 +71,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Add Vocab", new TestCaseDetail
             {
                 FunctionGroup     = "AddVocabByExcel",
-                TestCaseID        = "TC-EXC-ADD-01",
+                TestCaseID        = "AddVocabByExcel_01",
                 Description       = "Excel parsing service returns null/empty list",
                 ExpectedResult    = "Return Failure ExcelNoValidDataFound",
                 StatusRound1      = "Passed",
@@ -82,7 +82,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-ADD-02 | A | Excel returns empty list → ExcelNoValidDataFound
+        // AddVocabByExcel_02 | A | Excel returns empty list → ExcelNoValidDataFound
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ExcelReturnsEmpty_ShouldReturnFailure()
@@ -104,7 +104,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Add Vocab", new TestCaseDetail
             {
                 FunctionGroup     = "AddVocabByExcel",
-                TestCaseID        = "TC-EXC-ADD-02",
+                TestCaseID        = "AddVocabByExcel_02",
                 Description       = "Excel parsing service returns empty list",
                 ExpectedResult    = "Return Failure ExcelNoValidDataFound",
                 StatusRound1      = "Passed",
@@ -115,7 +115,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-ADD-03 | N | Duplicate items in file → FailureList with 1 item, return 200
+        // AddVocabByExcel_03 | N | Duplicate items in file → FailureList with 1 item, return 200
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DuplicateInFile_ShouldReturn200WithFailureList()
@@ -148,7 +148,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Add Vocab", new TestCaseDetail
             {
                 FunctionGroup     = "AddVocabByExcel",
-                TestCaseID        = "TC-EXC-ADD-03",
+                TestCaseID        = "AddVocabByExcel_03",
                 Description       = "Duplicate non-DB items in file populate FailureList, stops processing",
                 ExpectedResult    = "Return 200 with error string, FailureList = 1",
                 StatusRound1      = "Passed",
@@ -159,7 +159,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-ADD-04 | N | Existing vocab without TopicId → goes to FailureList
+        // AddVocabByExcel_04 | N | Existing vocab without TopicId → goes to FailureList
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ExistingVocabNoTopic_ShouldAddToFailureList()
@@ -188,7 +188,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Add Vocab", new TestCaseDetail
             {
                 FunctionGroup     = "AddVocabByExcel",
-                TestCaseID        = "TC-EXC-ADD-04",
+                TestCaseID        = "AddVocabByExcel_04",
                 Description       = "Existing vocab without TopicId goes to FailureList",
                 ExpectedResult    = "FailureList = 1, return 200 with error message",
                 StatusRound1      = "Passed",
@@ -199,7 +199,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-ADD-05 | N | New vocab with image & TTS → inserts to DB
+        // AddVocabByExcel_05 | N | New vocab with image & TTS → inserts to DB
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NewVocabWithImageAndTts_ShouldCreateAndCallDependencies()
@@ -251,7 +251,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Add Vocab", new TestCaseDetail
             {
                 FunctionGroup     = "AddVocabByExcel",
-                TestCaseID        = "TC-EXC-ADD-05",
+                TestCaseID        = "AddVocabByExcel_05",
                 Description       = "Valid new vocab synthesized, uploaded to Cloudinary, and inserted to DB",
                 ExpectedResult    = "Return 200, AddedNewVocabList = 1, all external services called",
                 StatusRound1      = "Passed",
@@ -262,7 +262,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-ADD-06 | N | Existing vocab with valid Topic → linked to topic
+        // AddVocabByExcel_06 | N | Existing vocab with valid Topic → linked to topic
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ExistingVocabWithTopic_ShouldLinkToTopic()
@@ -301,7 +301,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Add Vocab", new TestCaseDetail
             {
                 FunctionGroup     = "AddVocabByExcel",
-                TestCaseID        = "TC-EXC-ADD-06",
+                TestCaseID        = "AddVocabByExcel_06",
                 Description       = "Vocab exists in DB but not in topic, successfully links via transaction",
                 ExpectedResult    = "Return 200, LinkedExistingVocabList = 1",
                 StatusRound1      = "Passed",
@@ -312,7 +312,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-ADD-07 | A | Topic link transaction fails → catch returns 400
+        // AddVocabByExcel_07 | A | Topic link transaction fails → catch returns 400
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_TopicLinkTransactionFails_ShouldReturn400()
@@ -351,7 +351,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Add Vocab", new TestCaseDetail
             {
                 FunctionGroup     = "AddVocabByExcel",
-                TestCaseID        = "TC-EXC-ADD-07",
+                TestCaseID        = "AddVocabByExcel_07",
                 Description       = "Transaction fails, throws exception which is caught globally returning 400",
                 ExpectedResult    = "Return 400 Status with rollback message",
                 StatusRound1      = "Passed",

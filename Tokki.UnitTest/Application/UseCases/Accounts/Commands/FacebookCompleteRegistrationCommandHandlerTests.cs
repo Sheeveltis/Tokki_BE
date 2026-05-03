@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -114,7 +114,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             FacebookCompleteRegistrationCommandHandler._httpClient = new HttpClient(handlerMock.Object);
         }
 
-        // TC-ACC-FBC-01 | A | Empty Access Token -> 401
+        // FB_Complete_Registration_01 | A | Empty Access Token -> 401
         [Fact]
         public async Task Handle_EmptyToken_ShouldReturnUnauthorized()
         {
@@ -127,7 +127,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - FB Complete Registration", new TestCaseDetail
             {
                 FunctionGroup = "FB Complete Registration",
-                TestCaseID = "TC-ACC-FBC-01",
+                TestCaseID = "FB_Complete_Registration_01",
                 Description = "Empty access token fails early",
                 ExpectedResult = "401 InvalidFacebookToken",
                 StatusRound1 = "Passed",
@@ -137,7 +137,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-FBC-02 | A | Invalid Facebook Token -> 401
+        // FB_Complete_Registration_02 | A | Invalid Facebook Token -> 401
         [Fact]
         public async Task Handle_InvalidToken_ShouldReturnUnauthorized()
         {
@@ -152,7 +152,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - FB Complete Registration", new TestCaseDetail
             {
                 FunctionGroup = "FB Complete Registration",
-                TestCaseID = "TC-ACC-FBC-02",
+                TestCaseID = "FB_Complete_Registration_02",
                 Description = "Invalid Facebook token via debug_token endpoint fails",
                 ExpectedResult = "401 InvalidFacebookToken",
                 StatusRound1 = "Passed",
@@ -162,7 +162,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-FBC-03 | A | Existing Account Merge - Locked User -> 403
+        // FB_Complete_Registration_03 | A | Existing Account Merge - Locked User -> 403
         [Fact]
         public async Task Handle_MergeAccount_LockedUser_ShouldReturnForbidden()
         {
@@ -181,7 +181,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - FB Complete Registration", new TestCaseDetail
             {
                 FunctionGroup = "FB Complete Registration",
-                TestCaseID = "TC-ACC-FBC-03",
+                TestCaseID = "FB_Complete_Registration_03",
                 Description = "Merge into a locked account fails with 403",
                 ExpectedResult = "403 AccountLocked",
                 StatusRound1 = "Passed",
@@ -191,7 +191,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-FBC-04 | A | Existing Account Merge - Not Confirmed -> 409
+        // FB_Complete_Registration_04 | A | Existing Account Merge - Not Confirmed -> 409
         [Fact]
         public async Task Handle_MergeAccount_NotConfirmed_ShouldReturn409()
         {
@@ -210,7 +210,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - FB Complete Registration", new TestCaseDetail
             {
                 FunctionGroup = "FB Complete Registration",
-                TestCaseID = "TC-ACC-FBC-04",
+                TestCaseID = "FB_Complete_Registration_04",
                 Description = "Email exists but user hasn't confirmed merge",
                 ExpectedResult = "409 MergeAccountRequered",
                 StatusRound1 = "Passed",
@@ -220,7 +220,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-FBC-05 | N | Existing Account Merge - Confirmed -> 200 Success
+        // FB_Complete_Registration_05 | N | Existing Account Merge - Confirmed -> 200 Success
         [Fact]
         public async Task Handle_MergeAccount_Confirmed_ShouldReturnSuccess()
         {
@@ -241,7 +241,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - FB Complete Registration", new TestCaseDetail
             {
                 FunctionGroup = "FB Complete Registration",
-                TestCaseID = "TC-ACC-FBC-05",
+                TestCaseID = "FB_Complete_Registration_05",
                 Description = "Succesfully merges FB with existing account",
                 ExpectedResult = "200 Success + Token",
                 StatusRound1 = "Passed",
@@ -251,7 +251,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             });
         }
 
-        // TC-ACC-FBC-06 | N | New Account Creation -> Creates and sends email -> 200 Success
+        // FB_Complete_Registration_06 | N | New Account Creation -> Creates and sends email -> 200 Success
         [Fact]
         public async Task Handle_NewAccount_ShouldCreateAndReturnSuccess()
         {
@@ -272,7 +272,7 @@ namespace Tokki.UnitTest.Application.UseCases.Accounts.Commands
             QACollector.LogTestCase("Account - FB Complete Registration", new TestCaseDetail
             {
                 FunctionGroup = "FB Complete Registration",
-                TestCaseID = "TC-ACC-FBC-06",
+                TestCaseID = "FB_Complete_Registration_06",
                 Description = "Succesfully creates new account parsing FB details",
                 ExpectedResult = "200 Success + sends Email",
                 StatusRound1 = "Passed",

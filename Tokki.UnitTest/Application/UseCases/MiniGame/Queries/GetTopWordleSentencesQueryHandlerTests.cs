@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -23,7 +23,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame.Queries
             _handler = new GetTopWordleSentencesQueryHandler(_mockRepo.Object);
         }
 
-        // TC-MG-GWS-01 | N | Returns empty list gracefully if DB yields null
+        // GetTopWordleSentencesQueryHandler_01 | N | Returns empty list gracefully if DB yields null
         [Fact]
         public async Task Handle_SubmissionsNull_ShouldReturnEmptyList()
         {
@@ -39,7 +39,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame.Queries
             QACollector.LogTestCase("Wordle - Get Top Sentences", new TestCaseDetail
             {
                 FunctionGroup = "GetTopWordleSentencesQueryHandler",
-                TestCaseID = "TC-MG-GWS-01",
+                TestCaseID = "GetTopWordleSentencesQueryHandler_01",
                 Description = "Handles natively mapping empty returns perfectly bypassing NullExceptions",
                 ExpectedResult = "Success Empty List",
                 StatusRound1 = "Passed",
@@ -49,7 +49,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame.Queries
             });
         }
 
-        // TC-MG-GWS-02 | N | Returns empty list gracefully if DB yields empty array
+        // GetTopWordleSentencesQueryHandler_02 | N | Returns empty list gracefully if DB yields empty array
         [Fact]
         public async Task Handle_SubmissionsEmpty_ShouldReturnEmptyList()
         {
@@ -65,7 +65,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame.Queries
             QACollector.LogTestCase("Wordle - Get Top Sentences", new TestCaseDetail
             {
                 FunctionGroup = "GetTopWordleSentencesQueryHandler",
-                TestCaseID = "TC-MG-GWS-02",
+                TestCaseID = "GetTopWordleSentencesQueryHandler_02",
                 Description = "Recognizes any empty enumerable avoiding complex block logic issues downstream safely",
                 ExpectedResult = "Success Empty List",
                 StatusRound1 = "Passed",
@@ -75,7 +75,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame.Queries
             });
         }
 
-        // TC-MG-GWS-03 | N | Parses IsAnonymous logic masking identity explicitly correctly
+        // GetTopWordleSentencesQueryHandler_03 | N | Parses IsAnonymous logic masking identity explicitly correctly
         [Fact]
         public async Task Handle_AnonymousUserSubmission_SetsBlankIdentity()
         {
@@ -101,7 +101,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame.Queries
             QACollector.LogTestCase("Wordle - Get Top Sentences", new TestCaseDetail
             {
                 FunctionGroup = "GetTopWordleSentencesQueryHandler",
-                TestCaseID = "TC-MG-GWS-03",
+                TestCaseID = "GetTopWordleSentencesQueryHandler_03",
                 Description = "Preserves user security masking data attributes wiping details successfully natively",
                 ExpectedResult = "Identities are wiped string matches",
                 StatusRound1 = "Passed",
@@ -111,7 +111,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame.Queries
             });
         }
 
-        // TC-MG-GWS-04 | N | Standard User Includes Title Identity
+        // GetTopWordleSentencesQueryHandler_04 | N | Standard User Includes Title Identity
         [Fact]
         public async Task Handle_NormalUserSubmission_IncludesIdentity()
         {
@@ -141,7 +141,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame.Queries
             QACollector.LogTestCase("Wordle - Get Top Sentences", new TestCaseDetail
             {
                 FunctionGroup = "GetTopWordleSentencesQueryHandler",
-                TestCaseID = "TC-MG-GWS-04",
+                TestCaseID = "GetTopWordleSentencesQueryHandler_04",
                 Description = "Correctly propagates entity relationships attaching aesthetic data securely",
                 ExpectedResult = "Mapped names completely",
                 StatusRound1 = "Passed",
@@ -151,7 +151,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame.Queries
             });
         }
 
-        // TC-MG-GWS-05 | N | Fallback Empty Username Default Hook
+        // GetTopWordleSentencesQueryHandler_05 | N | Fallback Empty Username Default Hook
         [Fact]
         public async Task Handle_NullUsername_AssignsFallbackName()
         {
@@ -174,7 +174,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame.Queries
             QACollector.LogTestCase("Wordle - Get Top Sentences", new TestCaseDetail
             {
                 FunctionGroup = "GetTopWordleSentencesQueryHandler",
-                TestCaseID = "TC-MG-GWS-05",
+                TestCaseID = "GetTopWordleSentencesQueryHandler_05",
                 Description = "Provides generic title substitution catching incomplete database records safely without disruption",
                 ExpectedResult = "Tokki Student fallback",
                 StatusRound1 = "Passed",
@@ -184,7 +184,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame.Queries
             });
         }
 
-        // TC-MG-GWS-06 | N | Identifies IsLiked True Condition
+        // GetTopWordleSentencesQueryHandler_06 | N | Identifies IsLiked True Condition
         [Fact]
         public async Task Handle_UserLikesExists_MarksIsLiked()
         {
@@ -204,7 +204,7 @@ namespace Tokki.UnitTest.Application.UseCases.MiniGame.Queries
             QACollector.LogTestCase("Wordle - Get Top Sentences", new TestCaseDetail
             {
                 FunctionGroup = "GetTopWordleSentencesQueryHandler",
-                TestCaseID = "TC-MG-GWS-06",
+                TestCaseID = "GetTopWordleSentencesQueryHandler_06",
                 Description = "Cross verifies foreign list memberships effectively flagging local UI markers properly",
                 ExpectedResult = "IsLiked true",
                 StatusRound1 = "Passed",

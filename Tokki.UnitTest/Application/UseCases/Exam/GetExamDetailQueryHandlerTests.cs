@@ -1,4 +1,4 @@
-using ExamEntity = Tokki.Domain.Entities.Exam;
+﻿using ExamEntity = Tokki.Domain.Entities.Exam;
 using FluentAssertions;
 using Moq;
 using System;
@@ -70,7 +70,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
         };
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXDET-01 | A | Exam not found → 404
+        // Get_Exam_Detail_01 | A | Exam not found → 404
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ExamNotFound_ShouldReturn404()
@@ -92,7 +92,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             QACollector.LogTestCase("Exam - Get Detail", new TestCaseDetail
             {
                 FunctionGroup     = "Get Exam Detail",
-                TestCaseID        = "TC-EXDET-01",
+                TestCaseID        = "Get_Exam_Detail_01",
                 Description       = "ExamId does not exist in the database",
                 ExpectedResult    = "Return 404 Failure",
                 StatusRound1      = "Passed",
@@ -103,7 +103,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXDET-02 | N | Valid exam → 200 with ExamId and Title
+        // Get_Exam_Detail_02 | N | Valid exam → 200 with ExamId and Title
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidExam_ShouldReturn200WithData()
@@ -134,7 +134,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             QACollector.LogTestCase("Exam - Get Detail", new TestCaseDetail
             {
                 FunctionGroup     = "Get Exam Detail",
-                TestCaseID        = "TC-EXDET-02",
+                TestCaseID        = "Get_Exam_Detail_02",
                 Description       = "Valid ExamId returns full exam detail DTO",
                 ExpectedResult    = "Return 200 with correct ExamId and Title",
                 StatusRound1      = "Passed",
@@ -145,7 +145,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXDET-03 | N | ExamTemplateName populated from template repo
+        // Get_Exam_Detail_03 | N | ExamTemplateName populated from template repo
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidExam_ShouldIncludeTemplateName()
@@ -173,7 +173,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             QACollector.LogTestCase("Exam - Get Detail", new TestCaseDetail
             {
                 FunctionGroup     = "Get Exam Detail",
-                TestCaseID        = "TC-EXDET-03",
+                TestCaseID        = "Get_Exam_Detail_03",
                 Description       = "ExamTemplateName is fetched from template repository and included in DTO",
                 ExpectedResult    = "ExamTemplateName = 'TOPIK I'",
                 StatusRound1      = "Passed",
@@ -184,7 +184,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXDET-04 | N | Parts sorted ascending by QuestionFrom
+        // Get_Exam_Detail_04 | N | Parts sorted ascending by QuestionFrom
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidExam_PartsSortedByQuestionFrom()
@@ -218,7 +218,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             QACollector.LogTestCase("Exam - Get Detail", new TestCaseDetail
             {
                 FunctionGroup     = "Get Exam Detail",
-                TestCaseID        = "TC-EXDET-04",
+                TestCaseID        = "Get_Exam_Detail_04",
                 Description       = "Parts returned unsorted are sorted by QuestionFrom ascending",
                 ExpectedResult    = "TemplateParts[0] = [1~10], TemplateParts[1] = [11~30]",
                 StatusRound1      = "Passed",
@@ -229,7 +229,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXDET-05 | N | TotalQuestions equals ExamQuestions count
+        // Get_Exam_Detail_05 | N | TotalQuestions equals ExamQuestions count
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidExam_TotalQuestionsEqualExamQuestionsCount()
@@ -257,7 +257,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             QACollector.LogTestCase("Exam - Get Detail", new TestCaseDetail
             {
                 FunctionGroup     = "Get Exam Detail",
-                TestCaseID        = "TC-EXDET-05",
+                TestCaseID        = "Get_Exam_Detail_05",
                 Description       = "TotalQuestions in DTO equals count of ExamQuestions in entity",
                 ExpectedResult    = "TotalQuestions = 1",
                 StatusRound1      = "Passed",
@@ -268,7 +268,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXDET-06 | A | Repository throws → exception propagates
+        // Get_Exam_Detail_06 | A | Repository throws → exception propagates
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldPropagateException()
@@ -286,7 +286,7 @@ namespace Tokki.UnitTest.Application.UseCases.Exam
             QACollector.LogTestCase("Exam - Get Detail", new TestCaseDetail
             {
                 FunctionGroup     = "Get Exam Detail",
-                TestCaseID        = "TC-EXDET-06",
+                TestCaseID        = "Get_Exam_Detail_06",
                 Description       = "Repository throws exception; handler has no try/catch → exception propagates",
                 ExpectedResult    = "Exception propagates to caller",
                 StatusRound1      = "Passed",

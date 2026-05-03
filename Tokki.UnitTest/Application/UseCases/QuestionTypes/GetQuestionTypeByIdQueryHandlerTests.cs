@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -24,7 +24,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QT-GBI-01 | A | Empty Id → failure
+        // GetQuestionTypeById_01 | A | Empty Id → failure
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyId_ShouldReturnFailure()
@@ -43,7 +43,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
             QACollector.LogTestCase("Question Type - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetQuestionTypeById",
-                TestCaseID        = "TC-QT-GBI-01",
+                TestCaseID        = "GetQuestionTypeById_01",
                 Description       = "Empty Id → failure with 'ID không hợp lệ' message",
                 ExpectedResult    = "IsSuccess=false, Message contains 'ID'",
                 StatusRound1      = "Passed",
@@ -54,7 +54,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QT-GBI-02 | A | Whitespace Id → failure
+        // GetQuestionTypeById_02 | A | Whitespace Id → failure
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_WhitespaceId_ShouldReturnFailure()
@@ -74,7 +74,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
             QACollector.LogTestCase("Question Type - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetQuestionTypeById",
-                TestCaseID        = "TC-QT-GBI-02",
+                TestCaseID        = "GetQuestionTypeById_02",
                 Description       = "Whitespace Id passes IsNullOrEmpty → reaches repo → null → failure",
                 ExpectedResult    = "IsSuccess=false",
                 StatusRound1      = "Passed",
@@ -85,7 +85,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QT-GBI-03 | A | Valid Id but entity not found → 404
+        // GetQuestionTypeById_03 | A | Valid Id but entity not found → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidIdButNotFound_ShouldReturn404()
@@ -105,7 +105,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
             QACollector.LogTestCase("Question Type - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetQuestionTypeById",
-                TestCaseID        = "TC-QT-GBI-03",
+                TestCaseID        = "GetQuestionTypeById_03",
                 Description       = "Valid Id but entity not found → 404 failure",
                 ExpectedResult    = "IsSuccess=false, StatusCode=404",
                 StatusRound1      = "Passed",
@@ -116,7 +116,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QT-GBI-04 | N | Happy path → entity returned, success
+        // GetQuestionTypeById_04 | N | Happy path → entity returned, success
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidIdExists_ShouldReturnEntityAndSuccess()
@@ -139,7 +139,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
             QACollector.LogTestCase("Question Type - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetQuestionTypeById",
-                TestCaseID        = "TC-QT-GBI-04",
+                TestCaseID        = "GetQuestionTypeById_04",
                 Description       = "Happy path: entity found and returned in Data, success",
                 ExpectedResult    = "IsSuccess=true, Data.QuestionTypeId='QT-001', Data.Skill=Listening",
                 StatusRound1      = "Passed",
@@ -150,7 +150,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QT-GBI-05 | N | Inactive entity → still returned (no IsActive filter)
+        // GetQuestionTypeById_05 | N | Inactive entity → still returned (no IsActive filter)
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_InactiveEntity_ShouldStillReturnIt()
@@ -171,7 +171,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
             QACollector.LogTestCase("Question Type - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetQuestionTypeById",
-                TestCaseID        = "TC-QT-GBI-05",
+                TestCaseID        = "GetQuestionTypeById_05",
                 Description       = "Inactive entity returned (no IsActive filter in handler), Data.IsActive=false",
                 ExpectedResult    = "IsSuccess=true, Data.IsActive=false",
                 StatusRound1      = "Passed",
@@ -182,7 +182,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QT-GBI-06 | B | GetByIdAsync called exactly once with the correct Id
+        // GetQuestionTypeById_06 | B | GetByIdAsync called exactly once with the correct Id
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidId_GetByIdCalledOnceWithCorrectId()
@@ -203,7 +203,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionTypes
             QACollector.LogTestCase("Question Type - Get By Id", new TestCaseDetail
             {
                 FunctionGroup     = "GetQuestionTypeById",
-                TestCaseID        = "TC-QT-GBI-06",
+                TestCaseID        = "GetQuestionTypeById_06",
                 Description       = "Boundary: GetByIdAsync called exactly once with the correct target Id",
                 ExpectedResult    = "GetByIdAsync('QT-TARGET-01') Times.Once",
                 StatusRound1      = "Passed",

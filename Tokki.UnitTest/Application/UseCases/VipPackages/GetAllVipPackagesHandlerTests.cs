@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -41,7 +41,7 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
             QACollector.LogTestCase("VipPackage - Get All", new TestCaseDetail
             {
                 FunctionGroup = "Get All Vip Packages",
-                TestCaseID = "TC-VIP-GAL-01",
+                TestCaseID = "Get_All_Vip_Packages_01",
                 Description = "Admin takes all VIP packages → returns both Active and Inactive",
                 ExpectedResult = "Return Success, Data.Count = 2 (including inactive)",
                 StatusRound1 = "Passed",
@@ -80,7 +80,7 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
             QACollector.LogTestCase("VipPackage - Get All", new TestCaseDetail
             {
                 FunctionGroup = "Get All Vip Packages",
-                TestCaseID = "TC-VIP-GAL-02",
+                TestCaseID = "Get_All_Vip_Packages_02",
                 Description = "Users often take the VIP package → only return the Active package",
                 ExpectedResult = "Return Success, Data.Count = 1 (Active only)",
                 StatusRound1 = "Passed",
@@ -112,7 +112,7 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
             QACollector.LogTestCase("VipPackage - Get All", new TestCaseDetail
             {
                 FunctionGroup = "Get All Vip Packages",
-                TestCaseID = "TC-VIP-GAL-03",
+                TestCaseID = "Get_All_Vip_Packages_03",
                 Description = "Repository throw exception → return Failure VipPackageFetchFailed",
                 ExpectedResult = "Return Failure VipPackageFetchFailed",
                 StatusRound1 = "Passed",
@@ -147,7 +147,7 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
             QACollector.LogTestCase("VipPackage - Get All", new TestCaseDetail
             {
                 FunctionGroup = "Get All Vip Packages",
-                TestCaseID = "TC-VIP-GAL-04",
+                TestCaseID = "Get_All_Vip_Packages_04",
                 Description = "No packages in repository → return success with empty list",
                 ExpectedResult = "IsSuccess=true, Data is empty list",
                 StatusRound1 = "Passed",
@@ -179,7 +179,7 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
             QACollector.LogTestCase("VipPackage - Get All", new TestCaseDetail
             {
                 FunctionGroup = "Get All Vip Packages",
-                TestCaseID = "TC-VIP-GAL-05",
+                TestCaseID = "Get_All_Vip_Packages_05",
                 Description = "GetAllAsync is called exactly once per request regardless of IsAdmin flag",
                 ExpectedResult = "GetAllAsync called Times.Once",
                 StatusRound1 = "Passed",
@@ -221,7 +221,7 @@ namespace Tokki.UnitTest.Application.UseCases.VipPackages
             QACollector.LogTestCase("VipPackage - Get All", new TestCaseDetail
             {
                 FunctionGroup = "Get All Vip Packages",
-                TestCaseID = "TC-VIP-GAL-06",
+                TestCaseID = "Get_All_Vip_Packages_06",
                 Description = "Repository has 3 packages → result Data contains all 3",
                 ExpectedResult = "Data.Count = 3, contains PKG-A, PKG-B",
                 StatusRound1 = "Passed",

@@ -40,7 +40,7 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap.Commands
         [Fact]
         public async Task Handle_ExamNotFound_ReturnsFailure404()
         {
-            var command = new SubmitExamCommand { ExamId = "E1", UserId = "U1" };
+            var command = new SubmitExamCommand { ExamId ="E1", UserId ="U1" };
 
             _mockRoadmapRepo.Setup(x => x.GetExamQuestionsForGradingAsync("E1", It.IsAny<CancellationToken>()))
                             .ReturnsAsync(new List<ExamQuestion>());
@@ -49,18 +49,18 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap.Commands
 
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(404);
-            result.Message.Should().Contain("Đề thi không tồn tại");
+            result.Message.Should().Contain("�? thi kh�ng t?n t?i");
 
             QACollector.LogTestCase("Roadmap - Submit Exam", new TestCaseDetail
             {
-                FunctionGroup     = "SubmitExamCommandHandler",
-                TestCaseID        = "TC-RDM-SEC-01",
-                Description       = "Missing or empty exam questions triggers 404",
-                ExpectedResult    = "Returns 404 cleanly",
-                StatusRound1      = "Passed",
-                TestCaseType      = "A",
+                FunctionGroup     ="SubmitExamCommandHandler",
+                TestCaseID        ="SubmitExamCommandHandler_01",
+                Description       ="Missing or empty exam questions triggers 404",
+                ExpectedResult    ="Returns 404 cleanly",
+                StatusRound1      ="Passed",
+                TestCaseType      ="A",
                 TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "Questions completely zero" }
+                AppliedConditions = new List<string> {"Questions completely zero" }
             });
         }
 
@@ -69,12 +69,12 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap.Commands
         {
             var command = new SubmitExamCommand 
             { 
-                ExamId = "E1", 
-                UserId = "U1",
+                ExamId ="E1", 
+                UserId ="U1",
                 Answers = new List<UserAnswerDto>
                 {
-                    new UserAnswerDto { QuestionId = "Q1", SelectedOptionId = "O1" },
-                    new UserAnswerDto { QuestionId = "Q2", SelectedOptionId = "O2_WRONG" }
+                    new UserAnswerDto { QuestionId ="Q1", SelectedOptionId ="O1" },
+                    new UserAnswerDto { QuestionId ="Q2", SelectedOptionId ="O2_WRONG" }
                 }
             };
 
@@ -82,28 +82,28 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap.Commands
             {
                 new ExamQuestion 
                 { 
-                    QuestionBankId = "Q1", 
+                    QuestionBankId ="Q1", 
                     Score = 10,
                     QuestionBank = new QuestionBank 
                     { 
-                        QuestionTypeId = "TypeA",
+                        QuestionTypeId ="TypeA",
                         QuestionOptions = new List<QuestionOption> 
                         { 
-                            new QuestionOption { OptionId = "O1", IsCorrect = true } 
+                            new QuestionOption { OptionId ="O1", IsCorrect = true } 
                         }
                     }
                 },
                 new ExamQuestion 
                 { 
-                    QuestionBankId = "Q2", 
+                    QuestionBankId ="Q2", 
                     Score = 10,
                     QuestionBank = new QuestionBank 
                     { 
-                        QuestionTypeId = "TypeA",
+                        QuestionTypeId ="TypeA",
                         QuestionOptions = new List<QuestionOption> 
                         { 
-                            new QuestionOption { OptionId = "O2", IsCorrect = true },
-                            new QuestionOption { OptionId = "O2_WRONG", IsCorrect = false } 
+                            new QuestionOption { OptionId ="O2", IsCorrect = true },
+                            new QuestionOption { OptionId ="O2_WRONG", IsCorrect = false } 
                         }
                     }
                 }
@@ -115,14 +115,14 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap.Commands
             // Mock Active Roadmap
             var activeRoadmap = new UserRoadmap 
             { 
-                UserRoadmapId = "R1",
-                Weeks = new List<RoadmapWeek> { new RoadmapWeek { WeeklyExamId = "E1", WeekIndex = 2 } }
+                UserRoadmapId ="R1",
+                Weeks = new List<RoadmapWeek> { new RoadmapWeek { WeeklyExamId ="E1", WeekIndex = 2 } }
             };
             _mockRoadmapRepo.Setup(x => x.GetActiveRoadmapByUserIdAsync("U1", It.IsAny<CancellationToken>()))
                             .ReturnsAsync(activeRoadmap);
 
             // Mock profile and weaknesses (none existing to trigger add logic)
-            _mockProfileRepo.Setup(x => x.GetAsync("R1", "TypeA", It.IsAny<CancellationToken>()))
+            _mockProfileRepo.Setup(x => x.GetAsync("R1","TypeA", It.IsAny<CancellationToken>()))
                             .ReturnsAsync((RoadmapKnowledgeProfile?)null);
             _mockWeaknessRepo.Setup(x => x.GetByUserIdAsync("U1", It.IsAny<CancellationToken>()))
                              .ReturnsAsync(new List<UserWeakness>());
@@ -136,7 +136,7 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap.Commands
             result.Data.Should().Be(10); // 1 correct, 1 wrong, score is 10. (50% mastery which is < 80%)
 
             // Profile Add Verification
-            _mockProfileRepo.Verify(x => x.AddAsync(It.Is<RoadmapKnowledgeProfile>(p => p.QuestionTypeId == "TypeA" && p.IsWeakness && p.ConsecutiveFailWeeks == 1 && p.MasteryScore == 50.0), It.IsAny<CancellationToken>()), Times.Once);
+            _mockProfileRepo.Verify(x => x.AddAsync(It.Is<RoadmapKnowledgeProfile>(p => p.QuestionTypeId =="TypeA" && p.IsWeakness && p.ConsecutiveFailWeeks == 1 && p.MasteryScore == 50.0), It.IsAny<CancellationToken>()), Times.Once);
             
             // Weakness Add Verification (score 50 < 80 and initial < 50) Wait 50% is NOT weak (<50 is weak logic). 
             // In logic: `score < 50` is Weak. Score here is exactly 50.0 so `isWeak == false`!. It won't call AddAsync.
@@ -145,14 +145,14 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap.Commands
 
             QACollector.LogTestCase("Roadmap - Submit Exam", new TestCaseDetail
             {
-                FunctionGroup     = "SubmitExamCommandHandler",
-                TestCaseID        = "TC-RDM-SEC-02",
-                Description       = "Scores calculated, profiles updated completely accurately",
-                ExpectedResult    = "Returns true, 200 checks valid points",
-                StatusRound1      = "Passed",
-                TestCaseType      = "N",
+                FunctionGroup     ="SubmitExamCommandHandler",
+                TestCaseID        ="SubmitExamCommandHandler_02",
+                Description       ="Scores calculated, profiles updated completely accurately",
+                ExpectedResult    ="Returns true, 200 checks valid points",
+                StatusRound1      ="Passed",
+                TestCaseType      ="N",
                 TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "Answers mock checking validations" }
+                AppliedConditions = new List<string> {"Answers mock checking validations" }
             });
         }
         
@@ -161,11 +161,11 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap.Commands
         {
             var command = new SubmitExamCommand 
             { 
-                ExamId = "E1", 
-                UserId = "U1",
+                ExamId ="E1", 
+                UserId ="U1",
                 Answers = new List<UserAnswerDto>
                 {
-                    new UserAnswerDto { QuestionId = "Q1", SelectedOptionId = "O1" }
+                    new UserAnswerDto { QuestionId ="Q1", SelectedOptionId ="O1" }
                 }
             };
 
@@ -173,14 +173,14 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap.Commands
             {
                 new ExamQuestion 
                 { 
-                    QuestionBankId = "Q1", 
+                    QuestionBankId ="Q1", 
                     Score = 15,
                     QuestionBank = new QuestionBank 
                     { 
-                        QuestionTypeId = "TypeA",
+                        QuestionTypeId ="TypeA",
                         QuestionOptions = new List<QuestionOption> 
                         { 
-                            new QuestionOption { OptionId = "O1", IsCorrect = true }
+                            new QuestionOption { OptionId ="O1", IsCorrect = true }
                         }
                     }
                 }
@@ -189,15 +189,15 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap.Commands
             _mockRoadmapRepo.Setup(x => x.GetExamQuestionsForGradingAsync("E1", It.IsAny<CancellationToken>()))
                             .ReturnsAsync(questions);
 
-            var activeRoadmap = new UserRoadmap { UserRoadmapId = "R2", Weeks = new List<RoadmapWeek>() };
+            var activeRoadmap = new UserRoadmap { UserRoadmapId ="R2", Weeks = new List<RoadmapWeek>() };
             _mockRoadmapRepo.Setup(x => x.GetActiveRoadmapByUserIdAsync("U1", It.IsAny<CancellationToken>()))
                             .ReturnsAsync(activeRoadmap);
 
             var existingProfile = new RoadmapKnowledgeProfile { LastEvaluatedWeekIndex = 0, ConsecutiveFailWeeks = 2 };
-            _mockProfileRepo.Setup(x => x.GetAsync("R2", "TypeA", It.IsAny<CancellationToken>()))
+            _mockProfileRepo.Setup(x => x.GetAsync("R2","TypeA", It.IsAny<CancellationToken>()))
                             .ReturnsAsync(existingProfile);
 
-            var existingWeakness = new UserWeakness { QuestionTypeId = "TypeA", Status = 0, InitialScore = 10, CurrentScore = 10 };
+            var existingWeakness = new UserWeakness { QuestionTypeId ="TypeA", Status = 0, InitialScore = 10, CurrentScore = 10 };
             _mockWeaknessRepo.Setup(x => x.GetByUserIdAsync("U1", It.IsAny<CancellationToken>()))
                              .ReturnsAsync(new List<UserWeakness> { existingWeakness });
 
@@ -215,14 +215,14 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap.Commands
 
             QACollector.LogTestCase("Roadmap - Submit Exam", new TestCaseDetail
             {
-                FunctionGroup     = "SubmitExamCommandHandler",
-                TestCaseID        = "TC-RDM-SEC-03",
-                Description       = "Scores updating existing elements gracefully correctly perfectly mapped mappings efficiently nicely cleanly tests smoothly",
-                ExpectedResult    = "Successfully updates states",
-                StatusRound1      = "Passed",
-                TestCaseType      = "N",
+                FunctionGroup     ="SubmitExamCommandHandler",
+                TestCaseID        ="SubmitExamCommandHandler_03",
+                Description       ="Scores updating existing elements gracefully correctly perfectly mapped mappings efficiently",
+                ExpectedResult    ="Successfully updates states",
+                StatusRound1      ="Passed",
+                TestCaseType      ="N",
                 TestDate          = DateTime.Now.ToString("dd/MM/yyyy"),
-                AppliedConditions = new List<string> { "Existing states mapping checking gracefully string mapped flawlessly gracefully checking peacefully eloquently array mappings successfully thoughtfully gently creatively tests validation effectively" }
+                AppliedConditions = new List<string> {"Existing states mapping checking gracefully string mapped flawlessly gracefully checking peacefully eloquently array mappings" }
             });
         }
     }

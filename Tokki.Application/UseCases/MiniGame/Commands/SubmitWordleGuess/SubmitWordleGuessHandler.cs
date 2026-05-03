@@ -18,18 +18,24 @@ namespace Tokki.Application.UseCases.MiniGame.Commands.SubmitWordleGuess
     {
         private readonly IMiniGameRepository _miniGameRepository;
         private readonly IIdGeneratorService _idGenerator;
+        private readonly ISystemConfigRepository _systemConfigRepository;
 
         public SubmitWordleGuessHandler(
             IMiniGameRepository miniGameRepository,
-            IIdGeneratorService idGenerator)
+            IIdGeneratorService idGenerator,
+            ISystemConfigRepository systemConfigRepository)
         {
             _miniGameRepository = miniGameRepository;
             _idGenerator = idGenerator;
+            _systemConfigRepository = systemConfigRepository;
         }
 
         public async Task<OperationResult<GuessResultDTO>> Handle(SubmitWordleGuessCommand request, CancellationToken token)
         {
             var safeGuessWord = request.GuessWord.Normalize(NormalizationForm.FormC);
+
+            var maxAttemptsStr = await _systemConfigRepository.GetValueByKeyAsync("WORDLE_MAX_ATTEMPTS");
+            int maxAttempts = int.TryParse(maxAttemptsStr, out var val) ? val : 6;
 
             var game = await _miniGameRepository.GetDailyWordleByIdAsync(request.DailyWordleId, token);
 
@@ -59,7 +65,7 @@ namespace Tokki.Application.UseCases.MiniGame.Commands.SubmitWordleGuess
                 _miniGameRepository.AddUserWordleProgress(progress);
             }
 
-            if (progress.IsWon || progress.AttemptCount >= 6)
+            if (progress.IsWon || progress.AttemptCount >= maxAttempts)
                 return OperationResult<GuessResultDTO>.Failure("Lượt chơi hôm nay của bạn cho từ này đã kết thúc.");
 
             var currentGuesses = progress.Guesses;
@@ -79,7 +85,7 @@ namespace Tokki.Application.UseCases.MiniGame.Commands.SubmitWordleGuess
             var resultDto = new GuessResultDTO
             {
                 IsWon = isWon,
-                IsGameOver = !isWon && progress.AttemptCount >= 6,
+                IsGameOver = !isWon && progress.AttemptCount >= maxAttempts,
                 AttemptCount = progress.AttemptCount,
                 Feedbacks = feedbacks
             };

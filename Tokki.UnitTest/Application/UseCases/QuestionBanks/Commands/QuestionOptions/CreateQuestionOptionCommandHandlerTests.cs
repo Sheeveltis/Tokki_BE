@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -39,7 +39,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QBO-CR-01 | A | Question Bank NotFound -> 404
+        // CreateQuestionOptionCommandHandler_01 | A | Question Bank NotFound -> 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_QuestionBankNotFound_ShouldReturn404()
@@ -58,7 +58,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
             QACollector.LogTestCase("Question Bank Option - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreateQuestionOptionCommandHandler",
-                TestCaseID = "TC-QBO-CR-01",
+                TestCaseID = "CreateQuestionOptionCommandHandler_01",
                 Description = "Returns error if QuestionBank is not found",
                 ExpectedResult = "Return 404 QuestionBankNotFound",
                 StatusRound1 = "Passed",
@@ -69,7 +69,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QBO-CR-02 | A | Not Draft Status -> 403
+        // CreateQuestionOptionCommandHandler_02 | A | Not Draft Status -> 403
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NotDraft_ShouldReturn403()
@@ -89,7 +89,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
             QACollector.LogTestCase("Question Bank Option - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreateQuestionOptionCommandHandler",
-                TestCaseID = "TC-QBO-CR-02",
+                TestCaseID = "CreateQuestionOptionCommandHandler_02",
                 Description = "Cannot edit options on non-draft question bank",
                 ExpectedResult = "Return 403 Forbidden",
                 StatusRound1 = "Passed",
@@ -100,7 +100,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QBO-CR-03 | A | Missing QuestionTypeId -> 400
+        // CreateQuestionOptionCommandHandler_03 | A | Missing QuestionTypeId -> 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_MissingQuestionTypeId_ShouldReturn400()
@@ -119,7 +119,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
             QACollector.LogTestCase("Question Bank Option - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreateQuestionOptionCommandHandler",
-                TestCaseID = "TC-QBO-CR-03",
+                TestCaseID = "CreateQuestionOptionCommandHandler_03",
                 Description = "Returns error if QuestionBank lacks a QuestionTypeId",
                 ExpectedResult = "Return 400 ValidationFailed",
                 StatusRound1 = "Passed",
@@ -130,7 +130,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QBO-CR-04 | A | Writing Skill Question -> 400
+        // CreateQuestionOptionCommandHandler_04 | A | Writing Skill Question -> 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_WritingSkill_ShouldReturn400()
@@ -151,7 +151,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
             QACollector.LogTestCase("Question Bank Option - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreateQuestionOptionCommandHandler",
-                TestCaseID = "TC-QBO-CR-04",
+                TestCaseID = "CreateQuestionOptionCommandHandler_04",
                 Description = "Cannot add MCQ options to Writing questions",
                 ExpectedResult = "Return 400 ValidationFailed",
                 StatusRound1 = "Passed",
@@ -162,7 +162,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QBO-CR-05 | B | More than 4 Options limit -> 400
+        // CreateQuestionOptionCommandHandler_05 | B | More than 4 Options limit -> 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_OptionLimitExceeded_ShouldReturn400()
@@ -195,7 +195,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
             QACollector.LogTestCase("Question Bank Option - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreateQuestionOptionCommandHandler",
-                TestCaseID = "TC-QBO-CR-05",
+                TestCaseID = "CreateQuestionOptionCommandHandler_05",
                 Description = "Rejects creation when there are already 4 options",
                 ExpectedResult = "Return 400 ValidationFailed",
                 StatusRound1 = "Passed",
@@ -206,7 +206,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QBO-CR-06 | A | Duplicate Key Option -> 400
+        // CreateQuestionOptionCommandHandler_06 | A | Duplicate Key Option -> 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DuplicateKeyOption_ShouldReturn400()
@@ -233,7 +233,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
             QACollector.LogTestCase("Question Bank Option - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreateQuestionOptionCommandHandler",
-                TestCaseID = "TC-QBO-CR-06",
+                TestCaseID = "CreateQuestionOptionCommandHandler_06",
                 Description = "Rejects creation when KeyOption exists",
                 ExpectedResult = "Return 400 ValidationFailed",
                 StatusRound1 = "Passed",
@@ -244,7 +244,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QBO-CR-07 | N | Successful Creation Toggling Correct Option -> 201
+        // CreateQuestionOptionCommandHandler_07 | N | Successful Creation Toggling Correct Option -> 201
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SuccessfulCreation_TogglesCorrectOption_ShouldReturn201()
@@ -279,7 +279,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks.Commands.QuestionOpt
             QACollector.LogTestCase("Question Bank Option - Create", new TestCaseDetail
             {
                 FunctionGroup = "CreateQuestionOptionCommandHandler",
-                TestCaseID = "TC-QBO-CR-07",
+                TestCaseID = "CreateQuestionOptionCommandHandler_07",
                 Description = "Creates option successfully and toggles other correct options to false",
                 ExpectedResult = "Return 201",
                 StatusRound1 = "Passed",

@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using FluentValidation.TestHelper;
 using Microsoft.AspNetCore.Http;
 using Moq;
@@ -27,7 +27,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary.Commands
             return mock;
         }
 
-        // TC-CLD-UAV-01 | A | FolderName is Empty -> Error
+        // UploadAudioCommandValidator_01 | A | FolderName is Empty -> Error
         [Fact]
         public void Validate_EmptyFolderName_ShouldHaveError()
         {
@@ -40,7 +40,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary.Commands
             QACollector.LogTestCase("Cloudinary - Upload Audio", new TestCaseDetail
             {
                 FunctionGroup = "UploadAudioCommandValidator",
-                TestCaseID = "TC-CLD-UAV-01",
+                TestCaseID = "UploadAudioCommandValidator_01",
                 Description = "Empty folder name triggers NotEmpty rule",
                 ExpectedResult = "Validation Error on FolderName",
                 StatusRound1 = "Passed",
@@ -50,7 +50,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary.Commands
             });
         }
 
-        // TC-CLD-UAV-02 | A | AudioFile is Null -> Error
+        // UploadAudioCommandValidator_02 | A | AudioFile is Null -> Error
         [Fact]
         public void Validate_NullAudioFile_ShouldHaveError()
         {
@@ -63,7 +63,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary.Commands
             QACollector.LogTestCase("Cloudinary - Upload Audio", new TestCaseDetail
             {
                 FunctionGroup = "UploadAudioCommandValidator",
-                TestCaseID = "TC-CLD-UAV-02",
+                TestCaseID = "UploadAudioCommandValidator_02",
                 Description = "Null AudioFile triggers NotNull rule",
                 ExpectedResult = "Validation Error on AudioFile",
                 StatusRound1 = "Passed",
@@ -73,7 +73,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary.Commands
             });
         }
 
-        // TC-CLD-UAV-03 | A | AudioFile Length is 0 -> Error
+        // UploadAudioCommandValidator_03 | A | AudioFile Length is 0 -> Error
         [Fact]
         public void Validate_EmptyAudioFile_ShouldHaveError()
         {
@@ -87,7 +87,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary.Commands
             QACollector.LogTestCase("Cloudinary - Upload Audio", new TestCaseDetail
             {
                 FunctionGroup = "UploadAudioCommandValidator",
-                TestCaseID = "TC-CLD-UAV-03",
+                TestCaseID = "UploadAudioCommandValidator_03",
                 Description = "0 byte file returns specific exception",
                 ExpectedResult = "Validation Error",
                 StatusRound1 = "Passed",
@@ -97,7 +97,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary.Commands
             });
         }
 
-        // TC-CLD-UAV-04 | A | AudioFile Invalid Extension -> Error
+        // UploadAudioCommandValidator_04 | A | AudioFile Invalid Extension -> Error
         [Fact]
         public void Validate_InvalidExtension_ShouldHaveError()
         {
@@ -111,7 +111,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary.Commands
             QACollector.LogTestCase("Cloudinary - Upload Audio", new TestCaseDetail
             {
                 FunctionGroup = "UploadAudioCommandValidator",
-                TestCaseID = "TC-CLD-UAV-04",
+                TestCaseID = "UploadAudioCommandValidator_04",
                 Description = "Extension whitelist violation triggers error",
                 ExpectedResult = "Validation Error",
                 StatusRound1 = "Passed",
@@ -121,7 +121,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary.Commands
             });
         }
 
-        // TC-CLD-UAV-05 | A | AudioFile Exceeds Size -> Error
+        // UploadAudioCommandValidator_05 | A | AudioFile Exceeds Size -> Error
         [Fact]
         public void Validate_SizeExceeded_ShouldHaveError()
         {
@@ -135,7 +135,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary.Commands
             QACollector.LogTestCase("Cloudinary - Upload Audio", new TestCaseDetail
             {
                 FunctionGroup = "UploadAudioCommandValidator",
-                TestCaseID = "TC-CLD-UAV-05",
+                TestCaseID = "UploadAudioCommandValidator_05",
                 Description = "Size restriction violation triggers error limit 10MB",
                 ExpectedResult = "Validation Error",
                 StatusRound1 = "Passed",
@@ -145,7 +145,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary.Commands
             });
         }
 
-        // TC-CLD-UAV-06 | N | Valid Audio File -> Success
+        // UploadAudioCommandValidator_06 | N | Valid Audio File -> Success
         [Fact]
         public void Validate_ValidAudio_ShouldNotHaveError()
         {
@@ -158,7 +158,7 @@ namespace Tokki.UnitTest.Application.UseCases.Cloudinary.Commands
             QACollector.LogTestCase("Cloudinary - Upload Audio", new TestCaseDetail
             {
                 FunctionGroup = "UploadAudioCommandValidator",
-                TestCaseID = "TC-CLD-UAV-06",
+                TestCaseID = "UploadAudioCommandValidator_06",
                 Description = "Perfect payload validates cleanly with valid wav",
                 ExpectedResult = "No Errors",
                 StatusRound1 = "Passed",

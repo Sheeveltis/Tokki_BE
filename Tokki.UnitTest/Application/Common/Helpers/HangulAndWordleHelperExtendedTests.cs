@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using System;
 using System.Collections.Generic;
 using Tokki.Application.Common.Helpers;
@@ -46,7 +46,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-HELPER-WLE-02 | N | WordleHelper Edge Cases Initial Gray
+        // WordleHelper_01 | N | WordleHelper Edge Cases Initial Gray
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public void CalculateFeedback_MismatchInitial_ShouldBeGrayInitial()
@@ -64,7 +64,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             QACollector.LogTestCase("Helper - Wordle", new TestCaseDetail
             {
                 FunctionGroup = "WordleHelper",
-                TestCaseID = "TC-HELPER-WLE-02",
+                TestCaseID = "WordleHelper_01",
                 Description = "Different initial but same vowel yields Initial Gray, Vowel Green",
                 ExpectedResult = "Initial=Gray, Vowel=Green",
                 StatusRound1 = "Passed",
@@ -75,7 +75,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-HELPER-WLE-03 | N | WordleHelper Final Exact Match Green
+        // WordleHelper_02 | N | WordleHelper Final Exact Match Green
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public void CalculateFeedback_MatchFinal_ShouldBeGreenFinal()
@@ -92,7 +92,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             QACollector.LogTestCase("Helper - Wordle", new TestCaseDetail
             {
                 FunctionGroup = "WordleHelper",
-                TestCaseID = "TC-HELPER-WLE-03",
+                TestCaseID = "WordleHelper_02",
                 Description = "Matching patchim directly yields FinalStatus Green",
                 ExpectedResult = "FinalStatus=Green",
                 StatusRound1 = "Passed",
@@ -103,7 +103,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-HELPER-HGE-04 | B | English characters decomposition
+        // HangulHelper_01 | B | English characters decomposition
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public void Decompose_EnglishChar_ShouldJustReturnEnglish()
@@ -119,7 +119,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             QACollector.LogTestCase("Helper - Hangul", new TestCaseDetail
             {
                 FunctionGroup = "HangulHelper",
-                TestCaseID = "TC-HELPER-HGE-04",
+                TestCaseID = "HangulHelper_01",
                 Description = "English character uses fallback branch logic",
                 ExpectedResult = "Initial equals Z",
                 StatusRound1 = "Passed",
@@ -130,7 +130,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-HELPER-WLE-05 | B | Differing lengths
+        // WordleHelper_03 | B | Differing lengths
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public void CalculateFeedback_DifferingLengths_ShouldCalculateOnMinLength()
@@ -145,7 +145,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             QACollector.LogTestCase("Helper - Wordle", new TestCaseDetail
             {
                 FunctionGroup = "WordleHelper",
-                TestCaseID = "TC-HELPER-WLE-05",
+                TestCaseID = "WordleHelper_03",
                 Description = "Differing lengths only yields feedback up to min length",
                 ExpectedResult = "Count is 2",
                 StatusRound1 = "Passed",
@@ -156,7 +156,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-HELPER-WLE-06 | B | Empty string
+        // WordleHelper_04 | B | Empty string
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public void CalculateFeedback_EmptyString_ShouldReturnEmptyList()
@@ -171,7 +171,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             QACollector.LogTestCase("Helper - Wordle", new TestCaseDetail
             {
                 FunctionGroup = "WordleHelper",
-                TestCaseID = "TC-HELPER-WLE-06",
+                TestCaseID = "WordleHelper_04",
                 Description = "Empty string yields empty loop evaluation and zero feedback",
                 ExpectedResult = "List is empty",
                 StatusRound1 = "Passed",

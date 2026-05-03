@@ -5,19 +5,18 @@ namespace Tokki.UnitTest.Utilities
 {
     public class TestCaseSummary
     {
-        public string ProjectName { get; set; } = "Tokki Project";
-        public string ProjectCode { get; set; } = "TK-001";
+        public string ProjectName { get; set; } = "A Comprehensive Korean Learning Platform from Beginner to TOPIK, integrating Gamification Strategies, SRS Flashcards, and AI-powered Pronunciation Practice";
+        public string ProjectCode { get; set; } = "TK_CAPSTONE_2026";
         public string Environment { get; set; } = 
-            "1. Framework: .NET 9.0 (net9.0)\n" +
-            "2. Testing Framework: xUnit 2.9.2\n" +
-            "3. Mocking Library: Moq 4.20.72\n" +
-            "4. Assertion Library: FluentAssertions 8.8.0\n" +
-            "5. Architecture: CQRS with MediatR (Commands & Queries)\n" +
-            "6. Test Runner: Microsoft.NET.Test.Sdk 17.12.0\n" +
-            "7. Code Coverage: Coverlet 8.0.1 (XPlat Code Coverage)\n" +
-            "8. Report Generator: EPPlus 8.5.0\n" +
-            "9. IDE: Visual Studio 2022 / Rider\n" +
-            "10. OS: Windows 11";
+            "- Framework: .NET 9.0 (net9.0)\n" +
+            "- Testing Framework: xUnit 2.9.2\n" +
+            "- Mocking Library: Moq 4.20.72\n" +
+            "- Assertion Library: FluentAssertions 8.8.0\n" +
+            "- Architecture: CQRS with MediatR (Commands & Queries)\n" +
+            "- Test Runner: Microsoft.NET.Test.Sdk 17.12.0\n" +
+            "- Code Coverage: Coverlet 8.0.1 (XPlat Code Coverage)\n" +
+            "- Report Generator: EPPlus 8.5.0\n" +
+            "- IDE: Visual Studio 2022 / Rider";
         public List<FunctionSummary> Functions { get; set; } = new();
 
         public int TotalSystemFunctions { get; set; } = 10;

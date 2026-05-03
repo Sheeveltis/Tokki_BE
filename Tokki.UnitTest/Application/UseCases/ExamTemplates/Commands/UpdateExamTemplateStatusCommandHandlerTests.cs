@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -24,7 +24,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             _handler = new UpdateExamTemplateStatusCommandHandler(_mockTemplateRepo.Object);
         }
 
-        // TC-EXT-UTS-01 | A | Template Not Found
+        // UpdateExamTemplateStatusCommandHandler_01 | A | Template Not Found
         [Fact]
         public async Task Handle_TemplateNotFound_ShouldFail()
         {
@@ -40,7 +40,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             QACollector.LogTestCase("Exam Template - Update", new TestCaseDetail
             {
                 FunctionGroup = "UpdateExamTemplateStatusCommandHandler",
-                TestCaseID = "TC-EXT-UTS-01",
+                TestCaseID = "UpdateExamTemplateStatusCommandHandler_01",
                 Description = "Returns failure immediately if template record vanishes",
                 ExpectedResult = "Failure",
                 StatusRound1 = "Passed",
@@ -50,7 +50,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             });
         }
 
-        // TC-EXT-UTS-02 | N | Fast Return Same Status
+        // UpdateExamTemplateStatusCommandHandler_02 | N | Fast Return Same Status
         [Fact]
         public async Task Handle_SameStatus_ShouldReturnSuccessWithoutDbHit()
         {
@@ -67,7 +67,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             QACollector.LogTestCase("Exam Template - Update", new TestCaseDetail
             {
                 FunctionGroup = "UpdateExamTemplateStatusCommandHandler",
-                TestCaseID = "TC-EXT-UTS-02",
+                TestCaseID = "UpdateExamTemplateStatusCommandHandler_02",
                 Description = "Identical configurations skip expensive repository updates dynamically capturing speed gains",
                 ExpectedResult = "Success true and Times.Never",
                 StatusRound1 = "Passed",
@@ -77,7 +77,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             });
         }
 
-        // TC-EXT-UTS-03 | N | Transition Draft -> PendingApproval
+        // UpdateExamTemplateStatusCommandHandler_03 | N | Transition Draft -> PendingApproval
         [Fact]
         public async Task Handle_DraftToPending_ShouldUpdateDb()
         {
@@ -95,7 +95,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             QACollector.LogTestCase("Exam Template - Update", new TestCaseDetail
             {
                 FunctionGroup = "UpdateExamTemplateStatusCommandHandler",
-                TestCaseID = "TC-EXT-UTS-03",
+                TestCaseID = "UpdateExamTemplateStatusCommandHandler_03",
                 Description = "Transitions draft safely parsing save context",
                 ExpectedResult = "Success true",
                 StatusRound1 = "Passed",
@@ -105,7 +105,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             });
         }
 
-        // TC-EXT-UTS-04 | N | Transition PendingApproval -> Published
+        // UpdateExamTemplateStatusCommandHandler_04 | N | Transition PendingApproval -> Published
         [Fact]
         public async Task Handle_PendingToPublished_ShouldUpdateDb()
         {
@@ -123,7 +123,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             QACollector.LogTestCase("Exam Template - Update", new TestCaseDetail
             {
                 FunctionGroup = "UpdateExamTemplateStatusCommandHandler",
-                TestCaseID = "TC-EXT-UTS-04",
+                TestCaseID = "UpdateExamTemplateStatusCommandHandler_04",
                 Description = "Transitions approval correctly ensuring pipeline execution completes flawlessly",
                 ExpectedResult = "Success true",
                 StatusRound1 = "Passed",
@@ -133,7 +133,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             });
         }
 
-        // TC-EXT-UTS-05 | N | Transition PendingApproval -> Rejected
+        // UpdateExamTemplateStatusCommandHandler_05 | N | Transition PendingApproval -> Rejected
         [Fact]
         public async Task Handle_PendingToRejected_ShouldUpdateDb()
         {
@@ -150,7 +150,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             QACollector.LogTestCase("Exam Template - Update", new TestCaseDetail
             {
                 FunctionGroup = "UpdateExamTemplateStatusCommandHandler",
-                TestCaseID = "TC-EXT-UTS-05",
+                TestCaseID = "UpdateExamTemplateStatusCommandHandler_05",
                 Description = "Forces rejection safely",
                 ExpectedResult = "Success true",
                 StatusRound1 = "Passed",
@@ -160,7 +160,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             });
         }
 
-        // TC-EXT-UTS-06 | N | Verify DB Save Call
+        // UpdateExamTemplateStatusCommandHandler_06 | N | Verify DB Save Call
         [Fact]
         public async Task Handle_StateCommits_ShouldInvokeSaveChangesAsync()
         {
@@ -176,7 +176,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates.Commands
             QACollector.LogTestCase("Exam Template - Update", new TestCaseDetail
             {
                 FunctionGroup = "UpdateExamTemplateStatusCommandHandler",
-                TestCaseID = "TC-EXT-UTS-06",
+                TestCaseID = "UpdateExamTemplateStatusCommandHandler_06",
                 Description = "Final persistence triggers transaction flush internally resolving entity locks",
                 ExpectedResult = "Times.Once",
                 StatusRound1 = "Passed",

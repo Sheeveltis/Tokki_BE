@@ -58,8 +58,8 @@ namespace Tokki.Domain.Entities
         public virtual Title? CurrentTitle { get; set; }
         public virtual ICollection<AccountTitle> UnlockedTitles { get; set; } = new List<AccountTitle>();
  
-        public TopicLevel? Level { get; set; } = null;
-        public TopicLevel? AimLevel { get; set; } = null;
+        public int? Level { get; set; } = null;
+        public int? AimLevel { get; set; } = null;
  
         // --- MỚI THÊM LẠI (Bảo mật & Tracking) ---
  

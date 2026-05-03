@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -35,7 +35,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
         };
 
         // ═══════════════════════════════════════════════════════════
-        // TC-ETD-01 | A | Template not found → Failure
+        // Delete_Email_Auto_Template_01 | A | Template not found → Failure
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_TemplateNotFound_ShouldReturnFailure()
@@ -56,7 +56,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email Template - Delete Auto", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Email Auto Template",
-                TestCaseID        = "TC-ETD-01",
+                TestCaseID        = "Delete_Email_Auto_Template_01",
                 Description       = "Attempt to delete a template that does not exist",
                 ExpectedResult    = "Return Failure EmailTemplateNotFound",
                 StatusRound1      = "Passed",
@@ -67,7 +67,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-ETD-02 | N | Already deleted → idempotent 200
+        // Delete_Email_Auto_Template_02 | N | Already deleted → idempotent 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_AlreadyDeleted_ShouldReturn200Idempotent()
@@ -89,7 +89,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email Template - Delete Auto", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Email Auto Template",
-                TestCaseID        = "TC-ETD-02",
+                TestCaseID        = "Delete_Email_Auto_Template_02",
                 Description       = "Delete a template that is already in Deleted status (idempotent)",
                 ExpectedResult    = "Return 200 Success (already deleted message)",
                 StatusRound1      = "Passed",
@@ -100,7 +100,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-ETD-03 | N | Active template → soft-deleted 200
+        // Delete_Email_Auto_Template_03 | N | Active template → soft-deleted 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ActiveTemplate_ShouldSoftDeleteAndReturn200()
@@ -125,7 +125,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email Template - Delete Auto", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Email Auto Template",
-                TestCaseID        = "TC-ETD-03",
+                TestCaseID        = "Delete_Email_Auto_Template_03",
                 Description       = "Delete an active template — status should be set to Deleted",
                 ExpectedResult    = "Return 200, template.Status = Deleted",
                 StatusRound1      = "Passed",
@@ -136,7 +136,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-ETD-04 | N | UpdateAsync is called exactly once on valid delete
+        // Delete_Email_Auto_Template_04 | N | UpdateAsync is called exactly once on valid delete
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ActiveTemplate_UpdateAsyncCalledOnce()
@@ -159,7 +159,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email Template - Delete Auto", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Email Auto Template",
-                TestCaseID        = "TC-ETD-04",
+                TestCaseID        = "Delete_Email_Auto_Template_04",
                 Description       = "Verify UpdateAsync is invoked exactly once when performing soft delete",
                 ExpectedResult    = "UpdateAsync called once",
                 StatusRound1      = "Passed",
@@ -170,7 +170,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-ETD-05 | N | Already deleted → UpdateAsync is NOT called
+        // Delete_Email_Auto_Template_05 | N | Already deleted → UpdateAsync is NOT called
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_AlreadyDeleted_UpdateAsyncNotCalled()
@@ -191,7 +191,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email Template - Delete Auto", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Email Auto Template",
-                TestCaseID        = "TC-ETD-05",
+                TestCaseID        = "Delete_Email_Auto_Template_05",
                 Description       = "When template is already Deleted, UpdateAsync should never be called",
                 ExpectedResult    = "UpdateAsync not called (idempotent short circuit)",
                 StatusRound1      = "Passed",
@@ -202,7 +202,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-ETD-06 | A | SaveChanges throws → exception propagates
+        // Delete_Email_Auto_Template_06 | A | SaveChanges throws → exception propagates
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SaveChangesThrows_ShouldPropagateException()
@@ -222,7 +222,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates
             QACollector.LogTestCase("Email Template - Delete Auto", new TestCaseDetail
             {
                 FunctionGroup     = "Delete Email Auto Template",
-                TestCaseID        = "TC-ETD-06",
+                TestCaseID        = "Delete_Email_Auto_Template_06",
                 Description       = "SaveChangesAsync throws during soft delete persistence",
                 ExpectedResult    = "Exception propagates to global middleware",
                 StatusRound1      = "Passed",

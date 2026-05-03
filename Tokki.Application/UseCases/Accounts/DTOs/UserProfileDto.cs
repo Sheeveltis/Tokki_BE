@@ -20,8 +20,8 @@ namespace Tokki.Application.UseCases.Accounts.DTOs
         public int MaxStreak { get; set; }
 
         public string? CurrentTitle { get; set; } // tối thiểu: CurrentTitleId
-        public TopicLevel? Level { get; set; } // nullable theo DB bạn thêm
-        public TopicLevel? AimLevel { get; set; } // level mục tiêu
+        public int? Level { get; set; } // nullable theo DB bạn thêm
+        public int? AimLevel { get; set; } // level mục tiêu
         public DateTime? LastLoginAt { get; set; } // nullable
     }
 }

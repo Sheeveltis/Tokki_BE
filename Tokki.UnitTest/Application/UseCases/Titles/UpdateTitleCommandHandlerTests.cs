@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -33,7 +33,7 @@ namespace Tokki.UnitTest.Application.UseCases.Titles
         private static UpdateTitleCommand MakeCommand(string id = "T-001", string name = "Bậc tiến sĩ") =>
             new UpdateTitleCommand { TitleId = id, Name = name, Description = "Updated", RequirementQuantity = 2000, ColorHex = "#SILVER" };
 
-        // TC-TITLE-UPD-01 | A | Title not found → 404 failure
+        // UpdateTitle_01 | A | Title not found → 404 failure
         [Fact]
         public async Task Handle_TitleNotFound_ShouldReturn404Failure()
         {
@@ -41,10 +41,10 @@ namespace Tokki.UnitTest.Application.UseCases.Titles
             var result = await CreateHandler(repo).Handle(MakeCommand("MISSING"), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(404);
-            QACollector.LogTestCase("Title - Update", new TestCaseDetail { FunctionGroup = "UpdateTitle", TestCaseID = "TC-TITLE-UPD-01", Description = "Title not found → 404 failure", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetTitleByIdAsync returns null" } });
+            QACollector.LogTestCase("Title - Update", new TestCaseDetail { FunctionGroup = "UpdateTitle", TestCaseID = "UpdateTitle_01", Description = "Title not found → 404 failure", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetTitleByIdAsync returns null" } });
         }
 
-        // TC-TITLE-UPD-02 | A | Name changed to a duplicate → 400 failure
+        // UpdateTitle_02 | A | Name changed to a duplicate → 400 failure
         [Fact]
         public async Task Handle_NameChangedToDuplicate_ShouldReturn400Failure()
         {
@@ -54,10 +54,10 @@ namespace Tokki.UnitTest.Application.UseCases.Titles
             var result     = await CreateHandler(repo).Handle(MakeCommand("T-001", "Bậc tiến sĩ"), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(400);
-            QACollector.LogTestCase("Title - Update", new TestCaseDetail { FunctionGroup = "UpdateTitle", TestCaseID = "TC-TITLE-UPD-02", Description = "Name changed to existing title's name → 400 failure", ExpectedResult = "IsSuccess=false, 400", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetTitleByNameAsync returns another title" } });
+            QACollector.LogTestCase("Title - Update", new TestCaseDetail { FunctionGroup = "UpdateTitle", TestCaseID = "UpdateTitle_02", Description = "Name changed to existing title's name → 400 failure", ExpectedResult = "IsSuccess=false, 400", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetTitleByNameAsync returns another title" } });
         }
 
-        // TC-TITLE-UPD-03 | N | Happy path: title found, no duplicate → 200 with Title entity
+        // UpdateTitle_03 | N | Happy path: title found, no duplicate → 200 with Title entity
         [Fact]
         public async Task Handle_ValidRequest_ShouldReturn200WithTitle()
         {
@@ -67,10 +67,10 @@ namespace Tokki.UnitTest.Application.UseCases.Titles
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
             result.Data.Should().NotBeNull();
-            QACollector.LogTestCase("Title - Update", new TestCaseDetail { FunctionGroup = "UpdateTitle", TestCaseID = "TC-TITLE-UPD-03", Description = "Valid update → 200, Data is Title entity", ExpectedResult = "IsSuccess=true, 200", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "No duplicate, title found" } });
+            QACollector.LogTestCase("Title - Update", new TestCaseDetail { FunctionGroup = "UpdateTitle", TestCaseID = "UpdateTitle_03", Description = "Valid update → 200, Data is Title entity", ExpectedResult = "IsSuccess=true, 200", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "No duplicate, title found" } });
         }
 
-        // TC-TITLE-UPD-04 | N | Same name → no duplicate check, skip GetTitleByNameAsync
+        // UpdateTitle_04 | N | Same name → no duplicate check, skip GetTitleByNameAsync
         [Fact]
         public async Task Handle_SameName_ShouldNotCallGetTitleByName()
         {
@@ -79,10 +79,10 @@ namespace Tokki.UnitTest.Application.UseCases.Titles
             // Pass same name in command
             await CreateHandler(repo).Handle(new UpdateTitleCommand { TitleId = "T-001", Name = "Bậc học giả", RequirementQuantity = 1500, ColorHex = "#FF" }, CancellationToken.None);
             repo.Verify(x => x.GetTitleByNameAsync(It.IsAny<string>(), It.IsAny<TitleStatus?>()), Times.Never);
-            QACollector.LogTestCase("Title - Update", new TestCaseDetail { FunctionGroup = "UpdateTitle", TestCaseID = "TC-TITLE-UPD-04", Description = "Same name unchanged → no duplicate check called", ExpectedResult = "GetTitleByNameAsync Times.Never", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "title.Name == request.Name → skip duplicate check" } });
+            QACollector.LogTestCase("Title - Update", new TestCaseDetail { FunctionGroup = "UpdateTitle", TestCaseID = "UpdateTitle_04", Description = "Same name unchanged → no duplicate check called", ExpectedResult = "GetTitleByNameAsync Times.Never", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "title.Name == request.Name → skip duplicate check" } });
         }
 
-        // TC-TITLE-UPD-05 | N | Fields updated correctly on entity
+        // UpdateTitle_05 | N | Fields updated correctly on entity
         [Fact]
         public async Task Handle_ValidRequest_FieldsUpdatedOnEntity()
         {
@@ -91,17 +91,17 @@ namespace Tokki.UnitTest.Application.UseCases.Titles
             await CreateHandler(repo).Handle(MakeCommand("T-001", "New Name"), CancellationToken.None);
             existing.Name.Should().Be("New Name");
             existing.RequirementQuantity.Should().Be(2000);
-            QACollector.LogTestCase("Title - Update", new TestCaseDetail { FunctionGroup = "UpdateTitle", TestCaseID = "TC-TITLE-UPD-05", Description = "Entity fields (Name, RequiredXP, IsSystemGiven) updated correctly", ExpectedResult = "All fields mutated", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Entity mutated before UpdateAsync" } });
+            QACollector.LogTestCase("Title - Update", new TestCaseDetail { FunctionGroup = "UpdateTitle", TestCaseID = "UpdateTitle_05", Description = "Entity fields (Name, RequiredXP, IsSystemGiven) updated correctly", ExpectedResult = "All fields mutated", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Entity mutated before UpdateAsync" } });
         }
 
-        // TC-TITLE-UPD-06 | B | UpdateAsync called once on success
+        // UpdateTitle_06 | B | UpdateAsync called once on success
         [Fact]
         public async Task Handle_ValidRequest_UpdateCalledOnce()
         {
             var repo = GetRepoMock(SampleTitle("T-001", "Bậc học giả"));
             await CreateHandler(repo).Handle(MakeCommand(), CancellationToken.None);
             repo.Verify(x => x.UpdateAsync(It.IsAny<Title>()), Times.Once);
-            QACollector.LogTestCase("Title - Update", new TestCaseDetail { FunctionGroup = "UpdateTitle", TestCaseID = "TC-TITLE-UPD-06", Description = "UpdateAsync called once on success", ExpectedResult = "Times.Once", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Persist call verified" } });
+            QACollector.LogTestCase("Title - Update", new TestCaseDetail { FunctionGroup = "UpdateTitle", TestCaseID = "UpdateTitle_06", Description = "UpdateAsync called once on success", ExpectedResult = "Times.Once", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Persist call verified" } });
         }
     }
 }

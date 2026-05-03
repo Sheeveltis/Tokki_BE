@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -34,7 +34,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             QACollector.LogTestCase("Helper - Email Notification", new TestCaseDetail
             {
                 FunctionGroup     = "EmailNotificationHelper",
-                TestCaseID        = "TC-HLP-EML-01",
+                TestCaseID        = "EmailNotificationHelper_01",
                 Description       = "Content approved email is built and sent correctly",
                 ExpectedResult    = "Generates valid HTML and calls send method successfully",
                 StatusRound1      = "Passed",
@@ -57,7 +57,7 @@ namespace Tokki.UnitTest.Application.Common.Helpers
             QACollector.LogTestCase("Helper - Email Notification", new TestCaseDetail
             {
                 FunctionGroup     = "EmailNotificationHelper",
-                TestCaseID        = "TC-HLP-EML-02",
+                TestCaseID        = "EmailNotificationHelper_02",
                 Description       = "Content rejected email fallback empty name",
                 ExpectedResult    = "Generates HTML with 'Bạn' instead of name",
                 StatusRound1      = "Passed",

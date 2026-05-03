@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,7 +14,8 @@ namespace Tokki.Application.UseCases.Vocabulary.DTOs
         public string? Pronunciation { get; set; }
         public string? AudioURL { get; set; }
         public string Definition { get; set; } = string.Empty;
-        public TopicLevel? LevelTopic { get; set; }
+        public int? LevelTopic { get; set; }
+        public string? LevelLabel { get; set; } // Thêm Label cho dynamic
 
         /// <summary>
         /// Danh sách topics mà vocabulary này thuộc về

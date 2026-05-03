@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using FluentValidation.TestHelper;
 using System;
 using System.Collections.Generic;
@@ -18,7 +18,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             _validator = new CreateEmailCampaignByGroupCommandValidator();
         }
 
-        // TC-EMT-CECV-01 | A | Subject Empty -> Error
+        // CreateEmailCampaignByGroupCommandValidator_01 | A | Subject Empty -> Error
         [Fact]
         public void Validate_EmptySubject_ShouldHaveError()
         {
@@ -30,7 +30,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("EmailTemplate - Campaign", new TestCaseDetail
             {
                 FunctionGroup = "CreateEmailCampaignByGroupCommandValidator",
-                TestCaseID = "TC-EMT-CECV-01",
+                TestCaseID = "CreateEmailCampaignByGroupCommandValidator_01",
                 Description = "Empty subject fails immediately",
                 ExpectedResult = "Validation Error",
                 StatusRound1 = "Passed",
@@ -40,7 +40,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             });
         }
 
-        // TC-EMT-CECV-02 | A | Body Empty -> Error
+        // CreateEmailCampaignByGroupCommandValidator_02 | A | Body Empty -> Error
         [Fact]
         public void Validate_EmptyBody_ShouldHaveError()
         {
@@ -52,7 +52,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("EmailTemplate - Campaign", new TestCaseDetail
             {
                 FunctionGroup = "CreateEmailCampaignByGroupCommandValidator",
-                TestCaseID = "TC-EMT-CECV-02",
+                TestCaseID = "CreateEmailCampaignByGroupCommandValidator_02",
                 Description = "Empty body content prohibited",
                 ExpectedResult = "Validation Error",
                 StatusRound1 = "Passed",
@@ -62,7 +62,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             });
         }
 
-        // TC-EMT-CECV-03 | A | ScheduledTime in the past -> Error
+        // CreateEmailCampaignByGroupCommandValidator_03 | A | ScheduledTime in the past -> Error
         [Fact]
         public void Validate_PastScheduledTime_ShouldHaveError()
         {
@@ -76,7 +76,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("EmailTemplate - Campaign", new TestCaseDetail
             {
                 FunctionGroup = "CreateEmailCampaignByGroupCommandValidator",
-                TestCaseID = "TC-EMT-CECV-03",
+                TestCaseID = "CreateEmailCampaignByGroupCommandValidator_03",
                 Description = "Time machine prevention correctly checks schedule times are future relative",
                 ExpectedResult = "Validation Error",
                 StatusRound1 = "Passed",
@@ -86,7 +86,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             });
         }
 
-        // TC-EMT-CECV-04 | A | SpecificEmails Contains Invalid Emails
+        // CreateEmailCampaignByGroupCommandValidator_04 | A | SpecificEmails Contains Invalid Emails
         [Fact]
         public void Validate_InvalidEmailList_ShouldHaveError()
         {
@@ -104,7 +104,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("EmailTemplate - Campaign", new TestCaseDetail
             {
                 FunctionGroup = "CreateEmailCampaignByGroupCommandValidator",
-                TestCaseID = "TC-EMT-CECV-04",
+                TestCaseID = "CreateEmailCampaignByGroupCommandValidator_04",
                 Description = "Email lists are strictly parsed via System.Net.Mail structure checks",
                 ExpectedResult = "Validation Error",
                 StatusRound1 = "Passed",
@@ -114,7 +114,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             });
         }
 
-        // TC-EMT-CECV-05 | N | Perfectly Valid Payload -> Pass
+        // CreateEmailCampaignByGroupCommandValidator_05 | N | Perfectly Valid Payload -> Pass
         [Fact]
         public void Validate_ValidPayload_ShouldNotHaveError()
         {
@@ -134,7 +134,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("EmailTemplate - Campaign", new TestCaseDetail
             {
                 FunctionGroup = "CreateEmailCampaignByGroupCommandValidator",
-                TestCaseID = "TC-EMT-CECV-05",
+                TestCaseID = "CreateEmailCampaignByGroupCommandValidator_05",
                 Description = "All boundaries completely satisfied",
                 ExpectedResult = "No Errors",
                 StatusRound1 = "Passed",
@@ -144,7 +144,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             });
         }
 
-        // TC-EMT-CECV-06 | N | Null SpecificEmails and Null ScheduledTime -> Pass
+        // CreateEmailCampaignByGroupCommandValidator_06 | N | Null SpecificEmails and Null ScheduledTime -> Pass
         [Fact]
         public void Validate_NullOptionals_ShouldNotHaveError()
         {
@@ -161,7 +161,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("EmailTemplate - Campaign", new TestCaseDetail
             {
                 FunctionGroup = "CreateEmailCampaignByGroupCommandValidator",
-                TestCaseID = "TC-EMT-CECV-06",
+                TestCaseID = "CreateEmailCampaignByGroupCommandValidator_06",
                 Description = "Missing optional rules triggers no cascading verification rules",
                 ExpectedResult = "No Errors",
                 StatusRound1 = "Passed",
@@ -170,7 +170,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
                 AppliedConditions = new List<string> { "Optionals ignored safely" }
             });
         }
-        // TC-EMT-CECV-07 | A | Invalid TargetGroup Enum -> Error
+        // CreateEmailCampaignByGroupCommandValidator_07 | A | Invalid TargetGroup Enum -> Error
         [Fact]
         public void Validate_InvalidTargetGroup_ShouldHaveError()
         {
@@ -187,7 +187,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("EmailTemplate - Campaign", new TestCaseDetail
             {
                 FunctionGroup = "CreateEmailCampaignByGroupCommandValidator",
-                TestCaseID = "TC-EMT-CECV-07",
+                TestCaseID = "CreateEmailCampaignByGroupCommandValidator_07",
                 Description = "Invalid enum value for TargetGroup causes error",
                 ExpectedResult = "Validation Error",
                 StatusRound1 = "Passed",
@@ -197,7 +197,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             });
         }
 
-        // TC-EMT-CECV-08 | N | Empty SpecificEmails list -> Pass
+        // CreateEmailCampaignByGroupCommandValidator_08 | N | Empty SpecificEmails list -> Pass
         [Fact]
         public void Validate_EmptySpecificEmails_ShouldNotHaveError()
         {
@@ -215,7 +215,7 @@ namespace Tokki.UnitTest.Application.UseCases.EmailTemplates.Commands
             QACollector.LogTestCase("EmailTemplate - Campaign", new TestCaseDetail
             {
                 FunctionGroup = "CreateEmailCampaignByGroupCommandValidator",
-                TestCaseID = "TC-EMT-CECV-08",
+                TestCaseID = "CreateEmailCampaignByGroupCommandValidator_08",
                 Description = "Empty specific emails list does not trigger Must rule",
                 ExpectedResult = "No Errors",
                 StatusRound1 = "Passed",

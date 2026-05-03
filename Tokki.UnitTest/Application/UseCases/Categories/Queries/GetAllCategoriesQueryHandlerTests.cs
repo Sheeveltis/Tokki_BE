@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -26,7 +26,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Queries
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GAC-01 | N | Empty Results → 200 Success
+        // Get_All_Categories_01 | N | Empty Results → 200 Success
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyDatabase_ShouldReturnEmptyList()
@@ -43,7 +43,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Queries
             QACollector.LogTestCase("Category - Get All", new TestCaseDetail
             {
                 FunctionGroup     = "Get All Categories",
-                TestCaseID        = "TC-GAC-01",
+                TestCaseID        = "Get_All_Categories_01",
                 Description       = "Request to fetch all categories when table is empty",
                 ExpectedResult    = "Return 200 Success with zero items in enumerable output",
                 StatusRound1      = "Passed",
@@ -54,7 +54,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Queries
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GAC-02 | N | Populated List → 200 Success
+        // Get_All_Categories_02 | N | Populated List → 200 Success
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_PopulatedDatabase_ShouldReturnItems()
@@ -75,7 +75,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Queries
             QACollector.LogTestCase("Category - Get All", new TestCaseDetail
             {
                 FunctionGroup     = "Get All Categories",
-                TestCaseID        = "TC-GAC-02",
+                TestCaseID        = "Get_All_Categories_02",
                 Description       = "Fetch query with multiple rows available",
                 ExpectedResult    = "Return 200 Success matching expected length array",
                 StatusRound1      = "Passed",
@@ -86,7 +86,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Queries
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GAC-03 | N | DTO Name Mapping
+        // Get_All_Categories_03 | N | DTO Name Mapping
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidQuery_ShouldMapNameAccurately()
@@ -102,7 +102,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Queries
             QACollector.LogTestCase("Category - Get All", new TestCaseDetail
             {
                 FunctionGroup     = "Get All Categories",
-                TestCaseID        = "TC-GAC-03",
+                TestCaseID        = "Get_All_Categories_03",
                 Description       = "Verify structural extraction of literal Name properties",
                 ExpectedResult    = "Name property is identical to entity state",
                 StatusRound1      = "Passed",
@@ -113,7 +113,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Queries
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GAC-04 | N | DTO Slug Mapping
+        // Get_All_Categories_04 | N | DTO Slug Mapping
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidQuery_ShouldMapSlugAccurately()
@@ -130,7 +130,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Queries
             QACollector.LogTestCase("Category - Get All", new TestCaseDetail
             {
                 FunctionGroup     = "Get All Categories",
-                TestCaseID        = "TC-GAC-04",
+                TestCaseID        = "Get_All_Categories_04",
                 Description       = "Verify structural extraction of URL-friendly Slugs",
                 ExpectedResult    = "Slug strings are accurately maintained throughout domain mapping",
                 StatusRound1      = "Passed",
@@ -141,7 +141,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Queries
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GAC-05 | A | Internal Repo Exception → Throws Or 500
+        // Get_All_Categories_05 | A | Internal Repo Exception → Throws Or 500
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DatabaseException_ShouldBubbleUp()
@@ -159,7 +159,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Queries
             QACollector.LogTestCase("Category - Get All", new TestCaseDetail
             {
                 FunctionGroup     = "Get All Categories",
-                TestCaseID        = "TC-GAC-05",
+                TestCaseID        = "Get_All_Categories_05",
                 Description       = "Database driver drops connection during list enumeration",
                 ExpectedResult    = "Exception bubbles up directly through pipeline for global logging",
                 StatusRound1      = "Passed",
@@ -170,7 +170,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Queries
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-GAC-06 | N | DTO CreatedAt Mapping
+        // Get_All_Categories_06 | N | DTO CreatedAt Mapping
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidQuery_ShouldMapCreatedAtProperty()
@@ -189,7 +189,7 @@ namespace Tokki.UnitTest.Application.UseCases.Categories.Queries
             QACollector.LogTestCase("Category - Get All", new TestCaseDetail
             {
                 FunctionGroup     = "Get All Categories",
-                TestCaseID        = "TC-GAC-06",
+                TestCaseID        = "Get_All_Categories_06",
                 Description       = "Verifies standard date projection binding on CategoryDTOs",
                 ExpectedResult    = "DTO populates CreatedAt corresponding perfectly to Entity memory",
                 StatusRound1      = "Passed",

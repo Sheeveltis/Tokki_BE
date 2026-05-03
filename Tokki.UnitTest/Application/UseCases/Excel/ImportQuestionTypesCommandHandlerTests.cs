@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Moq;
 using System;
@@ -69,7 +69,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         };
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-IMQT-01 | N | Excel format errors → appended to FailureList
+        // ImportQuestionTypes_01 | N | Excel format errors → appended to FailureList
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ExcelFormatErrors_ShouldAppendToFailureList()
@@ -100,7 +100,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Import Question Types", new TestCaseDetail
             {
                 FunctionGroup     = "ImportQuestionTypes",
-                TestCaseID        = "TC-EXC-IMQT-01",
+                TestCaseID        = "ImportQuestionTypes_01",
                 Description       = "Excel base service reports format error → added to FailureList",
                 ExpectedResult    = "Return 200, FailureList = 1",
                 StatusRound1      = "Passed",
@@ -111,7 +111,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-IMQT-02 | N | Missing required fields (Code or Name) → FailureList
+        // ImportQuestionTypes_02 | N | Missing required fields (Code or Name) → FailureList
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_MissingCodeOrName_ShouldFailRow()
@@ -145,7 +145,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Import Question Types", new TestCaseDetail
             {
                 FunctionGroup     = "ImportQuestionTypes",
-                TestCaseID        = "TC-EXC-IMQT-02",
+                TestCaseID        = "ImportQuestionTypes_02",
                 Description       = "Row has null/empty Code or Name field",
                 ExpectedResult    = "FailureList = 1 with 'Thiếu dữ liệu bắt buộc'",
                 StatusRound1      = "Passed",
@@ -156,7 +156,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-IMQT-03 | N | Duplicate code in file → second occurrence FailureList
+        // ImportQuestionTypes_03 | N | Duplicate code in file → second occurrence FailureList
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DuplicateCodeInFile_ShouldFailSecondRow()
@@ -196,7 +196,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Import Question Types", new TestCaseDetail
             {
                 FunctionGroup     = "ImportQuestionTypes",
-                TestCaseID        = "TC-EXC-IMQT-03",
+                TestCaseID        = "ImportQuestionTypes_03",
                 Description       = "Two rows with same Code → second fails processedCodesInFile HashSet",
                 ExpectedResult    = "1 Success, 1 Failure with 'trùng lặp trong file'",
                 StatusRound1      = "Passed",
@@ -207,7 +207,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-IMQT-04 | N | Code exists in DB → FailureList
+        // ImportQuestionTypes_04 | N | Code exists in DB → FailureList
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_CodeExistsInDatabase_ShouldFailRow()
@@ -237,7 +237,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Import Question Types", new TestCaseDetail
             {
                 FunctionGroup     = "ImportQuestionTypes",
-                TestCaseID        = "TC-EXC-IMQT-04",
+                TestCaseID        = "ImportQuestionTypes_04",
                 Description       = "Code already exists in database → existingDbCodesSet.Contains check fails row",
                 ExpectedResult    = "FailureList = 1, 'đã tồn tại trong hệ thống'",
                 StatusRound1      = "Passed",
@@ -248,7 +248,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-IMQT-05 | N | Valid row → entity created and inserted to DB
+        // ImportQuestionTypes_05 | N | Valid row → entity created and inserted to DB
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidRow_ShouldCreateEntityAndInsert()
@@ -284,7 +284,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Import Question Types", new TestCaseDetail
             {
                 FunctionGroup     = "ImportQuestionTypes",
-                TestCaseID        = "TC-EXC-IMQT-05",
+                TestCaseID        = "ImportQuestionTypes_05",
                 Description       = "Valid row passes all checks → entity created and bulk inserted to DB",
                 ExpectedResult    = "Return 200, SuccessList = 1, AddRangeAsync + SaveChangesAsync called",
                 StatusRound1      = "Passed",
@@ -295,7 +295,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-IMQT-06 | A | Database save throws → return DB_ERROR failure
+        // ImportQuestionTypes_06 | A | Database save throws → return DB_ERROR failure
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DatabaseThrowsException_ShouldReturnDbErrorFailure()
@@ -330,7 +330,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Import Question Types", new TestCaseDetail
             {
                 FunctionGroup     = "ImportQuestionTypes",
-                TestCaseID        = "TC-EXC-IMQT-06",
+                TestCaseID        = "ImportQuestionTypes_06",
                 Description       = "SaveChangesAsync throws exception → DB_ERROR failure returned",
                 ExpectedResult    = "Return Failure DB_ERROR with exception message",
                 StatusRound1      = "Passed",

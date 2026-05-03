@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -58,7 +58,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Reject", new TestCaseDetail
             {
                 FunctionGroup     = "RejectExamTemplate",
-                TestCaseID        = "TC-EXMT-REJ-01",
+                TestCaseID        = "RejectExamTemplate_01",
                 Description       = "Template not found → Failure 'Không tìm thấy đề thi mẫu'",
                 ExpectedResult    = "Return Failure",
                 StatusRound1      = "Passed",
@@ -84,7 +84,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Reject", new TestCaseDetail
             {
                 FunctionGroup     = "RejectExamTemplate",
-                TestCaseID        = "TC-EXMT-REJ-02",
+                TestCaseID        = "RejectExamTemplate_02",
                 Description       = "Template is Draft (not PendingApproval) → Failure 'không ở trạng thái chờ duyệt'",
                 ExpectedResult    = "Return Failure",
                 StatusRound1      = "Passed",
@@ -111,7 +111,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Reject", new TestCaseDetail
             {
                 FunctionGroup     = "RejectExamTemplate",
-                TestCaseID        = "TC-EXMT-REJ-03",
+                TestCaseID        = "RejectExamTemplate_03",
                 Description       = "Reason is empty → Failure 'Vui lòng nhập lý do từ chối'",
                 ExpectedResult    = "Return Failure",
                 StatusRound1      = "Passed",
@@ -143,7 +143,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Reject", new TestCaseDetail
             {
                 FunctionGroup     = "RejectExamTemplate",
-                TestCaseID        = "TC-EXMT-REJ-04",
+                TestCaseID        = "RejectExamTemplate_04",
                 Description       = "PendingApproval + valid reason → Status = Rejected, Return Success",
                 ExpectedResult    = "Return Success(true), Status = Rejected",
                 StatusRound1      = "Passed",
@@ -182,7 +182,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Reject", new TestCaseDetail
             {
                 FunctionGroup     = "RejectExamTemplate",
-                TestCaseID        = "TC-EXMT-REJ-05",
+                TestCaseID        = "RejectExamTemplate_05",
                 Description       = "Creator has email → SendExamTemplateRejectedAsync called with correct params",
                 ExpectedResult    = "Return Success, email sent once",
                 StatusRound1      = "Passed",
@@ -219,7 +219,7 @@ namespace Tokki.UnitTest.Application.UseCases.ExamTemplates
             QACollector.LogTestCase("Exam Template - Reject", new TestCaseDetail
             {
                 FunctionGroup     = "RejectExamTemplate",
-                TestCaseID        = "TC-EXMT-REJ-06",
+                TestCaseID        = "RejectExamTemplate_06",
                 Description       = "Email sending throws → swallowed by try/catch, rejection still succeeds",
                 ExpectedResult    = "Return Success(true) despite email failure",
                 StatusRound1      = "Passed",

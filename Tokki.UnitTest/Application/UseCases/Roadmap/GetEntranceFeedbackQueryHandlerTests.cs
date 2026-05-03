@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using MediatR;
 using Moq;
 using System;
@@ -39,7 +39,7 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             SelfDeclaredLevel = CurrentTopikLevel.Level_1
         };
 
-        // TC-RM-GEF-01 | A | HasPendingWritingAnswers → 202
+        // GetEntranceFeedback_01 | A | HasPendingWritingAnswers → 202
         [Fact]
         public async Task Handle_PendingWritingAnswers_ShouldReturn202()
         {
@@ -48,10 +48,10 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             var result = await CreateHandler(examRepo).Handle(MakeQuery(), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(202);
-            QACollector.LogTestCase("Roadmap - Get Entrance Feedback", new TestCaseDetail { FunctionGroup = "GetEntranceFeedback", TestCaseID = "TC-RM-GEF-01", Description = "Pending writing answers → 202", ExpectedResult = "IsSuccess=false, 202", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "HasPendingWritingAnswersAsync=true" } });
+            QACollector.LogTestCase("Roadmap - Get Entrance Feedback", new TestCaseDetail { FunctionGroup = "GetEntranceFeedback", TestCaseID = "GetEntranceFeedback_01", Description = "Pending writing answers → 202", ExpectedResult = "IsSuccess=false, 202", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "HasPendingWritingAnswersAsync=true" } });
         }
 
-        // TC-RM-GEF-02 | A | UserExam result not found via mediator → 404
+        // GetEntranceFeedback_02 | A | UserExam result not found via mediator → 404
         [Fact]
         public async Task Handle_ExamResultNotFound_ShouldReturn404()
         {
@@ -63,10 +63,10 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             var result = await CreateHandler(examRepo, mediator: mediator).Handle(MakeQuery(), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(404);
-            QACollector.LogTestCase("Roadmap - Get Entrance Feedback", new TestCaseDetail { FunctionGroup = "GetEntranceFeedback", TestCaseID = "TC-RM-GEF-02", Description = "Mediator returns failure for exam result → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetUserExamResultQuery → failure" } });
+            QACollector.LogTestCase("Roadmap - Get Entrance Feedback", new TestCaseDetail { FunctionGroup = "GetEntranceFeedback", TestCaseID = "GetEntranceFeedback_02", Description = "Mediator returns failure for exam result → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetUserExamResultQuery → failure" } });
         }
 
-        // TC-RM-GEF-03 | A | IncorrectQuestionTypes returns null → 404
+        // GetEntranceFeedback_03 | A | IncorrectQuestionTypes returns null → 404
         [Fact]
         public async Task Handle_NullQuestionTypes_ShouldReturn404()
         {
@@ -81,10 +81,10 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             var result = await CreateHandler(examRepo, mediator: mediator).Handle(MakeQuery(), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(404);
-            QACollector.LogTestCase("Roadmap - Get Entrance Feedback", new TestCaseDetail { FunctionGroup = "GetEntranceFeedback", TestCaseID = "TC-RM-GEF-03", Description = "GetIncorrectQuestionTypes returns null → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "QuestionTypes=null → failure" } });
+            QACollector.LogTestCase("Roadmap - Get Entrance Feedback", new TestCaseDetail { FunctionGroup = "GetEntranceFeedback", TestCaseID = "GetEntranceFeedback_03", Description = "GetIncorrectQuestionTypes returns null → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "QuestionTypes=null → failure" } });
         }
 
-        // TC-RM-GEF-04 | N | Happy path: all data available → EntranceFeedbackResult returned
+        // GetEntranceFeedback_04 | N | Happy path: all data available → EntranceFeedbackResult returned
         [Fact]
         public async Task Handle_HappyPath_ShouldReturnFeedbackResult()
         {
@@ -104,10 +104,10 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             result.Data.Should().NotBeNull();
             result.Data!.AiFeedback.Should().Be("Excellent!");
             result.Data.DurationOptions.Should().HaveCount(3);
-            QACollector.LogTestCase("Roadmap - Get Entrance Feedback", new TestCaseDetail { FunctionGroup = "GetEntranceFeedback", TestCaseID = "TC-RM-GEF-04", Description = "Happy path: AiFeedback and 3 DurationOptions returned", ExpectedResult = "IsSuccess=true, AiFeedback='Excellent!', DurationOptions.Count=3", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "All data available", "AiFeedback and options returned" } });
+            QACollector.LogTestCase("Roadmap - Get Entrance Feedback", new TestCaseDetail { FunctionGroup = "GetEntranceFeedback", TestCaseID = "GetEntranceFeedback_04", Description = "Happy path: AiFeedback and 3 DurationOptions returned", ExpectedResult = "IsSuccess=true, AiFeedback='Excellent!', DurationOptions.Count=3", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "All data available", "AiFeedback and options returned" } });
         }
 
-        // TC-RM-GEF-05 | N | AI returns empty feedback → fallback message generated
+        // GetEntranceFeedback_05 | N | AI returns empty feedback → fallback message generated
         [Fact]
         public async Task Handle_AiEmptyFeedback_ShouldUseFallbackMessage()
         {
@@ -125,10 +125,10 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             var result = await CreateHandler(examRepo, aiService, mediator).Handle(MakeQuery(), CancellationToken.None);
             result.IsSuccess.Should().BeTrue();
             result.Data!.AiFeedback.Should().NotBeNullOrEmpty();
-            QACollector.LogTestCase("Roadmap - Get Entrance Feedback", new TestCaseDetail { FunctionGroup = "GetEntranceFeedback", TestCaseID = "TC-RM-GEF-05", Description = "AI returns empty string → fallback message used", ExpectedResult = "IsSuccess=true, AiFeedback non-empty (fallback)", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "AI returns ''", "fallback feedback generated" } });
+            QACollector.LogTestCase("Roadmap - Get Entrance Feedback", new TestCaseDetail { FunctionGroup = "GetEntranceFeedback", TestCaseID = "GetEntranceFeedback_05", Description = "AI returns empty string → fallback message used", ExpectedResult = "IsSuccess=true, AiFeedback non-empty (fallback)", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "AI returns ''", "fallback feedback generated" } });
         }
 
-        // TC-RM-GEF-06 | B | HasPendingWritingAnswersAsync called with correct UserExamId
+        // GetEntranceFeedback_06 | B | HasPendingWritingAnswersAsync called with correct UserExamId
         [Fact]
         public async Task Handle_ValidQuery_HasPendingCalledWithCorrectId()
         {
@@ -136,9 +136,9 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             examRepo.Setup(x => x.HasPendingWritingAnswersAsync("UE-SPECIFIC", It.IsAny<CancellationToken>())).ReturnsAsync(true);
             await CreateHandler(examRepo).Handle(new GetEntranceFeedbackQuery { UserExamId = "UE-SPECIFIC", UserId = "USER-001", TargetAim = TargetAimLevel.Topik_I_Level1, SelfDeclaredLevel = CurrentTopikLevel.Level_1 }, CancellationToken.None);
             examRepo.Verify(x => x.HasPendingWritingAnswersAsync("UE-SPECIFIC", It.IsAny<CancellationToken>()), Times.Once);
-            QACollector.LogTestCase("Roadmap - Get Entrance Feedback", new TestCaseDetail { FunctionGroup = "GetEntranceFeedback", TestCaseID = "TC-RM-GEF-06", Description = "HasPendingWritingAnswersAsync called with exact UserExamId", ExpectedResult = "Times.Once with 'UE-SPECIFIC'", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "UserExamId passed correctly" } });
+            QACollector.LogTestCase("Roadmap - Get Entrance Feedback", new TestCaseDetail { FunctionGroup = "GetEntranceFeedback", TestCaseID = "GetEntranceFeedback_06", Description = "HasPendingWritingAnswersAsync called with exact UserExamId", ExpectedResult = "Times.Once with 'UE-SPECIFIC'", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "UserExamId passed correctly" } });
         }
-        // TC-RM-GEF-07 | N | Branch: TargetAim Topik_II, Score>=120 -> Level_3, 4 weak types -> 60Days
+        // GetEntranceFeedback_07 | N | Branch: TargetAim Topik_II, Score>=120 -> Level_3, 4 weak types -> 60Days
         [Fact]
         public async Task Handle_TargetAimTopikII_ShouldCalculateLevelAndDurationOptionsCorrectly()
         {
@@ -184,10 +184,10 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             recommendedOption.Should().NotBeNull();
             recommendedOption!.Days.Should().Be(60);
 
-            QACollector.LogTestCase("Roadmap - Get Entrance Feedback", new TestCaseDetail { FunctionGroup = "GetEntranceFeedback", TestCaseID = "TC-RM-GEF-07", Description = "Topik II branch with Score>=120 mapping Level 3 and 4 weak types mapping 60 Days", ExpectedResult = "Level=3, 60 Days recommended", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "CalculateLevel Topik II branch", "recommend60 = true" } });
+            QACollector.LogTestCase("Roadmap - Get Entrance Feedback", new TestCaseDetail { FunctionGroup = "GetEntranceFeedback", TestCaseID = "GetEntranceFeedback_07", Description = "Topik II branch with Score>=120 mapping Level 3 and 4 weak types mapping 60 Days", ExpectedResult = "Level=3, 60 Days recommended", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "CalculateLevel Topik II branch", "recommend60 = true" } });
         }
 
-        // TC-RM-GEF-08 | N | Branch: TargetAim Topik_I, Score>=140 -> Level_2, 9 weak types -> 90Days
+        // GetEntranceFeedback_08 | N | Branch: TargetAim Topik_I, Score>=140 -> Level_2, 9 weak types -> 90Days
         [Fact]
         public async Task Handle_TargetAimTopikI_ShouldCalculateLevelAndDurationOptionsCorrectly()
         {
@@ -238,7 +238,7 @@ namespace Tokki.UnitTest.Application.UseCases.Roadmap
             recommendedOption.Should().NotBeNull();
             recommendedOption!.Days.Should().Be(90);
 
-            QACollector.LogTestCase("Roadmap - Get Entrance Feedback", new TestCaseDetail { FunctionGroup = "GetEntranceFeedback", TestCaseID = "TC-RM-GEF-08", Description = "Topik I branch with TopikIScore>=140 mapping Level 2 and 9 weak types mapping 90 Days", ExpectedResult = "Level=1 (min check), 90 Days recommended", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "CalculateLevel Topik I branch", "recommend90 = true" } });
+            QACollector.LogTestCase("Roadmap - Get Entrance Feedback", new TestCaseDetail { FunctionGroup = "GetEntranceFeedback", TestCaseID = "GetEntranceFeedback_08", Description = "Topik I branch with TopikIScore>=140 mapping Level 2 and 9 weak types mapping 90 Days", ExpectedResult = "Level=1 (min check), 90 Days recommended", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "CalculateLevel Topik I branch", "recommend90 = true" } });
         }
     }
 }

@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -51,7 +51,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             new() { PronunciationRuleId = "RULE-1", TargetScript = "가나다", RawScript = raw, PhoneticScript = "ga na da", Meaning = "Korean alphabet", SortOrder = 1 };
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-IPE-01 | A | Excel returns null → EXCEL_EMPTY failure
+        // ImportPronunciationExample_01 | A | Excel returns null → EXCEL_EMPTY failure
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ExtractReturnsNull_ShouldReturnExcelEmpty()
@@ -72,7 +72,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Import Pronunciation", new TestCaseDetail
             {
                 FunctionGroup     = "ImportPronunciationExample",
-                TestCaseID        = "TC-EXC-IPE-01",
+                TestCaseID        = "ImportPronunciationExample_01",
                 Description       = "ExtractExampleDataAsync returns null",
                 ExpectedResult    = "Return Failure EXCEL_EMPTY",
                 StatusRound1      = "Passed",
@@ -83,7 +83,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-IPE-02 | A | Excel returns empty list → EXCEL_EMPTY failure
+        // ImportPronunciationExample_02 | A | Excel returns empty list → EXCEL_EMPTY failure
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ExtractReturnsEmpty_ShouldReturnExcelEmpty()
@@ -104,7 +104,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Import Pronunciation", new TestCaseDetail
             {
                 FunctionGroup     = "ImportPronunciationExample",
-                TestCaseID        = "TC-EXC-IPE-02",
+                TestCaseID        = "ImportPronunciationExample_02",
                 Description       = "ExtractExampleDataAsync returns empty list",
                 ExpectedResult    = "Return Failure EXCEL_EMPTY",
                 StatusRound1      = "Passed",
@@ -115,7 +115,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-IPE-03 | N | Valid data → TTS + Cloudinary called, entity created
+        // ImportPronunciationExample_03 | N | Valid data → TTS + Cloudinary called, entity created
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidData_ShouldCallTtsAndCloudinaryAndInsert()
@@ -160,7 +160,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Import Pronunciation", new TestCaseDetail
             {
                 FunctionGroup     = "ImportPronunciationExample",
-                TestCaseID        = "TC-EXC-IPE-03",
+                TestCaseID        = "ImportPronunciationExample_03",
                 Description       = "Valid data → TTS synthesizes audio, Cloudinary uploads, entity inserted",
                 ExpectedResult    = "Return 200, SuccessList = 1, all services called",
                 StatusRound1      = "Passed",
@@ -171,7 +171,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-IPE-04 | N | TTS/Cloudinary fails → entity still created (no audio), goes to success
+        // ImportPronunciationExample_04 | N | TTS/Cloudinary fails → entity still created (no audio), goes to success
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_TtsThrows_ShouldStillCreateEntityWithNoAudio()
@@ -209,7 +209,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Import Pronunciation", new TestCaseDetail
             {
                 FunctionGroup     = "ImportPronunciationExample",
-                TestCaseID        = "TC-EXC-IPE-04",
+                TestCaseID        = "ImportPronunciationExample_04",
                 Description       = "TTS service throws → inner try/catch swallows it, entity created without audio",
                 ExpectedResult    = "Return 200, SuccessList = 1 with null AudioUrl",
                 StatusRound1      = "Passed",
@@ -220,7 +220,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-IPE-05 | A | AddRangeAsync throws → DatabaseError failure
+        // ImportPronunciationExample_05 | A | AddRangeAsync throws → DatabaseError failure
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_AddRangeThrows_ShouldReturnDatabaseError()
@@ -262,7 +262,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Import Pronunciation", new TestCaseDetail
             {
                 FunctionGroup     = "ImportPronunciationExample",
-                TestCaseID        = "TC-EXC-IPE-05",
+                TestCaseID        = "ImportPronunciationExample_05",
                 Description       = "AddRangeAsync throws exception during database save",
                 ExpectedResult    = "Return Failure DatabaseError",
                 StatusRound1      = "Passed",
@@ -273,7 +273,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // TC-EXC-IPE-06 | N | Multiple items → summary message has correct counts
+        // ImportPronunciationExample_06 | N | Multiple items → summary message has correct counts
         // ═══════════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_MultipleItems_ShouldReturnCorrectSummaryMessage()
@@ -321,7 +321,7 @@ namespace Tokki.UnitTest.Application.UseCases.Excel
             QACollector.LogTestCase("Excel - Import Pronunciation", new TestCaseDetail
             {
                 FunctionGroup     = "ImportPronunciationExample",
-                TestCaseID        = "TC-EXC-IPE-06",
+                TestCaseID        = "ImportPronunciationExample_06",
                 Description       = "2 valid items processed → summary message shows correct counts",
                 ExpectedResult    = "Return 200, SuccessList = 2, summary 'Thành công: 2'",
                 StatusRound1      = "Passed",

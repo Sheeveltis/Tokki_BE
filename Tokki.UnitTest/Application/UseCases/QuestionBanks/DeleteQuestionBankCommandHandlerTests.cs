@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -26,7 +26,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-DEL-01 | A | QB not found → 404
+        // DeleteQuestionBank_01 | A | QB not found → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_QBNotFound_ShouldReturn404()
@@ -46,7 +46,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteQuestionBank",
-                TestCaseID        = "TC-QB-DEL-01",
+                TestCaseID        = "DeleteQuestionBank_01",
                 Description       = "QuestionBankId not found → 404 QuestionBankNotFound",
                 ExpectedResult    = "IsSuccess=false, StatusCode=404",
                 StatusRound1      = "Passed",
@@ -57,7 +57,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-DEL-02 | A | QB already Deleted → 409 Conflict
+        // DeleteQuestionBank_02 | A | QB already Deleted → 409 Conflict
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_AlreadyDeleted_ShouldReturn409()
@@ -78,7 +78,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteQuestionBank",
-                TestCaseID        = "TC-QB-DEL-02",
+                TestCaseID        = "DeleteQuestionBank_02",
                 Description       = "QB already Deleted → 409 Conflict (QuestionBankHasDeleted)",
                 ExpectedResult    = "IsSuccess=false, StatusCode=409",
                 StatusRound1      = "Passed",
@@ -89,7 +89,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-DEL-03 | N | Draft QB → hard delete options + set Deleted, 200
+        // DeleteQuestionBank_03 | N | Draft QB → hard delete options + set Deleted, 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DraftQB_ShouldHardDeleteOptionsAndReturn200()
@@ -117,7 +117,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteQuestionBank",
-                TestCaseID        = "TC-QB-DEL-03",
+                TestCaseID        = "DeleteQuestionBank_03",
                 Description       = "Draft QB: DeleteByQuestionBankIdAsync called, status set to Deleted, 200 returned",
                 ExpectedResult    = "IsSuccess=true, StatusCode=200, options hard deleted",
                 StatusRound1      = "Passed",
@@ -128,7 +128,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-DEL-04 | N | Active QB → hard delete options + set Deleted, 200
+        // DeleteQuestionBank_04 | N | Active QB → hard delete options + set Deleted, 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ActiveQB_ShouldHardDeleteOptionsAndReturn200()
@@ -154,7 +154,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteQuestionBank",
-                TestCaseID        = "TC-QB-DEL-04",
+                TestCaseID        = "DeleteQuestionBank_04",
                 Description       = "Active QB: DeleteByQuestionBankIdAsync called, 200 returned",
                 ExpectedResult    = "IsSuccess=true, StatusCode=200, options hard deleted",
                 StatusRound1      = "Passed",
@@ -165,7 +165,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-DEL-05 | N | PendingApproval QB → only status set to Deleted, options NOT deleted
+        // DeleteQuestionBank_05 | N | PendingApproval QB → only status set to Deleted, options NOT deleted
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_PendingApprovalQB_ShouldOnlySetStatusDeleted()
@@ -188,7 +188,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteQuestionBank",
-                TestCaseID        = "TC-QB-DEL-05",
+                TestCaseID        = "DeleteQuestionBank_05",
                 Description       = "PendingApproval QB: only status changed to Deleted, DeleteByQuestionBankIdAsync not called",
                 ExpectedResult    = "IsSuccess=true, DeleteByQuestionBankIdAsync Times.Never",
                 StatusRound1      = "Passed",
@@ -199,7 +199,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-DEL-06 | A | Repository throws exception → 500
+        // DeleteQuestionBank_06 | A | Repository throws exception → 500
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldReturn500()
@@ -229,7 +229,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Delete", new TestCaseDetail
             {
                 FunctionGroup     = "DeleteQuestionBank",
-                TestCaseID        = "TC-QB-DEL-06",
+                TestCaseID        = "DeleteQuestionBank_06",
                 Description       = "Repository throws on UpdateAsync → caught → 500 ServerError",
                 ExpectedResult    = "IsSuccess=false, StatusCode=500",
                 StatusRound1      = "Passed",

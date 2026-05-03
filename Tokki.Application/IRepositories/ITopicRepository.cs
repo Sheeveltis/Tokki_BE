@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Tokki.Application.UseCases.Topics.DTOs;
@@ -17,17 +17,17 @@ namespace Tokki.Application.IRepositories
         int pageSize,
         string? searchTerm = null,
         TopicStatus? status = null,
-        TopicLevel? level = null);
+        int? level = null);
         Task<(List<Topic> Items, int TotalCount)> GetPagedForUserAsync(
        int pageNumber,
        int pageSize,
        string? searchTerm = null,
-       TopicLevel? level = null);
+       int? level = null);
         Task<(List<Topic> items, int totalCount)> GetVocabTopicsPagedForUserAsync(
     int pageNumber,
     int pageSize,
     string? searchTerm = null,
-    TopicLevel? level = null
+    int? level = null
 );
         Task<bool> IsTopicNameExistsAsync(string topicName, string? excludeTopicId = null);
         Task<int> CountVocabulariesInTopicAsync(string topicId);
@@ -82,7 +82,7 @@ namespace Tokki.Application.IRepositories
             int pageSize,
             string? searchTerm,
             TopicStatus? status,
-            TopicLevel? level
+            int? level
         );
         //Hàm của kiệt
         Task ShiftOrderIndexBetweenAsync(

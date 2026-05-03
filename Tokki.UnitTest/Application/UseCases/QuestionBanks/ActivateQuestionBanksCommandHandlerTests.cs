@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -27,7 +27,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-ACT-01 | A | Empty QuestionBankIds → 400
+        // ActivateQuestionBanks_01 | A | Empty QuestionBankIds → 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyIds_ShouldReturn400()
@@ -46,7 +46,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Activate", new TestCaseDetail
             {
                 FunctionGroup     = "ActivateQuestionBanks",
-                TestCaseID        = "TC-QB-ACT-01",
+                TestCaseID        = "ActivateQuestionBanks_01",
                 Description       = "Empty QuestionBankIds list → 400 BadRequest",
                 ExpectedResult    = "IsSuccess=false, StatusCode=400",
                 StatusRound1      = "Passed",
@@ -57,7 +57,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-ACT-02 | A | One ID not found → 404
+        // ActivateQuestionBanks_02 | A | One ID not found → 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_IdNotFound_ShouldReturn404()
@@ -80,7 +80,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Activate", new TestCaseDetail
             {
                 FunctionGroup     = "ActivateQuestionBanks",
-                TestCaseID        = "TC-QB-ACT-02",
+                TestCaseID        = "ActivateQuestionBanks_02",
                 Description       = "Requested QB not found in DB → 404 QuestionBankNotFound",
                 ExpectedResult    = "IsSuccess=false, StatusCode=404",
                 StatusRound1      = "Passed",
@@ -91,7 +91,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-ACT-03 | A | Non-Draft QB in list → 403 Forbidden
+        // ActivateQuestionBanks_03 | A | Non-Draft QB in list → 403 Forbidden
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NonDraftQB_ShouldReturn403()
@@ -116,7 +116,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Activate", new TestCaseDetail
             {
                 FunctionGroup     = "ActivateQuestionBanks",
-                TestCaseID        = "TC-QB-ACT-03",
+                TestCaseID        = "ActivateQuestionBanks_03",
                 Description       = "QB not in Draft status (PendingApproval) → 403 Forbidden",
                 ExpectedResult    = "IsSuccess=false, StatusCode=403",
                 StatusRound1      = "Passed",
@@ -127,7 +127,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-ACT-04 | N | Happy path: Draft QBs → all set Active, 200
+        // ActivateQuestionBanks_04 | N | Happy path: Draft QBs → all set Active, 200
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DraftQBs_ShouldActivateAndReturn200()
@@ -156,7 +156,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Activate", new TestCaseDetail
             {
                 FunctionGroup     = "ActivateQuestionBanks",
-                TestCaseID        = "TC-QB-ACT-04",
+                TestCaseID        = "ActivateQuestionBanks_04",
                 Description       = "2 Draft QBs → activated, Data=2, UpdateRangeAsync+SaveChanges called, 200",
                 ExpectedResult    = "IsSuccess=true, StatusCode=200, Data=2",
                 StatusRound1      = "Passed",
@@ -167,7 +167,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-ACT-05 | N | Data returned equals count of activated QBs
+        // ActivateQuestionBanks_05 | N | Data returned equals count of activated QBs
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_DraftQBs_ShouldReturnCorrectActivatedCount()
@@ -196,7 +196,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Activate", new TestCaseDetail
             {
                 FunctionGroup     = "ActivateQuestionBanks",
-                TestCaseID        = "TC-QB-ACT-05",
+                TestCaseID        = "ActivateQuestionBanks_05",
                 Description       = "3 Draft QBs activated → Data (activated count) = 3",
                 ExpectedResult    = "IsSuccess=true, Data=3",
                 StatusRound1      = "Passed",
@@ -207,7 +207,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-QB-ACT-06 | A | Repository throws on UpdateRangeAsync → 500
+        // ActivateQuestionBanks_06 | A | Repository throws on UpdateRangeAsync → 500
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_RepositoryThrows_ShouldReturn500()
@@ -236,7 +236,7 @@ namespace Tokki.UnitTest.Application.UseCases.QuestionBanks
             QACollector.LogTestCase("Question Bank - Activate", new TestCaseDetail
             {
                 FunctionGroup     = "ActivateQuestionBanks",
-                TestCaseID        = "TC-QB-ACT-06",
+                TestCaseID        = "ActivateQuestionBanks_06",
                 Description       = "UpdateRangeAsync throws exception → caught → 500 ServerError",
                 ExpectedResult    = "IsSuccess=false, StatusCode=500",
                 StatusRound1      = "Passed",

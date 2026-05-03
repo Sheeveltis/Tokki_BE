@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -51,7 +51,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample.Commands.AddExam
         );
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCEX-ADD-01 | A | No User -> 401
+        // AddVocabularyExamplesCommandHandler_01 | A | No User -> 401
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_Unauthorized_ShouldReturn401()
@@ -68,7 +68,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample.Commands.AddExam
             QACollector.LogTestCase("Vocabulary Example - Add", new TestCaseDetail
             {
                 FunctionGroup = "AddVocabularyExamplesCommandHandler",
-                TestCaseID = "TC-VOCEX-ADD-01",
+                TestCaseID = "AddVocabularyExamplesCommandHandler_01",
                 Description = "Returns error if not logged in",
                 ExpectedResult = "Return 401",
                 StatusRound1 = "Passed",
@@ -79,7 +79,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample.Commands.AddExam
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCEX-ADD-02 | A | Vocab ID Empty -> 400
+        // AddVocabularyExamplesCommandHandler_02 | A | Vocab ID Empty -> 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyVocabId_ShouldReturn400()
@@ -95,7 +95,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample.Commands.AddExam
             QACollector.LogTestCase("Vocabulary Example - Add", new TestCaseDetail
             {
                 FunctionGroup = "AddVocabularyExamplesCommandHandler",
-                TestCaseID = "TC-VOCEX-ADD-02",
+                TestCaseID = "AddVocabularyExamplesCommandHandler_02",
                 Description = "Vocab ID missing validation check",
                 ExpectedResult = "Return 400",
                 StatusRound1 = "Passed",
@@ -106,7 +106,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample.Commands.AddExam
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCEX-ADD-03 | A | Examples Empty -> 400
+        // AddVocabularyExamplesCommandHandler_03 | A | Examples Empty -> 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyExamples_ShouldReturn400()
@@ -126,7 +126,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample.Commands.AddExam
             QACollector.LogTestCase("Vocabulary Example - Add", new TestCaseDetail
             {
                 FunctionGroup = "AddVocabularyExamplesCommandHandler",
-                TestCaseID = "TC-VOCEX-ADD-03",
+                TestCaseID = "AddVocabularyExamplesCommandHandler_03",
                 Description = "Empty request examples collection validation",
                 ExpectedResult = "Return 400",
                 StatusRound1 = "Passed",
@@ -137,7 +137,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample.Commands.AddExam
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCEX-ADD-04 | A | Vocab Not Found -> 404
+        // AddVocabularyExamplesCommandHandler_04 | A | Vocab Not Found -> 404
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_VocabNotFound_ShouldReturn404()
@@ -158,7 +158,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample.Commands.AddExam
             QACollector.LogTestCase("Vocabulary Example - Add", new TestCaseDetail
             {
                 FunctionGroup = "AddVocabularyExamplesCommandHandler",
-                TestCaseID = "TC-VOCEX-ADD-04",
+                TestCaseID = "AddVocabularyExamplesCommandHandler_04",
                 Description = "Checks if target vocabulary exists",
                 ExpectedResult = "Return 404",
                 StatusRound1 = "Passed",
@@ -169,7 +169,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample.Commands.AddExam
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCEX-ADD-05 | A | Blank Sentence inside Collection -> fails entirely 400
+        // AddVocabularyExamplesCommandHandler_05 | A | Blank Sentence inside Collection -> fails entirely 400
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_BlankSentence_ShouldReturn400()
@@ -190,7 +190,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample.Commands.AddExam
             QACollector.LogTestCase("Vocabulary Example - Add", new TestCaseDetail
             {
                 FunctionGroup = "AddVocabularyExamplesCommandHandler",
-                TestCaseID = "TC-VOCEX-ADD-05",
+                TestCaseID = "AddVocabularyExamplesCommandHandler_05",
                 Description = "Throws error if any of target sentences are empty",
                 ExpectedResult = "Return 400",
                 StatusRound1 = "Passed",
@@ -201,7 +201,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample.Commands.AddExam
         }
 
         // ═══════════════════════════════════════════════════════════
-        // TC-VOCEX-ADD-06 | N | Includes duplicate and valid items -> skips dup cleanly
+        // AddVocabularyExamplesCommandHandler_06 | N | Includes duplicate and valid items -> skips dup cleanly
         // ═══════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidAndDuplicate_ShouldAddValidAndSkipDup()
@@ -233,7 +233,7 @@ namespace Tokki.UnitTest.Application.UseCases.VocabularyExample.Commands.AddExam
             QACollector.LogTestCase("Vocabulary Example - Add", new TestCaseDetail
             {
                 FunctionGroup = "AddVocabularyExamplesCommandHandler",
-                TestCaseID = "TC-VOCEX-ADD-06",
+                TestCaseID = "AddVocabularyExamplesCommandHandler_06",
                 Description = "Properly filters and inserts new examples only",
                 ExpectedResult = "Return 201 with Created=1, Skipped=1",
                 StatusRound1 = "Passed",

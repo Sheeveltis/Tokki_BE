@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -58,19 +58,19 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
                 (http  ?? GetHttpContextMock()).Object);
 
         private static CreateTopicCommand MakeCommand(string name = "Korean Basics")
-            => new CreateTopicCommand { TopicName = name, Level = TopicLevel.Level1, Description = "Test topic" };
+            => new CreateTopicCommand { TopicName = name, Level = (int)TopicLevel.Level1, Description = "Test topic" };
 
-        // TC-TOPIC-CREATE-01 | A | No authenticated user → 401 failure
+        // CreateTopic_01 | A | No authenticated user → 401 failure
         [Fact]
         public async Task Handle_NoAuthUser_ShouldReturn401()
         {
             var result = await CreateHandler(http: GetHttpContextMock(null)).Handle(MakeCommand(), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(401);
-            QACollector.LogTestCase("Topic - Create", new TestCaseDetail { FunctionGroup = "CreateTopic", TestCaseID = "TC-TOPIC-CREATE-01", Description = "No auth user → 401", ExpectedResult = "IsSuccess=false, 401", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "HttpContext User has no NameIdentifier claim" } });
+            QACollector.LogTestCase("Topic - Create", new TestCaseDetail { FunctionGroup = "CreateTopic", TestCaseID = "CreateTopic_01", Description = "No auth user → 401", ExpectedResult = "IsSuccess=false, 401", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "HttpContext User has no NameIdentifier claim" } });
         }
 
-        // TC-TOPIC-CREATE-02 | A | Duplicate topic name → 409 conflict
+        // CreateTopic_02 | A | Duplicate topic name → 409 conflict
         [Fact]
         public async Task Handle_DuplicateTopicName_ShouldReturn409()
         {
@@ -78,10 +78,10 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
             var result = await CreateHandler(repo: repo).Handle(MakeCommand(), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(409);
-            QACollector.LogTestCase("Topic - Create", new TestCaseDetail { FunctionGroup = "CreateTopic", TestCaseID = "TC-TOPIC-CREATE-02", Description = "Duplicate topic name → 409", ExpectedResult = "IsSuccess=false, 409", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "IsTopicNameExistsAsync returns true" } });
+            QACollector.LogTestCase("Topic - Create", new TestCaseDetail { FunctionGroup = "CreateTopic", TestCaseID = "CreateTopic_02", Description = "Duplicate topic name → 409", ExpectedResult = "IsSuccess=false, 409", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "IsTopicNameExistsAsync returns true" } });
         }
 
-        // TC-TOPIC-CREATE-03 | N | Happy path → 201 with generated TopicId
+        // CreateTopic_03 | N | Happy path → 201 with generated TopicId
         [Fact]
         public async Task Handle_ValidRequest_ShouldReturn201WithTopicId()
         {
@@ -90,10 +90,10 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(201);
             result.Data.Should().Be("TP-NEW");
-            QACollector.LogTestCase("Topic - Create", new TestCaseDetail { FunctionGroup = "CreateTopic", TestCaseID = "TC-TOPIC-CREATE-03", Description = "Valid request → 201, Data='TP-NEW'", ExpectedResult = "IsSuccess=true, 201", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Auth OK, no duplicate" } });
+            QACollector.LogTestCase("Topic - Create", new TestCaseDetail { FunctionGroup = "CreateTopic", TestCaseID = "CreateTopic_03", Description = "Valid request → 201, Data='TP-NEW'", ExpectedResult = "IsSuccess=true, 201", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Auth OK, no duplicate" } });
         }
 
-        // TC-TOPIC-CREATE-04 | N | Topic created with Status=Draft and TopicType=VocabStudy
+        // CreateTopic_04 | N | Topic created with Status=Draft and TopicType=VocabStudy
         [Fact]
         public async Task Handle_ValidRequest_TopicCreatedWithDraftStatusAndVocabStudyType()
         {
@@ -104,10 +104,10 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
             captured.Should().NotBeNull();
             captured!.Status.Should().Be(TopicStatus.Draft);
             captured.TopicType.Should().Be(TopicType.VocabStudy);
-            QACollector.LogTestCase("Topic - Create", new TestCaseDetail { FunctionGroup = "CreateTopic", TestCaseID = "TC-TOPIC-CREATE-04", Description = "New topic: Status=Draft, TopicType=VocabStudy", ExpectedResult = "Status=Draft, TopicType=VocabStudy", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Status defaults to Draft" } });
+            QACollector.LogTestCase("Topic - Create", new TestCaseDetail { FunctionGroup = "CreateTopic", TestCaseID = "CreateTopic_04", Description = "New topic: Status=Draft, TopicType=VocabStudy", ExpectedResult = "Status=Draft, TopicType=VocabStudy", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Status defaults to Draft" } });
         }
 
-        // TC-TOPIC-CREATE-05 | B | AddAsync and SaveChangesAsync both called once
+        // CreateTopic_05 | B | AddAsync and SaveChangesAsync both called once
         [Fact]
         public async Task Handle_ValidRequest_AddAndSaveBothCalledOnce()
         {
@@ -115,10 +115,10 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
             await CreateHandler(repo: repo).Handle(MakeCommand(), CancellationToken.None);
             repo.Verify(x => x.AddAsync(It.IsAny<Topic>()), Times.Once);
             repo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
-            QACollector.LogTestCase("Topic - Create", new TestCaseDetail { FunctionGroup = "CreateTopic", TestCaseID = "TC-TOPIC-CREATE-05", Description = "AddAsync and SaveChangesAsync both called once", ExpectedResult = "Both Times.Once", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Persist calls verified" } });
+            QACollector.LogTestCase("Topic - Create", new TestCaseDetail { FunctionGroup = "CreateTopic", TestCaseID = "CreateTopic_05", Description = "AddAsync and SaveChangesAsync both called once", ExpectedResult = "Both Times.Once", StatusRound1 = "Passed", TestCaseType = "B", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Persist calls verified" } });
         }
 
-        // TC-TOPIC-CREATE-06 | A | Repository throws → 500 failure
+        // CreateTopic_06 | A | Repository throws → 500 failure
         [Fact]
         public async Task Handle_RepoThrows_ShouldReturn500()
         {
@@ -127,7 +127,7 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
             var result = await CreateHandler(repo: repo).Handle(MakeCommand(), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(500);
-            QACollector.LogTestCase("Topic - Create", new TestCaseDetail { FunctionGroup = "CreateTopic", TestCaseID = "TC-TOPIC-CREATE-06", Description = "Repository throws → 500", ExpectedResult = "IsSuccess=false, 500", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Exception caught" } });
+            QACollector.LogTestCase("Topic - Create", new TestCaseDetail { FunctionGroup = "CreateTopic", TestCaseID = "CreateTopic_06", Description = "Repository throws → 500", ExpectedResult = "IsSuccess=false, 500", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Exception caught" } });
         }
     }
 }

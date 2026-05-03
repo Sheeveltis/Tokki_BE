@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using System;
@@ -42,32 +42,32 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
                 NullLogger<UpdateTopicCommandHandler>.Instance);
 
         private static Topic SampleTopic(TopicStatus status = TopicStatus.Draft) =>
-            new Topic { TopicId = "T-001", TopicName = "Old Name", Description = "Old desc", Status = status, Level = TopicLevel.Level1 };
+            new Topic { TopicId = "T-001", TopicName = "Old Name", Description = "Old desc", Status = status, Level = (int)TopicLevel.Level1 };
 
         private static UpdateTopicCommand MakeCommand(string id = "T-001", string? name = "New Name") =>
             new UpdateTopicCommand { TopicId = id, TopicName = name, Description = "New desc", UpdatedBy = "U-001" };
 
-        // TC-TOPIC-UPD-01 | A | Topic not found → 404
+        // UpdateTopic_01 | A | Topic not found → 404
         [Fact]
         public async Task Handle_TopicNotFound_ShouldReturn404()
         {
             var result = await CreateHandler(GetRepoMock(null)).Handle(MakeCommand("MISSING"), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(404);
-            QACollector.LogTestCase("Topic - Update", new TestCaseDetail { FunctionGroup = "UpdateTopic", TestCaseID = "TC-TOPIC-UPD-01", Description = "Topic not found → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetByIdAsync returns null" } });
+            QACollector.LogTestCase("Topic - Update", new TestCaseDetail { FunctionGroup = "UpdateTopic", TestCaseID = "UpdateTopic_01", Description = "Topic not found → 404", ExpectedResult = "IsSuccess=false, 404", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "GetByIdAsync returns null" } });
         }
 
-        // TC-TOPIC-UPD-02 | A | Topic already deleted → 409
+        // UpdateTopic_02 | A | Topic already deleted → 409
         [Fact]
         public async Task Handle_TopicAlreadyDeleted_ShouldReturn409()
         {
             var result = await CreateHandler(GetRepoMock(SampleTopic(TopicStatus.Deleted))).Handle(MakeCommand(), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(409);
-            QACollector.LogTestCase("Topic - Update", new TestCaseDetail { FunctionGroup = "UpdateTopic", TestCaseID = "TC-TOPIC-UPD-02", Description = "Topic already deleted → 409", ExpectedResult = "IsSuccess=false, 409", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Status == Deleted guard" } });
+            QACollector.LogTestCase("Topic - Update", new TestCaseDetail { FunctionGroup = "UpdateTopic", TestCaseID = "UpdateTopic_02", Description = "Topic already deleted → 409", ExpectedResult = "IsSuccess=false, 409", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Status == Deleted guard" } });
         }
 
-        // TC-TOPIC-UPD-03 | A | New name duplicates another topic → 409
+        // UpdateTopic_03 | A | New name duplicates another topic → 409
         [Fact]
         public async Task Handle_DuplicateTopicName_ShouldReturn409()
         {
@@ -75,10 +75,10 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
             var result = await CreateHandler(repo).Handle(MakeCommand(name: "Duplicate Name"), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(409);
-            QACollector.LogTestCase("Topic - Update", new TestCaseDetail { FunctionGroup = "UpdateTopic", TestCaseID = "TC-TOPIC-UPD-03", Description = "Duplicate name → 409", ExpectedResult = "IsSuccess=false, 409", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "IsTopicNameExistsAsync returns true" } });
+            QACollector.LogTestCase("Topic - Update", new TestCaseDetail { FunctionGroup = "UpdateTopic", TestCaseID = "UpdateTopic_03", Description = "Duplicate name → 409", ExpectedResult = "IsSuccess=false, 409", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "IsTopicNameExistsAsync returns true" } });
         }
 
-        // TC-TOPIC-UPD-04 | N | Happy path: topic found, valid update → 200 true
+        // UpdateTopic_04 | N | Happy path: topic found, valid update → 200 true
         [Fact]
         public async Task Handle_ValidRequest_ShouldReturn200True()
         {
@@ -87,10 +87,10 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
             result.IsSuccess.Should().BeTrue();
             result.StatusCode.Should().Be(200);
             result.Data.Should().BeTrue();
-            QACollector.LogTestCase("Topic - Update", new TestCaseDetail { FunctionGroup = "UpdateTopic", TestCaseID = "TC-TOPIC-UPD-04", Description = "Valid update → 200, Data=true", ExpectedResult = "IsSuccess=true, 200, Data=true", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "All guards pass" } });
+            QACollector.LogTestCase("Topic - Update", new TestCaseDetail { FunctionGroup = "UpdateTopic", TestCaseID = "UpdateTopic_04", Description = "Valid update → 200, Data=true", ExpectedResult = "IsSuccess=true, 200, Data=true", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "All guards pass" } });
         }
 
-        // TC-TOPIC-UPD-05 | N | TopicName null → topic name not updated on entity
+        // UpdateTopic_05 | N | TopicName null → topic name not updated on entity
         [Fact]
         public async Task Handle_NullTopicName_TopicNameNotUpdated()
         {
@@ -98,10 +98,10 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
             var repo  = GetRepoMock(topic);
             await CreateHandler(repo).Handle(MakeCommand(name: null), CancellationToken.None);
             topic.TopicName.Should().Be("Old Name"); // unchanged
-            QACollector.LogTestCase("Topic - Update", new TestCaseDetail { FunctionGroup = "UpdateTopic", TestCaseID = "TC-TOPIC-UPD-05", Description = "TopicName null → entity name not updated", ExpectedResult = "TopicName still 'Old Name'", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Null TopicName skips name update" } });
+            QACollector.LogTestCase("Topic - Update", new TestCaseDetail { FunctionGroup = "UpdateTopic", TestCaseID = "UpdateTopic_05", Description = "TopicName null → entity name not updated", ExpectedResult = "TopicName still 'Old Name'", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Null TopicName skips name update" } });
         }
 
-        // TC-TOPIC-UPD-06 | A | Repository throws → 500 failure
+        // UpdateTopic_06 | A | Repository throws → 500 failure
         [Fact]
         public async Task Handle_RepoThrows_ShouldReturn500()
         {
@@ -110,10 +110,10 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
             var result = await CreateHandler(repo).Handle(MakeCommand(), CancellationToken.None);
             result.IsSuccess.Should().BeFalse();
             result.StatusCode.Should().Be(500);
-            QACollector.LogTestCase("Topic - Update", new TestCaseDetail { FunctionGroup = "UpdateTopic", TestCaseID = "TC-TOPIC-UPD-06", Description = "Repository throws → 500", ExpectedResult = "IsSuccess=false, 500", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Exception caught" } });
+            QACollector.LogTestCase("Topic - Update", new TestCaseDetail { FunctionGroup = "UpdateTopic", TestCaseID = "UpdateTopic_06", Description = "Repository throws → 500", ExpectedResult = "IsSuccess=false, 500", StatusRound1 = "Passed", TestCaseType = "A", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "Exception caught" } });
         }
 
-        // TC-TOPIC-UPD-07 | N | Update status to Deleted triggers VocabularyTopic cascade
+        // UpdateTopic_07 | N | Update status to Deleted triggers VocabularyTopic cascade
         [Fact]
         public async Task Handle_StatusChangedToDeleted_ShouldCascadeSoftDeleteToMappings()
         {
@@ -135,7 +135,7 @@ namespace Tokki.UnitTest.Application.UseCases.Topics
             vtRepo.Verify(x => x.UpdateAsync(It.IsAny<VocabularyTopic>()), Times.Once);
             vtRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
 
-            QACollector.LogTestCase("Topic - Update", new TestCaseDetail { FunctionGroup = "UpdateTopic", TestCaseID = "TC-TOPIC-UPD-07", Description = "Status changed to Deleted triggers cascade soft delete", ExpectedResult = "IsSuccess=true, UpdateAsync called on vtRepo", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "newStatus == TopicStatus.Deleted cascade branch" } });
+            QACollector.LogTestCase("Topic - Update", new TestCaseDetail { FunctionGroup = "UpdateTopic", TestCaseID = "UpdateTopic_07", Description = "Status changed to Deleted triggers cascade soft delete", ExpectedResult = "IsSuccess=true, UpdateAsync called on vtRepo", StatusRound1 = "Passed", TestCaseType = "N", TestDate = DateTime.Now.ToString("dd/MM/yyyy"), AppliedConditions = new List<string> { "newStatus == TopicStatus.Deleted cascade branch" } });
         }
     }
 }

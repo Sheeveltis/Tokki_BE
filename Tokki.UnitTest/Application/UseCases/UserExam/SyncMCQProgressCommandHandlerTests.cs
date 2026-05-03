@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -62,7 +62,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-SYNCM-01 | N | Empty answers list → 200 with no DB write
+        // SyncMCQProgress_01 | N | Empty answers list → 200 with no DB write
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_EmptyAnswers_ShouldReturnSuccessWithoutDbCall()
@@ -83,7 +83,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Sync MCQ", new TestCaseDetail
             {
                 FunctionGroup     = "SyncMCQProgress",
-                TestCaseID        = "TC-SYNCM-01",
+                TestCaseID        = "SyncMCQProgress_01",
                 Description       = "Empty answers list → immediate success, no DB lookup",
                 ExpectedResult    = "IsSuccess=true, no DB call",
                 StatusRound1      = "Passed",
@@ -94,7 +94,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-SYNCM-02 | A | No matching MCQ records found → 404
+        // SyncMCQProgress_02 | A | No matching MCQ records found → 404
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_NoMatchingMCQAnswers_ShouldReturn404()
@@ -116,7 +116,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Sync MCQ", new TestCaseDetail
             {
                 FunctionGroup     = "SyncMCQProgress",
-                TestCaseID        = "TC-SYNCM-02",
+                TestCaseID        = "SyncMCQProgress_02",
                 Description       = "No MCQ answers found with given IDs → 404",
                 ExpectedResult    = "IsSuccess=false, StatusCode=404",
                 StatusRound1      = "Passed",
@@ -127,7 +127,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-SYNCM-03 | A | UserId mismatch → 403
+        // SyncMCQProgress_03 | A | UserId mismatch → 403
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_UserIdMismatch_ShouldReturn403()
@@ -151,7 +151,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Sync MCQ", new TestCaseDetail
             {
                 FunctionGroup     = "SyncMCQProgress",
-                TestCaseID        = "TC-SYNCM-03",
+                TestCaseID        = "SyncMCQProgress_03",
                 Description       = "UserId does not match the exam owner → 403",
                 ExpectedResult    = "IsSuccess=false, StatusCode=403",
                 StatusRound1      = "Passed",
@@ -162,7 +162,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-SYNCM-04 | A | Exam not InProgress → 400
+        // SyncMCQProgress_04 | A | Exam not InProgress → 400
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ExamNotInProgress_ShouldReturn400()
@@ -185,7 +185,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Sync MCQ", new TestCaseDetail
             {
                 FunctionGroup     = "SyncMCQProgress",
-                TestCaseID        = "TC-SYNCM-04",
+                TestCaseID        = "SyncMCQProgress_04",
                 Description       = "Exam status is Completed, not InProgress → 400",
                 ExpectedResult    = "IsSuccess=false, StatusCode=400",
                 StatusRound1      = "Passed",
@@ -196,7 +196,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-SYNCM-05 | N | Valid sync, answer changed → SaveChanges called
+        // SyncMCQProgress_05 | N | Valid sync, answer changed → SaveChanges called
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_ValidSyncWithChange_ShouldSaveChanges()
@@ -221,7 +221,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Sync MCQ", new TestCaseDetail
             {
                 FunctionGroup     = "SyncMCQProgress",
-                TestCaseID        = "TC-SYNCM-05",
+                TestCaseID        = "SyncMCQProgress_05",
                 Description       = "Answer changed, isModified=true → SaveChangesAsync called once",
                 ExpectedResult    = "IsSuccess=true, SaveChanges Times.Once",
                 StatusRound1      = "Passed",
@@ -232,7 +232,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // TC-SYNCM-06 | N | Same selected option → SaveChanges NOT called
+        // SyncMCQProgress_06 | N | Same selected option → SaveChanges NOT called
         // ═══════════════════════════════════════════════════════════════
         [Fact]
         public async Task Handle_SameAnswer_ShouldNotCallSaveChanges()
@@ -259,7 +259,7 @@ namespace Tokki.UnitTest.Application.UseCases.UserExam
             QACollector.LogTestCase("UserExam - Sync MCQ", new TestCaseDetail
             {
                 FunctionGroup     = "SyncMCQProgress",
-                TestCaseID        = "TC-SYNCM-06",
+                TestCaseID        = "SyncMCQProgress_06",
                 Description       = "SelectedOptionId unchanged → isModified=false → SaveChanges not called",
                 ExpectedResult    = "IsSuccess=true, SaveChanges Times.Never",
                 StatusRound1      = "Passed",
