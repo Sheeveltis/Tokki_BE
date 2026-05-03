@@ -77,24 +77,25 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
 
                 var aiRoadmapService = sp.GetRequiredService<IAiRoadmapService>();
                 var examAssemblyService = sp.GetRequiredService<IExamAssemblyService>();
-                var idGen             = sp.GetRequiredService<IIdGeneratorService>();
+                var idGen = sp.GetRequiredService<IIdGeneratorService>();
                 var roadmapRepo = sp.GetRequiredService<IUserRoadmapRepository>();
                 var weaknessRepo = sp.GetRequiredService<IUserWeaknessRepository>();
                 var userExamRepo = sp.GetRequiredService<IUserExamRepository>();
                 var accountRepo = sp.GetRequiredService<IAccountRepository>();
-                var mediator          = sp.GetRequiredService<IMediator>();
-                var progress          = sp.GetRequiredService<IRoadmapProgressService>();
+                var mediator = sp.GetRequiredService<IMediator>();
+                var progress = sp.GetRequiredService<IRoadmapProgressService>();
 
                 try
                 {
                     progress.Set(jobId, new RoadmapProgressState
                     {
-                        JobId = jobId, Percent = 10,
-                        Step = "Buoc 1: Phan tich bai thi dau vao..."
+                        JobId = jobId,
+                        Percent = 10,
+                        Step = "Bước 1: Phân tích bài thi đầu vào..."
                     });
 
                     var currentLevel = CurrentTopikLevel.Pre_Topik;
-                    var weaknesses   = new List<string>();
+                    var weaknesses = new List<string>();
 
                     if (!string.IsNullOrEmpty(request.UserExamId))
                     {
@@ -111,12 +112,6 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                                 skillData.Reading.Score,
                                 skillData.Writing.Score);
 
-                            var selfDeclaredLevel = await userExamRepo
-                                .GetSelfDeclaredLevelAsync(request.UserExamId, CancellationToken.None);
-                            if (selfDeclaredLevel != null)
-                                currentLevel = (CurrentTopikLevel)Math.Min(
-                                    (int)selfDeclaredLevel.Value, (int)currentLevel);
-
                             var types = await userExamRepo
                                 .GetIncorrectQuestionTypesByExamIdAsync(request.UserExamId, CancellationToken.None);
                             weaknesses = types.Select(t => t.QuestionTypeId).Distinct().ToList();
@@ -128,8 +123,9 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                     {
                         progress.Set(jobId, new RoadmapProgressState
                         {
-                            JobId = jobId, Percent = 25,
-                            Step = "Buoc 2: Phan tich danh sach diem yeu..."
+                            JobId = jobId,
+                            Percent = 25,
+                            Step = "Bước 2: Phân tích danh sách điểm yếu..."
                         });
 
                         var validIds = await roadmapRepo
@@ -146,20 +142,21 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                         {
                             newWeaknessEntities.Add(new UserWeakness
                             {
-                                Id             = idGen.GenerateCustom(15),
-                                UserId         = request.UserId,
+                                Id = idGen.GenerateCustom(15),
+                                UserId = request.UserId,
                                 QuestionTypeId = wId,
-                                Status         = 0,
-                                Priority       = 99, 
-                                CreatedAt      = DateTime.UtcNow
+                                Status = 0,
+                                Priority = 99,
+                                CreatedAt = DateTime.UtcNow
                             });
                         }
                     }
 
                     progress.Set(jobId, new RoadmapProgressState
                     {
-                        JobId = jobId, Percent = 40,
-                        Step = "Buoc 3: AI sap xep thu tu uu tien hoc tap (FIFO)..."
+                        JobId = jobId,
+                        Percent = 40,
+                        Step = "Bước 3: AI sắp xếp thứ tự ưu tiên học tập (FIFO)..."
                     });
 
                     var weakTypeInfos = weaknesses.Any()
@@ -177,7 +174,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                             if (entity != null) entity.Priority = i + 1;
                         }
 
-                        weaknesses    = orderedIds;
+                        weaknesses = orderedIds;
                         weakTypeInfos = weakTypeInfos
                             .OrderBy(w => orderedIds.IndexOf(w.QuestionTypeId))
                             .ToList();
@@ -185,8 +182,9 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
 
                     progress.Set(jobId, new RoadmapProgressState
                     {
-                        JobId = jobId, Percent = 55,
-                        Step = "Buoc 4: Thiet ke tuan hoc dau tien..."
+                        JobId = jobId,
+                        Percent = 55,
+                        Step = "Bước 4: Thiết kế tuần học đầu tiên..."
                     });
 
                     var week1Types = weaknesses.Take(3).ToList();
@@ -213,9 +211,10 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                     {
                         progress.Set(jobId, new RoadmapProgressState
                         {
-                            JobId = jobId, IsError = true,
-                            Step = "AI khong the tao lo trinh. Vui long thu lai.",
-                            ErrorMessage = "AI khong the tao lo trinh. Vui long thu lai."
+                            JobId = jobId,
+                            IsError = true,
+                            Step = "AI không thể tạo lộ trình. Vui lòng thử lại.",
+                            ErrorMessage = "AI không thể tạo lộ trình. Vui lòng thử lại."
                         });
                         return;
                     }
@@ -225,8 +224,9 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                     {
                         progress.Set(jobId, new RoadmapProgressState
                         {
-                            JobId = jobId, IsError = true,
-                            ErrorMessage = "AI tra ve du lieu thieu thong tin tuan."
+                            JobId = jobId,
+                            IsError = true,
+                            ErrorMessage = "AI trả về dữ liệu thiếu thông tin tuần."
                         });
                         return;
                     }
@@ -236,12 +236,13 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                         if (day.DayIndex < 1 || !day.Tasks.Any() ||
                             day.Tasks.Any(t => string.IsNullOrEmpty(t.Title) || string.IsNullOrEmpty(t.Content)))
                         {
-                            _logger.LogWarning("Du lieu rac tu AI cho User {UserId}: DayIndex={DayIndex}",
+                            _logger.LogWarning("Dữ liệu rác từ AI cho User {UserId}: DayIndex={DayIndex}",
                                 request.UserId, day.DayIndex);
                             progress.Set(jobId, new RoadmapProgressState
                             {
-                                JobId = jobId, IsError = true,
-                                ErrorMessage = "Du lieu AI khong dat tieu chuan (Thieu tieu de hoac noi dung). Vui long thu lai."
+                                JobId = jobId,
+                                IsError = true,
+                                ErrorMessage = "Dữ liệu AI không đạt tiêu chuẩn (Thiếu tiêu đề hoặc nội dung). Vui lòng thử lại."
                             });
                             return;
                         }
@@ -249,8 +250,9 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
 
                     progress.Set(jobId, new RoadmapProgressState
                     {
-                        JobId = jobId, Percent = 70,
-                        Step = "Buoc 5: Khoi tao lo trinh va luu tru..."
+                        JobId = jobId,
+                        Percent = 70,
+                        Step = "Bước 5: Khởi tạo lộ trình và lưu trữ..."
                     });
 
                     var roadmapId = idGen.GenerateCustom(15);
@@ -292,9 +294,9 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                             WeekIndex = i,
                             FromDate = roadmap.StartDate.AddDays((i - 1) * 7),
                             ToDate = roadmap.StartDate.AddDays(i * 7),
-                            Status        = (i == 1) ? RoadmapWeekStatus.InProgress : RoadmapWeekStatus.Locked,
-                            WeeklyExamId  = (i == 1) ? weeklyExamId : null,
-                            DailyTasks    = new List<RoadmapDailyTask>()
+                            Status = (i == 1) ? RoadmapWeekStatus.InProgress : RoadmapWeekStatus.Locked,
+                            WeeklyExamId = (i == 1) ? weeklyExamId : null,
+                            DailyTasks = new List<RoadmapDailyTask>()
                         };
 
                         if (i == 1)
@@ -330,15 +332,15 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
 
                                         weekEntity.DailyTasks.Add(new RoadmapDailyTask
                                         {
-                                            TaskId             = idGen.GenerateCustom(15),
-                                            RoadmapWeekId      = weekId,
-                                            DayIndex           = dayDto.DayIndex,
-                                            Title              = taskDto.Title,
-                                            TaskType           = taskEnum,
+                                            TaskId = idGen.GenerateCustom(15),
+                                            RoadmapWeekId = weekId,
+                                            DayIndex = dayDto.DayIndex,
+                                            Title = taskDto.Title,
+                                            TaskType = taskEnum,
                                             AiGeneratedContent = taskDto.Content,
-                                            QuestionTypeId     = finalQTypeId,
-                                            ExamId             = (taskEnum == RoadmapTaskType.WeeklyExam) ? weeklyExamId : null,
-                                            IsCompleted        = false
+                                            QuestionTypeId = finalQTypeId,
+                                            ExamId = (taskEnum == RoadmapTaskType.WeeklyExam) ? weeklyExamId : null,
+                                            IsCompleted = false
                                         });
                                     }
                                 }
@@ -346,7 +348,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                         }
                         else
                         {
-                            weekEntity.WeekFocusGoal = "Dang cho ket qua tuan truoc de toi uu...";
+                            weekEntity.WeekFocusGoal = "Đang chờ kết quả tuần trước để tối ưu...";
                         }
 
                         roadmap.Weeks.Add(weekEntity);
@@ -354,8 +356,9 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
 
                     progress.Set(jobId, new RoadmapProgressState
                     {
-                        JobId = jobId, Percent = 85,
-                        Step = "Buoc 6: Luu lo trinh va cap nhat ho so hoc vien..."
+                        JobId = jobId,
+                        Percent = 85,
+                        Step = "Bước 6: Lưu lộ trình và cập nhật hồ sơ học viên..."
                     });
 
                     await roadmapRepo.AddAsync(roadmap);
@@ -388,10 +391,10 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                     progress.Set(jobId, new RoadmapProgressState
                     {
                         JobId = jobId,
-                        Percent      = 100,
-                        Step         = "Lo trinh ca nhan hoa da san sang!",
-                        IsCompleted  = true,
-                        RoadmapId    = roadmapId
+                        Percent = 100,
+                        Step = "Lộ trình cá nhân hóa đã sẵn sàng!",
+                        IsCompleted = true,
+                        RoadmapId = roadmapId
                     });
 
                     _logger.LogInformation("Tạo lộ trình thành công — RoadmapId: {Id} | Job: {JobId}",
@@ -404,16 +407,16 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
 
                     progress.Set(jobId, new RoadmapProgressState
                     {
-                        JobId         = jobId,
-                        IsError       = true,
-                        Step          = "Loi he thong.",
-                        ErrorMessage  = "Da xay ra loi khong mong muon. Vui long thu lai."
+                        JobId = jobId,
+                        IsError = true,
+                        Step = "Lỗi hệ thống.",
+                        ErrorMessage = "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại."
                     });
                 }
             });
 
             return OperationResult<string>.Success(jobId, 202,
-                "Dang tao lo trinh, vui long theo doi tien trinh.");
+                "Đang tạo lộ trình, vui lòng theo dõi tiến trình.");
         }
 
         private static TopicLevel? MapToTopicLevel(CurrentTopikLevel level) => level switch
@@ -439,12 +442,12 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
             {
                 double topikIScore = listeningScore + readingScore;
                 if (topikIScore >= 140) return CurrentTopikLevel.Level_2;
-                if (topikIScore >= 80)  return CurrentTopikLevel.Level_1;
+                if (topikIScore >= 80) return CurrentTopikLevel.Level_1;
                 return CurrentTopikLevel.Pre_Topik;
             }
 
             double total = listeningScore + readingScore + writingScore;
-            if (total >= 230) return CurrentTopikLevel.Level_6; // Them Level_6 tu Ver2
+            if (total >= 230) return CurrentTopikLevel.Level_6; 
             if (total >= 190) return CurrentTopikLevel.Level_5;
             if (total >= 150) return CurrentTopikLevel.Level_4;
             if (total >= 120) return CurrentTopikLevel.Level_3;

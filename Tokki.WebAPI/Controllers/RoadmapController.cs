@@ -36,7 +36,7 @@ namespace Tokki.WebAPI.Controllers
             IMediator mediator,
             IUserRoadmapRepository userRoadmapRepository,
             IRoadmapProgressService progressService,
-            ITopikLevelConfigService topikConfig) 
+            ITopikLevelConfigService topikConfig)
         {
             _mediator = mediator;
             _userRoadmapRepository = userRoadmapRepository;
@@ -84,7 +84,7 @@ namespace Tokki.WebAPI.Controllers
             var result = await _mediator.Send(command);
 
             if (!result.IsSuccess) return BadRequest(result);
-            return StatusCode(202, result); 
+            return StatusCode(202, result);
         }
 
         [HttpGet("current")]
@@ -167,7 +167,7 @@ namespace Tokki.WebAPI.Controllers
 
             var command = new GenerateNextWeekCommand
             {
-                UserId         = userId,
+                UserId = userId,
                 FinishedWeekId = request.FinishedWeekId
             };
 
@@ -178,7 +178,7 @@ namespace Tokki.WebAPI.Controllers
 
             return StatusCode(202, result);
         }
-      
+
         [HttpGet("virtual-quiz/{questionTypeId}")]
         public async Task<IActionResult> GetVirtualQuiz(
             string questionTypeId,
@@ -218,31 +218,14 @@ namespace Tokki.WebAPI.Controllers
             return BadRequest(result);
         }
 
-        [HttpPost("process-weekly-result")]
-        public async Task<IActionResult> ProcessWeeklyResult(
-            [FromBody] ProcessWeeklyResultRequestDto request)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized("Không tìm thấy thông tin người dùng.");
-
-            var command = new ProcessWeeklyResultCommand
-            {
-                UserId = userId,
-                UserExamId = request.UserExamId
-            };
-
-            var result = await _mediator.Send(command);
-
-            if (!result.IsSuccess) return StatusCode(result.StatusCode, result);
-            return Ok(result);
-        }
+        // [HttpPost("process-weekly-result")] — Deprecated: logic đã được merge vào GenerateNextWeek
+        // EvaluateLastWeekPerformanceAsync trong GenerateNextWeekCommandHandler xử lý toàn bộ
+        // public async Task<IActionResult> ProcessWeeklyResult(...) { ... }
 
         [HttpGet("entrance-feedback")]
         public async Task<IActionResult> GetEntranceFeedback(
             [FromQuery] string userExamId,
-            [FromQuery] TargetAimLevel targetAim,
-            [FromQuery] CurrentTopikLevel selfDeclaredLevel) 
+            [FromQuery] TargetAimLevel targetAim)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
@@ -252,8 +235,7 @@ namespace Tokki.WebAPI.Controllers
             {
                 UserId = userId,
                 UserExamId = userExamId,
-                TargetAim = targetAim,
-                SelfDeclaredLevel = selfDeclaredLevel 
+                TargetAim = targetAim
             };
 
             var result = await _mediator.Send(query);

@@ -52,14 +52,7 @@ namespace Tokki.Application.UseCases.Roadmap.Queries.GetEntranceFeedback
                 skillData.Reading.Score,
                 skillData.Writing.Score);
 
-            var finalLevel = (CurrentTopikLevel)Math.Min(
-                (int)request.SelfDeclaredLevel,
-                (int)calculatedLevel);
-
-            await _userExamRepository.SaveSelfDeclaredLevelAsync(
-                request.UserExamId,
-                request.SelfDeclaredLevel,
-                cancellationToken);
+            var finalLevel = calculatedLevel;
 
             var questionTypes = await _userExamRepository
                 .GetIncorrectQuestionTypesByExamIdAsync(
@@ -130,7 +123,7 @@ namespace Tokki.Application.UseCases.Roadmap.Queries.GetEntranceFeedback
                 ListeningIssues = listeningIssues,
                 WritingIssues = writingIssues,
                 DurationOptions = durationOptions,
-                SuggestedCurrentLevel = finalLevel,
+                SuggestedCurrentLevel = calculatedLevel,
                 SuggestedCurrentLevelName = GetLevelDisplayName(finalLevel)
             };
 
