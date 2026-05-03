@@ -293,6 +293,7 @@ namespace Tokki.Application.Common.Models
         //LiveChat
         public static readonly Error ChatRoomNotFound = new("ChatRoom.NotFound", "Phòng chat không tồn tại.");
         public static readonly Error ChatRoomAlreadySupported = new("ChatRoom.AlreadySupported", "Phòng chat đã có nhân viên hỗ trợ.");
+        public static readonly Error StaffMaxChatLimitReached = new("Chat.StaffMaxChatLimitReached", "Bạn đã đạt giới hạn số lượng khách hàng hỗ trợ cùng lúc.");
         //Mini-game
         public static readonly Error MiniGameNotFound = new("MiniGame.NotFound", "Trò chơi không tồn tại.");
         public static readonly Error MiniGameInvalidParameters = new("MiniGame.InvalidParameters", "Tham số trò chơi không hợp lệ.");

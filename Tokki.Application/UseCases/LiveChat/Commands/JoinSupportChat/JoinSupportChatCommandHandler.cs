@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
@@ -12,18 +12,21 @@ namespace Tokki.Application.UseCases.LiveChat.Commands.JoinSupportChat
         private readonly IChatRoomRepository _roomRepo;
         private readonly IChatRepository _chatRepo;
         private readonly IAccountRepository _accountRepo;
+        private readonly ISystemConfigRepository _configRepo;
         private readonly IIdGeneratorService _idGen;
         private readonly IChatNotificationService _notifier;
         public JoinSupportChatCommandHandler(
             IChatRoomRepository roomRepo,
             IChatRepository chatRepo,
             IAccountRepository accountRepo,
+            ISystemConfigRepository configRepo,
             IIdGeneratorService idGen,
             IChatNotificationService notifier) 
         {
             _roomRepo = roomRepo;
             _chatRepo = chatRepo;
             _accountRepo = accountRepo;
+            _configRepo = configRepo;
             _idGen = idGen;
             _notifier = notifier;
         }
@@ -39,6 +42,18 @@ namespace Tokki.Application.UseCases.LiveChat.Commands.JoinSupportChat
                     return OperationResult<bool>.Success(true);
 
                 return OperationResult<bool>.Failure(AppErrors.ChatRoomAlreadySupported, 400);
+            }
+
+            // Kiểm tra giới hạn số phòng chat tối đa của staff
+            var maxLimitStr = await _configRepo.GetValueByKeyAsync("STAFF_MAX_CHAT_ROOMS");
+            if (int.TryParse(maxLimitStr, out int maxLimit))
+            {
+                var myRooms = await _roomRepo.GetUserRoomsAsync(request.StaffId, token);
+                var activeSupportCount = myRooms.Count(r => r.IsSupport && !r.IsClosed);
+                if (activeSupportCount >= maxLimit)
+                {
+                    return OperationResult<bool>.Failure(AppErrors.StaffMaxChatLimitReached, 400);
+                }
             }
 
             var staffInfo = await _accountRepo.GetBasicInfoAsync(request.StaffId);
