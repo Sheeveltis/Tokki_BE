@@ -10,16 +10,23 @@ namespace Tokki.Application.UseCases.MiniGame.Queries.Wordle
     public class GetDailyWordleStatusHandler : IRequestHandler<GetDailyWordleStatusQuery, OperationResult<WordleDashboardDTO>>
     {
         private readonly IMiniGameRepository _miniGameRepository;
+        private readonly ISystemConfigRepository _systemConfigRepository;
 
-        public GetDailyWordleStatusHandler(IMiniGameRepository miniGameRepository)
+        public GetDailyWordleStatusHandler(
+            IMiniGameRepository miniGameRepository,
+            ISystemConfigRepository systemConfigRepository)
         {
             _miniGameRepository = miniGameRepository;
+            _systemConfigRepository = systemConfigRepository;
         }
 
         public async Task<OperationResult<WordleDashboardDTO>> Handle(GetDailyWordleStatusQuery request, CancellationToken token)
         {
             var today = DateOnly.FromDateTime(DateTime.Now);
             var dailyGames = await _miniGameRepository.GetDailyWordlesByDateAsync(today, token);
+
+            var maxAttemptsStr = await _systemConfigRepository.GetValueByKeyAsync("WORDLE_MAX_ATTEMPTS");
+            int maxAttempts = int.TryParse(maxAttemptsStr, out var val) ? val : 6;
 
             var dashboard = new WordleDashboardDTO
             {
@@ -47,7 +54,7 @@ namespace Tokki.Application.UseCases.MiniGame.Queries.Wordle
 
                     IsWon = userProgress?.IsWon ?? false,
                     AttemptCount = userProgress?.AttemptCount ?? 0,
-                    MaxAttempts = 6,
+                    MaxAttempts = maxAttempts,
                     Attempts = (userProgress?.Guesses ?? new List<string>())
                                         .Select(g => new WordleAttemptDTO
                                         {
