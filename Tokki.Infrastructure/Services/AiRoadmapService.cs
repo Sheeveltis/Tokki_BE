@@ -144,6 +144,12 @@ namespace Tokki.Infrastructure.Services
                         role = "user",
                         parts = new[] { new { text = promptText } }
                     }
+                },
+                generationConfig = new
+                {
+                    responseMimeType = "application/json",
+                    maxOutputTokens = 8192,
+                    temperature = 0.3
                 }
             };
 
@@ -342,7 +348,7 @@ namespace Tokki.Infrastructure.Services
                 3. Task 'VirtualQuiz':
                 - Điền 'QuestionTypeId' của dạng cần luyện tập (lấy từ MENU)
                 - Điền 'Content' là lời khuyên ngắn gọn
-                4. Ngày thứ {weeklyExamDay} BẮT BUỘC là 'WeeklyExam' (Title: 'Thi thử tuần').
+                4. KHÔNG tạo task WeeklyExam — bài kiểm tra sẽ được hệ thống tự động tạo ở ngày thứ {weeklyExamDay}.
 
             *** QUIZ MENU (dùng cho cả LearnTheory và VirtualQuiz) ***
             {quizMenuJson}
