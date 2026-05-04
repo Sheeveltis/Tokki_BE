@@ -38,7 +38,21 @@ namespace Tokki.Application.UseCases.Payments.Commands.CreatePayment
             {
                 return OperationResult<CreatePaymentResult>.Failure(AppErrors.VipPackageInactive, 400);
             }
+            var existingPayment = await _paymentRepository.GetPendingByUserAndPackageAsync(
+                request.UserId, request.VipPackageId);
 
+            if (existingPayment != null)
+            {
+                var existingQrUrl = _sePayService.GenerateQrUrl(
+                    existingPayment.Id, existingPayment.Amount, existingPayment.Description);
+
+                var existingResult = new CreatePaymentResult(
+                    existingPayment.Id,
+                    existingQrUrl,
+                    existingPayment.ExpiresAt   
+                );
+                return OperationResult<CreatePaymentResult>.Success(existingResult, 200, "Giao dịch đang chờ thanh toán.");
+            }
             var paymentId = _idGeneratorService.GenerateCustom(10);
             var description = $"Thanh toán {paymentId}"; 
 

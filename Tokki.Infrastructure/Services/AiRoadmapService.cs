@@ -172,6 +172,16 @@ namespace Tokki.Infrastructure.Services
                     await response.Content.ReadAsStreamAsync());
                 var root = jsonDoc.RootElement;
 
+                if (root.TryGetProperty("usageMetadata", out var usage))
+                {
+                    var inputTokens = usage.TryGetProperty("promptTokenCount", out var i) ? i.GetInt32() : 0;
+                    var outputTokens = usage.TryGetProperty("candidatesTokenCount", out var o) ? o.GetInt32() : 0;
+                    var totalTokens = usage.TryGetProperty("totalTokenCount", out var t) ? t.GetInt32() : 0;
+                    _logger.LogInformation(
+                        "[Gemini Token Usage - Roadmap JSON] Input: {InputTokens} | Output: {OutputTokens} | Total: {TotalTokens}",
+                        inputTokens, outputTokens, totalTokens);
+                }
+
                 if (root.TryGetProperty("candidates", out var candidates)
                     && candidates.GetArrayLength() > 0)
                 {
@@ -229,6 +239,16 @@ namespace Tokki.Infrastructure.Services
                 using var jsonDoc = await JsonDocument.ParseAsync(
                     await response.Content.ReadAsStreamAsync());
                 var root = jsonDoc.RootElement;
+
+                if (root.TryGetProperty("usageMetadata", out var usage))
+                {
+                    var inputTokens = usage.TryGetProperty("promptTokenCount", out var i) ? i.GetInt32() : 0;
+                    var outputTokens = usage.TryGetProperty("candidatesTokenCount", out var o) ? o.GetInt32() : 0;
+                    var totalTokens = usage.TryGetProperty("totalTokenCount", out var t) ? t.GetInt32() : 0;
+                    _logger.LogInformation(
+                        "[Gemini Token Usage - Text] Input: {InputTokens} | Output: {OutputTokens} | Total: {TotalTokens}",
+                        inputTokens, outputTokens, totalTokens);
+                }
 
                 if (root.TryGetProperty("candidates", out var candidates)
                     && candidates.GetArrayLength() > 0)

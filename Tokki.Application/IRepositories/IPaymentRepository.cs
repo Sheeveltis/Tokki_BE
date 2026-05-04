@@ -9,7 +9,8 @@ namespace Tokki.Application.IRepositories
         Task<Payment?> GetByIdAsync(string id);
         Task UpdateAsync(Payment payment);
         Task<List<Payment>> GetByUserIdAsync(string userId);
-        Task<List<Payment>> GetExpiredPendingPaymentsAsync(DateTimeOffset now); 
+        Task<List<Payment>> GetExpiredPendingPaymentsAsync(DateTimeOffset now);
+        Task<Payment?> GetPendingByUserAndPackageAsync(string userId, string vipPackageId); 
 
     }
 }

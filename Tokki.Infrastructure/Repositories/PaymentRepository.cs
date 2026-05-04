@@ -53,5 +53,16 @@ namespace Tokki.Infrastructure.Repositories
                 .Where(p => p.Status == PaymentStatus.Pending && p.ExpiresAt <= now)
                 .ToListAsync();
         }
+        public async Task<Payment?> GetPendingByUserAndPackageAsync(string userId, string vipPackageId)
+        {
+            var now = DateTimeOffset.UtcNow;
+            return await _context.Payments
+                .Where(p => p.UserId == userId
+                         && p.VipPackageId == vipPackageId
+                         && p.Status == PaymentStatus.Pending
+                         && p.ExpiresAt > now)          
+                .OrderByDescending(p => p.CreatedAt)
+                .FirstOrDefaultAsync();
+        }
     }
 }
