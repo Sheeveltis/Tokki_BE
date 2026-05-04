@@ -4,7 +4,7 @@ using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Payments.Commands.CreatePayment
 {
-    public record CreatePaymentResult(string PaymentId, string PaymentUrl);
+    public record CreatePaymentResult(string PaymentId, string PaymentUrl, DateTimeOffset ExpiresAt);
 
     public class CreatePaymentCommand : IRequest<OperationResult<CreatePaymentResult>>
     {
