@@ -38,12 +38,27 @@ namespace Tokki.Application.UseCases.Payments.Commands.CreatePayment
             {
                 return OperationResult<CreatePaymentResult>.Failure(AppErrors.VipPackageInactive, 400);
             }
+            var existingPayment = await _paymentRepository.GetPendingByUserAndPackageAsync(
+                request.UserId, request.VipPackageId);
 
+            if (existingPayment != null)
+            {
+                var existingQrUrl = _sePayService.GenerateQrUrl(
+                    existingPayment.Id, existingPayment.Amount, existingPayment.Description);
+
+                var existingResult = new CreatePaymentResult(
+                    existingPayment.Id,
+                    existingQrUrl,
+                    existingPayment.ExpiresAt   
+                );
+                return OperationResult<CreatePaymentResult>.Success(existingResult, 200, "Giao dịch đang chờ thanh toán.");
+            }
             var paymentId = _idGeneratorService.GenerateCustom(10);
             var description = $"Thanh toán {paymentId}"; 
 
             var qrUrl = _sePayService.GenerateQrUrl(paymentId, vipPackage.Price, description);
-            var vnTime = DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(7)); 
+            var vnTime = DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(7));
+            var expiresAt = vnTime.AddMinutes(10);
 
             var payment = new Payment
             {
@@ -54,12 +69,12 @@ namespace Tokki.Application.UseCases.Payments.Commands.CreatePayment
                 VipPackageId = vipPackage.Id,
                 Status = PaymentStatus.Pending,
                 CreatedAt = vnTime,
-                ExpiresAt = vnTime.AddMinutes(10)
+                ExpiresAt = expiresAt
             };
 
             await _paymentRepository.AddAsync(payment);
 
-            var resultData = new CreatePaymentResult(payment.Id, qrUrl);
+            var resultData = new CreatePaymentResult(payment.Id, qrUrl, expiresAt);
 
             return OperationResult<CreatePaymentResult>.Success(
                 resultData,

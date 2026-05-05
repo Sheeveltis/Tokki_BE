@@ -233,10 +233,9 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
 
                     foreach (var day in firstWeek.Days)
                     {
-                        if (day.DayIndex < 1 || !day.Tasks.Any() ||
-                            day.Tasks.Any(t => string.IsNullOrEmpty(t.Title) || string.IsNullOrEmpty(t.Content)))
+                        if (day.DayIndex < 1 || !day.Tasks.Any())
                         {
-                            _logger.LogWarning("Dữ liệu rác từ AI cho User {UserId}: DayIndex={DayIndex}",
+                            _logger.LogWarning("Dữ liệu rác từ AI cho User {UserId}: DayIndex={DayIndex} thiếu tasks",
                                 request.UserId, day.DayIndex);
                             progress.Set(jobId, new RoadmapProgressState
                             {
@@ -245,6 +244,26 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                                 ErrorMessage = "Dữ liệu AI không đạt tiêu chuẩn (Thiếu tiêu đề hoặc nội dung). Vui lòng thử lại."
                             });
                             return;
+                        }
+
+                        foreach (var t in day.Tasks)
+                        {
+                            Enum.TryParse(t.TaskType, true, out RoadmapTaskType tEnum);
+                            if (tEnum == RoadmapTaskType.WeeklyExam) continue;
+
+                            if (string.IsNullOrEmpty(t.Title) || string.IsNullOrEmpty(t.Content))
+                            {
+                                _logger.LogWarning(
+                                    "Dữ liệu rác từ AI cho User {UserId}: DayIndex={DayIndex}, TaskType={TaskType}, Title={Title}",
+                                    request.UserId, day.DayIndex, t.TaskType, t.Title);
+                                progress.Set(jobId, new RoadmapProgressState
+                                {
+                                    JobId = jobId,
+                                    IsError = true,
+                                    ErrorMessage = "Dữ liệu AI không đạt tiêu chuẩn (Thiếu tiêu đề hoặc nội dung). Vui lòng thử lại."
+                                });
+                                return;
+                            }
                         }
                     }
 
@@ -306,12 +325,25 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                             {
                                 weekEntity.WeekFocusGoal = weekDto.WeekGoal;
 
+                                int weeklyExamDayIndex = 7;
+                                foreach (var dayDto in weekDto.Days)
+                                {
+                                    foreach (var taskDto in dayDto.Tasks)
+                                    {
+                                        Enum.TryParse(taskDto.TaskType, true, out RoadmapTaskType tEnum);
+                                        if (tEnum == RoadmapTaskType.WeeklyExam)
+                                            weeklyExamDayIndex = dayDto.DayIndex;
+                                    }
+                                }
+
                                 foreach (var dayDto in weekDto.Days)
                                 {
                                     foreach (var taskDto in dayDto.Tasks)
                                     {
                                         var taskEnum = RoadmapTaskType.LearnTheory;
                                         Enum.TryParse(taskDto.TaskType, true, out taskEnum);
+
+                                        if (taskEnum == RoadmapTaskType.WeeklyExam) continue;
 
                                         string? finalQTypeId = taskDto.QuestionTypeId;
                                         if (string.IsNullOrWhiteSpace(finalQTypeId) ||
@@ -339,10 +371,26 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                                             TaskType = taskEnum,
                                             AiGeneratedContent = taskDto.Content,
                                             QuestionTypeId = finalQTypeId,
-                                            ExamId = (taskEnum == RoadmapTaskType.WeeklyExam) ? weeklyExamId : null,
+                                            ExamId = null,
                                             IsCompleted = false
                                         });
                                     }
+                                }
+
+                                if (!string.IsNullOrEmpty(weeklyExamId))
+                                {
+                                    weekEntity.DailyTasks.Add(new RoadmapDailyTask
+                                    {
+                                        TaskId = idGen.GenerateCustom(15),
+                                        RoadmapWeekId = weekId,
+                                        DayIndex = weeklyExamDayIndex,
+                                        Title = "Thi thử tuần",
+                                        TaskType = RoadmapTaskType.WeeklyExam,
+                                        AiGeneratedContent = string.Empty,
+                                        QuestionTypeId = null,
+                                        ExamId = weeklyExamId,
+                                        IsCompleted = false
+                                    });
                                 }
                             }
                         }
@@ -447,7 +495,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
             }
 
             double total = listeningScore + readingScore + writingScore;
-            if (total >= 230) return CurrentTopikLevel.Level_6; 
+            if (total >= 230) return CurrentTopikLevel.Level_6;
             if (total >= 190) return CurrentTopikLevel.Level_5;
             if (total >= 150) return CurrentTopikLevel.Level_4;
             if (total >= 120) return CurrentTopikLevel.Level_3;
