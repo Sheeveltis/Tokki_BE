@@ -64,6 +64,7 @@ namespace Tokki.WebAPI.Controllers
         [Authorize(Roles = nameof(AccountRole.Admin))]
         public async Task<IActionResult> Create([FromBody] CreateTopikLevelConfigCommand command)
         {
+            if (command == null) return BadRequest("Dữ liệu không hợp lệ.");
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
         }
@@ -72,6 +73,7 @@ namespace Tokki.WebAPI.Controllers
         [Authorize(Roles = nameof(AccountRole.Admin))]
         public async Task<IActionResult> Update([FromBody] UpdateTopikLevelConfigCommand command)
         {
+            if (command == null) return BadRequest("Dữ liệu không hợp lệ.");
             var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
         }

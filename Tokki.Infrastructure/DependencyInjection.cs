@@ -153,6 +153,7 @@ namespace Tokki.Infrastructure
             services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
             services.AddScoped<IEnumConfigRepository, EnumConfigRepository>();
             services.AddScoped<ITopikLevelConfigRepository, TopikLevelConfigRepository>();
+            services.AddScoped<IAlphabetRepository, AlphabetRepository>();
             return services;
         }
     }

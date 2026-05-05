@@ -13,6 +13,7 @@ using Tokki.Application.UseCases.Excel.Queries.ExportQuestionTypes;
 using Tokki.Application.UseCases.Excel.Queries.ExportVocabByTopic;
 using Tokki.Application.UseCases.Excel.Queries.GetTemplate;
 using Tokki.Application.UseCases.Excel.Queries.TemplateQuestionType;
+using Tokki.Application.UseCases.Alphabet.Commands.ImportAlphabetFromExcel;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -102,6 +103,20 @@ namespace Tokki.WebAPI.Controllers
             var result = await _sender.Send(new ImportQuestionTypesCommand(file));
             if (!result.IsSuccess) return BadRequest(result);
             return Ok(result);
+        }
+
+        [HttpPost("import/alphabet")]
+        public async Task<IActionResult> ImportAlphabet(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest(new { Message = "Vui lòng đính kèm file Excel." });
+            }
+
+            var command = new ImportAlphabetFromExcelCommand(file);
+            var result = await _sender.Send(command);
+
+            return StatusCode(result.StatusCode, result);
         }
         
         [HttpGet("export/account")]
