@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -16,6 +16,9 @@ namespace Tokki.Domain.Enums
         Published = 1,
 
         [Description("Đã xóa")]
-        Deleted = 2
+        Deleted = 2,
+        
+        [Description("Công khai (Làm thử)")]
+        TrialPublished = 3
     }
 }
