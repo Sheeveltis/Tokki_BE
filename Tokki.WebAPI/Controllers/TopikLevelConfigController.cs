@@ -6,6 +6,7 @@ using Tokki.Application.UseCases.TopikLevelConfigs.Commands.Delete;
 using Tokki.Application.UseCases.TopikLevelConfigs.Commands.Update;
 using Tokki.Application.UseCases.TopikLevelConfigs.Queries.GetAll;
 using Tokki.Application.UseCases.TopikLevelConfigs.Queries.GetById;
+using Tokki.Application.UseCases.TopikLevelConfigs.Queries.GetTargetLevelByScore;
 using Tokki.Domain.Enums;
 
 namespace Tokki.WebAPI.Controllers
@@ -83,6 +84,13 @@ namespace Tokki.WebAPI.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             var result = await _sender.Send(new DeleteTopikLevelConfigCommand { Id = id });
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpGet("target-level")]
+        public async Task<IActionResult> GetTargetLevel([FromQuery] int score, [FromQuery] int examGroup)
+        {
+            var result = await _sender.Send(new GetTargetLevelByScoreQuery { Score = score, ExamGroup = examGroup });
             return StatusCode(result.StatusCode, result);
         }
     }
