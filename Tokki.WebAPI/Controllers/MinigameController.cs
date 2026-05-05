@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -6,6 +6,8 @@ using Tokki.Application.UseCases.MiniGame.Commands.PublishWordleSentence;
 using Tokki.Application.UseCases.MiniGame.Commands.SubmitWordleGuess;
 using Tokki.Application.UseCases.MiniGame.Commands.SubmitWordleSentence;
 using Tokki.Application.UseCases.MiniGame.Commands.ToggleLikeWordle;
+using Tokki.Application.UseCases.MiniGame.Commands.RerollWordle;
+using Tokki.Application.UseCases.MiniGame.Commands.AssignWordleVocab;
 using Tokki.Application.UseCases.MiniGame.Queries.MatchingCard;
 using Tokki.Application.UseCases.MiniGame.Queries.Solitaire;
 using Tokki.Application.UseCases.MiniGame.Queries.Wordle;
@@ -157,6 +159,37 @@ namespace Tokki.WebAPI.Controllers
             var result = await _sender.Send(query);
             return StatusCode(result.StatusCode, result);
         }
-        
+
+        [HttpGet("wordle/admin/pagination")]
+        [Authorize(Roles = "Admin, Staff")]
+        public async Task<IActionResult> GetWordlePaginated([FromQuery] GetWordlePaginatedQuery query)
+        {
+            var result = await _sender.Send(query);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpPost("wordle/reroll")]
+        [Authorize(Roles = "Admin, Staff")]
+        public async Task<IActionResult> RerollWordle([FromBody] RerollWordleCommand command)
+        {
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpPost("wordle/assign-vocab")]
+        [Authorize(Roles = "Admin, Staff")]
+        public async Task<IActionResult> AssignWordleVocab([FromBody] AssignWordleVocabCommand command)
+        {
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpGet("wordle/suitable-vocabs")]
+        [Authorize(Roles = "Admin, Staff")]
+        public async Task<IActionResult> GetSuitableVocabs([FromQuery] GetSuitableVocabsQuery query)
+        {
+            var result = await _sender.Send(query);
+            return StatusCode(result.StatusCode, result);
+        }
     }
 }
