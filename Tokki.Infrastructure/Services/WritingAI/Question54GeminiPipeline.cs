@@ -1,4 +1,4 @@
-﻿// Infrastructure/Services/Gemini/Question54GeminiPipeline.cs
+// Infrastructure/Services/Gemini/Question54GeminiPipeline.cs
 using Microsoft.Extensions.Options;
 using System.Text.Json;
 using Tokki.Application.IRepositories;
@@ -13,16 +13,19 @@ namespace Tokki.Infrastructure.Services.WritingAi
         private readonly GeminiRestClient _gemini;
         private readonly IQuestionBankRepository _questionBankRepo;
         private readonly IUserExamWritingAnswerRepository _writingRepo;
+        private readonly ISystemConfigRepository _systemConfigRepo;
 
         public Question54GeminiPipeline(
             IHttpClientFactory httpClientFactory,
             IOptions<GeminiOptions> options,
             IQuestionBankRepository questionBankRepo,
-            IUserExamWritingAnswerRepository writingRepo)
+            IUserExamWritingAnswerRepository writingRepo,
+            ISystemConfigRepository systemConfigRepo)
         {
             _gemini = new GeminiRestClient(httpClientFactory, options.Value.Writing);
             _questionBankRepo = questionBankRepo;
             _writingRepo = writingRepo;
+            _systemConfigRepo = systemConfigRepo;
         }
 
         public async Task<(JsonElement Feedback, int Score)> SolveAsync(
@@ -55,7 +58,7 @@ namespace Tokki.Infrastructure.Services.WritingAi
 
                 writingAnswer.Score = 0;
                 writingAnswer.AiAnalysisJson = emptyRaw;
-                writingAnswer.GradedAt = DateTime.UtcNow;
+                writingAnswer.GradedAt = DateTime.UtcNow.AddHours(7);
 
                 _writingRepo.UpdateAsync(writingAnswer);
                 await _writingRepo.SaveChangesAsync(ct);
@@ -78,9 +81,13 @@ POLISHED_VERSION_REQUIREMENT:
 - CHỈ xuất JSON khi polishedVersion đã đạt đúng 600-700 ký tự
 """;
 
+            string? dbPrompt = await _systemConfigRepo.GetValueByKeyAsync("AI_WRITING_54_PROMPT");
+            string finalInstruction = string.IsNullOrWhiteSpace(dbPrompt) ? BuildSystemInstruction() : dbPrompt;
+            var systemPrompt = finalInstruction + "\n\n" + BuildOutputSchema();
+
             var raw = await _gemini.GenerateContentAsync(
                 new List<object> { new { text = userText } },
-                BuildSystemInstruction(),
+                systemPrompt,
                 maxOutputTokens: 32768,
                 temperature: 0.2,
                 ct);
@@ -95,7 +102,7 @@ POLISHED_VERSION_REQUIREMENT:
 
             writingAnswer.Score = actualScore;
             writingAnswer.AiAnalysisJson = raw;
-            writingAnswer.GradedAt = DateTime.UtcNow;
+            writingAnswer.GradedAt = DateTime.UtcNow.AddHours(7);
 
             _writingRepo.UpdateAsync(writingAnswer);
             await _writingRepo.SaveChangesAsync(ct);
@@ -167,7 +174,7 @@ POLISHED_VERSION_REQUIREMENT:
         /// <summary>
         /// AI chấm thang 0-50 (totalScore).
         /// Convert sang %: totalScore / 50 * 100.
-        /// Fallback: content(0-20) + org(0-15) + lang(0-15) = max 50 → / 50 * 100.
+        /// Fallback: content(0-12) + org(0-12) + lang(0-26) = max 50 → / 50 * 100.
         /// </summary>
         private static double CalculatePercentageScore(JsonElement json)
         {
@@ -350,89 +357,87 @@ Template kết bài:
 === RUBRIC CHẤM CHÍNH THỨC (50 điểm) ===
 (Dựa theo tiêu chí đánh giá 작문형 문항 của Viện giáo dục Hàn Quốc)
 
-**A. Nội dung & Hoàn thành nhiệm vụ (내용 및 과제 수행) — 20 điểm**
+**A. Nội dung & Hoàn thành nhiệm vụ (내용 및 과제 수행) — 12 điểm**
 Câu hỏi chấm: ""Học sinh có trả lời đúng và đầy đủ 3 tasks theo thứ tự và trọng tâm đề bài không?""
 
-- 18-20đ: XUẤT SẮC
+- 11-12đ: XUẤT SẮC
   → Trả lời ĐẦY ĐỦ 3 tasks, ĐÚNG THỨTỰ 1→2→3
-  → Logic liên kết giữa tasks CHẶT CHẼ (task 2 phát triển từ task 1, task 3 từ task 2)
+  → Logic liên kết giữa tasks CHẶT CHẼ
   → Thesis rõ ràng, không mơ hồ, không copy đề
-  → Supporting details CỤ THỂ, THUYẾT PHỤC (số liệu, ví dụ thực tế, lập luận sắc bén)
-  → Bám sát chủ đề, không lạc đề ở bất kỳ đoạn nào
+  → Supporting details CỤ THỂ, THUYẾT PHỤC
+  → Bám sát chủ đề, không lạc đề
 
-- 15-17đ: TỐT
+- 9-10đ: TỐT
   → Trả lời đủ 3 tasks, 1 task hơi yếu hoặc thiếu depth
   → Logic tổng thể tốt, có 1-2 chỗ kết nối chưa mượt
   → Supporting details đủ nhưng ví dụ chưa sắc nét
 
-- 12-14đ: TRUNG BÌNH
+- 6-8đ: TRUNG BÌNH
   → Trả lời được 3 tasks nhưng 1-2 tasks sơ sài, thiếu lập luận
   → Logic có chỗ nhảy cóc, không kết nối rõ ràng
   → Ví dụ chung chung, không thuyết phục
 
-- 8-11đ: YẾU
+- 3-5đ: YẾU
   → Thiếu 1 task hoặc các tasks không liên kết logic
   → Supporting details mơ hồ, lặp lại
   → Có đoạn off-topic hoặc copy đề
 
-- 0-7đ: KHÔNG ĐẠT
+- 0-2đ: KHÔNG ĐẠT
   → Thiếu 2+ tasks, hoàn toàn sai thứ tự
   → Off-topic nghiêm trọng
   → Copy nguyên văn đề bài, không có nội dung riêng
 
-**B. Cấu trúc & Mạch lạc (글의 전개 구조) — 15 điểm**
+**B. Cấu trúc & Mạch lạc (글의 전개 구조) — 12 điểm**
 Câu hỏi chấm: ""Bài có cấu trúc rõ ràng? Các đoạn có kết nối mạch lạc bằng 담화 표지 không?""
 
-- 14-15đ: XUẤT SẮC
+- 11-12đ: XUẤT SẮC
   → 서론-본론-결론 rõ ràng, mỗi phần đủ dung lượng chuẩn
   → Mỗi đoạn thân bài có: topic sentence → supporting → example/evidence
   → 담화 표지 (từ nối) đa dạng, tự nhiên: 첫째/둘째, 반면에, 따라서, 앞에서 말한 바와 같이...
   → Mạch văn trơn tru, không nhảy ý, không trùng lặp
-  → Intro dẫn dắt tốt, conclusion tóm gọn và có forward-looking statement
 
-- 12-13đ: TỐT
+- 9-10đ: TỐT
   → Cấu trúc đầy đủ rõ ràng, 1-2 chỗ transition hơi yếu
-  → Có 담화 표지 nhưng chưa đa dạng (chỉ 첫째/둘째, thiếu các loại khác)
+  → Có 담화 표지 nhưng chưa đa dạng
   → 1-2 chỗ nhảy ý nhỏ, không ảnh hưởng toàn bài
 
-- 9-11đ: TRUNG BÌNH
+- 6-8đ: TRUNG BÌNH
   → Có cấu trúc nhưng intro/conclusion yếu hoặc quá ngắn
   → Thiếu 담화 표지 hoặc dùng sai
   → Vài chỗ nhảy ý rõ, các đoạn chưa có topic sentence rõ ràng
 
-- 6-8đ: YẾU
+- 3-5đ: YẾU
   → Cấu trúc mờ nhạt, khó phân biệt intro/body/conclusion
   → Gần như không có từ nối
   → Nhảy ý nhiều, các ý rời rạc không liên kết
 
-- 0-5đ: KHÔNG ĐẠT
+- 0-2đ: KHÔNG ĐẠT
   → Không có cấu trúc, viết như nhật ký / liệt kê
   → Hoàn toàn lộn xộn
 
-**C. Ngữ pháp & Từ vựng (언어 사용) — 15 điểm**
+**C. Ngữ pháp & Từ vựng (언어 사용) — 26 điểm**
 Câu hỏi chấm: ""Từ vựng và ngữ pháp có đa dạng, chính xác, phù hợp academic writing không?""
 
-- 14-15đ: XUẤT SẮC
+- 22-26đ: XUẤT SẮC
   → Văn phong đúng 100% (-다/-는다, KHÔNG -습니다/-아요)
-  → 0-1 lỗi ngữ pháp nhỏ, không ảnh hưởng nghĩa
-  → Từ vựng phong phú, chính xác, phù hợp văn học thuật (Hán-Hàn, danh từ hành động)
-  → Dùng thành thạo: -(으)ㅁ으로써, -기 위해서는, -(으)므로, 앞에서 말한 바와 같이
+  → 0-2 lỗi ngữ pháp nhỏ, không ảnh hưởng nghĩa
+  → Từ vựng phong phú, chính xác, phù hợp văn học thuật
+  → Dùng thành thạo: -(으)ㅁ으로써, -기 위해서는, -(으)므로
   → Cấu trúc câu đa dạng (câu đơn + câu phức + câu ghép)
-  → KHÔNG dùng -니까 trong essay (lỗi phổ biến nhất)
 
-- 12-13đ: TỐT
-  → Văn phong đúng, 2-3 lỗi ngữ pháp nhỏ
+- 17-21đ: TỐT
+  → Văn phong đúng, 3-4 lỗi ngữ pháp nhỏ
   → Từ vựng tốt, đa phần chính xác, vài chỗ hơi đơn giản
   → Có dùng cấu trúc phức nhưng chưa thành thạo
 
-- 9-11đ: TRUNG BÌNH
-  → Văn phong đúng phần lớn, 1-2 chỗ dùng -아요/-어요
-  → 4-6 lỗi ngữ pháp, vẫn hiểu được nghĩa
+- 11-16đ: TRUNG BÌNH
+  → Văn phong đúng phần lớn, 1-2 chỗ dùng sai
+  → 5-8 lỗi ngữ pháp, vẫn hiểu được nghĩa
   → Từ vựng cơ bản, ít Hán-Hàn, câu đơn giản
 
-- 6-8đ: YẾU
+- 6-10đ: YẾU
   → Văn phong sai nhiều (>3 chỗ dùng -습니다/-아요)
-  → 7-10 lỗi ngữ pháp ảnh hưởng nghĩa
+  → Nhiều lỗi ngữ pháp ảnh hưởng nghĩa
   → Từ vựng nghèo nàn, lặp lại nhiều
 
 - 0-5đ: KHÔNG ĐẠT
@@ -468,9 +473,12 @@ Cấu trúc feedback tốt:
 5. Gợi ý cụ thể để cải thiện (không chỉ nói ""bài yếu"" mà phải nói ""cần thêm gì"")
 
 Ví dụ feedback tốt:
-""Đây là dạng đề Problem-Solving về vấn đề ô nhiễm môi trường. Mở bài giới thiệu vấn đề tốt, không copy đề. Task 1 (trình bày vấn đề) đầy đủ với 2 ví dụ cụ thể. Task 2 (nguyên nhân) chỉ nêu 1/2 nguyên nhân, thiếu nguyên nhân từ phía doanh nghiệp. Task 3 (giải pháp) có nhưng quá ngắn, thiếu giải pháp cụ thể từ chính phủ và cá nhân. Cấu trúc tổng thể rõ nhưng kết bài chỉ 40 ký tự — cần dài hơn và có forward statement. Lỗi ngôn ngữ: 2 chỗ dùng -니까 trong essay thay vì -(으)므로 → cần sửa. Gợi ý: bổ sung task 2 thêm 1 nguyên nhân, mở rộng kết bài thêm 30-50 ký tự.""
+""Đây là dạng đề Problem-Solving về vấn đề ô nhiễm môi trường. Mở bài giới thiệu vấn đề tốt, không copy đề. Task 1 (trình bày vấn đề) đầy đủ với 2 ví dụ cụ thể. Task 2 (nguyên nhân) chỉ nêu 1/2 nguyên nhân, thiếu nguyên nhân từ phía doanh nghiệp. Task 3 (giải pháp) có nhưng quá ngắn, thiếu giải pháp cụ thể từ chính phủ và cá nhân. Cấu trúc tổng thể rõ nhưng kết bài chỉ 40 ký tự — cần dài hơn và có forward statement. Lỗi ngôn ngữ: 2 chỗ dùng -니까 trong essay thay vì -(으)므로 → cần sửa. Gợi ý: bổ sung task 2 thêm 1 nguyên nhân, mở rộng kết bài thêm 30-50 ký tự.""";
 
-=== OUTPUT JSON ===
+        private static string BuildOutputSchema() =>
+            @"=== OUTPUT JSON SCHEMA BẮT BUỘC ===
+Bạn BẮT BUỘC phải trả về đúng cấu trúc JSON dưới đây. TUYỆT ĐỐI KHÔNG ĐƯỢC THAY ĐỔI CẤU TRÚC, KHÔNG THÊM BỚT TRƯỜNG, KHÔNG THAY ĐỔI TÊN TRƯỜNG. CHỈ TRẢ VỀ JSON.
+
 {
   ""totalScore"": <0-50>,
   ""charCount"": <số ký tự thực tế kể cả khoảng trắng>,
@@ -478,7 +486,7 @@ Ví dụ feedback tốt:
 
   ""essayType"": ""<problem_solving / argumentative / topic_explanation / comparison>"",
 
-  ""contentScore"": <0-20>,
+  ""contentScore"": <0-12>,
   ""contentFeedback"": ""<tiếng Việt — xưng Bạn — đánh giá từng task 1/2/3: đầy đủ không, logic liên kết thế nào, thesis rõ không, ví dụ thuyết phục không, có copy đề không>"",
   ""taskCompletion"": {
     ""task1"": {
@@ -495,7 +503,7 @@ Ví dụ feedback tốt:
     }
   },
 
-  ""organizationScore"": <0-15>,
+  ""organizationScore"": <0-12>,
   ""organizationFeedback"": ""<tiếng Việt — xưng Bạn — đánh giá: 서론/본론/결론 rõ không, 담화 표지 có đa dạng không, mạch văn trơn không, intro/conclusion đủ dung lượng không>"",
   ""structure"": {
     ""hasIntro"": true,
@@ -504,7 +512,7 @@ Ví dụ feedback tốt:
     ""paragraphCount"": <số đoạn>
   },
 
-  ""languageScore"": <0-15>,
+  ""languageScore"": <0-26>,
   ""languageFeedback"": ""<tiếng Việt — xưng Bạn — đánh giá văn phong (-다/-는다 đúng không), lỗi ngữ pháp cụ thể, từ vựng phong phú không, có dùng -니까 sai không, cấu trúc câu đa dạng không>"",
   ""grammarErrors"": [
     {

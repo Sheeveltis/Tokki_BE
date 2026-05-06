@@ -29,5 +29,6 @@ namespace Tokki.Application.IServices
         Task<byte[]> ExportSystemConfigsToExcelAsync(List<SystemConfigExcelDTO> data, string sheetName);
         Task<byte[]> GetPronunciationExampleTemplateAsync();
         Task<byte[]> GetPronunciationRuleTemplateAsync();
+        Task<List<AlphabetExcelDTO>> ExtractAlphabetDataAsync(IFormFile file);
     }
 }

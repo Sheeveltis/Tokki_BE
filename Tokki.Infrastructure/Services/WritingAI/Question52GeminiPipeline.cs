@@ -14,16 +14,19 @@ namespace Tokki.Infrastructure.Services.WritingAi
         private readonly GeminiRestClient _gemini;
         private readonly IQuestionBankRepository _questionBankRepo;
         private readonly IUserExamWritingAnswerRepository _writingRepo;
+        private readonly ISystemConfigRepository _systemConfigRepo;
 
         public Question52GeminiPipeline(
             IHttpClientFactory httpClientFactory,
             IOptions<GeminiOptions> options,
             IQuestionBankRepository questionBankRepo,
-            IUserExamWritingAnswerRepository writingRepo)
+            IUserExamWritingAnswerRepository writingRepo,
+            ISystemConfigRepository systemConfigRepo)
         {
             _gemini = new GeminiRestClient(httpClientFactory, options.Value.Writing);
             _questionBankRepo = questionBankRepo;
             _writingRepo = writingRepo;
+            _systemConfigRepo = systemConfigRepo;
         }
 
         public async Task<(JsonElement Feedback, int Score)> SolveAsync(
@@ -87,7 +90,7 @@ namespace Tokki.Infrastructure.Services.WritingAi
 
                 writingAnswer.Score = 0;
                 writingAnswer.AiAnalysisJson = emptyRaw;
-                writingAnswer.GradedAt = DateTime.UtcNow;
+                writingAnswer.GradedAt = DateTime.UtcNow.AddHours(7);
 
                 _writingRepo.UpdateAsync(writingAnswer);
                 await _writingRepo.SaveChangesAsync(ct);
@@ -108,9 +111,13 @@ USER_ANSWER_㉡:
 MAX_MARK: {maxMark} điểm
 """;
 
+            string? dbPrompt = await _systemConfigRepo.GetValueByKeyAsync("AI_WRITING_52_PROMPT");
+            string finalInstruction = string.IsNullOrWhiteSpace(dbPrompt) ? BuildSystemInstruction() : dbPrompt;
+            var systemPrompt = finalInstruction + "\n\n" + BuildOutputSchema();
+
             var raw = await _gemini.GenerateContentAsync(
                 new List<object> { new { text = userText } },
-                BuildSystemInstruction(),
+                systemPrompt,
                 maxOutputTokens: 3000,
                 temperature: 0.2,
                 ct);
@@ -125,7 +132,7 @@ MAX_MARK: {maxMark} điểm
 
             writingAnswer.Score = actualScore;
             writingAnswer.AiAnalysisJson = raw;
-            writingAnswer.GradedAt = DateTime.UtcNow;
+            writingAnswer.GradedAt = DateTime.UtcNow.AddHours(7);
 
             _writingRepo.UpdateAsync(writingAnswer);
             await _writingRepo.SaveChangesAsync(ct);
@@ -253,22 +260,32 @@ Nội dung phù hợp ngữ cảnh & logic : 2 điểm
   • 1đ: Phù hợp một phần, hơi lệch ý
   • 0đ: Sai ngữ cảnh, không liên quan
 
-Ngữ pháp chính xác              : 2 điểm
-  • 2đ: Không lỗi ngữ pháp
-  • 1đ: 1 lỗi nhỏ
-  • 0đ: Sai ngữ pháp nghiêm trọng
+Ngữ pháp và từ vựng chính xác     : 1 điểm
+  • 1đ: Không lỗi ngữ pháp/từ vựng
+  • 0đ: Có lỗi ngữ pháp/từ vựng
 
-Văn phong văn viết đúng          : 1 điểm
+Văn phong văn viết đúng           : 1 điểm
   • 1đ: Dùng đúng -다/-는다/-ㄴ다/-았다
   • 0đ: Dùng sai (-습니다/-아요)
+
+Ngắn gọn (chỉ 1 câu duy nhất)     : 1 điểm
+  • 1đ: Chỉ viết 1 câu
+  • 0đ: Viết nhiều hơn 1 câu
+
+=== LỖI DẤU CÂU (PUNCTUATION RULE) ===
+TUYỆT ĐỐI KHÔNG được dùng dấu câu ở cuối câu (như dấu chấm ""."", dấu chấm hỏi ""?"", v.v.).
+Nếu người dùng viết CÓ DẤU CÂU ở cuối → BỊ TRỪ 1 ĐIỂM vào tổng điểm của blank đó.
 
 === CÁCH VIẾT FEEDBACK ===
 - ""feedback"" PHẢI bằng TIẾNG VIỆT, tối đa 2 câu ngắn gọn
 - Giải thích logic đoạn văn: tại sao câu đó đúng/sai
 - Ví dụ tốt: ""Đoạn văn đang so sánh 2 quan điểm đối lập về ảnh hưởng giữa cảm xúc và biểu cảm. ㉠ cần nói ngược lại với câu trước — 'biểu cảm ảnh hưởng lên cảm xúc'. Câu '표정이 감정에 영향을 준다' logic hoàn toàn.""
-- KHÔNG viết feedback thuần tiếng Hàn
+- KHÔNG viết feedback thuần tiếng Hàn";
 
-=== OUTPUT JSON ===
+        private static string BuildOutputSchema() =>
+            @"=== OUTPUT JSON SCHEMA BẮT BUỘC ===
+Bạn BẮT BUỘC phải trả về đúng cấu trúc JSON dưới đây. TUYỆT ĐỐI KHÔNG ĐƯỢC THAY ĐỔI CẤU TRÚC, KHÔNG THÊM BỚT TRƯỜNG, KHÔNG THAY ĐỔI TÊN TRƯỜNG. CHỈ TRẢ VỀ JSON.
+
 {
   ""totalScore"": <tổng 2 blank, 0-10>,
   ""results"": [

@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Domain.Entities;
@@ -102,5 +102,50 @@ namespace Tokki.Infrastructure.Repositories
         public void AddLike(WordleSentenceLike like) => _context.WordleSentenceLikes.Add(like);
 
         public void RemoveLike(WordleSentenceLike like) => _context.WordleSentenceLikes.Remove(like);
+
+        public async Task<(List<UserWordleProgress> Items, int TotalCount)> GetWordlePlayersAsync(string dailyWordleId, int pageIndex, int pageSize, CancellationToken token)
+        {
+            var query = _context.UserWordleProgress
+                .Include(p => p.User)
+                .Where(p => p.DailyWordleId == dailyWordleId);
+
+            int totalCount = await query.CountAsync(token);
+
+            var items = await query
+                .OrderByDescending(p => p.IsWon)
+                .ThenBy(p => p.AttemptCount)
+                .ThenBy(p => p.LastActivity)
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(token);
+
+            return (items, totalCount);
+        }
+
+        public async Task<(List<WordleSentenceSubmission> Items, int TotalCount)> GetWordleLeaderboardAsync(string dailyWordleId, int pageIndex, int pageSize, CancellationToken token, bool includePrivate = false)
+        {
+            var query = _context.WordleSentenceSubmissions
+                .Include(s => s.User)
+                    .ThenInclude(u => u.CurrentTitle)
+                .Include(s => s.SentenceLikes)
+                .Where(s => s.DailyWordleId == dailyWordleId);
+
+            if (!includePrivate)
+            {
+                query = query.Where(s => s.IsPublic);
+            }
+
+            int totalCount = await query.CountAsync(token);
+
+            var items = await query
+                .OrderByDescending(s => s.AiScore)
+                .ThenByDescending(s => s.LikeCount)
+                .ThenByDescending(s => s.CreatedAt)
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(token);
+
+            return (items, totalCount);
+        }
     }
-}
+}
