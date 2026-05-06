@@ -9,7 +9,7 @@ using Tokki.Application.UseCases.MiniGame.DTOs;
 
 namespace Tokki.Application.UseCases.MiniGame.Queries.Wordle
 {
-    public class GetWordlePlayersQueryHandler : IRequestHandler<GetWordlePlayersQuery, OperationResult<List<WordlePlayerProgressDto>>>
+    public class GetWordlePlayersQueryHandler : IRequestHandler<GetWordlePlayersQuery, OperationResult<PagedResult<WordlePlayerProgressDto>>>
     {
         private readonly IMiniGameRepository _repository;
 
@@ -18,11 +18,11 @@ namespace Tokki.Application.UseCases.MiniGame.Queries.Wordle
             _repository = repository;
         }
 
-        public async Task<OperationResult<List<WordlePlayerProgressDto>>> Handle(GetWordlePlayersQuery request, CancellationToken token)
+        public async Task<OperationResult<PagedResult<WordlePlayerProgressDto>>> Handle(GetWordlePlayersQuery request, CancellationToken token)
         {
-            var players = await _repository.GetWordlePlayersAsync(request.DailyWordleId, token);
+            var (players, totalCount) = await _repository.GetWordlePlayersAsync(request.DailyWordleId, request.PageIndex, request.PageSize, token);
 
-            var result = players.Select(p => new WordlePlayerProgressDto
+            var items = players.Select(p => new WordlePlayerProgressDto
             {
                 UserId = p.UserId,
                 UserName = p.User?.FullName ?? "Người dùng ẩn danh",
@@ -33,7 +33,9 @@ namespace Tokki.Application.UseCases.MiniGame.Queries.Wordle
                 LastActivity = p.LastActivity
             }).ToList();
 
-            return OperationResult<List<WordlePlayerProgressDto>>.Success(result);
+            var pagedResult = PagedResult<WordlePlayerProgressDto>.Create(items, totalCount, request.PageIndex, request.PageSize);
+
+            return OperationResult<PagedResult<WordlePlayerProgressDto>>.Success(pagedResult);
         }
     }
 }

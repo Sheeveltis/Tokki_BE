@@ -9,7 +9,7 @@ using Tokki.Application.UseCases.MiniGame.DTOs;
 
 namespace Tokki.Application.UseCases.MiniGame.Queries.Wordle
 {
-    public class GetWordleLeaderboardQueryHandler : IRequestHandler<GetWordleLeaderboardQuery, OperationResult<List<WordleSentenceDto>>>
+    public class GetWordleLeaderboardQueryHandler : IRequestHandler<GetWordleLeaderboardQuery, OperationResult<PagedResult<WordleSentenceDto>>>
     {
         private readonly IMiniGameRepository _repository;
 
@@ -18,11 +18,11 @@ namespace Tokki.Application.UseCases.MiniGame.Queries.Wordle
             _repository = repository;
         }
 
-        public async Task<OperationResult<List<WordleSentenceDto>>> Handle(GetWordleLeaderboardQuery request, CancellationToken token)
+        public async Task<OperationResult<PagedResult<WordleSentenceDto>>> Handle(GetWordleLeaderboardQuery request, CancellationToken token)
         {
-            var submissions = await _repository.GetWordleLeaderboardAsync(request.DailyWordleId, token, request.IncludePrivate);
+            var (submissions, totalCount) = await _repository.GetWordleLeaderboardAsync(request.DailyWordleId, request.PageIndex, request.PageSize, token, request.IncludePrivate);
 
-            var result = submissions.Select(s =>
+            var items = submissions.Select(s =>
             {
                 var currentTitle = s.User?.CurrentTitle;
 
@@ -46,7 +46,9 @@ namespace Tokki.Application.UseCases.MiniGame.Queries.Wordle
                 return dto;
             }).ToList();
 
-            return OperationResult<List<WordleSentenceDto>>.Success(result);
+            var pagedResult = PagedResult<WordleSentenceDto>.Create(items, totalCount, request.PageIndex, request.PageSize);
+
+            return OperationResult<PagedResult<WordleSentenceDto>>.Success(pagedResult);
         }
     }
 }

@@ -195,21 +195,28 @@ namespace Tokki.WebAPI.Controllers
 
         [HttpGet("wordle/admin/{dailyWordleId}/players")]
         [Authorize(Roles = "Admin, Staff")]
-        public async Task<IActionResult> GetWordlePlayers(string dailyWordleId)
+        public async Task<IActionResult> GetWordlePlayers(string dailyWordleId, [FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
         {
-            var query = new GetWordlePlayersQuery { DailyWordleId = dailyWordleId };
+            var query = new GetWordlePlayersQuery 
+            { 
+                DailyWordleId = dailyWordleId,
+                PageIndex = pageIndex,
+                PageSize = pageSize
+            };
             var result = await _sender.Send(query);
             return StatusCode(result.StatusCode, result);
         }
 
         [HttpGet("wordle/admin/{dailyWordleId}/leaderboard")]
         [Authorize(Roles = "Admin, Staff")]
-        public async Task<IActionResult> GetWordleLeaderboard(string dailyWordleId, [FromQuery] bool includePrivate = true)
+        public async Task<IActionResult> GetWordleLeaderboard(string dailyWordleId, [FromQuery] bool includePrivate = true, [FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
         {
             var query = new GetWordleLeaderboardQuery 
             { 
                 DailyWordleId = dailyWordleId,
-                IncludePrivate = includePrivate
+                IncludePrivate = includePrivate,
+                PageIndex = pageIndex,
+                PageSize = pageSize
             };
             var result = await _sender.Send(query);
             return StatusCode(result.StatusCode, result);
