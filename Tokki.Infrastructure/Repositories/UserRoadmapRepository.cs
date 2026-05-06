@@ -193,9 +193,8 @@ namespace Tokki.Infrastructure.Repositories
             CurrentTopikLevel level,
             CancellationToken cancellationToken = default)
         {
-            var examType = (level == CurrentTopikLevel.Pre_Topik
-                         || level == CurrentTopikLevel.Level_1
-                         || level == CurrentTopikLevel.Level_2)
+            int levelVal = (int)level;
+            var examType = levelVal <= (int)CurrentTopikLevel.Level_2
                 ? ExamType.TopikI
                 : ExamType.TopikII;
 
@@ -239,6 +238,78 @@ namespace Tokki.Infrastructure.Repositories
                 .ContinueWith(t => t.Result
                     .Select(x => (x.QuestionTypeId, x.OrderIndex))
                     .ToList());
+        }
+
+        public async Task<List<string>> GetCoreTypesByTargetAimAsync(
+            TargetAimLevel targetAim,
+            CancellationToken cancellationToken = default)
+        {
+            var config = await _context.TopikLevelConfigs
+                .FirstOrDefaultAsync(
+                    c => c.TargetAimLevel == (int)targetAim && c.IsActive,
+                    cancellationToken);
+
+            if (config == null)
+                return new List<string>();
+
+            var examType = config.ExamGroup == 1 ? ExamType.TopikI : ExamType.TopikII;
+
+            var allTypes = await _context.QuestionTypes
+                .Where(qt => qt.IsActive && qt.ExamType == examType)
+                .Select(qt => new
+                {
+                    qt.QuestionTypeId,
+                    qt.Code,
+                    qt.Skill
+                })
+                .ToListAsync(cancellationToken);
+
+            int maxCoreWritingQuestion = config.TargetWritingQuestions > 0
+                ? 50 + config.TargetWritingQuestions
+                : 0;
+
+            var coreTypeIds = new List<string>();
+
+            foreach (var qt in allTypes)
+            {
+                int startQ = ParseStartQuestion(qt.Code);
+                if (startQ < 0) continue;
+
+                bool isCore = qt.Skill switch
+                {
+                    QuestionSkill.Listening => startQ <= config.TargetListeningQuestions,
+                    QuestionSkill.Reading => startQ <= config.TargetReadingQuestions,
+                    QuestionSkill.Writing => maxCoreWritingQuestion > 0
+                                              && startQ <= maxCoreWritingQuestion,
+                    _ => false
+                };
+
+                if (isCore)
+                    coreTypeIds.Add(qt.QuestionTypeId);
+            }
+
+            return coreTypeIds;
+        }
+
+        private static int ParseStartQuestion(string code)
+        {
+            try
+            {
+                var qIndex = code.IndexOf("_Q", StringComparison.OrdinalIgnoreCase);
+                if (qIndex < 0) return -1;
+
+                var afterQ = code[(qIndex + 2)..];
+                var underscoreIdx = afterQ.IndexOf('_');
+                var startStr = underscoreIdx >= 0
+                    ? afterQ[..underscoreIdx]
+                    : afterQ;
+
+                return int.TryParse(startStr, out var num) ? num : -1;
+            }
+            catch
+            {
+                return -1;
+            }
         }
     }
 }

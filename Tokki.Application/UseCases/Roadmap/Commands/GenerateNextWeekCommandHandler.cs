@@ -142,9 +142,12 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
                         var originalWeaknessTypeIds = allRoadmapWeaknesses
                             .Select(w => w.QuestionTypeId).ToList();
 
+                        var coreAimTypeIds = await roadmapRepo.GetCoreTypesByTargetAimAsync(
+                            roadmap.TargetAim, CancellationToken.None);
+
                         var expansionResults = await roadmapRepo.GetExpansionQuestionTypeIdsAsync(
                             examType,
-                            originalWeaknessTypeIds,
+                            coreAimTypeIds,
                             roadmap.LastCoveredTypeOrderIndex,
                             MaxQuestionTypesPerWeek,
                             CancellationToken.None);
@@ -380,31 +383,16 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
                 }
 
                 var userWeakness = currentRoadmapWeaknesses.FirstOrDefault(w => w.QuestionTypeId == typeId);
-                if (userWeakness == null)
+                if (userWeakness != null)
                 {
-                    userWeakness = new UserWeakness
+                    if (userWeakness.Status != 2)
+                        userWeakness.Status = isPassed ? 2 : 1;
+
+                    if (profile.ConsecutiveFailWeeks >= 2)
                     {
-                        Id = idGen.GenerateCustom(15),
-                        UserId = currentWeek.UserRoadmap.UserId,
-                        RoadmapId = currentWeek.UserRoadmapId,
-                        QuestionTypeId = typeId,
-                        Status = 0,
-                        Priority = ++maxPriority,
-                        CreatedAt = DateTime.UtcNow
-                    };
-                    await weaknessRepo.AddAsync(userWeakness, token);
-                    currentRoadmapWeaknesses.Add(userWeakness);
-                }
-
-                if (isPassed)
-                    userWeakness.Status = 2;
-                else
-                    userWeakness.Status = 1; 
-
-                if (profile.ConsecutiveFailWeeks >= 2)
-                {
-                    userWeakness.Priority = ++maxPriority;
-                    deferredTypes.Add(typeId);
+                        userWeakness.Priority = ++maxPriority;
+                        deferredTypes.Add(typeId);
+                    }
                 }
             }
 
@@ -445,7 +433,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
             var fallbackIds = await roadmapRepo.GetValidQuestionTypeIdsByLevelAsync(level, token);
             var extras = fallbackIds
                 .Except(types)
-                .Where(id => !passedIds.Contains(id))  
+                .Where(id => !passedIds.Contains(id))
                 .Take(MaxQuestionTypesPerWeek - types.Count);
             types.AddRange(extras);
         }
