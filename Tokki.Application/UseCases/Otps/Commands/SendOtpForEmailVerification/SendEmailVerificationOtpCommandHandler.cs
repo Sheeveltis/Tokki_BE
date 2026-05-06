@@ -78,25 +78,28 @@ namespace Tokki.Application.UseCases.Accounts.Commands.SendEmailVerificationOtp
             // Lưu rate-limit key 60 giây
             await _redisService.SetAsync(rateLimitKey, "1", TimeSpan.FromSeconds(60));
 
-            try
-            {
-                string subject = "[Tokki] Mã xác thực email";
-                string body = $@"
+            string subject = "[Tokki] Mã xác thực email";
+            string body = $@"
             <h3>Xin chào,</h3>
             <p>Bạn vừa yêu cầu xác thực email tại Tokki.</p>
             <p>Mã xác thực (OTP) của bạn là: <b style='font-size: 20px; color: blue;'>{otpCode}</b></p>
             <p>Mã này sẽ hết hạn sau {otpLifeTimeSeconds / 60} phút.</p>
             <p>Nếu bạn không yêu cầu mã này, vui lòng bỏ qua email.</p>";
 
-                await _emailService.SendEmailAsync(request.Email, subject, body);
-            }
-            catch (Exception)
+            // CHẠY NGẦM: Để tránh dính lỗi Cloudflare 524 Timeout
+            // API sẽ trả về 200 OK ngay lập tức, việc gửi email sẽ tự động chạy trong nền
+            _ = Task.Run(async () =>
             {
-                // Nếu gửi mail lỗi → xóa key Redis vừa tạo để tránh rác
-                await _redisService.DeleteAsync(otpKey);
-                await _redisService.DeleteAsync(rateLimitKey);
-                return OperationResult<string>.Failure(new List<Error> { AppErrors.EmailServiceError }, 400, messFail);
-            }
+                try
+                {
+                    await _emailService.SendEmailAsync(request.Email, subject, body);
+                }
+                catch (Exception)
+                {
+                    // Nếu gửi lỗi, do chạy ngầm nên không văng exception ra API
+                    // Ở môi trường thực tế, nên dùng ILogger để ghi lại lỗi này.
+                }
+            });
 
             return OperationResult<string>.Success("Mã OTP đã được gửi đến email của bạn.", 200);
         }

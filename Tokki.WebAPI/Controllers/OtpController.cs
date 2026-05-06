@@ -80,5 +80,47 @@ namespace Tokki.API.Controllers
             // Result.Data ở đây chính là cái ResetToken (string)
             return StatusCode(result.StatusCode, result);
         }
+
+        [HttpGet("test-smtp")]
+        public async Task<IActionResult> TestSmtpConnection()
+        {
+            try
+            {
+                using var client = new System.Net.Sockets.TcpClient();
+                var connectTask = client.ConnectAsync("smtp.gmail.com", 587);
+                
+                // Set timeout là 15 giây
+                if (await Task.WhenAny(connectTask, Task.Delay(15000)) == connectTask)
+                {
+                    // Lệnh kết nối hoàn thành trong 15s (có thể thành công hoặc văng lỗi)
+                    await connectTask; 
+                    return Ok(new 
+                    { 
+                        success = true, 
+                        message = "Tuyệt vời! Kết nối tới smtp.gmail.com:587 THÀNH CÔNG. Port này KHÔNG BỊ CHẶN." 
+                    });
+                }
+                else
+                {
+                    // Hết 15s mà vẫn chưa kết nối được
+                    return StatusCode(504, new 
+                    { 
+                        success = false, 
+                        message = "Timeout! Không thể kết nối tới smtp.gmail.com:587 sau 15 giây. 99% Cổng 587 ĐÃ BỊ NHÀ MẠNG VPS CHẶN.",
+                        recommendation = "Hãy liên hệ bộ phận hỗ trợ của VPS yêu cầu họ mở khóa (unblock) outbound port 587 cho SMTP."
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new 
+                { 
+                    success = false, 
+                    message = "Lỗi khi cố gắng kết nối tới smtp.gmail.com:587. Port có thể bị chặn cứng (Connection Refused).", 
+                    error = ex.Message,
+                    innerException = ex.InnerException?.Message
+                });
+            }
+        }
     }
 }
