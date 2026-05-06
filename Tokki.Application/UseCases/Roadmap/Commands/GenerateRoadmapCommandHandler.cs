@@ -24,6 +24,8 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
         private readonly IRoadmapProgressService _progressService;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly IMediator _mediator;
+        private readonly ITopikLevelConfigRepository _topikLevelConfigRepository;
+        private const int MaxQuestionTypesPerWeek = 5;
         public GenerateRoadmapCommandHandler(
             IAiRoadmapService aiRoadmapService,
             IExamAssemblyService examAssemblyService,
@@ -35,6 +37,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
             IRoadmapProgressService progressService,
             IServiceScopeFactory scopeFactory,
             IMediator mediator,
+            ITopikLevelConfigRepository topikLevelConfigRepository,
             ILogger<GenerateRoadmapCommandHandler> logger)
         {
             _aiRoadmapService = aiRoadmapService;
@@ -47,6 +50,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
             _progressService = progressService;
             _scopeFactory = scopeFactory;
             _mediator = mediator;
+            _topikLevelConfigRepository = topikLevelConfigRepository;
             _logger = logger;
         }
 
@@ -84,6 +88,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                 var accountRepo = sp.GetRequiredService<IAccountRepository>();
                 var mediator = sp.GetRequiredService<IMediator>();
                 var progress = sp.GetRequiredService<IRoadmapProgressService>();
+                var topikLevelConfigRepo = sp.GetRequiredService<ITopikLevelConfigRepository>();
 
                 try
                 {
@@ -106,11 +111,13 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                         if (examResult.IsSuccess && examResult.Data != null)
                         {
                             var skillData = examResult.Data;
+                            var levelConfigs = await topikLevelConfigRepo.GetAllAsync();
                             currentLevel = CalculateLevel(
                                 request.TargetAim,
                                 skillData.Listening.Score,
                                 skillData.Reading.Score,
-                                skillData.Writing.Score);
+                                skillData.Writing.Score,
+                                levelConfigs);
 
                             var types = await userExamRepo
                                 .GetIncorrectQuestionTypesByExamIdAsync(request.UserExamId, CancellationToken.None);
@@ -197,15 +204,61 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
 
                     int totalWeeks = (int)Math.Ceiling((double)request.DurationDays / 7);
 
-                    var aiPlan = await aiRoadmapService.GenerateStudyPlanAsync(
-                        request.TargetAim,
-                        currentLevel,
-                        request.DurationDays,
-                        week1Types,
-                        weakTypeInfos.Where(w => week1Types.Contains(w.QuestionTypeId)).ToList(),
-                        fullMenu,
-                        Math.Min(week1Types.Count, 3),
-                        totalWeeks);
+                    var aimConfig = (await topikLevelConfigRepo.GetAllAsync())
+                        .FirstOrDefault(c => c.TargetAimLevel == (int)request.TargetAim && c.IsActive);
+                    var examType = aimConfig?.ExamGroup == 1 ? ExamType.TopikI : ExamType.TopikII;
+
+                    var coreAimTypeIds = await roadmapRepo.GetCoreTypesByTargetAimAsync(
+                        request.TargetAim, CancellationToken.None);
+
+                    List<(string QuestionTypeId, int OrderIndex)> expansionForWeek1 = new();
+
+                    AiRoadmapResponse? aiPlan;
+
+                    if (!weaknesses.Any())
+                    {
+                        progress.Set(jobId, new RoadmapProgressState
+                        {
+                            JobId = jobId,
+                            Percent = 55,
+                            Step = "Bước 4: User đã nắm vững tất cả kỹ năng! Đang thiết kế tuần mở rộng..."
+                        });
+
+                        expansionForWeek1 = await roadmapRepo.GetExpansionQuestionTypeIdsAsync(
+                            examType, coreAimTypeIds, 0, 3, CancellationToken.None);
+                        week1Types = expansionForWeek1.Select(r => r.QuestionTypeId).ToList();
+
+                        var expansionTypeInfos = await roadmapRepo
+                            .GetQuestionTypeMenuAsync(week1Types, CancellationToken.None);
+
+                        aiPlan = await aiRoadmapService.GenerateExpansionWeekPlanAsync(
+                            request.TargetAim,
+                            currentLevel,
+                            1,
+                            week1Types,
+                            new List<string>(),
+                            expansionTypeInfos,
+                            fullMenu);
+                    }
+                    else
+                    {
+                        progress.Set(jobId, new RoadmapProgressState
+                        {
+                            JobId = jobId,
+                            Percent = 55,
+                            Step = "Bước 4: Thiết kế tuần học đầu tiên..."
+                        });
+
+                        aiPlan = await aiRoadmapService.GenerateStudyPlanAsync(
+                            request.TargetAim,
+                            currentLevel,
+                            request.DurationDays,
+                            week1Types,
+                            weakTypeInfos.Where(w => week1Types.Contains(w.QuestionTypeId)).ToList(),
+                            fullMenu,
+                            Math.Min(week1Types.Count, 3),
+                            totalWeeks);
+                    }
 
                     if (aiPlan == null || !aiPlan.Weeks.Any())
                     {
@@ -286,19 +339,28 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                         EndDate = DateTime.UtcNow.AddDays(request.DurationDays),
                         CurrentStatus = UserRoadmapStatus.Active,
                         OverallAiAssessment = aiPlan.Assessment,
+                        LastCoveredTypeOrderIndex = expansionForWeek1.Any()
+                            ? expansionForWeek1.Max(r => r.OrderIndex)
+                            : 0,
                         CreatedAt = DateTime.UtcNow,
                         Weeks = new List<RoadmapWeek>()
                     };
 
                     string? weeklyExamId = null;
-                    var examType = (request.TargetAim == TargetAimLevel.Topik_I_Level1
-                        || request.TargetAim == TargetAimLevel.Topik_I_Level2)
-                        ? ExamType.TopikI : ExamType.TopikII;
 
                     if (week1Types.Any())
                     {
-                        var examResult = await examAssemblyService.GenerateWeeklyExamFromScopeAsync(
-                            request.UserId, 1, week1Types, examType, CancellationToken.None);
+                        OperationResult<string> examResult;
+                        if (!weaknesses.Any())
+                        {
+                            examResult = await examAssemblyService.GenerateTopikStyleExamAsync(
+                                request.UserId, 1, coreAimTypeIds, examType, CancellationToken.None);
+                        }
+                        else
+                        {
+                            examResult = await examAssemblyService.GenerateWeeklyExamFromScopeAsync(
+                                request.UserId, 1, week1Types, examType, CancellationToken.None);
+                        }
                         if (examResult.IsSuccess)
                             weeklyExamId = examResult.Data;
                     }
@@ -483,23 +545,29 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
             TargetAimLevel targetAim,
             double listeningScore,
             double readingScore,
-            double writingScore)
+            double writingScore,
+            List<Tokki.Domain.Entities.TopikLevelConfig> levelConfigs)
         {
-            if (targetAim == TargetAimLevel.Topik_I_Level1
-             || targetAim == TargetAimLevel.Topik_I_Level2)
+            var targetConfig = levelConfigs.FirstOrDefault(
+                c => c.TargetAimLevel == (int)targetAim && c.IsActive);
+            int examGroup = targetConfig?.ExamGroup ?? 2;
+            bool isTopikI = examGroup == 1;
+
+            double score = isTopikI
+                ? listeningScore + readingScore
+                : listeningScore + readingScore + writingScore;
+
+            foreach (var config in levelConfigs
+                .Where(c => c.ExamGroup == examGroup && c.IsActive)
+                .OrderByDescending(c => c.PassScore))
             {
-                double topikIScore = listeningScore + readingScore;
-                if (topikIScore >= 140) return CurrentTopikLevel.Level_2;
-                if (topikIScore >= 80) return CurrentTopikLevel.Level_1;
-                return CurrentTopikLevel.Pre_Topik;
+                if (score >= config.PassScore)
+                    return (CurrentTopikLevel)(int)config.TargetAimLevel;
             }
 
-            double total = listeningScore + readingScore + writingScore;
-            if (total >= 230) return CurrentTopikLevel.Level_6;
-            if (total >= 190) return CurrentTopikLevel.Level_5;
-            if (total >= 150) return CurrentTopikLevel.Level_4;
-            if (total >= 120) return CurrentTopikLevel.Level_3;
-            return CurrentTopikLevel.Pre_Topik_II;
+            return isTopikI
+                ? CurrentTopikLevel.Pre_Topik
+                : CurrentTopikLevel.Pre_Topik_II;
         }
     }
 }

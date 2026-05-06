@@ -28,16 +28,20 @@ public interface IUserRoadmapRepository
         CurrentTopikLevel level,
         CancellationToken cancellationToken = default);
     Task<List<string>> GetValidQuestionTypeIdsByLevelAsync(
-    CurrentTopikLevel level,
-    CancellationToken cancellationToken = default);
+        CurrentTopikLevel level,
+        CancellationToken cancellationToken = default);
     Task<Exam?> GetEntranceExamByConfigKeyAsync(
-    string configKey,
-    CancellationToken cancellationToken = default);
+        string configKey,
+        CancellationToken cancellationToken = default);
 
     Task<List<(string QuestionTypeId, int OrderIndex)>> GetExpansionQuestionTypeIdsAsync(
         ExamType examType,
         List<string> excludeTypeIds,
         int lastCoveredOrderIndex,
         int take,
+        CancellationToken cancellationToken = default);
+
+    Task<List<string>> GetCoreTypesByTargetAimAsync(
+        TargetAimLevel targetAim,
         CancellationToken cancellationToken = default);
 }
