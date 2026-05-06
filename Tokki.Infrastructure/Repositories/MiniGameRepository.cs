@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Domain.Entities;
@@ -102,5 +102,36 @@ namespace Tokki.Infrastructure.Repositories
         public void AddLike(WordleSentenceLike like) => _context.WordleSentenceLikes.Add(like);
 
         public void RemoveLike(WordleSentenceLike like) => _context.WordleSentenceLikes.Remove(like);
+
+        public async Task<List<UserWordleProgress>> GetWordlePlayersAsync(string dailyWordleId, CancellationToken token)
+        {
+            return await _context.UserWordleProgress
+                .Include(p => p.User)
+                .Where(p => p.DailyWordleId == dailyWordleId)
+                .OrderByDescending(p => p.IsWon)
+                .ThenBy(p => p.AttemptCount)
+                .ThenBy(p => p.LastActivity)
+                .ToListAsync(token);
+        }
+
+        public async Task<List<WordleSentenceSubmission>> GetWordleLeaderboardAsync(string dailyWordleId, CancellationToken token, bool includePrivate = false)
+        {
+            var query = _context.WordleSentenceSubmissions
+                .Include(s => s.User)
+                    .ThenInclude(u => u.CurrentTitle)
+                .Include(s => s.SentenceLikes)
+                .Where(s => s.DailyWordleId == dailyWordleId);
+
+            if (!includePrivate)
+            {
+                query = query.Where(s => s.IsPublic);
+            }
+
+            return await query
+                .OrderByDescending(s => s.AiScore)
+                .ThenByDescending(s => s.LikeCount)
+                .ThenByDescending(s => s.CreatedAt)
+                .ToListAsync(token);
+        }
     }
-}
+}

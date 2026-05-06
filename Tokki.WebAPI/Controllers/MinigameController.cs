@@ -11,6 +11,7 @@ using Tokki.Application.UseCases.MiniGame.Commands.AssignWordleVocab;
 using Tokki.Application.UseCases.MiniGame.Queries.MatchingCard;
 using Tokki.Application.UseCases.MiniGame.Queries.Solitaire;
 using Tokki.Application.UseCases.MiniGame.Queries.Wordle;
+using Tokki.Application.UseCases.MiniGame.Commands.ToggleWordleSentenceVisibility;
 
 namespace Tokki.WebAPI.Controllers
 {
@@ -189,6 +190,36 @@ namespace Tokki.WebAPI.Controllers
         public async Task<IActionResult> GetSuitableVocabs([FromQuery] GetSuitableVocabsQuery query)
         {
             var result = await _sender.Send(query);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpGet("wordle/admin/{dailyWordleId}/players")]
+        [Authorize(Roles = "Admin, Staff")]
+        public async Task<IActionResult> GetWordlePlayers(string dailyWordleId)
+        {
+            var query = new GetWordlePlayersQuery { DailyWordleId = dailyWordleId };
+            var result = await _sender.Send(query);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpGet("wordle/admin/{dailyWordleId}/leaderboard")]
+        [Authorize(Roles = "Admin, Staff")]
+        public async Task<IActionResult> GetWordleLeaderboard(string dailyWordleId, [FromQuery] bool includePrivate = true)
+        {
+            var query = new GetWordleLeaderboardQuery 
+            { 
+                DailyWordleId = dailyWordleId,
+                IncludePrivate = includePrivate
+            };
+            var result = await _sender.Send(query);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpPut("wordle/admin/toggle-visibility")]
+        [Authorize(Roles = "Admin, Staff")]
+        public async Task<IActionResult> ToggleVisibility([FromBody] ToggleWordleSentenceVisibilityCommand command)
+        {
+            var result = await _sender.Send(command);
             return StatusCode(result.StatusCode, result);
         }
     }
