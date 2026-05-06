@@ -14,15 +14,18 @@ namespace Tokki.Application.UseCases.Roadmap.Queries.GetEntranceFeedback
         private readonly IUserExamRepository _userExamRepository;
         private readonly IAiRoadmapService _aiRoadmapService;
         private readonly IMediator _mediator;
+        private readonly ITopikLevelConfigRepository _topikLevelConfigRepository;
 
         public GetEntranceFeedbackQueryHandler(
             IUserExamRepository userExamRepository,
             IAiRoadmapService aiRoadmapService,
-            IMediator mediator)
+            IMediator mediator,
+            ITopikLevelConfigRepository topikLevelConfigRepository)
         {
             _userExamRepository = userExamRepository;
             _aiRoadmapService = aiRoadmapService;
             _mediator = mediator;
+            _topikLevelConfigRepository = topikLevelConfigRepository;
         }
 
         public async Task<OperationResult<EntranceFeedbackResult>> Handle(
@@ -46,11 +49,13 @@ namespace Tokki.Application.UseCases.Roadmap.Queries.GetEntranceFeedback
 
             var skillData = examResult.Data;
 
+            var levelConfigs = await _topikLevelConfigRepository.GetAllAsync();
             var calculatedLevel = CalculateLevel(
                 request.TargetAim,
                 skillData.Listening.Score,
                 skillData.Reading.Score,
-                skillData.Writing.Score);
+                skillData.Writing.Score,
+                levelConfigs);
 
             var finalLevel = calculatedLevel;
 
@@ -134,24 +139,29 @@ namespace Tokki.Application.UseCases.Roadmap.Queries.GetEntranceFeedback
             TargetAimLevel targetAim,
             double listeningScore,
             double readingScore,
-            double writingScore)
+            double writingScore,
+            List<Tokki.Domain.Entities.TopikLevelConfig> levelConfigs)
         {
-            double totalScore = listeningScore + readingScore + writingScore;
+            bool isTopikI = targetAim == TargetAimLevel.Topik_I_Level1
+                         || targetAim == TargetAimLevel.Topik_I_Level2;
 
-            if (targetAim == TargetAimLevel.Topik_I_Level1
-             || targetAim == TargetAimLevel.Topik_I_Level2)
+            double score = isTopikI
+                ? listeningScore + readingScore
+                : listeningScore + readingScore + writingScore;
+
+            int examGroup = isTopikI ? 1 : 2;
+
+            foreach (var config in levelConfigs
+                .Where(c => c.ExamGroup == examGroup && c.IsActive)
+                .OrderByDescending(c => c.PassScore))
             {
-                double topikIScore = listeningScore + readingScore;
-                if (topikIScore >= 140) return CurrentTopikLevel.Level_2;
-                if (topikIScore >= 80) return CurrentTopikLevel.Level_1;
-                return CurrentTopikLevel.Pre_Topik;
+                if (score >= config.PassScore)
+                    return (CurrentTopikLevel)config.TargetAimLevel;
             }
 
-            if (totalScore >= 230) return CurrentTopikLevel.Level_6;
-            if (totalScore >= 190) return CurrentTopikLevel.Level_5;
-            if (totalScore >= 150) return CurrentTopikLevel.Level_4;
-            if (totalScore >= 120) return CurrentTopikLevel.Level_3;
-            return CurrentTopikLevel.Pre_Topik_II;
+            return isTopikI
+                ? CurrentTopikLevel.Pre_Topik
+                : CurrentTopikLevel.Pre_Topik_II;
         }
 
         private static string GetLevelDisplayName(CurrentTopikLevel level) => level switch

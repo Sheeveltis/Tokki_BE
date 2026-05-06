@@ -824,11 +824,45 @@ namespace Application.Services
                 }
                 worksheet.Cells[2, 1].Value = "Quy tắc Patchim";
                 worksheet.Cells[2, 2].Value = "Mô tả về cách phát âm phụ âm cuối";
-                worksheet.Cells[2, 3].Value = "Nội dung chi tiết quy tắc...";
+                worksheet.Cells[2, 3].Value = "[{\"original\":\"a\",\"replacement\":\"b\"}]";
                 worksheet.Cells[2, 4].Value = 1;
                 worksheet.Cells.AutoFitColumns();
                 return Task.FromResult(package.GetAsByteArray());
             }
+        }
+
+        public async Task<List<AlphabetExcelDTO>> ExtractAlphabetDataAsync(IFormFile file)
+        {
+            var result = new List<AlphabetExcelDTO>();
+            using (var stream = new MemoryStream())
+            {
+                await file.CopyToAsync(stream);
+                using (var package = new ExcelPackage(stream))
+                {
+                    var worksheet = package.Workbook.Worksheets[0];
+                    var rowCount = worksheet.Dimension?.Rows ?? 0;
+
+                    for (int row = 2; row <= rowCount; row++)
+                    {
+                        var letter = worksheet.Cells[row, 1].Value?.ToString();
+                        if (string.IsNullOrWhiteSpace(letter)) continue;
+
+                        result.Add(new AlphabetExcelDTO
+                        {
+                            Letter = letter.Trim(),
+                            Meaning = worksheet.Cells[row, 2].Value?.ToString()?.Trim(),
+                            Pronunciation = worksheet.Cells[row, 3].Value?.ToString()?.Trim(),
+                            Type = worksheet.Cells[row, 4].Value?.ToString()?.Trim(),
+                            AudioUrl = worksheet.Cells[row, 5].Value?.ToString()?.Trim(),
+                            DisplayDataJson = worksheet.Cells[row, 6].Value?.ToString()?.Trim(),
+                            ValidationDataJson = worksheet.Cells[row, 7].Value?.ToString()?.Trim(),
+                            TotalStrokes = int.TryParse(worksheet.Cells[row, 8].Value?.ToString(), out int ts) ? ts : 0,
+                            SortOrder = int.TryParse(worksheet.Cells[row, 9].Value?.ToString(), out int so) ? so : 0
+                        });
+                    }
+                }
+            }
+            return result;
         }
     }
 }

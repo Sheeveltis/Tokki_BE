@@ -69,5 +69,17 @@ namespace Tokki.WebAPI.Controllers
             var result = await _sender.Send(query);
             return StatusCode(result.StatusCode, result);
         }
+
+        [HttpPatch("{paymentId}/cancel")]
+        public async Task<IActionResult> Cancel(string paymentId)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("Không tìm thấy thông tin người dùng.");
+
+            var command = new CancelPaymentCommand { PaymentId = paymentId, UserId = userId };
+            var result = await _sender.Send(command);
+            return StatusCode(result.StatusCode, result);
+        }
     }
 }

@@ -19,6 +19,7 @@ using Tokki.Application.UseCases.Exam.Queries.GetUserExamsByExamId;
 using Tokki.Application.UseCases.Exam.Queries.GetQuestionsByPart;
 using Tokki.Application.UseCases.Exam.Queries.GetTemplateSkills;
 using Tokki.Application.UseCases.Exam.Commands.ExportExamToPdf;
+using Tokki.Application.UseCases.Exam.Queries.GetTrialExams;
 using Tokki.Application.UseCases.UserExam.Commands.CreateUserTakeExam;
 using Tokki.Domain.Enums;
 
@@ -76,6 +77,13 @@ namespace Tokki.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
      
+        [HttpGet("trial-exams")]
+        public async Task<IActionResult> GetTrialExams([FromQuery] GetTrialExamsQuery query)
+        {
+            var result = await _sender.Send(query);
+            return StatusCode(result.StatusCode, result);
+        }
+
         [HttpGet("admin")]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> GetAllExamsForAdmin([FromQuery] GetExamsQuery query )

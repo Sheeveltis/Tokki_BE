@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,6 +21,7 @@ namespace Tokki.Application.IRepositories
         Task<WordleSentenceLike?> GetLikeAsync(string userId, string submissionId, CancellationToken token);
         void AddLike(WordleSentenceLike like);
         void RemoveLike(WordleSentenceLike like);
-
+        Task<(List<UserWordleProgress> Items, int TotalCount)> GetWordlePlayersAsync(string dailyWordleId, int pageIndex, int pageSize, CancellationToken token);
+        Task<(List<WordleSentenceSubmission> Items, int TotalCount)> GetWordleLeaderboardAsync(string dailyWordleId, int pageIndex, int pageSize, CancellationToken token, bool includePrivate = false);
     }
 }

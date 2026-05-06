@@ -1,4 +1,4 @@
-﻿// Infrastructure/Services/Gemini/Question53GeminiPipeline.cs
+// Infrastructure/Services/Gemini/Question53GeminiPipeline.cs
 using Microsoft.Extensions.Options;
 using System.Text.Json;
 using Tokki.Application.IRepositories;
@@ -13,16 +13,19 @@ namespace Tokki.Infrastructure.Services.WritingAi
         private readonly GeminiRestClient _gemini;
         private readonly IQuestionBankRepository _questionBankRepo;
         private readonly IUserExamWritingAnswerRepository _writingRepo;
+        private readonly ISystemConfigRepository _systemConfigRepo;
 
         public Question53GeminiPipeline(
             IHttpClientFactory httpClientFactory,
             IOptions<GeminiOptions> options,
             IQuestionBankRepository questionBankRepo,
-            IUserExamWritingAnswerRepository writingRepo)
+            IUserExamWritingAnswerRepository writingRepo,
+            ISystemConfigRepository systemConfigRepo)
         {
             _gemini = new GeminiRestClient(httpClientFactory, options.Value.Writing);
             _questionBankRepo = questionBankRepo;
             _writingRepo = writingRepo;
+            _systemConfigRepo = systemConfigRepo;
         }
 
         public async Task<(JsonElement Feedback, int Score)> SolveAsync(
@@ -83,9 +86,13 @@ POLISHED_VERSION_REQUIREMENT:
 - CHỈ xuất JSON khi polishedVersion đã đạt đúng 200-300 ký tự
 """;
 
+            string? dbPrompt = await _systemConfigRepo.GetValueByKeyAsync("AI_WRITING_53_PROMPT");
+            string finalInstruction = string.IsNullOrWhiteSpace(dbPrompt) ? BuildSystemInstruction() : dbPrompt;
+            var systemPrompt = finalInstruction + "\n\n" + BuildOutputSchema();
+
             var raw = await _gemini.GenerateContentAsync(
                 new List<object> { new { text = userText } },
-                BuildSystemInstruction(),
+                systemPrompt,
                 maxOutputTokens: 16384,   // Câu 53 cần nhiều token hơn vì feedback chi tiết
                 temperature: 0.2,        // Thấp hơn để chấm điểm nhất quán
                 ct);
@@ -183,7 +190,7 @@ POLISHED_VERSION_REQUIREMENT:
                 && lang.TryGetDouble(out var l))
                 sum += l;
 
-            // content(0-12) + org(0-10) + lang(0-8) = max 30 → / 30 * 100 = 100%
+            // content(0-7) + org(0-7) + lang(0-16) = max 30 → / 30 * 100 = 100%
             return Math.Clamp(sum / 30.0 * 100.0, 0, 100);
         }
 
@@ -320,26 +327,23 @@ Explanation thường mô tả cấu trúc biểu đồ. Khi chấm, kiểm tra:
 
 === RUBRIC CHẤM (30 điểm) ===
 
-**A. Nội dung & Hoàn thành nhiệm vụ (Content) - 12 điểm**
-- 11-12đ: Mô tả ĐẦY ĐỦ tất cả mục và số liệu, dạng câu khớp đúng dạng biểu đồ
-- 9-10đ: Bỏ 1 thông tin nhỏ hoặc số liệu hơi không chính xác
-- 6-8đ: Bỏ 2-3 thông tin, dùng sai công thức cho dạng biểu đồ
-- 3-5đ: Thiếu nhiều thông tin quan trọng, không nhận diện được dạng đề
-- 0-2đ: Sai lệch nghiêm trọng, viết không liên quan đến số liệu
+**A. Nội dung & Hoàn thành nhiệm vụ (Content) - 7 điểm**
+- 6-7đ: Mô tả ĐẦY ĐỦ tất cả mục và số liệu, dạng câu khớp đúng dạng biểu đồ
+- 4-5đ: Bỏ 1 thông tin nhỏ hoặc số liệu hơi không chính xác
+- 2-3đ: Thiếu nhiều thông tin quan trọng, dùng sai công thức cho dạng biểu đồ
+- 0-1đ: Sai lệch nghiêm trọng, viết không liên quan đến số liệu
 
-**B. Cấu trúc & Mạch lạc (Organization) - 10 điểm**
-- 9-10đ: Có intro-body-conclusion rõ ràng, dùng câu ghép khéo léo, từ nối đa dạng, súc tích, KHÔNG xuống dòng
-- 7-8đ: Cấu trúc đầy đủ, ít từ nối, chưa gộp câu tốt, không xuống dòng
-- 5-6đ: Thiếu intro hoặc conclusion, liệt kê quá dài dòng, HOẶC có xuống dòng không cần thiết (-1 đến -2đ)
-- 3-4đ: Không có cấu trúc, nhảy ý tùy tiện
-- 0-2đ: Hoàn toàn lộn xộn
+**B. Cấu trúc & Mạch lạc (Organization) - 7 điểm**
+- 6-7đ: Có intro-body-conclusion rõ ràng, dùng câu ghép khéo léo, từ nối đa dạng, súc tích, KHÔNG xuống dòng
+- 4-5đ: Cấu trúc đầy đủ, ít từ nối, chưa gộp câu tốt, không xuống dòng
+- 2-3đ: Thiếu intro hoặc conclusion, liệt kê quá dài dòng, HOẶC có xuống dòng không cần thiết
+- 0-1đ: Hoàn toàn lộn xộn, không có cấu trúc, nhảy ý tùy tiện
 
-**C. Ngữ pháp & Từ vựng (Language) - 8 điểm**
-- 7-8đ: Văn phong đúng 100%, không lỗi, dùng đúng 나타났다/보인다/조사되었다
-- 5-6đ: Văn phong đúng, 1-2 lỗi nhỏ
-- 3-4đ: Văn phong sai 1-2 chỗ, hoặc nhiều lỗi ngữ pháp
-- 1-2đ: Văn phong sai nhiều, lỗi ngữ pháp nghiêm trọng
-- 0đ: Dùng toàn -습니다/-아요
+**C. Ngữ pháp & Từ vựng (Language) - 16 điểm**
+- 14-16đ: Văn phong đúng 100%, không lỗi ngữ pháp, từ vựng đa dạng, dùng đúng 나타났다/보인다/조사되었다
+- 10-13đ: Văn phong đúng, có 1-2 lỗi ngữ pháp nhỏ
+- 6-9đ: Văn phong sai 1-2 chỗ, hoặc nhiều lỗi ngữ pháp ảnh hưởng việc đọc
+- 0-5đ: Văn phong sai nhiều (-습니다/-아요), lỗi ngữ pháp nghiêm trọng
 
 === ĐỘ DÀI - TRỪ ĐIỂM ===
 - 200-300 ký tự: Không trừ
@@ -354,22 +358,25 @@ feedback PHẢI bằng TIẾNG VIỆT, chi tiết, chỉ rõ:
 - Thân bài có gộp câu tốt không, có thiếu số liệu nào không
 - Bài có xuống dòng không? (nếu có, chỉ rõ và giải thích tại sao sai)
 - Câu kết có đúng công thức không
-- Lỗi văn phong cụ thể (nếu có)
+- Lỗi văn phong cụ thể (nếu có)";
 
-=== OUTPUT JSON ===
+        private static string BuildOutputSchema() =>
+            @"=== OUTPUT JSON SCHEMA BẮT BUỘC ===
+Bạn BẮT BUỘC phải trả về đúng cấu trúc JSON dưới đây. TUYỆT ĐỐI KHÔNG ĐƯỢC THAY ĐỔI CẤU TRÚC, KHÔNG THÊM BỚT TRƯỜNG, KHÔNG THAY ĐỔI TÊN TRƯỜNG. CHỈ TRẢ VỀ JSON.
+
 {
   ""totalScore"": <0-30>,
   ""charCount"": <số ký tự thực tế>,
   ""lengthPenalty"": <điểm bị trừ do độ dài, 0 nếu ok>,
   
-  ""contentScore"": <0-12>,
+  ""contentScore"": <0-7>,
   ""contentFeedback"": ""<tiếng Việt - nêu rõ: dạng biểu đồ, câu mở đúng/sai, thông tin đầy đủ/thiếu>"",
   ""missingInfo"": [
     ""<thông tin 1 bị thiếu>"",
     ""<thông tin 2 bị thiếu>""
   ],
   
-  ""organizationScore"": <0-10>,
+  ""organizationScore"": <0-7>,
   ""organizationFeedback"": ""<tiếng Việt - đánh giá cấu trúc, câu ghép, từ nối, cách gộp số liệu, có/không xuống dòng>"",
   ""structure"": {
     ""hasIntro"": true,
@@ -377,7 +384,7 @@ feedback PHẢI bằng TIẾNG VIỆT, chi tiết, chỉ rõ:
     ""hasConclusion"": false
   },
   
-  ""languageScore"": <0-8>,
+  ""languageScore"": <0-16>,
   ""languageFeedback"": ""<tiếng Việt - đánh giá văn phong, ngữ pháp, biểu hiện kết quả điều tra>"",
   ""grammarErrors"": [
     {

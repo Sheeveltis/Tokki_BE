@@ -11,6 +11,7 @@ using Tokki.Application.IServices;
 using Tokki.Application.UseCases.PronunciationRule.DTOs;
 using Tokki.Application.IRepositories;
 using Tokki.Infrastructure.Configurations;
+using Tokki.Application.UseCases.MiniGame.DTOs;
 
 namespace Tokki.Infrastructure.Services
 {
@@ -52,44 +53,45 @@ namespace Tokki.Infrastructure.Services
 
             string detailedInfo = string.Join("\n", wordDetails);
 
-            // Lấy prompt từ SystemConfig (động)
-            string? dbPrompt = await _systemConfigRepository.GetValueByKeyAsync("AI_PRONUNCIATION_PROMPT");
+            // Lấy cấu hình chi tiết từ SystemConfig (dưới dạng JSON)
+            string? dbConfigJson = await _systemConfigRepository.GetValueByKeyAsync("AI_PRONUNCIATION_PROMPT");
+            var promptConfig = new PronunciationAiPromptConfigDto();
 
-            string prompt;
-            if (!string.IsNullOrEmpty(dbPrompt))
+            if (!string.IsNullOrEmpty(dbConfigJson))
             {
-                _logger.LogInformation("[AI Pronunciation] Using dynamic prompt from Database.");
-                // Thay thế các placeholder trong prompt từ DB
-                prompt = dbPrompt
-                    .Replace("{targetText}", targetText)
-                    .Replace("{ruleContext}", ruleContext)
-                    .Replace("{detailedInfo}", detailedInfo);
+                try
+                {
+                    // Thử parse xem có phải JSON không, nếu không phải (là prompt cũ) thì sẽ dùng default
+                    var parsedConfig = JsonSerializer.Deserialize<PronunciationAiPromptConfigDto>(dbConfigJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    if (parsedConfig != null) promptConfig = parsedConfig;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning("[AI Pronunciation] Key AI_PRONUNCIATION_PROMPT is not a valid JSON. Using defaults.");
+                }
             }
-            else
-            {
-                _logger.LogWarning("[AI Pronunciation] Dynamic prompt not found in DB (Key: AI_PRONUNCIATION_PROMPT). Using hardcoded fallback.");
-                // Fallback nếu không có trong DB
-                prompt = $@"
-            Bạn là chuyên gia ngôn ngữ Hàn Quốc tích hợp trong hệ thống Tokki. Hãy phân tích dữ liệu phát âm:
-            - Câu mẫu: '{targetText}'
-            - Quy tắc trọng tâm: {ruleContext}
-            - Dữ liệu từ Azure:
-            {detailedInfo}
 
-            Nhiệm vụ:
-            1. ĐÁNH GIÁ ĐỘ TÍN NHIỆM: Nếu điểm AccuracyScore của hầu hết các từ đều rất thấp (< 40), hãy nhận định rằng người học phát âm chưa rõ chữ hoặc đọc sai kịch bản. Trong trường hợp này, phần 'generalFeedback' chỉ cần khuyên người học đọc lại chậm rãi, KHÔNG CẦN hướng dẫn sửa lỗi từng từ (để rỗng mảng wordFeedbacks).
-            2. Đưa ra nhận xét tổng thể (generalFeedback) về cả câu (2-3 câu).
-            3. Với mỗi từ có AccuracyScore từ 40 đến 79, hãy đưa ra hướng dẫn sửa lỗi (repairGuide) ngắn gọn.
-            4. Nếu vi phạm quy tắc '{ruleContext}', hãy trừ từ 10-20 điểm (penalty).
-            5. Trả về JSON:
-            {{
-                ""penalty"": <số điểm trừ>,
-                ""generalFeedback"": ""<nhận xét tổng thể, xưng Tokki gọi Bạn>"",
-                ""wordFeedbacks"": [
-                    {{ ""word"": ""<từ bị lỗi>"", ""repairGuide"": ""<cách sửa khẩu hình>"" }}
-                ]
-            }}";
-            }
+            // Template cố định, chỉ chèn các phần cấu hình vào
+            string prompt = $@"
+Bạn là {promptConfig.Persona}. Hãy phân tích dữ liệu phát âm:
+- Câu mẫu: '{targetText}'
+- Quy tắc trọng tâm: {ruleContext}
+- Dữ liệu từ Azure: {detailedInfo}
+
+Nhiệm vụ:
+1. ĐÁNH GIÁ ĐỘ TÍN NHIỆM: {promptConfig.ReliabilityCheck}
+2. {promptConfig.GeneralFeedbackRules}
+3. {promptConfig.RepairGuideRules}
+4. {promptConfig.PenaltyRules.Replace("{ruleContext}", ruleContext)}
+
+YÊU CẦU ĐẦU RA (JSON THUẦN TÚY):
+{{
+    ""penalty"": <số điểm trừ>,
+    ""generalFeedback"": ""<nhận xét tổng thể>"",
+    ""wordFeedbacks"": [
+        {{ ""word"": ""<từ bị lỗi>"", ""repairGuide"": ""<cách sửa khẩu hình>"" }}
+    ]
+}}";
 
             var url = $"{config.BaseUrl.TrimEnd('/')}/models/{config.Model}:generateContent?key={config.ApiKey}";
             var payload = new
