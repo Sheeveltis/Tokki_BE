@@ -14,16 +14,19 @@ namespace Tokki.Infrastructure.Services.WritingAi
         private readonly GeminiRestClient _gemini;
         private readonly IQuestionBankRepository _questionBankRepo;
         private readonly IUserExamWritingAnswerRepository _writingRepo;
+        private readonly ISystemConfigRepository _systemConfigRepo;
 
         public Question51GeminiPipeline(
             IHttpClientFactory httpClientFactory,
             IOptions<GeminiOptions> options,
             IQuestionBankRepository questionBankRepo,
-            IUserExamWritingAnswerRepository writingRepo)
+            IUserExamWritingAnswerRepository writingRepo,
+            ISystemConfigRepository systemConfigRepo)
         {
             _gemini = new GeminiRestClient(httpClientFactory, options.Value.Writing);
             _questionBankRepo = questionBankRepo;
             _writingRepo = writingRepo;
+            _systemConfigRepo = systemConfigRepo;
         }
 
         public async Task<(JsonElement Feedback, int Score)> SolveAsync(
@@ -91,7 +94,7 @@ namespace Tokki.Infrastructure.Services.WritingAi
 
                 writingAnswer.Score = 0;
                 writingAnswer.AiAnalysisJson = emptyRaw;
-                writingAnswer.GradedAt = DateTime.UtcNow;
+                writingAnswer.GradedAt = DateTime.UtcNow.AddHours(7);
 
                 _writingRepo.UpdateAsync(writingAnswer);
                 await _writingRepo.SaveChangesAsync(ct);
@@ -111,9 +114,13 @@ USER_ANSWER_㉡:
 {answer2}
 """;
 
+            string? dbPrompt = await _systemConfigRepo.GetValueByKeyAsync("AI_WRITING_51_PROMPT");
+            string finalInstruction = string.IsNullOrWhiteSpace(dbPrompt) ? BuildSystemInstruction() : dbPrompt;
+            var systemPrompt = finalInstruction + "\n\n" + BuildOutputSchema();
+
             var raw = await _gemini.GenerateContentAsync(
                 new List<object> { new { text = userText } },
-                BuildSystemInstruction(),
+                systemPrompt,
                 maxOutputTokens: 3000,
                 temperature: 0.2,
                 ct);
@@ -129,7 +136,7 @@ USER_ANSWER_㉡:
             // ── 6. Update Score + AiAnalysisJson + GradedAt ───────────────
             writingAnswer.Score = actualScore;
             writingAnswer.AiAnalysisJson = raw;
-            writingAnswer.GradedAt = DateTime.UtcNow;
+            writingAnswer.GradedAt = DateTime.UtcNow.AddHours(7);
 
             _writingRepo.UpdateAsync(writingAnswer);
             await _writingRepo.SaveChangesAsync(ct);
@@ -220,9 +227,10 @@ Văn phong BẮT BUỘC: thể TRANG TRỌNG (-습니다/-ㅂ니다/-(으)세요
 TỔNG ĐIỂM: 10 điểm (mỗi blank tối đa 5 điểm).
 
 === RUBRIC CHẤM (mỗi blank tối đa 5 điểm) ===
-Nội dung phù hợp ngữ cảnh : 2 điểm
-Ngữ pháp chính xác        : 1 điểm
-Văn phong trang trọng     : 2 điểm
+Nội dung phù hợp ngữ cảnh & logic: 2 điểm
+Ngữ pháp và từ vựng chính xác    : 1 điểm
+Văn phong phù hợp (trang trọng)  : 1 điểm
+Ngắn gọn (chỉ 1 câu duy nhất)    : 1 điểm
 
 === VĂN PHONG TRANG TRỌNG - DANH SÁCH ĐẦY ĐỦ ===
 Câu 51 CHỈ CHẤP NHẬN các đuôi câu SAU:
@@ -242,12 +250,19 @@ Câu 51 CHỈ CHẤP NHẬN các đuôi câu SAU:
 
 Nếu phát hiện BẤT KỲ đuôi SAI nào → evaluation = ""incorrect"", trừ 2đ văn phong
 
+=== LỖI DẤU CÂU (PUNCTUATION RULE) ===
+TUYỆT ĐỐI KHÔNG được dùng dấu câu ở cuối câu (như dấu chấm ""."", dấu chấm hỏi ""?"", v.v.).
+Nếu người dùng viết CÓ DẤU CÂU ở cuối → BỊ TRỪ 1 ĐIỂM vào tổng điểm của blank đó.
+
 === CÁCH VIẾT FEEDBACK ===
 - ""feedback"" PHẢI bằng TIẾNG VIỆT, tối đa 4 câu ngắn gọn
 - Giải thích ngữ cảnh: tại sao câu đó đúng/sai
-- Ví dụ: ""Vì đây là thông báo tìm kiếm thành viên mới trong câu lạc bộ nên cụm từ '신입 회원을 모집합니다' hoàn toàn phù hợp với ngữ cảnh.""
+- Ví dụ: ""Vì đây là thông báo tìm kiếm thành viên mới trong câu lạc bộ nên cụm từ '신입 회원을 모집합니다' hoàn toàn phù hợp với ngữ cảnh.""";
 
-=== OUTPUT JSON ===
+        private static string BuildOutputSchema() =>
+            @"=== OUTPUT JSON SCHEMA BẮT BUỘC ===
+Bạn BẮT BUỘC phải trả về đúng cấu trúc JSON dưới đây. TUYỆT ĐỐI KHÔNG ĐƯỢC THAY ĐỔI CẤU TRÚC, KHÔNG THÊM BỚT TRƯỜNG, KHÔNG THAY ĐỔI TÊN TRƯỜNG. CHỈ TRẢ VỀ JSON.
+
 {
   ""totalScore"": <tổng 2 blank, 0-10>,
   ""results"": [

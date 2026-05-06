@@ -76,6 +76,7 @@ namespace Tokki.Infrastructure.Data
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<EnumConfig> EnumConfigs { get; set; }
         public DbSet<TopikLevelConfig> TopikLevelConfigs { get; set; }
+        public DbSet<AlphabetData> AlphabetData { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -784,6 +785,43 @@ namespace Tokki.Infrastructure.Data
                       .HasMaxLength(100);
 
                 entity.Property(e => e.CreatedAt)
+                      .HasDefaultValueSql("DATEADD(HOUR, 7, SYSUTCDATETIME())");
+            });
+
+            // =========================================================
+            // 14. CONFIG ALPHABET DATA
+            // =========================================================
+            modelBuilder.Entity<AlphabetData>(entity =>
+            {
+                entity.ToTable("AlphabetData");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.Letter).IsUnique();
+
+                entity.Property(e => e.Letter)
+                      .IsRequired()
+                      .HasMaxLength(10);
+
+                entity.Property(e => e.Meaning)
+                      .HasMaxLength(100);
+
+                entity.Property(e => e.Pronunciation)
+                      .HasMaxLength(50);
+
+                entity.Property(e => e.Type)
+                      .HasConversion<byte>()
+                      .IsRequired();
+
+                entity.Property(e => e.AudioUrl)
+                      .HasMaxLength(2048)
+                      .IsUnicode(false);
+
+                entity.Property(e => e.IsActive)
+                      .HasDefaultValue(true);
+                
+                entity.Property(e => e.CreatedAt)
+                      .HasDefaultValueSql("DATEADD(HOUR, 7, SYSUTCDATETIME())");
+                
+                entity.Property(e => e.UpdatedAt)
                       .HasDefaultValueSql("DATEADD(HOUR, 7, SYSUTCDATETIME())");
             });
         }

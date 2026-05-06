@@ -75,6 +75,15 @@ namespace Tokki.Infrastructure.Services
             if (!targetTypes.Any())
                 return OperationResult<string>.Failure("Không có dạng bài nào để tạo đề.", 400);
 
+            var (isBankValid, insufficientTypes) = await ValidateQuestionAvailabilityAsync(targetTypes, cancellationToken);
+            if (!isBankValid)
+            {
+                _logger.LogWarning(
+                    "GenerateWeeklyExam tuần {Week}: Question bank không đủ câu cho {Count} dạng: [{Types}]. " +
+                    "Tiếp tục tạo exam nhưng có thể thiếu câu.",
+                    weekIndex, insufficientTypes.Count, string.Join(", ", insufficientTypes));
+            }
+
             var questionTypes = await _context.QuestionTypes
                 .Where(qt => targetTypes.Contains(qt.QuestionTypeId))
                 .ToListAsync(cancellationToken);
@@ -252,6 +261,7 @@ namespace Tokki.Infrastructure.Services
 
             return examResult;
         }
+        [Obsolete("Deprecated — dùng GenerateWeeklyExamFromScopeAsync thay thế. Method này sẽ bị xóa trong phiên bản tiếp theo.")]
         public async Task<OperationResult<string>> GenerateWeeklyExamAsync(
             string templateId,
             string userId,
@@ -260,7 +270,12 @@ namespace Tokki.Infrastructure.Services
             DifficultyLevel targetLevel,
             CancellationToken cancellationToken = default)
         {
-            return OperationResult<string>.Failure("Deprecated method");
+            _logger.LogError(
+                "GenerateWeeklyExamAsync bị gọi — đây là method deprecated, không có tác dụng. " +
+                "Caller: templateId={TemplateId}, userId={UserId}, weekIndex={WeekIndex}. " +
+                "Hãy dùng GenerateWeeklyExamFromScopeAsync.",
+                templateId, userId, weekIndex);
+            return OperationResult<string>.Failure("Deprecated method — dùng GenerateWeeklyExamFromScopeAsync.");
         }
         public async Task<(bool IsValid, List<string> InsufficientTypes)> ValidateQuestionAvailabilityAsync(
             List<string> questionTypeIds,
@@ -342,6 +357,15 @@ namespace Tokki.Infrastructure.Services
             var targetTypes = weaknessTypeIds.Distinct().OrderBy(x => x).ToList();
             if (!targetTypes.Any())
                 return OperationResult<string>.Failure("Không có dạng bài nào để tạo đề tổng hợp.", 400);
+
+            var (isBankValid, insufficientTypes) = await ValidateQuestionAvailabilityAsync(targetTypes, cancellationToken);
+            if (!isBankValid)
+            {
+                _logger.LogWarning(
+                    "GenerateTopikStyleExam tuần {Week}: Question bank không đủ câu cho {Count} dạng: [{Types}]. " +
+                    "Tiếp tục tạo exam nhưng có thể thiếu câu.",
+                    weekIndex, insufficientTypes.Count, string.Join(", ", insufficientTypes));
+            }
 
             var questionTypes = await _context.QuestionTypes
                 .Where(qt => targetTypes.Contains(qt.QuestionTypeId))
