@@ -219,6 +219,14 @@ namespace Tokki.Infrastructure.Repositories
                                        && e.Status == ExamStatus.Published,
                     cancellationToken);
         }
+        public async Task<List<int>> GetDifficultiesByTypeIdsAsync(List<string> typeIds, CancellationToken cancellationToken = default)
+        {
+            return await _context.QuestionTypes
+                .Where(qt => typeIds.Contains(qt.QuestionTypeId))
+                .Select(qt => (int)qt.Difficulty)
+                .ToListAsync(cancellationToken);
+        }
+
         public async Task<List<(string QuestionTypeId, int OrderIndex)>> GetExpansionQuestionTypeIdsAsync(
             ExamType examType,
             List<string> excludeQuestionTypeIds,

@@ -41,6 +41,7 @@ public interface IUserRoadmapRepository
         int take,
         CancellationToken cancellationToken = default);
 
+    Task<List<int>> GetDifficultiesByTypeIdsAsync(List<string> typeIds, CancellationToken cancellationToken = default);
     Task<List<string>> GetCoreTypesByTargetAimAsync(
         TargetAimLevel targetAim,
         CancellationToken cancellationToken = default);
