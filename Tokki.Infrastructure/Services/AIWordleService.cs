@@ -81,6 +81,10 @@ namespace Tokki.Infrastructure.Services
             // Template cố định, chỉ chèn các phần cấu hình vào
             string prompt = $@"
 Bạn là {promptConfig.Persona}. 
+
+QUY TẮC QUAN TRỌNG:
+{promptConfig.LanguageRules}
+
 Nhiệm vụ: Chấm điểm câu đặt của sinh viên dựa trên từ khóa cho trước.
 
 THÔNG TIN:
@@ -102,17 +106,19 @@ QUY TẮC CHẤM ĐIỂM (TỔNG 100 ĐIỂM):
 VÍ DỤ THAM CHIẾU:
 {examplesPart}
 
-LƯU Ý: Nếu câu vi phạm tiêu chí độ dài hoặc ngữ pháp sơ cấp, tuyệt đối không cho tổng điểm quá {promptConfig.MaxScoreForSimpleSentence}.
+LƯU Ý: 
+- Nếu câu vi phạm tiêu chí độ dài hoặc ngữ pháp sơ cấp, tuyệt đối không cho tổng điểm quá {promptConfig.MaxScoreForSimpleSentence}.
+- Tất cả các phần nhận xét (Feedback) và Giải thích (GeneralFeedback) BẮT BUỘC phải viết bằng TIẾNG VIỆT.
 
 YÊU CẦU ĐẦU RA (JSON THUẦN TÚY):
 {{
     ""ContainsTargetWord"": true/false,
-    ""TotalScore"": <Tổng điểm thực tế>,
-    ""Meaning"": {{ ""Score"": <số>, ""MaxScore"": {promptConfig.Meaning.MaxScore}, ""Feedback"": ""Nhận xét nghĩa"" }},
-    ""Grammar"": {{ ""Score"": <số>, ""MaxScore"": {promptConfig.Grammar.MaxScore}, ""Feedback"": ""Nhận xét cấu trúc ngữ pháp"" }},
-    ""Naturalness"": {{ ""Score"": <số>, ""MaxScore"": {promptConfig.Naturalness.MaxScore}, ""Feedback"": ""Nhận xét độ dài và tính tự nhiên"" }},
-    ""GeneralFeedback"": ""Giải thích vì sao câu này đạt mức Sơ cấp/Trung cấp/Cao cấp"",
-    ""CorrectedSentence"": ""Viết lại 1 câu ở trình độ CAO CẤP (90+ điểm) để học sinh học hỏi""
+    ""TotalScore"": <Tổng điểm thực tế, nếu không phải tiếng Hàn thì để 0>,
+    ""Meaning"": {{ ""Score"": <số>, ""MaxScore"": {promptConfig.Meaning.MaxScore}, ""Feedback"": ""Nhận xét nghĩa bằng tiếng Việt"" }},
+    ""Grammar"": {{ ""Score"": <số>, ""MaxScore"": {promptConfig.Grammar.MaxScore}, ""Feedback"": ""Nhận xét cấu trúc ngữ pháp bằng tiếng Việt"" }},
+    ""Naturalness"": {{ ""Score"": <số>, ""MaxScore"": {promptConfig.Naturalness.MaxScore}, ""Feedback"": ""Nhận xét độ dài và tính tự nhiên bằng tiếng Việt"" }},
+    ""GeneralFeedback"": ""Giải thích bằng tiếng Việt"",
+    ""CorrectedSentence"": ""Viết lại 1 câu ở trình độ CAO CẤP (90+ điểm) bằng tiếng Hàn để học sinh học hỏi""
 }}";
 
             var payload = new { contents = new[] { new { parts = new[] { new { text = prompt } } } } };
