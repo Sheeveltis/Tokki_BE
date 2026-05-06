@@ -158,7 +158,6 @@ namespace Tokki.WebAPI.Controllers
             return Ok(new { ExamId = task.ExamId });
         }
         [HttpPost("next-week")]
-        [Authorize(Roles = nameof(AccountRole.Vip))]
         public async Task<IActionResult> GenerateNextWeek([FromBody] GenerateNextWeekDTO request)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
