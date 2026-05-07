@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Storage;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 
