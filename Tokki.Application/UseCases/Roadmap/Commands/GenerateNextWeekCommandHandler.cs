@@ -435,6 +435,16 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
             }
 
             await knowledgeRepo.SaveChangesAsync(token);
+
+            var allProfiles = await knowledgeRepo.GetByRoadmapIdAsync(currentWeek.UserRoadmapId, token);
+            foreach (var p in allProfiles.Where(p => !weekTypeIds.Contains(p.QuestionTypeId)))
+            {
+                if (p.ConsecutiveFailWeeks >= strikeThreshold)
+                {
+                    p.ConsecutiveFailWeeks = 0; 
+                }
+            }
+            await knowledgeRepo.SaveChangesAsync(token);
             await weaknessRepo.SaveChangesAsync(token);
             return (deferredTypes, passedTypes);
         }
@@ -452,9 +462,23 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
                 .Where(w => w.RoadmapId == roadmapId)
                 .ToList();
 
+            // Lấy profile để kiểm tra strike hiện tại
+            var sp = _scopeFactory.CreateScope().ServiceProvider;
+            var knowledgeRepo = sp.GetRequiredService<IRoadmapKnowledgeProfileRepository>();
+            var configRepo = sp.GetRequiredService<ISystemConfigRepository>();
+            var allProfiles = await knowledgeRepo.GetByRoadmapIdAsync(roadmapId, token);
+            int strikeThreshold = await GetIntConfigAsync(configRepo, PromptConfigKeys.RoadmapStrikeThreshold, DEFAULT_STRIKE_THRESHOLD);
+
             var candidates = currentRoadmapWeaknesses
                 .Where(w => w.Status == 0 || w.Status == 1)
+                // Loại bỏ nếu:
+                // 1. Nằm trong deferredTypes vừa được tính ở tuần trước
+                // 2. Hoặc đang có profile ghi nhận trượt quá threshold (đang bị strike)
                 .Where(w => !deferredTypes.Contains(w.QuestionTypeId))
+                .Where(w => {
+                    var p = allProfiles.FirstOrDefault(ap => ap.QuestionTypeId == w.QuestionTypeId);
+                    return p == null || p.ConsecutiveFailWeeks < strikeThreshold;
+                })
                 .OrderBy(w => w.Priority)
                 .Take(maxPerWeek)
                 .ToList();
