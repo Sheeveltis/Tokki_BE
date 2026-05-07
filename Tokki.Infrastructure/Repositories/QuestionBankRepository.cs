@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.QuestionBanks.DTOs;
 using Tokki.Domain.Entities;
@@ -208,8 +208,7 @@ namespace Tokki.Infrastructure.Repositories
         {
             var query = _context.QuestionBank
                 .Where(x => x.QuestionTypeId == questionTypeId
-                            && x.Status == QuestionBankStatus.Active
-                            && x.QuestionType.Difficulty == level);
+                            && x.Status == QuestionBankStatus.Active);
 
             if (excludedIds != null && excludedIds.Any())
             {
