@@ -90,9 +90,9 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
 
                 try
                 {
-                    int minPerWeek      = await GetIntConfigAsync(configRepo, PromptConfigKeys.RoadmapMinTypesPerWeek, DEFAULT_MIN_TYPES_PER_WEEK);
-                    int maxPerWeek      = await GetIntConfigAsync(configRepo, PromptConfigKeys.RoadmapMaxTypesPerWeek, DEFAULT_MAX_TYPES_PER_WEEK);
-                    int maxDifficulty   = await GetIntConfigAsync(configRepo, PromptConfigKeys.RoadmapMaxDifficulty, DEFAULT_MAX_DIFFICULTY);
+                    int minPerWeek = await GetIntConfigAsync(configRepo, PromptConfigKeys.RoadmapMinTypesPerWeek, DEFAULT_MIN_TYPES_PER_WEEK);
+                    int maxPerWeek = await GetIntConfigAsync(configRepo, PromptConfigKeys.RoadmapMaxTypesPerWeek, DEFAULT_MAX_TYPES_PER_WEEK);
+                    int maxDifficulty = await GetIntConfigAsync(configRepo, PromptConfigKeys.RoadmapMaxDifficulty, DEFAULT_MAX_DIFFICULTY);
                     int strikeThreshold = await GetIntConfigAsync(configRepo, PromptConfigKeys.RoadmapStrikeThreshold, DEFAULT_STRIKE_THRESHOLD);
 
                     var currentWeek = await roadmapRepo
@@ -256,7 +256,8 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
                         await FillWithDefaultTypesAsync(
                             nextTypes, roadmap.CurrentLevel,
                             roadmap.UserRoadmapId, request.UserId,
-                            roadmapRepo, weaknessRepo, maxPerWeek, CancellationToken.None);
+                            roadmapRepo, weaknessRepo, maxPerWeek,
+                            deferredTypes, CancellationToken.None);
                     }
 
                     progress.Set(jobId, new RoadmapProgressState
@@ -367,9 +368,8 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
             if (!allAnalysis.Any())
             {
                 _logger.LogWarning(
-                    "Analysis data rỗng cho exam {ExamId} — bỏ qua đánh giá để tránh fail nhầm.",
+                    "Analysis data rỗng cho exam {ExamId} — toàn bộ dạng bài trong tuần sẽ bị đánh dấu thất bại.",
                     currentWeek.WeeklyExamId);
-                return (deferredTypes, passedTypes);
             }
 
             var weekTypeIds = currentWeek.DailyTasks
@@ -415,14 +415,14 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
                 var userWeakness = currentRoadmapWeaknesses.FirstOrDefault(w => w.QuestionTypeId == typeId);
                 if (userWeakness != null)
                 {
-                   
+
                     if (isPassed)
                     {
                         userWeakness.Status = 2;
                     }
                     else
                     {
-                        
+
                         if (userWeakness.Status == 2) userWeakness.Status = 1;
                     }
 
@@ -454,9 +454,9 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
 
             var candidates = currentRoadmapWeaknesses
                 .Where(w => w.Status == 0 || w.Status == 1)
-                .Where(w => !deferredTypes.Contains(w.QuestionTypeId)) 
+                .Where(w => !deferredTypes.Contains(w.QuestionTypeId))
                 .OrderBy(w => w.Priority)
-                .Take(maxPerWeek) 
+                .Take(maxPerWeek)
                 .ToList();
 
             if (!candidates.Any()) return new List<string>();
@@ -484,6 +484,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
             IUserRoadmapRepository roadmapRepo,
             IUserWeaknessRepository weaknessRepo,
             int maxPerWeek,
+            List<string> deferredTypes,
             CancellationToken token)
         {
             var passedIds = (await weaknessRepo.GetByUserIdAsync(userId, token))
@@ -495,6 +496,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
             var extras = fallbackIds
                 .Except(types)
                 .Where(id => !passedIds.Contains(id))
+                .Where(id => !deferredTypes.Contains(id))
                 .Take(maxPerWeek - types.Count);
             types.AddRange(extras);
         }
