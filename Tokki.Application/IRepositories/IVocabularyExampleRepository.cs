@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Storage;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 
@@ -20,5 +20,7 @@ namespace Tokki.Application.IRepositories
        string vocabularyId,
        VocabularyExampleStatus? status,
        CancellationToken cancellationToken);
+
+        IExecutionStrategy CreateExecutionStrategy();
     }
 }

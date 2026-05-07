@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Tokki.Application.IRepositories;
 using Tokki.Domain.Entities;
@@ -96,6 +96,11 @@ namespace Tokki.Infrastructure.Repositories
             return await q
                 .OrderByDescending(x => x.CreateAt)
                 .ToListAsync(cancellationToken);
+        }
+
+        public IExecutionStrategy CreateExecutionStrategy()
+        {
+            return _context.Database.CreateExecutionStrategy();
         }
     }
 }
