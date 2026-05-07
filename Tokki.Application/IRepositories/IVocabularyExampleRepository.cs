@@ -20,7 +20,5 @@ namespace Tokki.Application.IRepositories
        string vocabularyId,
        VocabularyExampleStatus? status,
        CancellationToken cancellationToken);
-
-        IExecutionStrategy CreateExecutionStrategy();
     }
 }

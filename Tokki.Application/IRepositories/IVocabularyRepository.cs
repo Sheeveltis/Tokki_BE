@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore.Storage;
 using Tokki.Application.UseCases.Vocabulary.DTOs;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
@@ -96,6 +95,6 @@ namespace Tokki.Application.IRepositories
         //Hàm của kiệt
         Task<List<Vocabulary>> GetAllByTextAsync(string text);
 
-        IExecutionStrategy CreateExecutionStrategy();
     }
+
 }
