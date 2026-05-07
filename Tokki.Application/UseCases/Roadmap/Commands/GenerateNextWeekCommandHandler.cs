@@ -664,31 +664,33 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
                 || target == TargetAimLevel.Topik_I_Level2)
                 ? ExamType.TopikI : ExamType.TopikII;
 
+            // Cố gắng tạo bài thi theo các dạng bài của tuần này
             var examResult = await assemblyService.GenerateWeeklyExamFromScopeAsync(
                 userId, nextWeek.WeekIndex, types, examType, token);
 
-            if (examResult.IsSuccess && !string.IsNullOrEmpty(examResult.Data))
-            {
-                nextWeek.WeeklyExamId = examResult.Data;
-                nextWeek.DailyTasks.Add(new RoadmapDailyTask
-                {
-                    TaskId = idGen.GenerateCustom(15),
-                    RoadmapWeekId = nextWeek.RoadmapWeekId,
-                    DayIndex = weeklyExamDayIndex,
-                    Title = $"Bài kiểm tra tổng hợp tuần {nextWeek.WeekIndex}",
-                    TaskType = RoadmapTaskType.WeeklyExam,
-                    AiGeneratedContent = string.Empty,
-                    QuestionTypeId = null,
-                    ExamId = examResult.Data,
-                    IsCompleted = false
-                });
-            }
-            else
+            string? finalExamId = examResult.IsSuccess ? examResult.Data : null;
+
+            if (!examResult.IsSuccess)
             {
                 _logger.LogWarning(
-                    "Không tạo được WeeklyExam cho tuần {WeekIndex} của User {UserId}.",
-                    nextWeek.WeekIndex, userId);
+                    "[ROADMAP_EXAM] Không tạo được WeeklyExam cho tuần {WeekIndex} của User {UserId}: {Msg}",
+                    nextWeek.WeekIndex, userId, examResult.Message);
             }
+
+            // LUÔN LUÔN add Task ngày thứ 7 để không bị mất nút "Ngày 7" trên UI
+            nextWeek.WeeklyExamId = finalExamId;
+            nextWeek.DailyTasks.Add(new RoadmapDailyTask
+            {
+                TaskId = idGen.GenerateCustom(15),
+                RoadmapWeekId = nextWeek.RoadmapWeekId,
+                DayIndex = 7,
+                Title = $"Bài kiểm tra tổng hợp tuần {nextWeek.WeekIndex}",
+                TaskType = RoadmapTaskType.WeeklyExam,
+                AiGeneratedContent = string.Empty,
+                QuestionTypeId = null,
+                ExamId = finalExamId,
+                IsCompleted = false
+            });
 
             await roadmapRepo.SaveChangesAsync(token);
         }

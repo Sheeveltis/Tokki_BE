@@ -300,8 +300,7 @@ namespace Tokki.Infrastructure.Services
 
                 int available = await _context.QuestionBank
                     .CountAsync(q => q.QuestionTypeId == typeId
-                                  && q.Status == QuestionBankStatus.Active
-                                  && q.QuestionType.Difficulty == qType.Difficulty,
+                                  && q.Status == QuestionBankStatus.Active,
                         cancellationToken);
 
                 if (available < required)
