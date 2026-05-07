@@ -26,7 +26,6 @@ namespace Tokki.Infrastructure.Repositories
 
         public async Task<UserExam?> GetInProgressSessionAsync(string userId, string examId, CancellationToken token)
         {
-            // Tối ưu: Bỏ các Include không cần thiết và dùng AsNoTracking để tăng tốc độ lookup
             return await _context.UserExams
                 .AsNoTracking()
                 .FirstOrDefaultAsync(ue => ue.UserId == userId
@@ -223,12 +222,25 @@ namespace Tokki.Infrastructure.Repositories
                 .Where(ua => ua.UserExamId == userExamId && ua.IsCorrect != true)
                 .Select(ua => ua.Question.QuestionTypeId);
 
-            var writingTypeIds = _context.UserExamWritingAnswers
+            var writingData = await _context.UserExamWritingAnswers
                 .Where(uwa => uwa.UserExamId == userExamId)
-                .Select(uwa => uwa.Question.QuestionTypeId);
+                .Select(uwa => new
+                {
+                    uwa.Question.QuestionTypeId,
+                    EarnedScore = uwa.Score ?? 0,
+                    MaxScore = _context.ExamQuestions
+                        .Where(eq => eq.ExamId == uwa.UserExam.ExamId && eq.QuestionBankId == uwa.QuestionId)
+                        .Select(eq => eq.Score)
+                        .FirstOrDefault()
+                })
+                .ToListAsync(cancellationToken);
+
+            var incorrectWritingTypeIds = writingData
+                .Where(w => w.MaxScore > 0 && (double)w.EarnedScore / w.MaxScore * 100 < 80)
+                .Select(w => w.QuestionTypeId);
 
             return await objectiveTypeIds
-                .Union(writingTypeIds)
+                .Union(incorrectWritingTypeIds)
                 .Where(id => id != null)
                 .Distinct()
                 .Join(_context.QuestionTypes,
@@ -250,11 +262,19 @@ namespace Tokki.Infrastructure.Repositories
                 .Select(ua => new { ua.Question.QuestionTypeId, ua.IsCorrect })
                 .ToListAsync(cancellationToken);
 
-            // Get all Writing answers
+            // Get all Writing answers with their max scores
             var writingAnswers = await _context.UserExamWritingAnswers
                 .AsNoTracking()
                 .Where(uwa => uwa.UserExamId == userExamId)
-                .Select(uwa => new { uwa.Question.QuestionTypeId, uwa.Score })
+                .Select(uwa => new 
+                { 
+                    uwa.Question.QuestionTypeId, 
+                    EarnedScore = uwa.Score ?? 0,
+                    MaxScore = _context.ExamQuestions
+                        .Where(eq => eq.ExamId == uwa.UserExam.ExamId && eq.QuestionBankId == uwa.QuestionId)
+                        .Select(eq => eq.Score)
+                        .FirstOrDefault()
+                })
                 .ToListAsync(cancellationToken);
 
             // Get distinct question type IDs from both MCQ and Writing
@@ -274,14 +294,17 @@ namespace Tokki.Infrastructure.Repositories
 
             foreach (var qt in questionTypes)
             {
-                var mcqs = mcqAnswers.Where(a => a.QuestionTypeId == qt.QuestionTypeId).ToList();
-                var writings = writingAnswers.Where(a => a.QuestionTypeId == qt.QuestionTypeId).ToList();
+                var mcqsForType = mcqAnswers.Where(a => a.QuestionTypeId == qt.QuestionTypeId).ToList();
+                var writingsForType = writingAnswers.Where(a => a.QuestionTypeId == qt.QuestionTypeId).ToList();
 
-                int totalCount = mcqs.Count + writings.Count;
+                int totalCount = mcqsForType.Count + writingsForType.Count;
                 if (totalCount == 0) continue;
 
-                // Incorrect count:
-                int wrongCount = mcqs.Count(a => a.IsCorrect != true) + writings.Count;
+                // Calculate wrong count based on score/correctness
+                int wrongMcq = mcqsForType.Count(a => a.IsCorrect != true);
+                int wrongWriting = writingsForType.Count(w => w.MaxScore > 0 && (double)w.EarnedScore / w.MaxScore * 100 < 80);
+                
+                int totalWrong = wrongMcq + wrongWriting;
 
                 result.Add(new QuestionTypeDto
                 {
@@ -289,8 +312,8 @@ namespace Tokki.Infrastructure.Repositories
                     Code = qt.Code ?? string.Empty,
                     Name = qt.Name,
                     Skill = qt.Skill,
-                    IsWeakness = wrongCount > 0,
-                    WrongRatio = $"{wrongCount}/{totalCount}"
+                    IsWeakness = totalWrong > 0,
+                    WrongRatio = $"{totalWrong}/{totalCount}"
                 });
             }
 

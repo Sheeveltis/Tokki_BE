@@ -108,8 +108,8 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
                         Step = "Đang đánh giá kết quả học tập tuần trước để điều chỉnh lộ trình..."
                     });
 
-                    var deferredTypes = await EvaluateLastWeekPerformanceAsync(
-                        currentWeek, knowledgeRepo, weaknessRepo, idGen, med, strikeThreshold, CancellationToken.None);
+                    var (deferredTypes, passedTypes) = await EvaluateLastWeekPerformanceAsync(
+                        currentWeek, knowledgeRepo, weaknessRepo, idGen, med, strikeThreshold, configRepo, CancellationToken.None);
 
                     int nextWeekIndex = currentWeek.WeekIndex + 1;
                     var nextWeek = await roadmapRepo
@@ -249,7 +249,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
                         roadmap.UserRoadmapId, request.UserId,
                         roadmapRepo, weaknessRepo,
                         minPerWeek, maxPerWeek, maxDifficulty,
-                        CancellationToken.None);
+                        deferredTypes, CancellationToken.None);
 
                     if (nextTypes.Count < maxPerWeek)
                     {
@@ -342,20 +342,22 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
             return fallback;
         }
 
-        private async Task<List<string>> EvaluateLastWeekPerformanceAsync(
+        private async Task<(List<string> Deferred, List<string> Passed)> EvaluateLastWeekPerformanceAsync(
             RoadmapWeek currentWeek,
             IRoadmapKnowledgeProfileRepository knowledgeRepo,
             IUserWeaknessRepository weaknessRepo,
             IIdGeneratorService idGen,
             IMediator med,
             int strikeThreshold,
+            ISystemConfigRepository configRepo,
             CancellationToken token)
         {
             var deferredTypes = new List<string>();
-            if (string.IsNullOrEmpty(currentWeek.WeeklyExamId)) return deferredTypes;
+            var passedTypes = new List<string>();
+            if (string.IsNullOrEmpty(currentWeek.WeeklyExamId)) return (deferredTypes, passedTypes);
 
             var analysis = await med.Send(new GetExamAnalysisQuery(currentWeek.WeeklyExamId), token);
-            if (!analysis.IsSuccess || analysis.Data == null) return deferredTypes;
+            if (!analysis.IsSuccess || analysis.Data == null) return (deferredTypes, passedTypes);
 
             var allAnalysis = analysis.Data.ReadingAnalysis
                 .Concat(analysis.Data.ListeningAnalysis)
@@ -367,7 +369,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
                 _logger.LogWarning(
                     "Analysis data rỗng cho exam {ExamId} — bỏ qua đánh giá để tránh fail nhầm.",
                     currentWeek.WeeklyExamId);
-                return deferredTypes;
+                return (deferredTypes, passedTypes);
             }
 
             var weekTypeIds = currentWeek.DailyTasks
@@ -387,6 +389,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
             {
                 var stat = allAnalysis.FirstOrDefault(a => a.QuestionTypeId == typeId);
                 bool isPassed = stat != null && !stat.IsWeakness;
+                if (isPassed) passedTypes.Add(typeId);
 
                 var profile = await knowledgeRepo.GetAsync(currentWeek.UserRoadmapId, typeId, token);
                 if (profile == null)
@@ -412,8 +415,16 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
                 var userWeakness = currentRoadmapWeaknesses.FirstOrDefault(w => w.QuestionTypeId == typeId);
                 if (userWeakness != null)
                 {
-                    if (userWeakness.Status != 2)
-                        userWeakness.Status = isPassed ? 2 : 1;
+                   
+                    if (isPassed)
+                    {
+                        userWeakness.Status = 2;
+                    }
+                    else
+                    {
+                        
+                        if (userWeakness.Status == 2) userWeakness.Status = 1;
+                    }
 
                     if (profile.ConsecutiveFailWeeks >= strikeThreshold)
                     {
@@ -425,7 +436,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
 
             await knowledgeRepo.SaveChangesAsync(token);
             await weaknessRepo.SaveChangesAsync(token);
-            return deferredTypes;
+            return (deferredTypes, passedTypes);
         }
 
         private async Task<List<string>> SelectTypesForNextWeekAsync(
@@ -433,6 +444,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
             IUserRoadmapRepository roadmapRepo,
             IUserWeaknessRepository weaknessRepo,
             int minPerWeek, int maxPerWeek, int maxDifficulty,
+            List<string> deferredTypes,
             CancellationToken token)
         {
             var weaknesses = await weaknessRepo.GetByUserIdAsync(userId, token);
@@ -442,6 +454,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateNextWeek
 
             var candidates = currentRoadmapWeaknesses
                 .Where(w => w.Status == 0 || w.Status == 1)
+                .Where(w => !deferredTypes.Contains(w.QuestionTypeId)) 
                 .OrderBy(w => w.Priority)
                 .Take(maxPerWeek) 
                 .ToList();
