@@ -1,9 +1,10 @@
-﻿using MediatR;
+using MediatR;
 using Tokki.Application.Common.Constants;
 using Tokki.Application.Common.Models;
 using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Application.UseCases.UserExam.Queries.GetUserExamResult;
+using Tokki.Domain.Constants;
 using Tokki.Domain.Enums;
 
 namespace Tokki.Application.UseCases.Roadmap.Queries.GetEntranceFeedback
@@ -15,17 +16,20 @@ namespace Tokki.Application.UseCases.Roadmap.Queries.GetEntranceFeedback
         private readonly IAiRoadmapService _aiRoadmapService;
         private readonly IMediator _mediator;
         private readonly ITopikLevelConfigRepository _topikLevelConfigRepository;
+        private readonly ISystemConfigRepository _systemConfigRepository;
 
         public GetEntranceFeedbackQueryHandler(
             IUserExamRepository userExamRepository,
             IAiRoadmapService aiRoadmapService,
             IMediator mediator,
-            ITopikLevelConfigRepository topikLevelConfigRepository)
+            ITopikLevelConfigRepository topikLevelConfigRepository,
+            ISystemConfigRepository systemConfigRepository)
         {
             _userExamRepository = userExamRepository;
             _aiRoadmapService = aiRoadmapService;
             _mediator = mediator;
             _topikLevelConfigRepository = topikLevelConfigRepository;
+            _systemConfigRepository = systemConfigRepository;
         }
 
         public async Task<OperationResult<EntranceFeedbackResult>> Handle(
@@ -95,7 +99,10 @@ namespace Tokki.Application.UseCases.Roadmap.Queries.GetEntranceFeedback
                 }).ToList();
 
             int totalWeakTypes = questionTypes.Count;
-            var durationOptions = CalculateDurationOptions(totalWeakTypes);
+            double avgDifficulty = questionTypes.Any()
+                ? questionTypes.Average(qt => (int)qt.Difficulty)
+                : 1.0;
+            var durationOptions = await CalculateDurationOptionsAsync(totalWeakTypes, avgDifficulty);
             int recommendedDays = durationOptions
                 .FirstOrDefault(o => o.Recommended)?.Days ?? 90;
 
@@ -177,10 +184,40 @@ namespace Tokki.Application.UseCases.Roadmap.Queries.GetEntranceFeedback
             _ => "Không xác định"
         };
 
-        private static List<EntranceDurationOption> CalculateDurationOptions(int totalWeakTypes)
+        private async Task<int> GetIntConfigAsync(string key, int fallback)
         {
-            int baseWeeks = (int)Math.Ceiling(totalWeakTypes / 5.0);
-            int totalWeeks = baseWeeks + 2;
+            try
+            {
+                var cfg = await _systemConfigRepository.GetByKeyAsync(key);
+                if (cfg is { IsActive: true, Value: not null }
+                    && int.TryParse(cfg.Value, out int parsed))
+                    return parsed;
+            }
+            catch {  }
+            return fallback;
+        }
+
+        private async Task<List<EntranceDurationOption>> CalculateDurationOptionsAsync(
+            int totalWeakTypes, double avgDifficulty)
+        {
+            int minPerWeek      = await GetIntConfigAsync(PromptConfigKeys.RoadmapMinTypesPerWeek,  3);
+            int maxPerWeek      = await GetIntConfigAsync(PromptConfigKeys.RoadmapMaxTypesPerWeek,  5);
+            int maxDifficulty   = await GetIntConfigAsync(PromptConfigKeys.RoadmapMaxDifficulty,    4);
+            int retryRatePct    = await GetIntConfigAsync(PromptConfigKeys.RoadmapRetryRatePercent, 50);
+
+            int N = totalWeakTypes;
+
+            double rawCapacity = maxDifficulty > 1
+                ? maxPerWeek - (avgDifficulty - 1.0) * (maxPerWeek - minPerWeek) / (maxDifficulty - 1.0)
+                : maxPerWeek;
+            int effectiveCapacity = Math.Clamp((int)Math.Round(rawCapacity), minPerWeek, maxPerWeek);
+
+            int coreWeeks = (int)Math.Ceiling((double)N / effectiveCapacity);
+
+            int expectedRetries = (int)Math.Ceiling(N * retryRatePct / 100.0);
+            int retryBuffer     = (int)Math.Ceiling((double)expectedRetries / effectiveCapacity);
+
+            int totalWeeks      = coreWeeks + retryBuffer;
             int recommendedDays = totalWeeks * 7;
 
             bool allow30 = recommendedDays <= 30;
@@ -196,18 +233,18 @@ namespace Tokki.Application.UseCases.Roadmap.Queries.GetEntranceFeedback
                     Days = 30, Available = allow30, Recommended = recommend30,
                     Reason = allow30
                         ? "Số dạng cần cải thiện ít, 30 ngày là đủ nếu học đều đặn."
-                        : $"Bạn có {totalWeakTypes} dạng cần cải thiện, 30 ngày không đủ để đảm bảo chất lượng."
+                        : $"Bạn có {N} dạng cần cải thiện, 30 ngày không đủ để đảm bảo chất lượng."
                 },
                 new() {
                     Days = 60, Available = allow60, Recommended = recommend60,
                     Reason = allow60
-                        ? $"Phù hợp để cải thiện {totalWeakTypes} dạng một cách vững chắc, có thời gian ôn lại các dạng khó."
-                        : $"Với {totalWeakTypes} dạng cần học, nên dành ít nhất 90 ngày để đảm bảo có thể ôn lại các dạng chưa pass."
+                        ? $"Phù hợp để cải thiện {N} dạng một cách vững chắc, có thời gian ôn lại các dạng khó."
+                        : $"Với {N} dạng cần học, nên dành ít nhất 90 ngày để đảm bảo có thể ôn lại các dạng chưa pass."
                 },
                 new() {
                     Days = 90, Available = true, Recommended = recommend90,
                     Reason = recommend90
-                        ? $"Lựa chọn tốt nhất cho {totalWeakTypes} dạng cần cải thiện, đảm bảo đủ thời gian học và ôn lại các dạng khó."
+                        ? $"Lựa chọn tốt nhất cho {N} dạng cần cải thiện, đảm bảo đủ thời gian học và ôn lại các dạng khó."
                         : "Lộ trình thoải mái nếu bạn muốn học chắc, không áp lực."
                 }
             };

@@ -1,4 +1,4 @@
-﻿namespace Tokki.Domain.Constants
+namespace Tokki.Domain.Constants
 {
     public static class PromptConfigKeys
     {
@@ -28,5 +28,21 @@
 
         ///Default: 20
         public const string MinutesPerWritingQuestion = "EXAM_MINUTES_PER_WRITING_QUESTION";
+
+
+        /// Default: 3
+        public const string RoadmapMinTypesPerWeek = "ROADMAP_MIN_TYPES_PER_WEEK";
+
+        /// Default: 5
+        public const string RoadmapMaxTypesPerWeek = "ROADMAP_MAX_TYPES_PER_WEEK";
+
+        /// Default: 4
+        public const string RoadmapMaxDifficulty = "ROADMAP_MAX_DIFFICULTY";
+
+        /// Default: 2
+        public const string RoadmapStrikeThreshold = "ROADMAP_STRIKE_THRESHOLD";
+
+        /// Default: 50
+        public const string RoadmapRetryRatePercent = "ROADMAP_RETRY_RATE_PERCENT";
     }
 }

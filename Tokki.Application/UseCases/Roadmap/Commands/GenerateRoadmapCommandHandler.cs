@@ -6,6 +6,7 @@ using Tokki.Application.IRepositories;
 using Tokki.Application.IServices;
 using Tokki.Application.UseCases.Roadmap.DTOs;
 using Tokki.Application.UseCases.UserExam.Queries.GetUserExamResult;
+using Tokki.Domain.Constants;
 using Tokki.Domain.Entities;
 using Tokki.Domain.Enums;
 
@@ -25,7 +26,11 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly IMediator _mediator;
         private readonly ITopikLevelConfigRepository _topikLevelConfigRepository;
-        private const int MaxQuestionTypesPerWeek = 5;
+        private readonly ISystemConfigRepository _systemConfigRepository;
+        private const int DEFAULT_MIN_TYPES_PER_WEEK = 3;
+        private const int DEFAULT_MAX_TYPES_PER_WEEK = 5;
+        private const int DEFAULT_MAX_DIFFICULTY = 4;
+
         public GenerateRoadmapCommandHandler(
             IAiRoadmapService aiRoadmapService,
             IExamAssemblyService examAssemblyService,
@@ -38,6 +43,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
             IServiceScopeFactory scopeFactory,
             IMediator mediator,
             ITopikLevelConfigRepository topikLevelConfigRepository,
+            ISystemConfigRepository systemConfigRepository,
             ILogger<GenerateRoadmapCommandHandler> logger)
         {
             _aiRoadmapService = aiRoadmapService;
@@ -51,6 +57,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
             _scopeFactory = scopeFactory;
             _mediator = mediator;
             _topikLevelConfigRepository = topikLevelConfigRepository;
+            _systemConfigRepository = systemConfigRepository;
             _logger = logger;
         }
 
@@ -89,6 +96,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                 var mediator = sp.GetRequiredService<IMediator>();
                 var progress = sp.GetRequiredService<IRoadmapProgressService>();
                 var topikLevelConfigRepo = sp.GetRequiredService<ITopikLevelConfigRepository>();
+                var configRepo = sp.GetRequiredService<ISystemConfigRepository>();
 
                 try
                 {
@@ -194,7 +202,24 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                         Step = "Bước 4: Thiết kế tuần học đầu tiên..."
                     });
 
-                    var week1Types = weaknesses.Take(3).ToList();
+                    int minPerWeek = await GetIntConfigAsync(configRepo, PromptConfigKeys.RoadmapMinTypesPerWeek, DEFAULT_MIN_TYPES_PER_WEEK);
+                    int maxPerWeek = await GetIntConfigAsync(configRepo, PromptConfigKeys.RoadmapMaxTypesPerWeek, DEFAULT_MAX_TYPES_PER_WEEK);
+                    int maxDifficulty = await GetIntConfigAsync(configRepo, PromptConfigKeys.RoadmapMaxDifficulty, DEFAULT_MAX_DIFFICULTY);
+
+                    var candidates = weaknesses.Take(maxPerWeek).ToList();
+                    int effectiveCapacity = maxPerWeek;
+
+                    if (candidates.Any())
+                    {
+                        var difficulties = await roadmapRepo.GetDifficultiesByTypeIdsAsync(candidates, CancellationToken.None);
+                        double avgDifficulty = difficulties.Any() ? difficulties.Average() : 1.0;
+                        double rawCapacity = maxDifficulty > 1
+                            ? maxPerWeek - (avgDifficulty - 1.0) * (maxPerWeek - minPerWeek) / (maxDifficulty - 1.0)
+                            : maxPerWeek;
+                        effectiveCapacity = Math.Clamp((int)Math.Round(rawCapacity), minPerWeek, maxPerWeek);
+                    }
+
+                    var week1Types = candidates.Take(effectiveCapacity).ToList();
 
                     var allLevelTypeIds = await roadmapRepo
                         .GetValidQuestionTypeIdsByLevelAsync(currentLevel, CancellationToken.None);
@@ -225,7 +250,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                         });
 
                         expansionForWeek1 = await roadmapRepo.GetExpansionQuestionTypeIdsAsync(
-                            examType, coreAimTypeIds, 0, 3, CancellationToken.None);
+                            examType, coreAimTypeIds, 0, effectiveCapacity, CancellationToken.None);
                         week1Types = expansionForWeek1.Select(r => r.QuestionTypeId).ToList();
 
                         var expansionTypeInfos = await roadmapRepo
@@ -256,7 +281,7 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
                             week1Types,
                             weakTypeInfos.Where(w => week1Types.Contains(w.QuestionTypeId)).ToList(),
                             fullMenu,
-                            Math.Min(week1Types.Count, 3),
+                            week1Types.Count,
                             totalWeeks);
                     }
 
@@ -527,6 +552,19 @@ namespace Tokki.Application.UseCases.Roadmap.Commands.GenerateRoadmap
 
             return OperationResult<string>.Success(jobId, 202,
                 "Đang tạo lộ trình, vui lòng theo dõi tiến trình.");
+        }
+
+        private static async Task<int> GetIntConfigAsync(ISystemConfigRepository configRepo, string key, int fallback)
+        {
+            try
+            {
+                var cfg = await configRepo.GetByKeyAsync(key);
+                if (cfg is { IsActive: true, Value: not null }
+                    && int.TryParse(cfg.Value, out int parsed))
+                    return parsed;
+            }
+            catch { }
+            return fallback;
         }
 
         private static TopicLevel? MapToTopicLevel(CurrentTopikLevel level) => level switch

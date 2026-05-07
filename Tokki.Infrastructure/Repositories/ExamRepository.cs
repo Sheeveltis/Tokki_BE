@@ -351,7 +351,7 @@ namespace Tokki.Infrastructure.Repositories
         public async Task<Exam?> GetExamWithFullDetailsAsync(string examId, CancellationToken cancellationToken)
         {
             return await _context.Exams
-                .AsNoTracking()
+                .AsNoTrackingWithIdentityResolution()
                 .AsSplitQuery()
                 .Include(e => e.ExamTemplate)
                     .ThenInclude(t => t.TemplateParts)
@@ -365,6 +365,13 @@ namespace Tokki.Infrastructure.Repositories
                     .ThenInclude(eq => eq.QuestionBank)
                         .ThenInclude(qb => qb.QuestionType)   
                 .FirstOrDefaultAsync(e => e.ExamId == examId, cancellationToken);
+        }
+
+        public async Task IncrementPdfDownloadCountAsync(string examId, CancellationToken cancellationToken = default)
+        {
+            await _context.Exams
+                .Where(e => e.ExamId == examId)
+                .ExecuteUpdateAsync(s => s.SetProperty(e => e.PdfDownloadCount, e => e.PdfDownloadCount + 1), cancellationToken);
         }
 
         public async Task<Exam?> GetEntranceExamByTypeAsync(
