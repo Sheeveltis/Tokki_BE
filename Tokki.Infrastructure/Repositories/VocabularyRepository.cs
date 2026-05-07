@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Tokki.Application.IRepositories;
 using Tokki.Application.UseCases.Vocabulary.DTOs;
 using Tokki.Domain.Entities;
@@ -299,6 +300,11 @@ namespace Tokki.Infrastructure.Repositories
             return await _context.Vocabularies
                 .Where(v => v.Text.ToLower() == text.ToLower().Trim())
                 .ToListAsync();
+        }
+
+        public IExecutionStrategy CreateExecutionStrategy()
+        {
+            return _context.Database.CreateExecutionStrategy();
         }
     }
 }

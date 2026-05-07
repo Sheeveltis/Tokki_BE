@@ -97,5 +97,9 @@ namespace Tokki.Infrastructure.Repositories
                 .OrderByDescending(x => x.CreateAt)
                 .ToListAsync(cancellationToken);
         }
+        public IExecutionStrategy CreateExecutionStrategy()
+        {
+            return _context.Database.CreateExecutionStrategy();
+        }
     }
 }
