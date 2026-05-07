@@ -29,9 +29,7 @@ namespace Tokki.Application.UseCases.Exam.Commands.ExportExamToPdf
             }
 
             // Increment PDF Download Count
-            exam.PdfDownloadCount++;
-            await _examRepository.UpdateAsync(exam);
-            await _examRepository.SaveChangesAsync(cancellationToken);
+            await _examRepository.IncrementPdfDownloadCountAsync(request.ExamId, cancellationToken);
 
             string[] possiblePaths = {
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Templates", "ExamExportTemplate.html"),

@@ -114,8 +114,23 @@ USER_ANSWER_㉡:
 {answer2}
 """;
 
-            string? dbPrompt = await _systemConfigRepo.GetValueByKeyAsync("AI_WRITING_51_PROMPT");
-            string finalInstruction = string.IsNullOrWhiteSpace(dbPrompt) ? BuildSystemInstruction() : dbPrompt;
+            string? dbConfigJson = await _systemConfigRepo.GetValueByKeyAsync("AI_WRITING_51_PROMPT");
+            var promptConfig = new Writing51AiPromptConfigDto();
+
+            if (!string.IsNullOrEmpty(dbConfigJson))
+            {
+                try
+                {
+                    var parsedConfig = JsonSerializer.Deserialize<Writing51AiPromptConfigDto>(dbConfigJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    if (parsedConfig != null) promptConfig = parsedConfig;
+                }
+                catch (Exception ex)
+                {
+                    _systemConfigRepo.GetValueByKeyAsync("AI_WRITING_51_PROMPT").ContinueWith(t => { /* Fallback to old key if needed */ });
+                }
+            }
+
+            string finalInstruction = BuildSystemInstruction(promptConfig);
             var systemPrompt = finalInstruction + "\n\n" + BuildOutputSchema();
 
             var raw = await _gemini.GenerateContentAsync(
@@ -218,46 +233,37 @@ USER_ANSWER_㉡:
         }
 
         // ── PROMPT ─────────────────────────────────────────────────────────
-        private static string BuildSystemInstruction() =>
-            @"Bạn là giáo viên chấm thi TOPIK II Writing câu 51, giảng dạy cho học sinh Việt Nam.
+        private static string BuildSystemInstruction(Writing51AiPromptConfigDto config) =>
+            $@"{config.Persona}
 
 === VỀ CÂU 51 ===
-Câu 51 điền vào 2 chỗ trống (㉠ và ㉡) trong hội thoại/thông báo trang trọng.
-Văn phong BẮT BUỘC: thể TRANG TRỌNG (-습니다/-ㅂ니다/-(으)세요).
-TỔNG ĐIỂM: 10 điểm (mỗi blank tối đa 5 điểm).
+{config.QuestionOverview}
 
-=== RUBRIC CHẤM (mỗi blank tối đa 5 điểm) ===
-Nội dung phù hợp ngữ cảnh & logic: 2 điểm
-Ngữ pháp và từ vựng chính xác    : 1 điểm
-Văn phong phù hợp (trang trọng)  : 1 điểm
-Ngắn gọn (chỉ 1 câu duy nhất)    : 1 điểm
+=== BAREM CHẤM ĐIỂM CHI TIẾT (Tối đa 5 điểm/chỗ trống) ===
+Dựa trên tiêu chuẩn chấm thi, hãy đánh giá bài làm của học sinh qua 3 tiêu chí sau:
 
-=== VĂN PHONG TRANG TRỌNG - DANH SÁCH ĐẦY ĐỦ ===
-Câu 51 CHỈ CHẤP NHẬN các đuôi câu SAU:
+1. Nội dung & Ngữ cảnh ({config.ContentContext.MaxScore}đ):
+{config.ContentContext.Description}
 
-✅ ĐÚNG - Formal Polite Endings:
-- Tuyên bố: -습니다 / -ㅂ니다
-- Nghi vấn: -습니까 / -ㅂ니까
-- Yêu cầu: -(으)십시오
-- Đề nghị: -(으)ㅂ시다 / -읍시다
-- Tôn kính: -(으)세요 / -(으)십니다 / -(으)십니까
-- Copula: 입니다 / 입니까 / 이십니까
+2. Từ vựng & Ngữ pháp ({config.VocabGrammar.MaxScore}đ):
+{config.VocabGrammar.Description}
 
-❌ SAI - Các đuôi BỊ TRỪ ĐIỂM NẶNG:
-- Văn nói: -아요/-어요/-여요 (가요, 먹어요)
-- Văn viết: -다/-는다/-ㄴ다 (간다, 먹는다)
-- Banmal: -아/-어/-여 (가, 먹어)
+3. Hình thức & Quy tắc ({config.FormRules.MaxScore}đ):
+{config.FormRules.Description}
 
-Nếu phát hiện BẤT KỲ đuôi SAI nào → evaluation = ""incorrect"", trừ 2đ văn phong
+=== QUY TẮC ĐUÔI CÂU VÀ NGÔN NGỮ ===
+{config.FormalEndingRules}
 
-=== LỖI DẤU CÂU (PUNCTUATION RULE) ===
-TUYỆT ĐỐI KHÔNG được dùng dấu câu ở cuối câu (như dấu chấm ""."", dấu chấm hỏi ""?"", v.v.).
-Nếu người dùng viết CÓ DẤU CÂU ở cuối → BỊ TRỪ 1 ĐIỂM vào tổng điểm của blank đó.
+=== QUY TẮC DẤU CÂU (PUNCTUATION RULE) ===
+{config.PunctuationRules}
 
 === CÁCH VIẾT FEEDBACK ===
-- ""feedback"" PHẢI bằng TIẾNG VIỆT, tối đa 4 câu ngắn gọn
-- Giải thích ngữ cảnh: tại sao câu đó đúng/sai
-- Ví dụ: ""Vì đây là thông báo tìm kiếm thành viên mới trong câu lạc bộ nên cụm từ '신입 회원을 모집합니다' hoàn toàn phù hợp với ngữ cảnh.""";
+{config.FeedbackRequirements}
+
+QUAN TRỌNG: 
+- Nếu phát hiện dùng sai đuôi câu (như -아요/어요), hãy đánh giá là 'incorrect' hoặc 'partial' và trừ điểm nặng ở phần Hình thức.
+- Nếu ghi thêm dấu câu ở cuối (như '.', '?'), trừ 1 điểm ở phần Hình thức.
+- Bài làm của học sinh cho mỗi ô trống CHỈ ĐƯỢC PHÉP là 1 câu duy nhất.";
 
         private static string BuildOutputSchema() =>
             @"=== OUTPUT JSON SCHEMA BẮT BUỘC ===
