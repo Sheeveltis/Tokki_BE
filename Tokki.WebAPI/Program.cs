@@ -153,7 +153,10 @@ builder.Services.Configure<GoogleAuthSettings>(
 
 builder.Services.AddHostedService<Tokki.Infrastructure.BackgroundJobs.VipExpirationWorker>();
 
-builder.Services.AddHttpClient<IAiRoadmapService, AiRoadmapService>();
+builder.Services.AddHttpClient<IAiRoadmapService, AiRoadmapService>(client =>
+{
+    client.Timeout = TimeSpan.FromMinutes(10);
+});
 builder.Services.AddHttpClient<IAiRoadmapVer2Service, AiRoadmapVer2Service>(client =>
 {
     client.Timeout = TimeSpan.FromMinutes(10);
