@@ -44,6 +44,7 @@ namespace Tokki.Application.IRepositories
         Task AddRangeAsync(IEnumerable<Account> accounts, CancellationToken cancellationToken = default);
         Task<IEnumerable<Account>> GetAllAsync(CancellationToken cancellationToken = default);
         Task<List<Title>> GetUnlockedTitlesForUserAsync(string userId);
+        Task<List<Title>> GetUnlockedTitlesEarnedOnDateAsync(string userId, TitleRequirementType type, DateTime date);
         Task<(List<(Title title, DateTime earnedAt)> items, int totalCount)> GetUnlockedTitlesWithPagingAsync(string userId, int pageNumber, int pageSize);
     }
 }

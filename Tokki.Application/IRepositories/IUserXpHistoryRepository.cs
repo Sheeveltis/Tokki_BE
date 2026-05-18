@@ -8,5 +8,6 @@ namespace Tokki.Application.IRepositories
         Task AddAsync(UserXpHistory history);
         Task<long> GetTotalXpBySourceAndDateAsync(string userId, XpSource action, DateTime date);
         Task<int> CountActiveDaysAsync(string userId);
+        Task<DateTime?> GetLastActivityDateAsync(string userId);
     }
 }

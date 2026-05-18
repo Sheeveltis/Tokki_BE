@@ -29,6 +29,7 @@ namespace Tokki.Application.UseCases.Vocabulary.DTOs
         /// </summary>
         public string? ImgURL { get; set; }
         public VocabularyStatus? Status { get; set; }
+        public List<string>? TopicIds { get; set; }
 
 
 

@@ -80,7 +80,6 @@ namespace Tokki.Infrastructure.Services
             allNewlyUnlocked.AddRange(streakResults);
 
             // 2. Kiểm tra InactivityDays (Số ngày user không online)
-            // Tính số ngày kể từ lần login cuối cùng cho đến nay
             if (user.LastLoginAt.HasValue)
             {
                 int inactiveDays = (now.Date - user.LastLoginAt.Value.Date).Days;
@@ -89,10 +88,16 @@ namespace Tokki.Infrastructure.Services
                     var inactiveResults = await CheckAndUnlockTitlesAsync(userId, TitleRequirementType.InactivityDays, (long)inactiveDays);
                     allNewlyUnlocked.AddRange(inactiveResults);
                 }
+                else
+                {
+                    // Fallback: Nếu đã login rồi (inactiveDays = 0) 
+                    // thì lấy các title Inactivity được nhận trong ngày hôm nay trả về luôn
+                    var earnedToday = await _accountRepository.GetUnlockedTitlesEarnedOnDateAsync(userId, TitleRequirementType.InactivityDays, now.Date);
+                    allNewlyUnlocked.AddRange(earnedToday);
+                }
             }
 
             // 3. Kiểm tra StudyDaysTotal (Tổng số ngày THỰC TẾ user có hoạt động học)
-            // Thay vì dùng (now - CreatedAt), ta đếm số ngày duy nhất có phát sinh XP trong lịch sử.
             int studyDays = await _userXpHistoryRepository.CountActiveDaysAsync(userId);
             var totalDaysResults = await CheckAndUnlockTitlesAsync(userId, TitleRequirementType.StudyDaysTotal, (long)studyDays);
             allNewlyUnlocked.AddRange(totalDaysResults);

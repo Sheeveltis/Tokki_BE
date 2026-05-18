@@ -24,7 +24,8 @@ namespace Tokki.Infrastructure
         {
             // 1. Đăng ký DbContext-
             services.AddDbContext<TokkiDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"),
+                    sqlOptions => sqlOptions.EnableRetryOnFailure()));
 
             // Đăng ký Redis
             services.AddSingleton<IConnectionMultiplexer>(sp => 
